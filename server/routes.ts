@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { cascadingProductLookup } from "./lib/product-lookup";
 import { analyzeIngredients } from "./lib/openai";
 import { generateSearchSuggestions } from "./lib/search-suggestions";
+import { getChatbotResponse } from "./lib/nutribot";
 import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -186,6 +187,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ 
         message: "Failed to generate search suggestions" 
+      });
+    }
+  });
+
+  // Chatbot conversation endpoint
+  app.post("/api/chatbot", async (req, res) => {
+    try {
+      const messageSchema = z.object({
+        message: z.string().min(1, "Message cannot be empty").max(1000, "Message too long")
+      });
+
+      const { message } = messageSchema.parse(req.body);
+
+      const botResponse = await getChatbotResponse(message);
+      
+      res.json({
+        message: botResponse,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error("Error in chatbot endpoint:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid message format",
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ 
+        message: "Sorry, I'm having trouble responding right now. Please try again!" 
       });
     }
   });

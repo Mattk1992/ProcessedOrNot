@@ -71,6 +71,11 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': 'Select Language',
     'language.current': 'Current language',
+    
+    // Chatbot
+    'chatbot.greeting': "Hi there! I'm NutriBot, your friendly nutrition companion! 🥗 I'm here to help you understand food products, get nutritional insights, and make healthier choices. What would you like to know about your food today?",
+    'chatbot.placeholder': 'Ask about nutrition, ingredients, recipes...',
+    'chatbot.error': "Sorry, I'm having trouble responding right now. Please try again in a moment!",
   },
   
   es: {
