@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { cascadingProductLookup } from "./lib/product-lookup";
+import { analyzeIngredients } from "./lib/openai";
+import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
 const barcodeSchema = z.object({
@@ -55,6 +57,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ 
         message: "Failed to fetch product data" 
+      });
+    }
+  });
+
+  // Manual product entry
+  app.post("/api/products", async (req, res) => {
+    try {
+      const productData = insertProductSchema.parse(req.body);
+
+      // Check if product already exists
+      const existingProduct = await storage.getProductByBarcode(productData.barcode);
+      if (existingProduct) {
+        return res.status(409).json({ 
+          message: "Product with this barcode already exists" 
+        });
+      }
+
+      // Analyze ingredients if provided
+      if (productData.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            productData.ingredientsText,
+            productData.productName || "Unknown Product"
+          );
+          productData.processingScore = analysis.score;
+          productData.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze ingredients:", error);
+          productData.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      // Set data source and timestamp
+      const finalProductData = {
+        ...productData,
+        dataSource: 'Manual Entry',
+        lastUpdated: new Date().toISOString()
+      };
+
+      const createdProduct = await storage.createProduct(finalProductData);
+      res.status(201).json(createdProduct);
+
+    } catch (error) {
+      console.error("Error creating product:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid product data",
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to create product" 
       });
     }
   });
