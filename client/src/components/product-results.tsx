@@ -8,6 +8,7 @@ import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database } from "lucide-re
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
 import ScanningProgress from "./scanning-progress";
+import SmartLookup from "./smart-lookup";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -83,20 +84,31 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">Product Not Found</h3>
                   <p className="text-muted-foreground mb-4">
-                    We couldn't find this product in OpenFoodFacts, USDA FoodData Central, or UPC Database.
+                    We couldn't find this product in any of our 19 databases.
                   </p>
-                  <Button 
-                    onClick={() => setShowManualForm(true)}
-                    className="flex items-center gap-2"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Add Product Manually
-                  </Button>
+                  <div className="space-y-3">
+                    <Button 
+                      onClick={() => setShowManualForm(true)}
+                      className="flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Add Product Manually
+                    </Button>
+                  </div>
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
+
+        {/* Smart Lookup Section */}
+        <SmartLookup 
+          barcode={barcode}
+          onProductFound={(product) => {
+            // When product is found via smart lookup, refetch the product data
+            refetch();
+          }}
+        />
       </div>
     );
   }
