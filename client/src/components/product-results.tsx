@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database } from "lucide-react";
 import { api } from "@/lib/api";
+import { useLanguage } from "@/contexts/LanguageContext";
 import ManualProductForm from "./manual-product-form";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
@@ -15,6 +16,7 @@ interface ProductResultsProps {
 
 export default function ProductResults({ barcode }: ProductResultsProps) {
   const [showManualForm, setShowManualForm] = useState(false);
+  const { t } = useLanguage();
 
   const { data: product, isLoading: isLoadingProduct, error: productError, refetch } = useQuery<Product & { lookupSource?: string }>({
     queryKey: ["/api/products", barcode],
@@ -95,7 +97,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
         <Alert className="border-2 border-destructive/20 bg-destructive/5 rounded-2xl shadow-lg fade-in">
           <AlertTriangle className="h-5 w-5 text-destructive" />
           <AlertDescription className="text-destructive font-medium">
-            {errorMessage || "Product not found. Please check the barcode and try again."}
+            {errorMessage || t('product.notFound')}
           </AlertDescription>
         </Alert>
 
@@ -107,7 +109,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <Database className="h-12 w-12 text-muted-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">Product Not Found</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t('product.notFound')}</h3>
                   <p className="text-muted-foreground mb-4">
                     We couldn't find this product in OpenFoodFacts, USDA FoodData Central, or UPC Database.
                   </p>
@@ -116,7 +118,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                     className="flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
-                    Add Product Manually
+                    {t('form.submit')}
                   </Button>
                 </div>
               </div>

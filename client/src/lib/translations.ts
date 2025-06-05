@@ -1,10 +1,11 @@
-export type Language = 'en' | 'es' | 'fr' | 'de' | 'zh' | 'ja';
+export type Language = 'en' | 'es' | 'fr' | 'de' | 'nl' | 'zh' | 'ja';
 
 export const languages: Record<Language, { name: string; flag: string }> = {
   en: { name: 'English', flag: '🇺🇸' },
   es: { name: 'Español', flag: '🇪🇸' },
   fr: { name: 'Français', flag: '🇫🇷' },
   de: { name: 'Deutsch', flag: '🇩🇪' },
+  nl: { name: 'Nederlands', flag: '🇳🇱' },
   zh: { name: '中文', flag: '🇨🇳' },
   ja: { name: '日本語', flag: '🇯🇵' },
 };
@@ -323,6 +324,69 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': '选择语言',
     'language.current': '当前语言',
+  },
+  
+  nl: {
+    // Navigation
+    'nav.home': 'Home',
+    'nav.products': 'Producten',
+    
+    // Home page
+    'home.title': 'ProcessedOrNot Scanner',
+    'home.subtitle': 'Voor snelle, eenvoudige en geavanceerde productanalyse en verwerkingsdetectie',
+    'home.scan.button': 'Start Scannen',
+    'home.manual.placeholder': 'Barcode handmatig invoeren',
+    'home.manual.submit': 'Product Opzoeken',
+    
+    // Scanner
+    'scanner.title': 'Barcode Scanner',
+    'scanner.instructions': 'Richt je camera op een barcode',
+    'scanner.loading': 'Scannen...',
+    'scanner.error': 'Camera toegang geweigerd of niet beschikbaar',
+    'scanner.stop': 'Scanner Stoppen',
+    
+    // Product Results
+    'product.loading': 'Product opzoeken...',
+    'product.notFound': 'Product niet gevonden',
+    'product.error': 'Fout bij laden product',
+    'product.analysis': 'Verwerkingsanalyse',
+    'product.score': 'Verwerkingsscore',
+    'product.explanation': 'Uitleg',
+    'product.categories.title': 'Ingrediënt Categorieën',
+    'product.categories.ultraProcessed': 'Ultra-verwerkt',
+    'product.categories.processed': 'Verwerkt',
+    'product.categories.minimal': 'Minimaal verwerkt',
+    'product.ingredients': 'Ingrediënten',
+    'product.brand': 'Merk',
+    'product.source': 'Databron',
+    
+    // Manual Product Form
+    'form.title': 'Productinformatie Toevoegen',
+    'form.subtitle': 'Geen product gevonden voor deze barcode. Voeg de informatie handmatig toe.',
+    'form.name.label': 'Productnaam',
+    'form.name.placeholder': 'Voer productnaam in',
+    'form.brand.label': 'Merk',
+    'form.brand.placeholder': 'Voer merknaam in',
+    'form.ingredients.label': 'Ingrediënten',
+    'form.ingredients.placeholder': 'Voer ingrediëntenlijst in',
+    'form.submit': 'Product Opslaan',
+    'form.cancel': 'Annuleren',
+    'form.saving': 'Opslaan...',
+    'form.success': 'Product succesvol opgeslagen!',
+    'form.error': 'Fout bij opslaan product',
+    
+    // Common
+    'common.loading': 'Laden...',
+    'common.error': 'Er is een fout opgetreden',
+    'common.retry': 'Opnieuw Proberen',
+    'common.back': 'Terug',
+    'common.close': 'Sluiten',
+    'common.save': 'Opslaan',
+    'common.cancel': 'Annuleren',
+    
+    // Language
+    'language.select': 'Taal Selecteren',
+    'language.current': 'Huidige taal',
   },
   
   ja: {
