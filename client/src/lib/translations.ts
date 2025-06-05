@@ -16,8 +16,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.products': 'Products',
     
     // Home page
-    'home.title': 'Barcode Product Scanner',
-    'home.subtitle': 'Scan or enter a barcode to get detailed product information and AI-powered processing analysis',
+    'home.title': 'ProcessedOrNot Scanner',
+    'home.subtitle': 'For fast, simple, and advanced product analysis and processing detection',
     'home.scan.button': 'Start Scanning',
     'home.manual.placeholder': 'Enter barcode manually',
     'home.manual.submit': 'Look Up Product',
