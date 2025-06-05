@@ -16,8 +16,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.products': 'Products',
     
     // Home page
-    'home.title': 'Barcode Product Scanner',
-    'home.subtitle': 'Scan or enter a barcode to get detailed product information and AI-powered processing analysis',
+    'home.title': 'ProcessedOrNot Scanner',
+    'home.subtitle': 'For fast, simple, and advanced product analysis and processing detection',
     'home.scan.button': 'Start Scanning',
     'home.manual.placeholder': 'Enter barcode manually',
     'home.manual.submit': 'Look Up Product',
@@ -79,8 +79,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.products': 'Productos',
     
     // Home page
-    'home.title': 'Escáner de Códigos de Barras',
-    'home.subtitle': 'Escanea o ingresa un código de barras para obtener información detallada del producto y análisis de procesamiento con IA',
+    'home.title': 'ProcessedOrNot Scanner',
+    'home.subtitle': 'Para análisis de productos rápido, simple y avanzado y detección de procesamiento',
     'home.scan.button': 'Comenzar Escaneo',
     'home.manual.placeholder': 'Ingresar código manualmente',
     'home.manual.submit': 'Buscar Producto',
@@ -142,8 +142,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.products': 'Produits',
     
     // Home page
-    'home.title': 'Scanner de Codes-Barres',
-    'home.subtitle': 'Scannez ou saisissez un code-barres pour obtenir des informations détaillées sur le produit et une analyse de traitement par IA',
+    'home.title': 'ProcessedOrNot Scanner',
+    'home.subtitle': 'Pour une analyse de produits rapide, simple et avancée et une détection de traitement',
     'home.scan.button': 'Commencer le Scan',
     'home.manual.placeholder': 'Saisir le code manuellement',
     'home.manual.submit': 'Rechercher le Produit',
@@ -205,8 +205,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.products': 'Produkte',
     
     // Home page
-    'home.title': 'Barcode-Scanner',
-    'home.subtitle': 'Scannen oder geben Sie einen Barcode ein, um detaillierte Produktinformationen und KI-gestützte Verarbeitungsanalyse zu erhalten',
+    'home.title': 'ProcessedOrNot Scanner',
+    'home.subtitle': 'Für schnelle, einfache und erweiterte Produktanalyse und Verarbeitungserkennung',
     'home.scan.button': 'Scannen Starten',
     'home.manual.placeholder': 'Barcode manuell eingeben',
     'home.manual.submit': 'Produkt Suchen',
@@ -268,8 +268,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.products': '产品',
     
     // Home page
-    'home.title': '条形码产品扫描器',
-    'home.subtitle': '扫描或输入条形码以获取详细的产品信息和AI驱动的加工分析',
+    'home.title': 'ProcessedOrNot Scanner',
+    'home.subtitle': '快速、简单和高级产品分析与加工检测',
     'home.scan.button': '开始扫描',
     'home.manual.placeholder': '手动输入条形码',
     'home.manual.submit': '查找产品',
@@ -331,8 +331,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.products': '製品',
     
     // Home page
-    'home.title': 'バーコード製品スキャナー',
-    'home.subtitle': 'バーコードをスキャンまたは入力して、詳細な製品情報とAI駆動の処理分析を取得',
+    'home.title': 'ProcessedOrNot Scanner',
+    'home.subtitle': '迅速、シンプル、高度な製品分析と処理検出のために',
     'home.scan.button': 'スキャン開始',
     'home.manual.placeholder': 'バーコードを手動入力',
     'home.manual.submit': '製品を検索',
