@@ -13,7 +13,7 @@ interface BarcodeScannerProps {
 const sampleProducts = [
   { barcode: "8720600618161", name: "Hak Chili sin carne schotel", description: "Ready meal" },
   { barcode: "5449000000996", name: "Coca-Cola", description: "Soft drink" },
-  { barcode: "8480000818768", name: "Organic Banana", description: "Fresh produce" },
+  { barcode: "8710398500434", name: "Lays Chips Naturel 250gr", description: "Potato chips" },
 ];
 
 export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {

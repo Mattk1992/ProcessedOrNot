@@ -201,29 +201,41 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
               </div>
 
               {/* Quick Stats */}
-              {product.nutriments && typeof product.nutriments === 'object' && (
+              {product.nutriments && (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 slide-up">
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-primary/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
-                      {String((product.nutriments as any)?.energy_100g || "N/A")}
+                      {(() => {
+                        const nutrients = product.nutriments as any;
+                        return nutrients?.energy_100g ? String(nutrients.energy_100g) : "N/A";
+                      })()}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium">kcal/100g</div>
                   </div>
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
-                      {(product.nutriments as any)?.sugars_100g ? `${(product.nutriments as any).sugars_100g}g` : "N/A"}
+                      {(() => {
+                        const nutrients = product.nutriments as any;
+                        return nutrients?.sugars_100g ? `${nutrients.sugars_100g}g` : "N/A";
+                      })()}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium">Sugars</div>
                   </div>
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-primary/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
-                      {(product.nutriments as any)?.fat_100g ? `${(product.nutriments as any).fat_100g}g` : "N/A"}
+                      {(() => {
+                        const nutrients = product.nutriments as any;
+                        return nutrients?.fat_100g ? `${nutrients.fat_100g}g` : "N/A";
+                      })()}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium">Fat</div>
                   </div>
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
-                      {(product.nutriments as any)?.proteins_100g ? `${(product.nutriments as any).proteins_100g}g` : "N/A"}
+                      {(() => {
+                        const nutrients = product.nutriments as any;
+                        return nutrients?.proteins_100g ? `${nutrients.proteins_100g}g` : "N/A";
+                      })()}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium">Protein</div>
                   </div>
@@ -235,7 +247,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
       </Card>
 
       {/* Processing Score Card */}
-      {product.processingScore !== null && typeof product.processingScore === 'number' && (
+      {product.processingScore !== null && (
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center justify-between mb-8">
