@@ -13,6 +13,11 @@ import { fetchProductFromRIVM } from "./rivm";
 import { fetchProductFromFoodDataCentral } from "./fooddata-central";
 import { fetchProductFromNEVO } from "./nevo";
 import { fetchProductFromVoedingscentrum } from "./voedingscentrum";
+import { fetchProductFromCiqual } from "./ciqual";
+import { fetchProductFromBDAIEO } from "./bda-ieo";
+import { fetchProductFromFineli } from "./fineli";
+import { fetchProductFromBLS } from "./bls";
+import { fetchProductFromDTUFood } from "./dtu-food";
 import { analyzeIngredients } from "./openai";
 import { broadcastSearchProgress } from "./search-progress";
 
@@ -210,7 +215,72 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('Kenniscentrum Gezond Gewicht lookup failed:', error);
   }
 
-  // 7. Legacy USDA (for backwards compatibility)
+  // 7. CIQUAL (French ANSES)
+  try {
+    console.log('Trying CIQUAL...');
+    const ciqualProduct = await fetchProductFromCiqual(barcode);
+    
+    if (ciqualProduct) {
+      console.log('Found product in CIQUAL');
+      return { product: ciqualProduct, source: 'CIQUAL (ANSES)' };
+    }
+  } catch (error) {
+    console.error('CIQUAL lookup failed:', error);
+  }
+
+  // 8. BLS (German Federal Food Code)
+  try {
+    console.log('Trying BLS...');
+    const blsProduct = await fetchProductFromBLS(barcode);
+    
+    if (blsProduct) {
+      console.log('Found product in BLS');
+      return { product: blsProduct, source: 'BLS (Germany)' };
+    }
+  } catch (error) {
+    console.error('BLS lookup failed:', error);
+  }
+
+  // 9. Fineli (Finnish Food Authority)
+  try {
+    console.log('Trying Fineli...');
+    const fineliProduct = await fetchProductFromFineli(barcode);
+    
+    if (fineliProduct) {
+      console.log('Found product in Fineli');
+      return { product: fineliProduct, source: 'Fineli (Finland)' };
+    }
+  } catch (error) {
+    console.error('Fineli lookup failed:', error);
+  }
+
+  // 10. DTU Food (Denmark)
+  try {
+    console.log('Trying DTU Food...');
+    const dtuProduct = await fetchProductFromDTUFood(barcode);
+    
+    if (dtuProduct) {
+      console.log('Found product in DTU Food');
+      return { product: dtuProduct, source: 'DTU Food (Denmark)' };
+    }
+  } catch (error) {
+    console.error('DTU Food lookup failed:', error);
+  }
+
+  // 11. BDA-IEO (Italian Food Database)
+  try {
+    console.log('Trying BDA-IEO...');
+    const bdaProduct = await fetchProductFromBDAIEO(barcode);
+    
+    if (bdaProduct) {
+      console.log('Found product in BDA-IEO');
+      return { product: bdaProduct, source: 'BDA-IEO (Italy)' };
+    }
+  } catch (error) {
+    console.error('BDA-IEO lookup failed:', error);
+  }
+
+  // 12. Legacy USDA (for backwards compatibility)
   try {
     console.log('Trying Legacy USDA...');
     const usdaProduct = await fetchProductFromUSDA(barcode);
@@ -238,7 +308,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('Legacy USDA lookup failed:', error);
   }
 
-  // 8. EFSA (European Food Safety Authority)
+  // 13. EFSA (European Food Safety Authority)
   try {
     console.log('Trying EFSA...');
     const efsaProduct = await fetchProductFromEFSA(barcode);
