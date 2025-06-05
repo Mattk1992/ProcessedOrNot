@@ -29,10 +29,36 @@ interface ProductLookupResult {
 
 export async function cascadingProductLookup(barcode: string): Promise<ProductLookupResult> {
   console.log(`Starting cascading lookup for barcode: ${barcode}`);
+  
+  const completedSources: string[] = [];
+  const totalSources = 19;
+
+  const updateProgress = (currentSource: string, found: boolean = false, error?: string) => {
+    if (!found && !error) {
+      // Mark previous source as completed
+      if (completedSources.length > 0 || currentSource !== 'OpenFoodFacts') {
+        const prevSource = completedSources.length === 0 ? '' : completedSources[completedSources.length - 1];
+        if (prevSource && !completedSources.includes(prevSource)) {
+          completedSources.push(prevSource);
+        }
+      }
+    }
+    
+    const update = {
+      type: (found ? 'complete' : (error ? 'error' : 'progress')) as 'progress' | 'error' | 'complete',
+      currentSource,
+      completedSources: [...completedSources],
+      found,
+      totalSources,
+      error
+    };
+    broadcastSearchProgress(barcode, update);
+  };
 
   // 1. Primary: OpenFoodFacts
   try {
     console.log('Trying OpenFoodFacts...');
+    updateProgress('OpenFoodFacts');
     const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
     
     if (openFoodFactsData && openFoodFactsData.status === 1) {
