@@ -215,7 +215,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   className="flex-1 border-2 border-destructive/20 text-destructive hover:bg-destructive/10"
                 >
                   <X className="w-4 h-4 mr-2" />
-                  Stop Camera
+                  {t('scanner.stop')}
                 </Button>
                 <Button
                   onClick={startCamera}
@@ -242,7 +242,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 ) : (
                   <>
                     <Camera className="w-5 h-5" />
-                    <span>Scan with Camera</span>
+                    <span>{t('home.scan.button')}</span>
                   </>
                 )}
               </Button>
@@ -272,7 +272,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   type="text"
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
-                  placeholder="Enter barcode (e.g., 3017620425400)"
+                  placeholder={t('home.manual.placeholder')}
                   className="w-full px-5 py-4 text-lg font-mono tracking-wider pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30"
                   disabled={isLoading}
                 />
@@ -302,7 +302,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 ) : (
                   <>
                     <Search className="w-5 h-5" />
-                    <span>Analyze Product</span>
+                    <span>{t('home.manual.submit')}</span>
                   </>
                 )}
               </Button>
