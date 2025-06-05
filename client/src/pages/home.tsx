@@ -86,25 +86,6 @@ export default function Home() {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/50 mt-16">
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              Created by{" "}
-              <a 
-                href="https://www.linkedin.com/in/matthias-kuchenbecker/" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:text-accent transition-colors duration-200 font-medium"
-              >
-                Matthias Kuchenbecker
-              </a>
-            </p>
-          </div>
-        </div>
-      </footer>
-
       {/* Background decoration */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-20 -right-40 w-80 h-80 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full blur-3xl"></div>

@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database } from "lucide-react";
 import { api } from "@/lib/api";
-import { useLanguage } from "@/contexts/LanguageContext";
 import ManualProductForm from "./manual-product-form";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
@@ -16,7 +15,6 @@ interface ProductResultsProps {
 
 export default function ProductResults({ barcode }: ProductResultsProps) {
   const [showManualForm, setShowManualForm] = useState(false);
-  const { t } = useLanguage();
 
   const { data: product, isLoading: isLoadingProduct, error: productError, refetch } = useQuery<Product & { lookupSource?: string }>({
     queryKey: ["/api/products", barcode],
@@ -97,7 +95,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
         <Alert className="border-2 border-destructive/20 bg-destructive/5 rounded-2xl shadow-lg fade-in">
           <AlertTriangle className="h-5 w-5 text-destructive" />
           <AlertDescription className="text-destructive font-medium">
-            {errorMessage || t('product.notFound')}
+            {errorMessage || "Product not found. Please check the barcode and try again."}
           </AlertDescription>
         </Alert>
 
@@ -109,7 +107,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <Database className="h-12 w-12 text-muted-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">{t('product.notFound')}</h3>
+                  <h3 className="font-semibold text-lg mb-2">Product Not Found</h3>
                   <p className="text-muted-foreground mb-4">
                     We couldn't find this product in OpenFoodFacts, USDA FoodData Central, or UPC Database.
                   </p>
@@ -118,7 +116,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                     className="flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
-                    {t('form.submit')}
+                    Add Product Manually
                   </Button>
                 </div>
               </div>
@@ -253,7 +251,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-bold text-foreground">{t('product.analysis')}</h3>
+              <h3 className="text-2xl font-bold text-foreground">Processing Analysis</h3>
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center">
                   <Lightbulb className="w-5 h-5 text-white" />
@@ -264,7 +262,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
 
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-lg font-semibold text-foreground">{t('product.score')}</span>
+                <span className="text-lg font-semibold text-foreground">Processing Level</span>
                 <div className="text-right">
                   <span className={`text-4xl font-bold ${getScoreColor(product.processingScore)}`}>
                     {product.processingScore}
@@ -348,12 +346,12 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-foreground">{t('product.categories.title')}</h3>
+              <h3 className="text-2xl font-bold text-foreground">Ingredients Analysis</h3>
             </div>
             
             <div className="space-y-8">
               <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
-                <h4 className="text-lg font-semibold text-foreground mb-4">{t('product.ingredients')}</h4>
+                <h4 className="text-lg font-semibold text-foreground mb-4">Full Ingredients List</h4>
                 <div className="bg-card/50 rounded-xl p-4 border border-border/20">
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {String(product.ingredientsText)}
@@ -373,7 +371,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <div className="border-2 border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
                     <div className="flex items-center space-x-3 mb-4">
                       <div className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></div>
-                      <span className="text-base font-semibold text-red-800">{t('product.categories.ultraProcessed')}</span>
+                      <span className="text-base font-semibold text-red-800">Ultra-processed</span>
                     </div>
                     <ul className="text-sm text-red-700 space-y-2">
                       {analysis.categories.ultraProcessed.length > 0 ? (
@@ -395,7 +393,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <div className="border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
                     <div className="flex items-center space-x-3 mb-4">
                       <div className="w-4 h-4 bg-yellow-500 rounded-full shadow-sm"></div>
-                      <span className="text-base font-semibold text-yellow-800">{t('product.categories.processed')}</span>
+                      <span className="text-base font-semibold text-yellow-800">Processed</span>
                     </div>
                     <ul className="text-sm text-yellow-700 space-y-2">
                       {analysis.categories.processed.length > 0 ? (
@@ -417,7 +415,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <div className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
                     <div className="flex items-center space-x-3 mb-4">
                       <div className="w-4 h-4 bg-emerald-500 rounded-full shadow-sm"></div>
-                      <span className="text-base font-semibold text-emerald-800">{t('product.categories.minimal')}</span>
+                      <span className="text-base font-semibold text-emerald-800">Minimally processed</span>
                     </div>
                     <ul className="text-sm text-emerald-700 space-y-2">
                       {analysis.categories.minimallyProcessed.length > 0 ? (
@@ -452,7 +450,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-foreground">{t('product.nutrition')}</h3>
+              <h3 className="text-2xl font-bold text-foreground">Nutrition Facts</h3>
             </div>
             
             <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
@@ -460,50 +458,50 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b-2 border-border/30">
-                      <th className="text-left py-4 text-lg font-semibold text-foreground">{t('product.nutrition.nutrient')}</th>
-                      <th className="text-right py-4 text-lg font-semibold text-foreground">{t('product.nutrition.per100g')}</th>
+                      <th className="text-left py-4 text-lg font-semibold text-foreground">Nutrient</th>
+                      <th className="text-right py-4 text-lg font-semibold text-foreground">Per 100g</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/20">
                     <tr className="hover:bg-muted/30 transition-colors">
-                      <td className="py-4 text-foreground font-medium">{t('product.nutrition.energy')}</td>
+                      <td className="py-4 text-foreground font-medium">Energy</td>
                       <td className="py-4 text-right text-muted-foreground font-mono">
                         {(product.nutriments as any).energy_100g ? `${(product.nutriments as any).energy_100g} kcal` : "N/A"}
                       </td>
                     </tr>
                     <tr className="hover:bg-muted/30 transition-colors">
-                      <td className="py-4 text-foreground font-medium">{t('product.nutrition.fat')}</td>
+                      <td className="py-4 text-foreground font-medium">Fat</td>
                       <td className="py-4 text-right text-muted-foreground font-mono">
                         {(product.nutriments as any).fat_100g ? `${(product.nutriments as any).fat_100g}g` : "N/A"}
                       </td>
                     </tr>
                     {(product.nutriments as any).saturated_fat_100g && (
                       <tr className="hover:bg-muted/30 transition-colors">
-                        <td className="py-4 text-muted-foreground font-medium pl-6">{t('product.nutrition.saturatedFat')}</td>
+                        <td className="py-4 text-muted-foreground font-medium pl-6">Saturated fat</td>
                         <td className="py-4 text-right text-muted-foreground font-mono">{(product.nutriments as any).saturated_fat_100g}g</td>
                       </tr>
                     )}
                     <tr className="hover:bg-muted/30 transition-colors">
-                      <td className="py-4 text-foreground font-medium">{t('product.nutrition.carbs')}</td>
+                      <td className="py-4 text-foreground font-medium">Carbohydrates</td>
                       <td className="py-4 text-right text-muted-foreground font-mono">
                         {(product.nutriments as any).carbohydrates_100g ? `${(product.nutriments as any).carbohydrates_100g}g` : "N/A"}
                       </td>
                     </tr>
                     {(product.nutriments as any).sugars_100g && (
                       <tr className="hover:bg-muted/30 transition-colors">
-                        <td className="py-4 text-muted-foreground font-medium pl-6">{t('product.nutrition.sugars')}</td>
+                        <td className="py-4 text-muted-foreground font-medium pl-6">Sugars</td>
                         <td className="py-4 text-right text-muted-foreground font-mono">{(product.nutriments as any).sugars_100g}g</td>
                       </tr>
                     )}
                     <tr className="hover:bg-muted/30 transition-colors">
-                      <td className="py-4 text-foreground font-medium">{t('product.nutrition.protein')}</td>
+                      <td className="py-4 text-foreground font-medium">Protein</td>
                       <td className="py-4 text-right text-muted-foreground font-mono">
                         {(product.nutriments as any).proteins_100g ? `${(product.nutriments as any).proteins_100g}g` : "N/A"}
                       </td>
                     </tr>
                     {(product.nutriments as any).salt_100g && (
                       <tr className="hover:bg-muted/30 transition-colors">
-                        <td className="py-4 text-foreground font-medium">{t('product.nutrition.salt')}</td>
+                        <td className="py-4 text-foreground font-medium">Salt</td>
                         <td className="py-4 text-right text-muted-foreground font-mono">{(product.nutriments as any).salt_100g}g</td>
                       </tr>
                     )}

@@ -1,11 +1,10 @@
-export type Language = 'en' | 'es' | 'fr' | 'de' | 'nl' | 'zh' | 'ja';
+export type Language = 'en' | 'es' | 'fr' | 'de' | 'zh' | 'ja';
 
 export const languages: Record<Language, { name: string; flag: string }> = {
   en: { name: 'English', flag: '🇺🇸' },
   es: { name: 'Español', flag: '🇪🇸' },
   fr: { name: 'Français', flag: '🇫🇷' },
   de: { name: 'Deutsch', flag: '🇩🇪' },
-  nl: { name: 'Nederlands', flag: '🇳🇱' },
   zh: { name: '中文', flag: '🇨🇳' },
   ja: { name: '日本語', flag: '🇯🇵' },
 };
@@ -17,8 +16,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.products': 'Products',
     
     // Home page
-    'home.title': 'ProcessedOrNot Scanner',
-    'home.subtitle': 'For fast, simple, and advanced product analysis and processing detection',
+    'home.title': 'Barcode Product Scanner',
+    'home.subtitle': 'Scan or enter a barcode to get detailed product information and AI-powered processing analysis',
     'home.scan.button': 'Start Scanning',
     'home.manual.placeholder': 'Enter barcode manually',
     'home.manual.submit': 'Look Up Product',
@@ -44,16 +43,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'product.ingredients': 'Ingredients',
     'product.brand': 'Brand',
     'product.source': 'Data source',
-    'product.nutrition': 'Nutrition Facts',
-    'product.nutrition.nutrient': 'Nutrient',
-    'product.nutrition.per100g': 'Per 100g',
-    'product.nutrition.energy': 'Energy',
-    'product.nutrition.fat': 'Fat',
-    'product.nutrition.saturatedFat': 'Saturated fat',
-    'product.nutrition.carbs': 'Carbohydrates',
-    'product.nutrition.sugars': 'Sugars',
-    'product.nutrition.protein': 'Protein',
-    'product.nutrition.salt': 'Salt',
     
     // Manual Product Form
     'form.title': 'Add Product Information',
@@ -90,8 +79,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.products': 'Productos',
     
     // Home page
-    'home.title': 'ProcessedOrNot Scanner',
-    'home.subtitle': 'Para análisis de productos rápido, simple y avanzado y detección de procesamiento',
+    'home.title': 'Escáner de Códigos de Barras',
+    'home.subtitle': 'Escanea o ingresa un código de barras para obtener información detallada del producto y análisis de procesamiento con IA',
     'home.scan.button': 'Comenzar Escaneo',
     'home.manual.placeholder': 'Ingresar código manualmente',
     'home.manual.submit': 'Buscar Producto',
@@ -117,16 +106,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'product.ingredients': 'Ingredientes',
     'product.brand': 'Marca',
     'product.source': 'Fuente de datos',
-    'product.nutrition': 'Información Nutricional',
-    'product.nutrition.nutrient': 'Nutriente',
-    'product.nutrition.per100g': 'Por 100g',
-    'product.nutrition.energy': 'Energía',
-    'product.nutrition.fat': 'Grasa',
-    'product.nutrition.saturatedFat': 'Grasa saturada',
-    'product.nutrition.carbs': 'Carbohidratos',
-    'product.nutrition.sugars': 'Azúcares',
-    'product.nutrition.protein': 'Proteína',
-    'product.nutrition.salt': 'Sal',
     
     // Manual Product Form
     'form.title': 'Agregar Información del Producto',
@@ -163,8 +142,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.products': 'Produits',
     
     // Home page
-    'home.title': 'ProcessedOrNot Scanner',
-    'home.subtitle': 'Pour une analyse de produits rapide, simple et avancée et une détection de traitement',
+    'home.title': 'Scanner de Codes-Barres',
+    'home.subtitle': 'Scannez ou saisissez un code-barres pour obtenir des informations détaillées sur le produit et une analyse de traitement par IA',
     'home.scan.button': 'Commencer le Scan',
     'home.manual.placeholder': 'Saisir le code manuellement',
     'home.manual.submit': 'Rechercher le Produit',
@@ -190,16 +169,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'product.ingredients': 'Ingrédients',
     'product.brand': 'Marque',
     'product.source': 'Source des données',
-    'product.nutrition': 'Valeurs Nutritionnelles',
-    'product.nutrition.nutrient': 'Nutriment',
-    'product.nutrition.per100g': 'Pour 100g',
-    'product.nutrition.energy': 'Énergie',
-    'product.nutrition.fat': 'Matières grasses',
-    'product.nutrition.saturatedFat': 'Graisses saturées',
-    'product.nutrition.carbs': 'Glucides',
-    'product.nutrition.sugars': 'Sucres',
-    'product.nutrition.protein': 'Protéines',
-    'product.nutrition.salt': 'Sel',
     
     // Manual Product Form
     'form.title': 'Ajouter les Informations du Produit',
@@ -236,8 +205,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.products': 'Produkte',
     
     // Home page
-    'home.title': 'ProcessedOrNot Scanner',
-    'home.subtitle': 'Für schnelle, einfache und erweiterte Produktanalyse und Verarbeitungserkennung',
+    'home.title': 'Barcode-Scanner',
+    'home.subtitle': 'Scannen oder geben Sie einen Barcode ein, um detaillierte Produktinformationen und KI-gestützte Verarbeitungsanalyse zu erhalten',
     'home.scan.button': 'Scannen Starten',
     'home.manual.placeholder': 'Barcode manuell eingeben',
     'home.manual.submit': 'Produkt Suchen',
@@ -263,16 +232,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'product.ingredients': 'Zutaten',
     'product.brand': 'Marke',
     'product.source': 'Datenquelle',
-    'product.nutrition': 'Nährwerte',
-    'product.nutrition.nutrient': 'Nährstoff',
-    'product.nutrition.per100g': 'Pro 100g',
-    'product.nutrition.energy': 'Energie',
-    'product.nutrition.fat': 'Fett',
-    'product.nutrition.saturatedFat': 'Gesättigte Fettsäuren',
-    'product.nutrition.carbs': 'Kohlenhydrate',
-    'product.nutrition.sugars': 'Zucker',
-    'product.nutrition.protein': 'Eiweiß',
-    'product.nutrition.salt': 'Salz',
     
     // Manual Product Form
     'form.title': 'Produktinformationen Hinzufügen',
@@ -309,8 +268,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'nav.products': '产品',
     
     // Home page
-    'home.title': 'ProcessedOrNot Scanner',
-    'home.subtitle': '快速、简单和高级产品分析与加工检测',
+    'home.title': '条形码产品扫描器',
+    'home.subtitle': '扫描或输入条形码以获取详细的产品信息和AI驱动的加工分析',
     'home.scan.button': '开始扫描',
     'home.manual.placeholder': '手动输入条形码',
     'home.manual.submit': '查找产品',
@@ -336,16 +295,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'product.ingredients': '成分',
     'product.brand': '品牌',
     'product.source': '数据来源',
-    'product.nutrition': '营养成分',
-    'product.nutrition.nutrient': '营养素',
-    'product.nutrition.per100g': '每100克',
-    'product.nutrition.energy': '能量',
-    'product.nutrition.fat': '脂肪',
-    'product.nutrition.saturatedFat': '饱和脂肪',
-    'product.nutrition.carbs': '碳水化合物',
-    'product.nutrition.sugars': '糖',
-    'product.nutrition.protein': '蛋白质',
-    'product.nutrition.salt': '盐',
     
     // Manual Product Form
     'form.title': '添加产品信息',
@@ -376,87 +325,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'language.current': '当前语言',
   },
   
-  nl: {
-    // Navigation
-    'nav.home': 'Home',
-    'nav.products': 'Producten',
-    
-    // Home page
-    'home.title': 'ProcessedOrNot Scanner',
-    'home.subtitle': 'Voor snelle, eenvoudige en geavanceerde productanalyse en verwerkingsdetectie',
-    'home.scan.button': 'Start Scannen',
-    'home.manual.placeholder': 'Barcode handmatig invoeren',
-    'home.manual.submit': 'Product Opzoeken',
-    
-    // Scanner
-    'scanner.title': 'Barcode Scanner',
-    'scanner.instructions': 'Richt je camera op een barcode',
-    'scanner.loading': 'Scannen...',
-    'scanner.error': 'Camera toegang geweigerd of niet beschikbaar',
-    'scanner.stop': 'Scanner Stoppen',
-    
-    // Product Results
-    'product.loading': 'Product opzoeken...',
-    'product.notFound': 'Product niet gevonden',
-    'product.error': 'Fout bij laden product',
-    'product.analysis': 'Verwerkingsanalyse',
-    'product.score': 'Verwerkingsscore',
-    'product.explanation': 'Uitleg',
-    'product.categories.title': 'Ingrediënt Categorieën',
-    'product.categories.ultraProcessed': 'Ultra-verwerkt',
-    'product.categories.processed': 'Verwerkt',
-    'product.categories.minimal': 'Minimaal verwerkt',
-    'product.ingredients': 'Ingrediënten',
-    'product.brand': 'Merk',
-    'product.source': 'Databron',
-    'product.nutrition': 'Voedingswaarden',
-    'product.nutrition.nutrient': 'Voedingsstof',
-    'product.nutrition.per100g': 'Per 100g',
-    'product.nutrition.energy': 'Energie',
-    'product.nutrition.fat': 'Vet',
-    'product.nutrition.saturatedFat': 'Verzadigd vet',
-    'product.nutrition.carbs': 'Koolhydraten',
-    'product.nutrition.sugars': 'Suikers',
-    'product.nutrition.protein': 'Eiwit',
-    'product.nutrition.salt': 'Zout',
-    
-    // Manual Product Form
-    'form.title': 'Productinformatie Toevoegen',
-    'form.subtitle': 'Geen product gevonden voor deze barcode. Voeg de informatie handmatig toe.',
-    'form.name.label': 'Productnaam',
-    'form.name.placeholder': 'Voer productnaam in',
-    'form.brand.label': 'Merk',
-    'form.brand.placeholder': 'Voer merknaam in',
-    'form.ingredients.label': 'Ingrediënten',
-    'form.ingredients.placeholder': 'Voer ingrediëntenlijst in',
-    'form.submit': 'Product Opslaan',
-    'form.cancel': 'Annuleren',
-    'form.saving': 'Opslaan...',
-    'form.success': 'Product succesvol opgeslagen!',
-    'form.error': 'Fout bij opslaan product',
-    
-    // Common
-    'common.loading': 'Laden...',
-    'common.error': 'Er is een fout opgetreden',
-    'common.retry': 'Opnieuw Proberen',
-    'common.back': 'Terug',
-    'common.close': 'Sluiten',
-    'common.save': 'Opslaan',
-    'common.cancel': 'Annuleren',
-    
-    // Language
-    'language.select': 'Taal Selecteren',
-    'language.current': 'Huidige taal',
-  },
-  
   ja: {
     // Navigation
     'nav.home': 'ホーム',
     'nav.products': '製品',
     
     // Home page
-    'home.title': 'ProcessedOrNot Scanner',
-    'home.subtitle': '迅速、シンプル、高度な製品分析と処理検出のために',
+    'home.title': 'バーコード製品スキャナー',
+    'home.subtitle': 'バーコードをスキャンまたは入力して、詳細な製品情報とAI駆動の処理分析を取得',
     'home.scan.button': 'スキャン開始',
     'home.manual.placeholder': 'バーコードを手動入力',
     'home.manual.submit': '製品を検索',
@@ -482,16 +358,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'product.ingredients': '成分',
     'product.brand': 'ブランド',
     'product.source': 'データソース',
-    'product.nutrition': '栄養成分',
-    'product.nutrition.nutrient': '栄養素',
-    'product.nutrition.per100g': '100gあたり',
-    'product.nutrition.energy': 'エネルギー',
-    'product.nutrition.fat': '脂質',
-    'product.nutrition.saturatedFat': '飽和脂肪酸',
-    'product.nutrition.carbs': '炭水化物',
-    'product.nutrition.sugars': '糖質',
-    'product.nutrition.protein': 'たんぱく質',
-    'product.nutrition.salt': '食塩相当量',
     
     // Manual Product Form
     'form.title': '製品情報を追加',
