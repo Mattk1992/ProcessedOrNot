@@ -95,11 +95,11 @@ export default function ProgressiveProductResults({ barcode }: ProgressiveProduc
 
     return (
       <div className="space-y-6">
-        <Card className="glass-effect border-2 border-primary/20 shadow-xl">
+        <Card className="glass-effect border-2 border-primary/20 shadow-xl card-hover">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              Searching Product Databases
+              <Loader2 className="h-5 w-5 animate-spin text-primary pulse-glow" />
+              <span className="gradient-text">Searching Product Databases</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

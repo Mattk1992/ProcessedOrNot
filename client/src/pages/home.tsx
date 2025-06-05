@@ -43,11 +43,11 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg pulse-glow floating">
                 <ScanLine className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold gradient-text">
                   {t('home.title')}
                 </h1>
                 <p className="text-sm text-muted-foreground">{t('home.subtitle')}</p>
@@ -60,16 +60,32 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent"></div>
-        <div className="max-w-6xl mx-auto px-4 py-12">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 fade-in">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-accent/10 to-transparent"></div>
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-24 h-24 bg-accent/20 rounded-full blur-2xl animate-pulse delay-1000"></div>
+        <div className="max-w-6xl mx-auto px-4 py-16">
+          <div className="text-center mb-16">
+            <h2 className="text-5xl md:text-6xl font-bold text-foreground mb-6 fade-in">
               Discover How Processed
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> Your Food Really Is</span>
+              <span className="gradient-text block mt-2"> Your Food Really Is</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto fade-in">
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto fade-in leading-relaxed">
               Scan any barcode to get instant AI analysis of processing levels, ingredients, and nutritional insights
             </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4 fade-in">
+              <div className="flex items-center gap-2 bg-primary/10 dark:bg-primary/20 px-4 py-2 rounded-full">
+                <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium">9 Database Sources</span>
+              </div>
+              <div className="flex items-center gap-2 bg-accent/10 dark:bg-accent/20 px-4 py-2 rounded-full">
+                <div className="w-2 h-2 bg-accent rounded-full animate-pulse delay-500"></div>
+                <span className="text-sm font-medium">AI-Powered Analysis</span>
+              </div>
+              <div className="flex items-center gap-2 bg-orange-500/10 dark:bg-orange-500/20 px-4 py-2 rounded-full">
+                <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse delay-1000"></div>
+                <span className="text-sm font-medium">Real-time Results</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
