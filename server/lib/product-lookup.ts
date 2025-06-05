@@ -19,7 +19,7 @@ import { fetchProductFromFineli } from "./fineli";
 import { fetchProductFromBLS } from "./bls";
 import { fetchProductFromDTUFood } from "./dtu-food";
 import { analyzeIngredients } from "./openai";
-import { broadcastSearchProgress } from "./search-progress";
+import { updateScanProgress, completeScanProgress } from "./progress-store";
 
 interface ProductLookupResult {
   product: InsertProduct | null;
@@ -36,23 +36,21 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
   const updateProgress = (currentSource: string, found: boolean = false, error?: string) => {
     if (!found && !error) {
       // Mark previous source as completed
-      if (completedSources.length > 0 || currentSource !== 'OpenFoodFacts') {
-        const prevSource = completedSources.length === 0 ? '' : completedSources[completedSources.length - 1];
-        if (prevSource && !completedSources.includes(prevSource)) {
-          completedSources.push(prevSource);
-        }
+      const lastSource = completedSources[completedSources.length - 1];
+      if (lastSource && lastSource !== currentSource) {
+        // Previous source completed without finding anything
+      } else if (completedSources.length === 0 && currentSource !== 'OpenFoodFacts') {
+        completedSources.push('OpenFoodFacts');
       }
     }
     
-    const update = {
-      type: (found ? 'complete' : (error ? 'error' : 'progress')) as 'progress' | 'error' | 'complete',
+    updateScanProgress(barcode, {
       currentSource,
       completedSources: [...completedSources],
       found,
-      totalSources,
-      error
-    };
-    broadcastSearchProgress(barcode, update);
+      error,
+      isComplete: found
+    });
   };
 
   // 1. Primary: OpenFoodFacts
@@ -95,6 +93,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
       };
 
       console.log('Found product in OpenFoodFacts');
+      completeScanProgress(barcode, true, 'OpenFoodFacts');
       return { product: productData, source: 'OpenFoodFacts' };
     }
   } catch (error) {

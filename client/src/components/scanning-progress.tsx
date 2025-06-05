@@ -61,18 +61,14 @@ export default function ScanningProgress({ barcode, isScanning, onComplete, onEr
     }));
     setDatabases(initialDatabases);
 
-    // Connect to WebSocket for real-time progress updates
-    const websocket = new WebSocket(`ws://${window.location.host}/ws/progress/${barcode}`);
-    
-    websocket.onopen = () => {
-      setWs(websocket);
-    };
-
-    websocket.onmessage = (event) => {
+    // Poll for progress updates
+    const pollInterval = setInterval(async () => {
       try {
-        const data = JSON.parse(event.data);
+        const response = await fetch(`/api/progress/${barcode}`);
         
-        if (data.type === 'progress') {
+        if (response.ok) {
+          const data = await response.json();
+          
           setCurrentDatabase(data.currentSource);
           setProgress((data.completedSources.length / DATABASE_SOURCES.length) * 100);
           
@@ -96,44 +92,32 @@ export default function ScanningProgress({ barcode, isScanning, onComplete, onEr
             // Complete the progress
             setProgress(100);
             setCurrentDatabase('');
+            clearInterval(pollInterval);
             
             if (onComplete) {
               onComplete(data);
             }
+          } else if (data.isComplete) {
+            setProgress(100);
+            setCurrentDatabase('');
+            clearInterval(pollInterval);
+            
+            if (onError) {
+              onError('Product not found in any database');
+            }
           }
-        } else if (data.type === 'error') {
-          setDatabases(prev => prev.map(db => 
-            db.name === data.currentSource 
-              ? { ...db, status: 'failed', error: data.error }
-              : db
-          ));
-        } else if (data.type === 'complete') {
-          setProgress(100);
-          setCurrentDatabase('');
-          
-          if (data.found && onComplete) {
-            onComplete(data);
-          } else if (!data.found && onError) {
-            onError('Product not found in any database');
-          }
+        } else if (response.status === 404) {
+          // No progress yet, continue polling
+        } else {
+          console.error('Error fetching progress:', response.statusText);
         }
       } catch (error) {
-        console.error('Error parsing WebSocket message:', error);
+        console.error('Error polling progress:', error);
       }
-    };
-
-    websocket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
-    websocket.onclose = () => {
-      setWs(null);
-    };
+    }, 500); // Poll every 500ms
 
     return () => {
-      if (websocket.readyState === WebSocket.OPEN) {
-        websocket.close();
-      }
+      clearInterval(pollInterval);
     };
   }, [barcode, isScanning, onComplete, onError]);
 

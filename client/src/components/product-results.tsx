@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database } from "lucide-react";
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
+import ScanningProgress from "./scanning-progress";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
