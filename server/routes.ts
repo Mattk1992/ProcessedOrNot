@@ -6,6 +6,7 @@ import { analyzeIngredients } from "./lib/openai";
 import { generateSearchSuggestions } from "./lib/search-suggestions";
 import { getChatbotResponse } from "./lib/nutribot";
 import { getScanProgress } from "./lib/progress-store";
+import { performSmartLookup } from "./lib/smart-lookup";
 import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -247,6 +248,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ 
         message: "Failed to get scan progress" 
+      });
+    }
+  });
+
+  // Smart lookup by product name
+  app.post("/api/smart-lookup", async (req, res) => {
+    try {
+      const smartLookupSchema = z.object({
+        productName: z.string().min(1, "Product name is required").max(200, "Product name too long"),
+        barcode: z.string().optional()
+      });
+
+      const { productName, barcode } = smartLookupSchema.parse(req.body);
+
+      const lookupResult = await performSmartLookup(productName, barcode || '');
+      
+      res.json(lookupResult);
+
+    } catch (error) {
+      console.error("Error in smart lookup endpoint:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid request data",
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to perform smart lookup" 
       });
     }
   });
