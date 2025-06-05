@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Loader2, Camera, X, RotateCcw } from "lucide-react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string) => void;
@@ -23,6 +24,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
+  const { t } = useLanguage();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

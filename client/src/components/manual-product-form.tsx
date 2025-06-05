@@ -32,6 +32,7 @@ interface ManualProductFormProps {
 
 export default function ManualProductForm({ barcode, onProductCreated, onCancel }: ManualProductFormProps) {
   const { toast } = useToast();
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
 
   const form = useForm<ManualProductFormData>({
