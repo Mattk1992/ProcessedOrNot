@@ -7,7 +7,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database } from "lucide-react";
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
-import { useLanguage } from "@/contexts/LanguageContext";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -16,7 +15,6 @@ interface ProductResultsProps {
 
 export default function ProductResults({ barcode }: ProductResultsProps) {
   const [showManualForm, setShowManualForm] = useState(false);
-  const { t } = useLanguage();
 
   const { data: product, isLoading: isLoadingProduct, error: productError, refetch } = useQuery<Product & { lookupSource?: string }>({
     queryKey: ["/api/products", barcode],
@@ -97,7 +95,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
         <Alert className="border-2 border-destructive/20 bg-destructive/5 rounded-2xl shadow-lg fade-in">
           <AlertTriangle className="h-5 w-5 text-destructive" />
           <AlertDescription className="text-destructive font-medium">
-            {errorMessage || t('product.notFound')}
+            {errorMessage || "Product not found. Please check the barcode and try again."}
           </AlertDescription>
         </Alert>
 
@@ -109,16 +107,16 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <Database className="h-12 w-12 text-muted-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">{t('product.notFound')}</h3>
+                  <h3 className="font-semibold text-lg mb-2">Product Not Found</h3>
                   <p className="text-muted-foreground mb-4">
-                    {t('form.subtitle')}
+                    We couldn't find this product in OpenFoodFacts, USDA FoodData Central, or UPC Database.
                   </p>
                   <Button 
                     onClick={() => setShowManualForm(true)}
                     className="flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
-                    {t('form.title')}
+                    Add Product Manually
                   </Button>
                 </div>
               </div>
@@ -140,9 +138,9 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
   };
 
   const getScoreLabel = (score: number) => {
-    if (score <= 3) return t('product.categories.minimal');
-    if (score <= 6) return t('product.categories.processed');
-    return t('product.categories.ultraProcessed');
+    if (score <= 3) return "Minimally Processed";
+    if (score <= 6) return "Processed";
+    return "Ultra-Processed";
   };
 
   const getScoreBorderColor = (score: number) => {
@@ -253,7 +251,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-bold text-foreground">{t('product.analysis')}</h3>
+              <h3 className="text-2xl font-bold text-foreground">Processing Analysis</h3>
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center">
                   <Lightbulb className="w-5 h-5 text-white" />
@@ -264,7 +262,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
 
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-lg font-semibold text-foreground">{t('product.score')}</span>
+                <span className="text-lg font-semibold text-foreground">Processing Level</span>
                 <div className="text-right">
                   <span className={`text-4xl font-bold ${getScoreColor(product.processingScore)}`}>
                     {product.processingScore}

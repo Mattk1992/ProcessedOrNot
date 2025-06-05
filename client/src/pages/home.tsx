@@ -10,7 +10,6 @@ export default function Home() {
   const [currentBarcode, setCurrentBarcode] = useState<string>("");
   const [isScanning, setIsScanning] = useState(false);
   const { toast } = useToast();
-  const { t } = useLanguage();
 
   const handleScan = async (barcode: string) => {
     if (barcode.length < 8) {
@@ -40,19 +39,16 @@ export default function Home() {
       {/* Header */}
       <header className="glass-effect border-b border-border/50 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  {t('home.title')}
-                </h1>
-                <p className="text-sm text-muted-foreground">{t('home.subtitle')}</p>
-              </div>
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg">
+              <Shield className="w-6 h-6 text-white" />
             </div>
-            <LanguageSwitcher />
+            <div>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                ProcessedOrNot Scanner
+              </h1>
+              <p className="text-sm text-muted-foreground">For fast, simple, and advanced product analysis and processing detection</p>
+            </div>
           </div>
         </div>
       </header>
@@ -63,10 +59,11 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 fade-in">
-              {t('home.title')}
+              Discover How Processed
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> Your Food Really Is</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto fade-in">
-              {t('home.subtitle')}
+              Scan any barcode to get instant AI analysis of processing levels, ingredients, and nutritional insights
             </p>
           </div>
         </div>
@@ -84,25 +81,6 @@ export default function Home() {
           </div>
         )}
       </main>
-
-      {/* Footer */}
-      <footer className="border-t border-border/50 mt-12">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="text-center">
-            <p className="text-sm text-muted-foreground">
-              Created by{' '}
-              <a 
-                href="https://www.linkedin.com/in/matthias-kuchenbecker/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:text-primary/80 transition-colors duration-200 font-medium"
-              >
-                Matthias Kuchenbecker
-              </a>
-            </p>
-          </div>
-        </div>
-      </footer>
 
       {/* Background decoration */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">

@@ -5,7 +5,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { insertProductSchema } from "@shared/schema";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -33,7 +32,6 @@ interface ManualProductFormProps {
 export default function ManualProductForm({ barcode, onProductCreated, onCancel }: ManualProductFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { t } = useLanguage();
 
   const form = useForm<ManualProductFormData>({
     resolver: zodResolver(manualProductSchema),
@@ -68,7 +66,7 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
     },
     onSuccess: (product) => {
       toast({
-        title: t('form.success'),
+        title: "Product created successfully",
         description: `${product.productName} has been added to the database.`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/products', barcode] });
@@ -76,7 +74,7 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
     },
     onError: (error: Error) => {
       toast({
-        title: t('form.error'),
+        title: "Failed to create product",
         description: error.message,
         variant: "destructive",
       });
@@ -92,10 +90,11 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Plus className="h-5 w-5" />
-          {t('form.title')}
+          Add Product Manually
         </CardTitle>
         <CardDescription>
-          {t('form.subtitle')}
+          Product with barcode {barcode} was not found in any database. 
+          You can add it manually below.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -120,9 +119,9 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
               name="productName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('form.name.label')} *</FormLabel>
+                  <FormLabel>Product Name *</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder={t('form.name.placeholder')} />
+                    <Input {...field} placeholder="Enter product name" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -134,12 +133,12 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
               name="brands"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('form.brand.label')}</FormLabel>
+                  <FormLabel>Brand</FormLabel>
                   <FormControl>
                     <Input 
                       {...field}
                       value={field.value || ""}
-                      placeholder={t('form.brand.placeholder')} 
+                      placeholder="Enter brand name" 
                     />
                   </FormControl>
                   <FormMessage />
@@ -170,12 +169,12 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
               name="ingredientsText"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('form.ingredients.label')}</FormLabel>
+                  <FormLabel>Ingredients</FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
                       value={field.value || ""}
-                      placeholder={t('form.ingredients.placeholder')}
+                      placeholder="Enter ingredients list (optional)"
                       rows={4}
                     />
                   </FormControl>
@@ -193,17 +192,17 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
                 {createProductMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t('form.saving')}
+                    Creating...
                   </>
                 ) : (
                   <>
                     <Plus className="mr-2 h-4 w-4" />
-                    {t('form.submit')}
+                    Create Product
                   </>
                 )}
               </Button>
               <Button type="button" variant="outline" onClick={onCancel}>
-                {t('form.cancel')}
+                Cancel
               </Button>
             </div>
           </form>
