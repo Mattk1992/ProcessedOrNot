@@ -32,44 +32,17 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
 
   if (isLoadingProduct) {
     return (
-      <div className="space-y-6">
-        {/* Product Loading Skeleton */}
-        <Card className="glass-effect border-2 border-border/20 shadow-xl">
-          <CardContent className="pt-8 pb-8">
-            <div className="flex flex-col lg:flex-row lg:items-start lg:space-x-6">
-              <div className="flex-shrink-0 mb-4 lg:mb-0">
-                <div className="w-32 h-40 bg-muted rounded-2xl animate-pulse"></div>
-              </div>
-              <div className="flex-1 space-y-4">
-                <div className="space-y-2">
-                  <div className="h-8 bg-muted rounded-lg animate-pulse"></div>
-                  <div className="h-6 bg-muted rounded-lg w-2/3 animate-pulse"></div>
-                  <div className="h-4 bg-muted rounded-lg w-1/3 animate-pulse"></div>
-                </div>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-16 bg-muted rounded-xl animate-pulse"></div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Analysis Loading Skeleton */}
-        <Card className="glass-effect border-2 border-border/20 shadow-xl">
-          <CardContent className="pt-8 pb-8">
-            <div className="space-y-6">
-              <div className="h-6 bg-muted rounded-lg w-1/3 animate-pulse"></div>
-              <div className="space-y-4">
-                <div className="h-4 bg-muted rounded-lg animate-pulse"></div>
-                <div className="h-3 bg-muted rounded-full animate-pulse"></div>
-                <div className="h-20 bg-muted rounded-xl animate-pulse"></div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <ScanningProgress 
+        barcode={barcode}
+        isScanning={true}
+        onComplete={(result) => {
+          refetch();
+        }}
+        onError={(error) => {
+          console.error('Scanning failed:', error);
+          refetch();
+        }}
+      />
     );
   }
 
