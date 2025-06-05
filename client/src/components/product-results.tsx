@@ -8,7 +8,7 @@ import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database } from "lucide-re
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
 import ScanningProgress from "./scanning-progress";
-import SmartLookup from "./smart-lookup";
+import ManualSearchPopup from "./manual-search-popup";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -17,6 +17,7 @@ interface ProductResultsProps {
 
 export default function ProductResults({ barcode }: ProductResultsProps) {
   const [showManualForm, setShowManualForm] = useState(false);
+  const [showManualSearch, setShowManualSearch] = useState(false);
 
   const { data: product, isLoading: isLoadingProduct, error: productError, refetch } = useQuery<Product & { lookupSource?: string }>({
     queryKey: ["/api/products", barcode],
@@ -50,7 +51,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
   if (productError) {
     // Check if this is a 404 error that allows manual entry
     const errorMessage = productError instanceof Error ? productError.message : "";
-    const allowsManualEntry = errorMessage.includes("not found in any database");
+    const allowsManualEntry = errorMessage.includes("Product not found") || errorMessage.includes("not found");
 
     if (showManualForm && allowsManualEntry) {
       return (
@@ -86,13 +87,22 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <p className="text-muted-foreground mb-4">
                     We couldn't find this product in any of our 19 databases.
                   </p>
-                  <div className="space-y-3">
+                  <div className="flex gap-2 justify-center">
+                    <Button 
+                      onClick={() => setShowManualSearch(true)}
+                      className="flex items-center gap-2"
+                      variant="default"
+                    >
+                      <Database className="h-4 w-4" />
+                      Search Product
+                    </Button>
                     <Button 
                       onClick={() => setShowManualForm(true)}
                       className="flex items-center gap-2"
+                      variant="outline"
                     >
                       <Plus className="h-4 w-4" />
-                      Add Product Manually
+                      Add Manually
                     </Button>
                   </div>
                 </div>
@@ -100,15 +110,6 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
             </CardContent>
           </Card>
         )}
-
-        {/* Smart Lookup Section */}
-        <SmartLookup 
-          barcode={barcode}
-          onProductFound={(product) => {
-            // When product is found via smart lookup, refetch the product data
-            refetch();
-          }}
-        />
       </div>
     );
   }
@@ -498,6 +499,17 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Manual Search Popup */}
+      <ManualSearchPopup
+        isOpen={showManualSearch}
+        onClose={() => setShowManualSearch(false)}
+        barcode={barcode}
+        onProductFound={() => {
+          setShowManualSearch(false);
+          refetch();
+        }}
+      />
     </div>
   );
 }

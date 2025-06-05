@@ -6,8 +6,7 @@ import { analyzeIngredients } from "./lib/openai";
 import { generateSearchSuggestions } from "./lib/search-suggestions";
 import { getChatbotResponse } from "./lib/nutribot";
 import { getScanProgress } from "./lib/progress-store";
-import { performSmartLookup } from "./lib/smart-lookup";
-import { getEnhancedNutritionalInsights, getIngredientAnalysis } from "./lib/perplexity";
+// Manual search functionality will be implemented inline
 import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -114,6 +113,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ 
         message: "Failed to create product" 
+      });
+    }
+  });
+
+  // Manual product search by name
+  app.post("/api/products/manual-search", async (req, res) => {
+    try {
+      const { barcode, productName } = z.object({
+        barcode: z.string().min(8, "Barcode must be at least 8 digits"),
+        productName: z.string().min(1, "Product name is required")
+      }).parse(req.body);
+
+      // Search OpenFoodFacts by product name
+      try {
+        const response = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(productName)}&search_simple=1&action=process&json=1`);
+        
+        if (!response.ok) {
+          return res.status(404).json({ 
+            message: `No product found with name "${productName}" in OpenFoodFacts`,
+            searchedDatabases: ["OpenFoodFacts"]
+          });
+        }
+        
+        const data = await response.json();
+        
+        if (!data.products || data.products.length === 0) {
+          return res.status(404).json({ 
+            message: `No product found with name "${productName}" in OpenFoodFacts`,
+            searchedDatabases: ["OpenFoodFacts"]
+          });
+        }
+
+        const product = data.products[0];
+        
+        // Create product with the provided barcode
+        const productData = {
+          barcode, // Use the provided barcode
+          productName: product.product_name || productName,
+          brands: product.brands || null,
+          ingredientsText: product.ingredients_text || null,
+          imageUrl: product.image_url || null,
+          lastUpdated: new Date().toISOString(),
+        };
+
+        const savedProduct = await storage.createProduct(productData);
+        
+        res.json({
+          ...savedProduct,
+          searchSource: "OpenFoodFacts",
+          message: `Product found in OpenFoodFacts`
+        });
+        
+      } catch (searchError) {
+        console.error("Search error:", searchError);
+        return res.status(404).json({ 
+          message: `Search failed for "${productName}"`,
+          searchedDatabases: ["OpenFoodFacts"]
+        });
+      }
+
+    } catch (error) {
+      console.error("Error in manual search:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid request data",
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to search for product" 
       });
     }
   });
@@ -249,89 +318,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ 
         message: "Failed to get scan progress" 
-      });
-    }
-  });
-
-  // Smart lookup by product name
-  app.post("/api/smart-lookup", async (req, res) => {
-    try {
-      const smartLookupSchema = z.object({
-        productName: z.string().min(1, "Product name is required").max(200, "Product name too long"),
-        barcode: z.string().optional()
-      });
-
-      const { productName, barcode } = smartLookupSchema.parse(req.body);
-
-      const lookupResult = await performSmartLookup(productName, barcode || '');
-      
-      res.json(lookupResult);
-
-    } catch (error) {
-      console.error("Error in smart lookup endpoint:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid request data",
-          errors: error.errors 
-        });
-      }
-      res.status(500).json({ 
-        message: "Failed to perform smart lookup" 
-      });
-    }
-  });
-
-  // Enhanced nutritional insights using Perplexity
-  app.post("/api/enhanced-insights", async (req, res) => {
-    try {
-      const insightsSchema = z.object({
-        productName: z.string().min(1, "Product name is required"),
-        ingredients: z.string().optional()
-      });
-
-      const { productName, ingredients } = insightsSchema.parse(req.body);
-
-      const insights = await getEnhancedNutritionalInsights(productName, ingredients);
-      
-      res.json({ insights });
-
-    } catch (error) {
-      console.error("Error getting enhanced insights:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid request data",
-          errors: error.errors 
-        });
-      }
-      res.status(500).json({ 
-        message: "Failed to get enhanced nutritional insights" 
-      });
-    }
-  });
-
-  // Ingredient analysis using Perplexity
-  app.post("/api/analyze-ingredient", async (req, res) => {
-    try {
-      const ingredientSchema = z.object({
-        ingredient: z.string().min(1, "Ingredient name is required")
-      });
-
-      const { ingredient } = ingredientSchema.parse(req.body);
-
-      const analysis = await getIngredientAnalysis(ingredient);
-      
-      res.json({ analysis });
-
-    } catch (error) {
-      console.error("Error analyzing ingredient:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid request data",
-          errors: error.errors 
-        });
-      }
-      res.status(500).json({ 
-        message: "Failed to analyze ingredient" 
       });
     }
   });
