@@ -57,8 +57,8 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 py-12">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 fade-in">
-              Discover What's Really
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> In Your Food</span>
+              Discover How Processed
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> Your Food Really Is</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto fade-in">
               Scan any barcode to get instant AI analysis of processing levels, ingredients, and nutritional insights
