@@ -208,11 +208,11 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 </div>
               </div>
               
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <Button
                   onClick={stopCamera}
                   variant="outline"
-                  className="flex-1 border-2 border-destructive/20 text-destructive hover:bg-destructive/10"
+                  className="flex-1 border-2 border-destructive/30 text-destructive hover:bg-destructive/10 bg-destructive/5 rounded-xl scale-on-hover"
                 >
                   <X className="w-4 h-4 mr-2" />
                   Stop Camera
@@ -220,7 +220,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 <Button
                   onClick={startCamera}
                   variant="outline"
-                  className="flex-1 border-2 border-primary/20 text-primary hover:bg-primary/10"
+                  className="flex-1 border-2 border-primary/30 text-primary hover:bg-primary/10 bg-primary/5 rounded-xl scale-on-hover"
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Restart
@@ -232,7 +232,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
               <Button
                 onClick={startCamera}
                 disabled={isLoading || isScanning}
-                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mb-6"
+                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-6 px-8 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl glow-effect scale-on-hover mb-8"
               >
                 {isScanning ? (
                   <>
@@ -312,43 +312,47 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       </Card>
 
       {/* Sample Products Section */}
-      <Card className="bg-gradient-to-br from-card to-muted/30 border-2 border-border/20 shadow-lg">
-        <CardContent className="pt-8 pb-8">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-foreground mb-2">Try Sample Products</h3>
-            <p className="text-muted-foreground">Click on any product below to test the scanner</p>
+      <div className="glass-card rounded-3xl p-8 glow-effect">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center shadow-lg floating-animation">
+              <Search className="w-6 h-6 text-white" />
+            </div>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {sampleProducts.map((product, index) => (
-              <button
-                key={product.barcode}
-                onClick={() => handleSampleClick(product.barcode)}
-                className="group text-left p-6 bg-card border-2 border-border/20 rounded-2xl hover:border-primary/30 hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isLoading}
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
+          <h3 className="text-2xl font-bold gradient-text mb-2">Try Sample Products</h3>
+          <p className="text-muted-foreground">Click on any product below to test the scanner</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {sampleProducts.map((product, index) => (
+            <button
+              key={product.barcode}
+              onClick={() => handleSampleClick(product.barcode)}
+              className="group text-left p-6 glass-card rounded-2xl hover:border-primary/30 hover:shadow-lg transition-all duration-300 scale-on-hover disabled:opacity-50 disabled:cursor-not-allowed fade-in"
+              disabled={isLoading}
+              style={{ animationDelay: `${index * 150}ms` }}
+            >
                 <div className="flex items-start justify-between mb-3">
-                  <div className="font-mono text-sm bg-primary/10 text-primary px-3 py-1 rounded-lg group-hover:bg-primary/20 transition-colors">
+                  <div className="font-mono text-sm bg-gradient-to-r from-primary/10 to-accent/10 text-primary px-3 py-1 rounded-xl group-hover:from-primary/20 group-hover:to-accent/20 transition-all duration-200">
                     {product.barcode}
                   </div>
-                  <div className="w-2 h-2 bg-accent rounded-full pulse-subtle"></div>
+                  <div className="w-3 h-3 bg-gradient-to-r from-accent to-primary rounded-full pulse-subtle"></div>
                 </div>
-                <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
+                <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors text-shadow">
                   {product.name}
                 </h4>
                 <p className="text-sm text-muted-foreground">{product.description}</p>
-                <div className="mt-3 flex items-center text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>Click to scan</span>
-                  <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="mt-4 flex items-center text-xs text-primary opacity-0 group-hover:opacity-100 transition-all duration-200">
+                  <span className="font-medium">Click to scan</span>
+                  <svg className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
                   </svg>
                 </div>
               </button>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
