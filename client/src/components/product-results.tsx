@@ -14,10 +14,13 @@ interface ProductResultsProps {
 }
 
 export default function ProductResults({ barcode }: ProductResultsProps) {
-  const { data: product, isLoading: isLoadingProduct, error: productError } = useQuery<Product>({
+  const [showManualForm, setShowManualForm] = useState(false);
+
+  const { data: product, isLoading: isLoadingProduct, error: productError, refetch } = useQuery<Product & { lookupSource?: string }>({
     queryKey: ["/api/products", barcode],
     queryFn: () => api.getProduct(barcode),
     enabled: !!barcode,
+    retry: false, // Don't retry on 404s for manual entry option
   });
 
   const { data: analysis, isLoading: isLoadingAnalysis } = useQuery<ProcessingAnalysis>({
@@ -70,13 +73,57 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
   }
 
   if (productError) {
+    // Check if this is a 404 error that allows manual entry
+    const errorMessage = productError instanceof Error ? productError.message : "";
+    const allowsManualEntry = errorMessage.includes("not found in any database");
+
+    if (showManualForm && allowsManualEntry) {
+      return (
+        <ManualProductForm
+          barcode={barcode}
+          onProductCreated={() => {
+            setShowManualForm(false);
+            refetch();
+          }}
+          onCancel={() => setShowManualForm(false)}
+        />
+      );
+    }
+
     return (
-      <Alert className="border-2 border-destructive/20 bg-destructive/5 rounded-2xl shadow-lg fade-in">
-        <AlertTriangle className="h-5 w-5 text-destructive" />
-        <AlertDescription className="text-destructive font-medium">
-          {productError instanceof Error ? productError.message : "Product not found. Please check the barcode and try again."}
-        </AlertDescription>
-      </Alert>
+      <div className="space-y-4">
+        <Alert className="border-2 border-destructive/20 bg-destructive/5 rounded-2xl shadow-lg fade-in">
+          <AlertTriangle className="h-5 w-5 text-destructive" />
+          <AlertDescription className="text-destructive font-medium">
+            {errorMessage || "Product not found. Please check the barcode and try again."}
+          </AlertDescription>
+        </Alert>
+
+        {allowsManualEntry && (
+          <Card className="glass-effect border-2 border-border/20 shadow-xl">
+            <CardContent className="pt-6 pb-6 text-center">
+              <div className="space-y-4">
+                <div className="flex items-center justify-center">
+                  <Database className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">Product Not Found</h3>
+                  <p className="text-muted-foreground mb-4">
+                    We couldn't find this product in OpenFoodFacts, USDA FoodData Central, or UPC Database.
+                  </p>
+                  <Button 
+                    onClick={() => setShowManualForm(true)}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Product Manually
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     );
   }
 

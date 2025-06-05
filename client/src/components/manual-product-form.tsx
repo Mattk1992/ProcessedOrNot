@@ -49,7 +49,21 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
   });
 
   const createProductMutation = useMutation({
-    mutationFn: (data: ManualProductFormData) => api.createProduct(data),
+    mutationFn: (data: ManualProductFormData) => {
+      // Convert form data to match API expectations
+      const productData = {
+        ...data,
+        brands: data.brands || null,
+        imageUrl: data.imageUrl || null,
+        ingredientsText: data.ingredientsText || null,
+        nutriments: data.nutriments || {},
+        processingScore: data.processingScore || 0,
+        processingExplanation: data.processingExplanation || "",
+        dataSource: data.dataSource || "Manual Entry",
+        lastUpdated: null,
+      };
+      return api.createProduct(productData);
+    },
     onSuccess: (product) => {
       toast({
         title: "Product created successfully",
@@ -121,7 +135,11 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
                 <FormItem>
                   <FormLabel>Brand</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Enter brand name" />
+                    <Input 
+                      {...field}
+                      value={field.value || ""}
+                      placeholder="Enter brand name" 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -135,7 +153,11 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
                 <FormItem>
                   <FormLabel>Image URL</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Enter image URL (optional)" />
+                    <Input 
+                      {...field}
+                      value={field.value || ""}
+                      placeholder="Enter image URL (optional)" 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -151,6 +173,7 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
                   <FormControl>
                     <Textarea
                       {...field}
+                      value={field.value || ""}
                       placeholder="Enter ingredients list (optional)"
                       rows={4}
                     />
