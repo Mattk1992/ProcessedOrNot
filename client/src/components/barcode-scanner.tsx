@@ -11,7 +11,7 @@ interface BarcodeScannerProps {
 }
 
 const sampleProducts = [
-  { barcode: "3017620425400", name: "Nutella", description: "Hazelnut spread" },
+  { barcode: "8720600618161", name: "Hak Chili sin carne schotel", description: "Ready meal" },
   { barcode: "5449000000996", name: "Coca-Cola", description: "Soft drink" },
   { barcode: "8480000818768", name: "Organic Banana", description: "Fresh produce" },
 ];
