@@ -43,7 +43,27 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       
       // Check if browser supports getUserMedia
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error("Camera access is not supported in this browser");
+        throw new Error("Camera access is not supported in this browser. Please try entering the barcode manually.");
+      }
+
+      // Set camera active first to render the video element
+      setIsCameraActive(true);
+      
+      // Wait for the video element to be rendered
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const videoElement = videoRef.current;
+      if (!videoElement) {
+        // Reset and try again
+        setIsCameraActive(false);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        setIsCameraActive(true);
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        const retryVideoElement = videoRef.current;
+        if (!retryVideoElement) {
+          throw new Error("Camera interface failed to load. Please refresh the page and try again.");
+        }
       }
 
       // Initialize the code reader
@@ -51,34 +71,32 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         codeReaderRef.current = new BrowserMultiFormatReader();
       }
 
-      const videoElement = videoRef.current;
-      if (!videoElement) {
-        throw new Error("Video element not found");
-      }
+      const finalVideoElement = videoRef.current!;
 
       // Get camera permissions and start scanning
       const videoInputDevices = await codeReaderRef.current.listVideoInputDevices();
       
       if (videoInputDevices.length === 0) {
-        throw new Error("No camera devices found");
+        throw new Error("No camera devices found on this device.");
       }
 
-      // Use the back camera if available (usually the first device on mobile)
+      // Use the back camera if available (usually better for scanning)
       const selectedDeviceId = videoInputDevices.find(device => 
         device.label.toLowerCase().includes('back') || 
-        device.label.toLowerCase().includes('rear')
+        device.label.toLowerCase().includes('rear') ||
+        device.label.toLowerCase().includes('environment')
       )?.deviceId || videoInputDevices[0].deviceId;
 
-      setIsCameraActive(true);
       setIsScanning(false);
 
       // Start decoding from the camera
-      codeReaderRef.current.decodeFromVideoDevice(
+      await codeReaderRef.current.decodeFromVideoDevice(
         selectedDeviceId,
-        videoElement,
+        finalVideoElement,
         (result, error) => {
           if (result) {
             const scannedCode = result.getText();
+            console.log("Scanned barcode:", scannedCode);
             if (scannedCode && scannedCode.length >= 8) {
               stopCamera();
               onScan(scannedCode);
@@ -97,16 +115,18 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError') {
-          setCameraError("Camera permission denied. Please allow camera access and try again.");
+          setCameraError("Camera permission denied. Please allow camera access in your browser settings and try again.");
         } else if (error.name === 'NotFoundError') {
-          setCameraError("No camera found on this device.");
+          setCameraError("No camera found on this device. Please use manual barcode entry below.");
         } else if (error.name === 'NotSupportedError') {
-          setCameraError("Camera is not supported in this browser.");
+          setCameraError("Camera is not supported in this browser. Please try a different browser or enter the barcode manually.");
+        } else if (error.name === 'NotReadableError') {
+          setCameraError("Camera is already in use by another application. Please close other camera apps and try again.");
         } else {
-          setCameraError(error.message || "Failed to access camera. Please try again.");
+          setCameraError(error.message || "Failed to access camera. Please try manual entry below.");
         }
       } else {
-        setCameraError("An unexpected error occurred while accessing the camera.");
+        setCameraError("An unexpected error occurred while accessing the camera. Please try manual entry below.");
       }
     }
   }, [onScan]);
@@ -162,7 +182,16 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   autoPlay
                   playsInline
                   muted
+                  style={{ transform: 'scaleX(-1)' }}
                 />
+                {isScanning && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="text-white text-center">
+                      <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
+                      <p>Initializing camera...</p>
+                    </div>
+                  </div>
+                )}
                 <div className="absolute inset-0 pointer-events-none">
                   {/* Scanning overlay */}
                   <div className="absolute inset-4 border-2 border-primary/50 rounded-xl">
@@ -172,7 +201,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                     <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
                   </div>
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
-                    Position barcode within the frame
+                    {isScanning ? "Starting camera..." : "Position barcode within the frame"}
                   </div>
                 </div>
               </div>
