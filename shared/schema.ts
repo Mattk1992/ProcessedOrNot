@@ -18,7 +18,6 @@ export const products = pgTable("products", {
 
 export const insertProductSchema = createInsertSchema(products).omit({
   id: true,
-  lastUpdated: true,
 });
 
 export type InsertProduct = z.infer<typeof insertProductSchema>;

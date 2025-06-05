@@ -85,8 +85,7 @@ export async function fetchProductFromUSDA(barcode: string): Promise<InsertProdu
       nutriments: nutrients,
       processingScore: 0,
       processingExplanation: 'Processing analysis pending',
-      dataSource: 'USDA FoodData Central',
-      lastUpdated: new Date().toISOString()
+      dataSource: 'USDA FoodData Central'
     };
 
   } catch (error) {

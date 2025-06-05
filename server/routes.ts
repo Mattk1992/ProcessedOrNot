@@ -1,8 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { fetchProductFromOpenFoodFacts } from "./lib/openfoodfacts";
-import { analyzeIngredients } from "./lib/openai";
+import { cascadingProductLookup } from "./lib/product-lookup";
 import { z } from "zod";
 
 const barcodeSchema = z.object({
@@ -21,48 +20,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(cachedProduct);
       }
 
-      // Fetch from OpenFoodFacts API
-      const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
-      if (!openFoodFactsData) {
+      // Use cascading fallback system
+      const lookupResult = await cascadingProductLookup(barcode);
+      
+      if (!lookupResult.product) {
         return res.status(404).json({ 
-          message: "Product not found in OpenFoodFacts database" 
+          message: lookupResult.error || "Product not found in any database",
+          source: lookupResult.source,
+          allowManualEntry: true
         });
       }
 
-      const product = openFoodFactsData.product;
-
-      // Analyze ingredients if available
-      let processingScore = 0;
-      let processingExplanation = "No ingredients available for analysis";
-      
-      if (product.ingredients_text) {
-        try {
-          const analysis = await analyzeIngredients(
-            product.ingredients_text,
-            product.product_name || "Unknown Product"
-          );
-          processingScore = analysis.score;
-          processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze ingredients:", error);
-          processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      // Store product data
+      // Store in our database with current timestamp
       const productData = {
-        barcode,
-        productName: product.product_name || null,
-        brands: product.brands || null,
-        imageUrl: product.image_url || null,
-        ingredientsText: product.ingredients_text || null,
-        nutriments: product.nutriments || null,
-        processingScore,
-        processingExplanation,
+        ...lookupResult.product,
+        lastUpdated: new Date().toISOString(),
       };
 
       const savedProduct = await storage.createProduct(productData);
-      res.json(savedProduct);
+      
+      // Include source information in response
+      res.json({
+        ...savedProduct,
+        lookupSource: lookupResult.source
+      });
 
     } catch (error) {
       console.error("Error fetching product:", error);

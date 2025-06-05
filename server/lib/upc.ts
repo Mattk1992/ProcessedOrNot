@@ -11,7 +11,7 @@ interface UPCDatabaseResponse {
   rate_down: number;
 }
 
-export async function fetchProductFromUPCDatabase(barcode: string): Promise<Product | null> {
+export async function fetchProductFromUPCDatabase(barcode: string): Promise<InsertProduct | null> {
   try {
     // UPC Database API endpoint
     const response = await fetch(`https://api.upcitemdb.com/prod/trial/lookup?upc=${barcode}`);
@@ -39,8 +39,7 @@ export async function fetchProductFromUPCDatabase(barcode: string): Promise<Prod
       nutriments: {}, // UPC Database doesn't provide nutritional data
       processingScore: 0,
       processingExplanation: 'No ingredients available for processing analysis',
-      dataSource: 'UPC Database',
-      lastUpdated: new Date().toISOString()
+      dataSource: 'UPC Database'
     };
 
   } catch (error) {
