@@ -37,7 +37,7 @@ export default function Chatbot({ className }: ChatbotProps) {
       // Initial greeting when chat opens
       const greeting: Message = {
         id: Date.now().toString(),
-        content: "Hi there! I'm NutriBot, your friendly nutrition companion! 🥗 I'm here to help you understand food products, get nutritional insights, and make healthier choices. What would you like to know about your food today?",
+        content: t('chatbot.greeting') || "Hi there! I'm NutriBot, your friendly nutrition companion! 🥗 I'm here to help you understand food products, get nutritional insights, and make healthier choices. What would you like to know about your food today?",
         sender: 'bot',
         timestamp: new Date()
       };
@@ -86,7 +86,7 @@ export default function Chatbot({ className }: ChatbotProps) {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "Sorry, I'm having trouble responding right now. Please try again in a moment!",
+        content: t('chatbot.error') || "Sorry, I'm having trouble responding right now. Please try again in a moment!",
         sender: 'bot',
         timestamp: new Date()
       };
@@ -190,7 +190,7 @@ export default function Chatbot({ className }: ChatbotProps) {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="Ask about nutrition, ingredients, recipes..."
+                placeholder={t('chatbot.placeholder') || "Ask about nutrition, ingredients, recipes..."}
                 className="flex-1 px-3 py-2 text-sm border border-input rounded-md bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 disabled={isLoading}
               />
