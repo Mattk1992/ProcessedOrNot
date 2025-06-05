@@ -33,32 +33,58 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <Shield className="w-5 h-5 text-white" />
+      <header className="glass-effect border-b border-border/50 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 py-6">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg">
+              <Shield className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">ProcessedOrNot Scanner</h1>
-              <p className="text-sm text-gray-600">Product analysis and processing detection</p>
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                ProcessedOrNot Scanner
+              </h1>
+              <p className="text-sm text-muted-foreground">AI-powered product analysis and processing detection</p>
             </div>
           </div>
         </div>
       </header>
 
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent"></div>
+        <div className="max-w-6xl mx-auto px-4 py-12">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 fade-in">
+              Discover What's Really
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> In Your Food</span>
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto fade-in">
+              Scan any barcode to get instant AI analysis of processing levels, ingredients, and nutritional insights
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
+      <main className="max-w-6xl mx-auto px-4 pb-12">
+        <div className="slide-up">
+          <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
+        </div>
         
         {currentBarcode && (
-          <div className="mt-8">
+          <div className="mt-12 slide-up">
             <ProductResults barcode={currentBarcode} />
           </div>
         )}
       </main>
+
+      {/* Background decoration */}
+      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 -right-40 w-80 h-80 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-20 -left-40 w-80 h-80 bg-gradient-to-br from-accent/10 to-primary/10 rounded-full blur-3xl"></div>
+      </div>
     </div>
   );
 }
