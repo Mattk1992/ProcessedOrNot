@@ -6,7 +6,7 @@ import { analyzeIngredients } from "./lib/openai";
 import { generateSearchSuggestions } from "./lib/search-suggestions";
 import { getChatbotResponse } from "./lib/nutribot";
 import { getScanProgress } from "./lib/progress-store";
-// Manual search functionality will be implemented inline
+import { searchProductByName } from "./lib/name-search";
 import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -125,53 +125,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         productName: z.string().min(1, "Product name is required")
       }).parse(req.body);
 
-      // Search OpenFoodFacts by product name
-      try {
-        const response = await fetch(`https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(productName)}&search_simple=1&action=process&json=1`);
-        
-        if (!response.ok) {
-          return res.status(404).json({ 
-            message: `No product found with name "${productName}" in OpenFoodFacts`,
-            searchedDatabases: ["OpenFoodFacts"]
-          });
-        }
-        
-        const data = await response.json();
-        
-        if (!data.products || data.products.length === 0) {
-          return res.status(404).json({ 
-            message: `No product found with name "${productName}" in OpenFoodFacts`,
-            searchedDatabases: ["OpenFoodFacts"]
-          });
-        }
-
-        const product = data.products[0];
-        
-        // Create product with the provided barcode
-        const productData = {
-          barcode, // Use the provided barcode
-          productName: product.product_name || productName,
-          brands: product.brands || null,
-          ingredientsText: product.ingredients_text || null,
-          imageUrl: product.image_url || null,
-          lastUpdated: new Date().toISOString(),
-        };
-
-        const savedProduct = await storage.createProduct(productData);
-        
-        res.json({
-          ...savedProduct,
-          searchSource: "OpenFoodFacts",
-          message: `Product found in OpenFoodFacts`
-        });
-        
-      } catch (searchError) {
-        console.error("Search error:", searchError);
+      // Search all databases by product name
+      const searchResult = await searchProductByName(productName);
+      
+      if (!searchResult.product) {
         return res.status(404).json({ 
-          message: `Search failed for "${productName}"`,
-          searchedDatabases: ["OpenFoodFacts"]
+          message: `No product found with name "${productName}" in any database`,
+          searchedDatabases: searchResult.searchedSources
         });
       }
+
+      // Create product with the provided barcode
+      const productData = {
+        ...searchResult.product,
+        barcode, // Use the provided barcode
+        lastUpdated: new Date().toISOString(),
+      };
+
+      const savedProduct = await storage.createProduct(productData);
+      
+      res.json({
+        ...savedProduct,
+        searchSource: searchResult.source,
+        message: `Product found in ${searchResult.source}`
+      });
 
     } catch (error) {
       console.error("Error in manual search:", error);

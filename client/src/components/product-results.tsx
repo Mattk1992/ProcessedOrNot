@@ -51,7 +51,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
   if (productError) {
     // Check if this is a 404 error that allows manual entry
     const errorMessage = productError instanceof Error ? productError.message : "";
-    const allowsManualEntry = errorMessage.includes("Product not found") || errorMessage.includes("not found");
+    const allowsManualEntry = errorMessage.includes("not found in any database");
 
     if (showManualForm && allowsManualEntry) {
       return (
