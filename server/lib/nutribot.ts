@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { getHealthRecommendations } from "./perplexity";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -24,6 +25,18 @@ Always respond in a helpful, encouraging, and friendly manner. Keep responses co
 
 export async function getChatbotResponse(userMessage: string): Promise<string> {
   try {
+    // For nutrition-related questions, use Perplexity for enhanced real-time insights
+    if (isNutritionQuery(userMessage)) {
+      try {
+        const perplexityResponse = await getHealthRecommendations(userMessage);
+        return formatNutriBotResponse(perplexityResponse);
+      } catch (perplexityError) {
+        console.log("Perplexity unavailable, falling back to OpenAI");
+        // Fall back to OpenAI if Perplexity fails
+      }
+    }
+
+    // Use OpenAI for general conversation and app guidance
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
@@ -45,4 +58,34 @@ export async function getChatbotResponse(userMessage: string): Promise<string> {
     console.error("Error getting chatbot response:", error);
     throw new Error("Failed to get chatbot response");
   }
+}
+
+// Helper function to determine if a query is nutrition-related
+function isNutritionQuery(message: string): boolean {
+  const nutritionKeywords = [
+    'nutrition', 'health', 'diet', 'vitamin', 'mineral', 'protein', 'carb', 'fat',
+    'calorie', 'ingredient', 'food', 'eat', 'healthy', 'unhealthy', 'benefit',
+    'risk', 'allergy', 'sugar', 'sodium', 'fiber', 'organic', 'processed'
+  ];
+
+  const lowerMessage = message.toLowerCase();
+  return nutritionKeywords.some(keyword => lowerMessage.includes(keyword));
+}
+
+// Format Perplexity response to match NutriBot's personality
+function formatNutriBotResponse(perplexityResponse: string): string {
+  // Add NutriBot's friendly tone to the beginning
+  const friendlyIntros = [
+    "Great question! Here's what current research shows: ",
+    "I'm excited to help with that! Based on the latest information: ",
+    "That's a fantastic nutrition question! Here's what I found: ",
+    "Thanks for asking! Current nutritional research indicates: "
+  ];
+
+  const randomIntro = friendlyIntros[Math.floor(Math.random() * friendlyIntros.length)];
+  
+  // Add encouraging closing
+  const closingNote = "\n\nI hope this helps with your nutrition journey! Feel free to ask if you have any other questions.";
+  
+  return randomIntro + perplexityResponse + closingNote;
 }

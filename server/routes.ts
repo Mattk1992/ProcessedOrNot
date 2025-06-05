@@ -7,6 +7,7 @@ import { generateSearchSuggestions } from "./lib/search-suggestions";
 import { getChatbotResponse } from "./lib/nutribot";
 import { getScanProgress } from "./lib/progress-store";
 import { performSmartLookup } from "./lib/smart-lookup";
+import { getEnhancedNutritionalInsights, getIngredientAnalysis } from "./lib/perplexity";
 import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -276,6 +277,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ 
         message: "Failed to perform smart lookup" 
+      });
+    }
+  });
+
+  // Enhanced nutritional insights using Perplexity
+  app.post("/api/enhanced-insights", async (req, res) => {
+    try {
+      const insightsSchema = z.object({
+        productName: z.string().min(1, "Product name is required"),
+        ingredients: z.string().optional()
+      });
+
+      const { productName, ingredients } = insightsSchema.parse(req.body);
+
+      const insights = await getEnhancedNutritionalInsights(productName, ingredients);
+      
+      res.json({ insights });
+
+    } catch (error) {
+      console.error("Error getting enhanced insights:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid request data",
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to get enhanced nutritional insights" 
+      });
+    }
+  });
+
+  // Ingredient analysis using Perplexity
+  app.post("/api/analyze-ingredient", async (req, res) => {
+    try {
+      const ingredientSchema = z.object({
+        ingredient: z.string().min(1, "Ingredient name is required")
+      });
+
+      const { ingredient } = ingredientSchema.parse(req.body);
+
+      const analysis = await getIngredientAnalysis(ingredient);
+      
+      res.json({ analysis });
+
+    } catch (error) {
+      console.error("Error analyzing ingredient:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid request data",
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to analyze ingredient" 
       });
     }
   });
