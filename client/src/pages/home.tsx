@@ -45,7 +45,7 @@ export default function Home() {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 ProcessedOrNot Scanner
               </h1>
-              <p className="text-sm text-muted-foreground">AI-powered product analysis and processing detection</p>
+              <p className="text-sm text-muted-foreground">For fast, simple, and advanced product analysis and processing detection</p>
             </div>
           </div>
         </div>
