@@ -16,4 +16,23 @@ export const api = {
     const response = await apiRequest("GET", `/api/products/${barcode}/analysis`);
     return response.json();
   },
+
+  async getSearchSuggestions(barcode: string): Promise<{
+    barcode: string;
+    suggestions: Array<{
+      barcode: string;
+      productName: string;
+      brands?: string;
+      similarity: number;
+      reason: string;
+    }>;
+    externalSearchLinks: Array<{
+      name: string;
+      url: string;
+      description: string;
+    }>;
+  }> {
+    const response = await apiRequest("GET", `/api/products/${barcode}/suggestions`);
+    return response.json();
+  },
 };

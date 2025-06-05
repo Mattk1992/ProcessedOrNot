@@ -55,6 +55,13 @@ export default function ProgressiveProductResults({ barcode }: ProgressiveProduc
     enabled: !!product?.ingredientsText,
   });
 
+  const { data: suggestions, isLoading: isLoadingSuggestions } = useQuery({
+    queryKey: ["/api/products", barcode, "suggestions"],
+    queryFn: () => api.getSearchSuggestions(barcode),
+    enabled: !!productError && !isLoadingProduct,
+    retry: false,
+  });
+
   // Simulate progressive search updates during loading
   useEffect(() => {
     if (isLoadingProduct && !product) {
@@ -257,27 +264,93 @@ export default function ProgressiveProductResults({ barcode }: ProgressiveProduc
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground mb-4">
-              Try searching for similar products or check if the barcode was scanned correctly.
-            </p>
-            <div className="space-y-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
-                onClick={() => window.open(`https://www.google.com/search?q=${barcode}+barcode`, '_blank')}
-              >
-                Search Google for "{barcode}"
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
-                onClick={() => window.open(`https://world.openfoodfacts.org/product/${barcode}`, '_blank')}
-              >
-                Check OpenFoodFacts
-              </Button>
-            </div>
+            {isLoadingSuggestions ? (
+              <div className="space-y-3">
+                <div className="h-4 bg-muted rounded animate-pulse"></div>
+                <div className="h-8 bg-muted rounded animate-pulse"></div>
+                <div className="h-8 bg-muted rounded animate-pulse"></div>
+              </div>
+            ) : suggestions?.suggestions && suggestions.suggestions.length > 0 ? (
+              <div className="space-y-4">
+                <p className="text-muted-foreground">
+                  Similar products found in our database:
+                </p>
+                <div className="space-y-2">
+                  {suggestions.suggestions.map((suggestion, index) => (
+                    <div
+                      key={index}
+                      className="p-3 border border-border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                      onClick={() => window.location.href = `/?barcode=${suggestion.barcode}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="font-medium">{suggestion.productName}</div>
+                          {suggestion.brands && (
+                            <div className="text-sm text-muted-foreground">{suggestion.brands}</div>
+                          )}
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {suggestion.reason} • {Math.round(suggestion.similarity * 100)}% match
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {suggestion.barcode}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t pt-4">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    External search options:
+                  </p>
+                  <div className="space-y-1">
+                    {suggestions.externalSearchLinks.map((link, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        className="w-full justify-start"
+                        onClick={() => window.open(link.url, '_blank')}
+                      >
+                        {link.name}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-muted-foreground">
+                  No similar products found. Try these external search options:
+                </p>
+                <div className="space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => window.open(`https://www.google.com/search?q=${barcode}+barcode+product`, '_blank')}
+                  >
+                    Search Google for "{barcode}"
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => window.open(`https://world.openfoodfacts.org/product/${barcode}`, '_blank')}
+                  >
+                    Check OpenFoodFacts
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start"
+                    onClick={() => window.open(`https://www.upcitemdb.com/upc/${barcode}`, '_blank')}
+                  >
+                    UPC Database Lookup
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

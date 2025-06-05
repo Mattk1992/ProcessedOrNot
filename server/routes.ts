@@ -147,6 +147,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get search suggestions for failed barcode lookups
+  app.get("/api/products/:barcode/suggestions", async (req, res) => {
+    try {
+      const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
+
+      const suggestions = await generateSearchSuggestions(barcode);
+      
+      res.json({
+        barcode,
+        suggestions,
+        externalSearchLinks: [
+          {
+            name: "Google Search",
+            url: `https://www.google.com/search?q=${barcode}+barcode+product`,
+            description: "Search Google for this barcode"
+          },
+          {
+            name: "OpenFoodFacts",
+            url: `https://world.openfoodfacts.org/product/${barcode}`,
+            description: "Check OpenFoodFacts database"
+          },
+          {
+            name: "UPC Database",
+            url: `https://www.upcitemdb.com/upc/${barcode}`,
+            description: "Look up in UPC database"
+          }
+        ]
+      });
+
+    } catch (error) {
+      console.error("Error generating search suggestions:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid barcode format",
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to generate search suggestions" 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
