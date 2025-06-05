@@ -42,33 +42,44 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg glow-effect floating-animation">
                 <Shield className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold gradient-text text-shadow">
                   {t('home.title')}
                 </h1>
                 <p className="text-sm text-muted-foreground">{t('home.subtitle')}</p>
               </div>
             </div>
-            <LanguageSwitcher />
+            <div className="scale-on-hover">
+              <LanguageSwitcher />
+            </div>
           </div>
         </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-hidden py-16">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent"></div>
-        <div className="max-w-6xl mx-auto px-4 py-12">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 fade-in">
+        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-3xl floating-animation"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-accent/10 rounded-full blur-3xl floating-animation" style={{animationDelay: '1s'}}></div>
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6 fade-in text-shadow">
               Discover How Processed
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent"> Your Food Really Is</span>
+              <span className="gradient-text block mt-2">Your Food Really Is</span>
             </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto fade-in">
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto fade-in leading-relaxed">
               Scan any barcode to get instant AI analysis of processing levels, ingredients, and nutritional insights
             </p>
+            <div className="mt-8 flex justify-center">
+              <div className="glass-card px-6 py-3 rounded-full">
+                <p className="text-sm text-muted-foreground">
+                  Powered by <span className="gradient-text font-medium">9 Global Databases</span>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -76,12 +87,18 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 pb-12">
         <div className="slide-up">
-          <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
+          <div className="glass-card p-8 rounded-3xl morphing-border glow-effect">
+            <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
+          </div>
         </div>
         
         {currentBarcode && (
           <div className="mt-12 slide-up">
-            <ProductResults barcode={currentBarcode} />
+            <div className="gradient-card rounded-3xl p-1 glow-effect">
+              <div className="bg-background rounded-3xl p-6">
+                <ProductResults barcode={currentBarcode} />
+              </div>
+            </div>
           </div>
         )}
       </main>

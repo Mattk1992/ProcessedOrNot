@@ -161,21 +161,23 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
   return (
     <div className="space-y-10">
-      <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300">
-        <CardContent className="pt-8 pb-8">
-          <div className="flex items-center justify-center mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center">
-                <Search className="w-5 h-5 text-white" />
-              </div>
-              <h2 className="text-2xl font-bold text-foreground">Scan Product</h2>
-            </div>
+      <div className="text-center mb-8">
+        <div className="flex items-center justify-center mb-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg glow-effect floating-animation">
+            <Search className="w-8 h-8 text-white" />
           </div>
+        </div>
+        <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">Scan Product Barcode</h2>
+        <p className="text-muted-foreground">Use your camera or enter barcode manually</p>
+      </div>
+      
+      <Card className="border-0 shadow-none bg-transparent">
+        <CardContent className="p-0">
           
           {/* Camera Scanner Section */}
           {isCameraActive ? (
-            <div className="space-y-4 mb-8">
-              <div className="relative bg-black rounded-2xl overflow-hidden shadow-2xl">
+            <div className="space-y-6 mb-8">
+              <div className="relative bg-black rounded-3xl overflow-hidden shadow-2xl glow-effect">
                 <video
                   ref={videoRef}
                   className="w-full h-80 object-cover"
@@ -187,17 +189,17 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 {isScanning && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <div className="text-white text-center">
-                      <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-                      <p>Initializing camera...</p>
+                      <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-primary" />
+                      <p className="text-lg font-medium">Initializing camera...</p>
                     </div>
                   </div>
                 )}
                 <div className="absolute inset-0 pointer-events-none">
-                  {/* Scanning overlay */}
-                  <div className="absolute inset-4 border-2 border-primary/50 rounded-xl">
-                    <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-primary rounded-tl-lg"></div>
-                    <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-primary rounded-tr-lg"></div>
-                    <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-primary rounded-bl-lg"></div>
+                  {/* Enhanced scanning overlay */}
+                  <div className="absolute inset-6 border-2 border-primary/60 rounded-2xl scan-line">
+                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-xl glow-effect"></div>
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-xl glow-effect"></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-xl glow-effect"></div>
                     <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
                   </div>
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
