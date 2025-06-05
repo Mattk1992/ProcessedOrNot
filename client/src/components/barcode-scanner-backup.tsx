@@ -41,26 +41,62 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       setCameraError("");
       setIsScanning(true);
       
+      // Check if browser supports getUserMedia
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Camera access is not supported in this browser. Please try entering the barcode manually.");
       }
 
+      // Set camera active first to render the video element
       setIsCameraActive(true);
-
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      if (!videoRef.current) {
-        throw new Error("Video element not ready");
+      
+      // Wait for the video element to be rendered
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const videoElement = videoRef.current;
+      if (!videoElement) {
+        // Reset and try again
+        setIsCameraActive(false);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        setIsCameraActive(true);
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        const retryVideoElement = videoRef.current;
+        if (!retryVideoElement) {
+          throw new Error("Camera interface failed to load. Please refresh the page and try again.");
+        }
       }
 
-      codeReaderRef.current = new BrowserMultiFormatReader();
+      // Initialize the code reader
+      if (!codeReaderRef.current) {
+        codeReaderRef.current = new BrowserMultiFormatReader();
+      }
+
+      const finalVideoElement = videoRef.current!;
+
+      // Get camera permissions and start scanning
+      const videoInputDevices = await codeReaderRef.current.listVideoInputDevices();
       
+      if (videoInputDevices.length === 0) {
+        throw new Error("No camera devices found on this device.");
+      }
+
+      // Use the back camera if available (usually better for scanning)
+      const selectedDeviceId = videoInputDevices.find(device => 
+        device.label.toLowerCase().includes('back') || 
+        device.label.toLowerCase().includes('rear') ||
+        device.label.toLowerCase().includes('environment')
+      )?.deviceId || videoInputDevices[0].deviceId;
+
+      setIsScanning(false);
+
+      // Start decoding from the camera
       await codeReaderRef.current.decodeFromVideoDevice(
-        undefined,
-        videoRef.current,
+        selectedDeviceId,
+        finalVideoElement,
         (result, error) => {
           if (result) {
             const scannedCode = result.getText();
+            console.log("Scanned barcode:", scannedCode);
             if (scannedCode && scannedCode.length >= 8) {
               stopCamera();
               onScan(scannedCode);
@@ -101,6 +137,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         codeReaderRef.current.reset();
       }
       
+      // Stop all video tracks
       if (videoRef.current && videoRef.current.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach(track => track.stop());
@@ -115,6 +152,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     }
   }, []);
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopCamera();
@@ -135,6 +173,8 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       
       <Card className="border-0 shadow-none bg-transparent">
         <CardContent className="p-0">
+          
+          {/* Camera Scanner Section */}
           {isCameraActive ? (
             <div className="space-y-6 mb-8">
               <div className="relative bg-black rounded-3xl overflow-hidden shadow-2xl glow-effect">
@@ -155,6 +195,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   </div>
                 )}
                 <div className="absolute inset-0 pointer-events-none">
+                  {/* Enhanced scanning overlay */}
                   <div className="absolute inset-6 border-2 border-primary/60 rounded-2xl scan-line">
                     <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-xl glow-effect"></div>
                     <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-xl glow-effect"></div>
@@ -223,6 +264,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
             </div>
           )}
           
+          {/* Manual Input Form */}
           {!isCameraActive && (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="relative group">
@@ -236,20 +278,26 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-4">
                   <div className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors">
-                    <Search className="w-5 h-5" />
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 16h4.01M5 12V7a1 1 0 011-1h4m-4 6v5a1 1 0 001 1h4m6-6V7a1 1 0 00-1-1h-4m4 6v5a1 1 0 01-1 1h-4"></path>
+                    </svg>
                   </div>
                 </div>
+                {barcode.length > 0 && barcode.length < 8 && (
+                  <p className="text-xs text-destructive mt-1 fade-in">Barcode must be at least 8 digits</p>
+                )}
               </div>
               
               <Button 
                 type="submit"
-                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl glow-effect scale-on-hover"
+                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
                 disabled={isLoading || barcode.trim().length < 8}
               >
                 {isLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
                     <span>Analyzing Product...</span>
+
                   </>
                 ) : (
                   <>
@@ -263,6 +311,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         </CardContent>
       </Card>
 
+      {/* Sample Products Section */}
       <div className="glass-card rounded-3xl p-8 glow-effect">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
@@ -283,24 +332,25 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
               disabled={isLoading}
               style={{ animationDelay: `${index * 150}ms` }}
             >
-              <div className="flex items-start justify-between mb-3">
-                <div className="font-mono text-sm bg-gradient-to-r from-primary/10 to-accent/10 text-primary px-3 py-1 rounded-xl group-hover:from-primary/20 group-hover:to-accent/20 transition-all duration-200">
-                  {product.barcode}
+                <div className="flex items-start justify-between mb-3">
+                  <div className="font-mono text-sm bg-gradient-to-r from-primary/10 to-accent/10 text-primary px-3 py-1 rounded-xl group-hover:from-primary/20 group-hover:to-accent/20 transition-all duration-200">
+                    {product.barcode}
+                  </div>
+                  <div className="w-3 h-3 bg-gradient-to-r from-accent to-primary rounded-full pulse-subtle"></div>
                 </div>
-                <div className="w-3 h-3 bg-gradient-to-r from-accent to-primary rounded-full pulse-subtle"></div>
-              </div>
-              <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors text-shadow">
-                {product.name}
-              </h4>
-              <p className="text-sm text-muted-foreground">{product.description}</p>
-              <div className="mt-4 flex items-center text-xs text-primary opacity-0 group-hover:opacity-100 transition-all duration-200">
-                <span className="font-medium">Click to scan</span>
-                <svg className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
-                </svg>
-              </div>
-            </button>
-          ))}
+                <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors text-shadow">
+                  {product.name}
+                </h4>
+                <p className="text-sm text-muted-foreground">{product.description}</p>
+                <div className="mt-4 flex items-center text-xs text-primary opacity-0 group-hover:opacity-100 transition-all duration-200">
+                  <span className="font-medium">Click to scan</span>
+                  <svg className="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
