@@ -270,70 +270,103 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
 
       {/* Ingredients Card */}
       {product.ingredientsText && (
-        <Card>
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Ingredients Analysis</h3>
+        <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
+          <CardContent className="pt-8 pb-8">
+            <div className="flex items-center space-x-3 mb-8">
+              <div className="w-10 h-10 bg-gradient-to-br from-accent to-primary rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">Ingredients Analysis</h3>
+            </div>
             
-            <div className="space-y-4">
-              <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Full Ingredients List</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {product.ingredientsText}
-                </p>
+            <div className="space-y-8">
+              <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+                <h4 className="text-lg font-semibold text-foreground mb-4">Full Ingredients List</h4>
+                <div className="bg-card/50 rounded-xl p-4 border border-border/20">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {String(product.ingredientsText)}
+                  </p>
+                </div>
               </div>
 
               {/* Processing Indicators */}
-              {analysis && !isLoadingAnalysis && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="border border-red-200 bg-red-50 rounded-lg p-3">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-red-800">Ultra-processed</span>
+              {isLoadingAnalysis ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="h-32 bg-muted rounded-2xl animate-pulse"></div>
+                  ))}
+                </div>
+              ) : analysis ? (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="border-2 border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></div>
+                      <span className="text-base font-semibold text-red-800">Ultra-processed</span>
                     </div>
-                    <ul className="text-xs text-red-700 space-y-1">
+                    <ul className="text-sm text-red-700 space-y-2">
                       {analysis.categories.ultraProcessed.length > 0 ? (
                         analysis.categories.ultraProcessed.map((ingredient, index) => (
-                          <li key={index}>• {ingredient}</li>
+                          <li key={index} className="flex items-start space-x-2">
+                            <span className="text-red-500 mt-1">•</span>
+                            <span>{ingredient}</span>
+                          </li>
                         ))
                       ) : (
-                        <li>• None detected</li>
+                        <li className="flex items-center space-x-2 text-red-600">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>None detected</span>
+                        </li>
                       )}
                     </ul>
                   </div>
 
-                  <div className="border border-yellow-200 bg-yellow-50 rounded-lg p-3">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-yellow-800">Processed</span>
+                  <div className="border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="w-4 h-4 bg-yellow-500 rounded-full shadow-sm"></div>
+                      <span className="text-base font-semibold text-yellow-800">Processed</span>
                     </div>
-                    <ul className="text-xs text-yellow-700 space-y-1">
+                    <ul className="text-sm text-yellow-700 space-y-2">
                       {analysis.categories.processed.length > 0 ? (
                         analysis.categories.processed.map((ingredient, index) => (
-                          <li key={index}>• {ingredient}</li>
+                          <li key={index} className="flex items-start space-x-2">
+                            <span className="text-yellow-500 mt-1">•</span>
+                            <span>{ingredient}</span>
+                          </li>
                         ))
                       ) : (
-                        <li>• None detected</li>
+                        <li className="flex items-center space-x-2 text-yellow-600">
+                          <CheckCircle className="w-4 h-4" />
+                          <span>None detected</span>
+                        </li>
                       )}
                     </ul>
                   </div>
 
-                  <div className="border border-green-200 bg-green-50 rounded-lg p-3">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                      <span className="text-sm font-medium text-green-800">Minimally processed</span>
+                  <div className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="w-4 h-4 bg-emerald-500 rounded-full shadow-sm"></div>
+                      <span className="text-base font-semibold text-emerald-800">Minimally processed</span>
                     </div>
-                    <ul className="text-xs text-green-700 space-y-1">
+                    <ul className="text-sm text-emerald-700 space-y-2">
                       {analysis.categories.minimallyProcessed.length > 0 ? (
                         analysis.categories.minimallyProcessed.map((ingredient, index) => (
-                          <li key={index}>• {ingredient}</li>
+                          <li key={index} className="flex items-start space-x-2">
+                            <span className="text-emerald-500 mt-1">•</span>
+                            <span>{ingredient}</span>
+                          </li>
                         ))
                       ) : (
-                        <li>• None detected</li>
+                        <li className="flex items-center space-x-2 text-emerald-600">
+                          <AlertTriangle className="w-4 h-4" />
+                          <span>None detected</span>
+                        </li>
                       )}
                     </ul>
                   </div>
                 </div>
-              )}
+              ) : null}
             </div>
           </CardContent>
         </Card>
@@ -341,63 +374,72 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
 
       {/* Nutrition Facts Card */}
       {product.nutriments && (
-        <Card>
-          <CardContent className="pt-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Nutrition Facts</h3>
+        <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
+          <CardContent className="pt-8 pb-8">
+            <div className="flex items-center space-x-3 mb-8">
+              <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">Nutrition Facts</h3>
+            </div>
             
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-2 font-medium text-gray-700">Nutrient</th>
-                    <th className="text-right py-2 font-medium text-gray-700">Per 100g</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  <tr>
-                    <td className="py-2 text-gray-900">Energy</td>
-                    <td className="py-2 text-right text-gray-600">
-                      {product.nutriments.energy_100g ? `${product.nutriments.energy_100g} kcal` : "N/A"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 text-gray-900">Fat</td>
-                    <td className="py-2 text-right text-gray-600">
-                      {product.nutriments.fat_100g ? `${product.nutriments.fat_100g}g` : "N/A"}
-                    </td>
-                  </tr>
-                  {product.nutriments.saturated_fat_100g && (
-                    <tr>
-                      <td className="py-2 text-gray-900 pl-4">Saturated fat</td>
-                      <td className="py-2 text-right text-gray-600">{product.nutriments.saturated_fat_100g}g</td>
+            <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b-2 border-border/30">
+                      <th className="text-left py-4 text-lg font-semibold text-foreground">Nutrient</th>
+                      <th className="text-right py-4 text-lg font-semibold text-foreground">Per 100g</th>
                     </tr>
-                  )}
-                  <tr>
-                    <td className="py-2 text-gray-900">Carbohydrates</td>
-                    <td className="py-2 text-right text-gray-600">
-                      {product.nutriments.carbohydrates_100g ? `${product.nutriments.carbohydrates_100g}g` : "N/A"}
-                    </td>
-                  </tr>
-                  {product.nutriments.sugars_100g && (
-                    <tr>
-                      <td className="py-2 text-gray-900 pl-4">Sugars</td>
-                      <td className="py-2 text-right text-gray-600">{product.nutriments.sugars_100g}g</td>
+                  </thead>
+                  <tbody className="divide-y divide-border/20">
+                    <tr className="hover:bg-muted/30 transition-colors">
+                      <td className="py-4 text-foreground font-medium">Energy</td>
+                      <td className="py-4 text-right text-muted-foreground font-mono">
+                        {(product.nutriments as any).energy_100g ? `${(product.nutriments as any).energy_100g} kcal` : "N/A"}
+                      </td>
                     </tr>
-                  )}
-                  <tr>
-                    <td className="py-2 text-gray-900">Protein</td>
-                    <td className="py-2 text-right text-gray-600">
-                      {product.nutriments.proteins_100g ? `${product.nutriments.proteins_100g}g` : "N/A"}
-                    </td>
-                  </tr>
-                  {product.nutriments.salt_100g && (
-                    <tr>
-                      <td className="py-2 text-gray-900">Salt</td>
-                      <td className="py-2 text-right text-gray-600">{product.nutriments.salt_100g}g</td>
+                    <tr className="hover:bg-muted/30 transition-colors">
+                      <td className="py-4 text-foreground font-medium">Fat</td>
+                      <td className="py-4 text-right text-muted-foreground font-mono">
+                        {(product.nutriments as any).fat_100g ? `${(product.nutriments as any).fat_100g}g` : "N/A"}
+                      </td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                    {(product.nutriments as any).saturated_fat_100g && (
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 text-muted-foreground font-medium pl-6">Saturated fat</td>
+                        <td className="py-4 text-right text-muted-foreground font-mono">{(product.nutriments as any).saturated_fat_100g}g</td>
+                      </tr>
+                    )}
+                    <tr className="hover:bg-muted/30 transition-colors">
+                      <td className="py-4 text-foreground font-medium">Carbohydrates</td>
+                      <td className="py-4 text-right text-muted-foreground font-mono">
+                        {(product.nutriments as any).carbohydrates_100g ? `${(product.nutriments as any).carbohydrates_100g}g` : "N/A"}
+                      </td>
+                    </tr>
+                    {(product.nutriments as any).sugars_100g && (
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 text-muted-foreground font-medium pl-6">Sugars</td>
+                        <td className="py-4 text-right text-muted-foreground font-mono">{(product.nutriments as any).sugars_100g}g</td>
+                      </tr>
+                    )}
+                    <tr className="hover:bg-muted/30 transition-colors">
+                      <td className="py-4 text-foreground font-medium">Protein</td>
+                      <td className="py-4 text-right text-muted-foreground font-mono">
+                        {(product.nutriments as any).proteins_100g ? `${(product.nutriments as any).proteins_100g}g` : "N/A"}
+                      </td>
+                    </tr>
+                    {(product.nutriments as any).salt_100g && (
+                      <tr className="hover:bg-muted/30 transition-colors">
+                        <td className="py-4 text-foreground font-medium">Salt</td>
+                        <td className="py-4 text-right text-muted-foreground font-mono">{(product.nutriments as any).salt_100g}g</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </CardContent>
         </Card>
