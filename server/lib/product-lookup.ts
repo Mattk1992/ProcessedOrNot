@@ -2,6 +2,12 @@ import { InsertProduct } from "@shared/schema";
 import { fetchProductFromOpenFoodFacts } from "./openfoodfacts";
 import { fetchProductFromUSDA } from "./usda";
 import { fetchProductFromUPCDatabase } from "./upc";
+import { fetchProductFromEFSA } from "./efsa";
+import { fetchProductFromHealthCanada } from "./health-canada";
+import { fetchProductFromAustralianFood } from "./australia-food";
+import { fetchProductFromBarcodeSpider } from "./barcode-spider";
+import { fetchProductFromEANSearch } from "./ean-search";
+import { fetchProductFromProductAPI } from "./product-api";
 import { analyzeIngredients } from "./openai";
 
 interface ProductLookupResult {
