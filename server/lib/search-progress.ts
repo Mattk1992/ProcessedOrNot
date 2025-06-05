@@ -1,13 +1,11 @@
 import { WebSocket } from 'ws';
 
 interface SearchProgressUpdate {
-  type: 'progress' | 'error' | 'complete';
   barcode: string;
   currentSource: string;
   completedSources: string[];
   found: boolean;
   error?: string;
-  totalSources?: number;
 }
 
 const activeConnections = new Map<string, WebSocket[]>();
@@ -36,11 +34,10 @@ export function removeProgressConnection(barcode: string, ws: WebSocket) {
   }
 }
 
-export function broadcastSearchProgress(barcode: string, update: Omit<SearchProgressUpdate, 'barcode'>) {
+export function broadcastSearchProgress(barcode: string, update: SearchProgressUpdate) {
   const connections = activeConnections.get(barcode);
   if (connections) {
-    const fullUpdate = { ...update, barcode };
-    const message = JSON.stringify(fullUpdate);
+    const message = JSON.stringify(update);
     connections.forEach(ws => {
       if (ws.readyState === WebSocket.OPEN) {
         ws.send(message);
@@ -48,5 +45,3 @@ export function broadcastSearchProgress(barcode: string, update: Omit<SearchProg
     });
   }
 }
-
-export type { SearchProgressUpdate };

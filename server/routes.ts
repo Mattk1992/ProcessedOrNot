@@ -5,7 +5,6 @@ import { cascadingProductLookup } from "./lib/product-lookup";
 import { analyzeIngredients } from "./lib/openai";
 import { generateSearchSuggestions } from "./lib/search-suggestions";
 import { getChatbotResponse } from "./lib/nutribot";
-import { getScanProgress } from "./lib/progress-store";
 import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -218,35 +217,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ 
         message: "Sorry, I'm having trouble responding right now. Please try again!" 
-      });
-    }
-  });
-
-  // Get scanning progress for real-time updates
-  app.get("/api/progress/:barcode", async (req, res) => {
-    try {
-      const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
-      
-      const progress = getScanProgress(barcode);
-      
-      if (!progress) {
-        return res.status(404).json({ 
-          message: "No scanning progress found for this barcode" 
-        });
-      }
-      
-      res.json(progress);
-
-    } catch (error) {
-      console.error("Error getting scan progress:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid barcode format",
-          errors: error.errors 
-        });
-      }
-      res.status(500).json({ 
-        message: "Failed to get scan progress" 
       });
     }
   });

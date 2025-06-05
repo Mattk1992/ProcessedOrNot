@@ -19,7 +19,7 @@ import { fetchProductFromFineli } from "./fineli";
 import { fetchProductFromBLS } from "./bls";
 import { fetchProductFromDTUFood } from "./dtu-food";
 import { analyzeIngredients } from "./openai";
-import { updateScanProgress, completeScanProgress } from "./progress-store";
+import { broadcastSearchProgress } from "./search-progress";
 
 interface ProductLookupResult {
   product: InsertProduct | null;
@@ -29,34 +29,10 @@ interface ProductLookupResult {
 
 export async function cascadingProductLookup(barcode: string): Promise<ProductLookupResult> {
   console.log(`Starting cascading lookup for barcode: ${barcode}`);
-  
-  const completedSources: string[] = [];
-  const totalSources = 19;
-
-  const updateProgress = (currentSource: string, found: boolean = false, error?: string) => {
-    if (!found && !error) {
-      // Mark previous source as completed
-      const lastSource = completedSources[completedSources.length - 1];
-      if (lastSource && lastSource !== currentSource) {
-        // Previous source completed without finding anything
-      } else if (completedSources.length === 0 && currentSource !== 'OpenFoodFacts') {
-        completedSources.push('OpenFoodFacts');
-      }
-    }
-    
-    updateScanProgress(barcode, {
-      currentSource,
-      completedSources: [...completedSources],
-      found,
-      error,
-      isComplete: found
-    });
-  };
 
   // 1. Primary: OpenFoodFacts
   try {
     console.log('Trying OpenFoodFacts...');
-    updateProgress('OpenFoodFacts');
     const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
     
     if (openFoodFactsData && openFoodFactsData.status === 1) {
@@ -93,7 +69,6 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
       };
 
       console.log('Found product in OpenFoodFacts');
-      completeScanProgress(barcode, true, 'OpenFoodFacts');
       return { product: productData, source: 'OpenFoodFacts' };
     }
   } catch (error) {
