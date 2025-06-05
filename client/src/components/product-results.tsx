@@ -499,6 +499,17 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Manual Search Popup */}
+      <ManualSearchPopup
+        isOpen={showManualSearch}
+        onClose={() => setShowManualSearch(false)}
+        barcode={barcode}
+        onProductFound={() => {
+          setShowManualSearch(false);
+          refetch();
+        }}
+      />
     </div>
   );
 }
