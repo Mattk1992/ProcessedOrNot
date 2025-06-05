@@ -42,7 +42,7 @@ export default function Home() {
               <Shield className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">OpenFoodFacts Scanner</h1>
+              <h1 className="text-xl font-semibold text-gray-900">ProcessedOrNot Scanner</h1>
               <p className="text-sm text-gray-600">Product analysis and processing detection</p>
             </div>
           </div>

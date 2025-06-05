@@ -1,4 +1,6 @@
-import { products, type Product, type InsertProduct, users, type User, type InsertUser } from "@shared/schema";
+import { users, type User, type InsertUser, products, type Product, type InsertProduct } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -11,63 +13,57 @@ export interface IStorage {
   updateProduct(barcode: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private products: Map<string, Product>;
-  private currentUserId: number;
-  private currentProductId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.products = new Map();
-    this.currentUserId = 1;
-    this.currentProductId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
     return user;
   }
 
   async getProductByBarcode(barcode: string): Promise<Product | undefined> {
-    return this.products.get(barcode);
+    const [product] = await db.select().from(products).where(eq(products.barcode, barcode));
+    return product || undefined;
   }
 
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
-    const id = this.currentProductId++;
-    const product: Product = { 
-      ...insertProduct, 
-      id,
+    const productWithTimestamp = {
+      ...insertProduct,
       lastUpdated: new Date().toISOString()
     };
-    this.products.set(insertProduct.barcode, product);
+    
+    const [product] = await db
+      .insert(products)
+      .values(productWithTimestamp)
+      .returning();
     return product;
   }
 
   async updateProduct(barcode: string, productUpdate: Partial<InsertProduct>): Promise<Product | undefined> {
-    const existingProduct = this.products.get(barcode);
-    if (!existingProduct) return undefined;
-
-    const updatedProduct: Product = {
-      ...existingProduct,
+    const updateData = {
       ...productUpdate,
       lastUpdated: new Date().toISOString()
     };
-    this.products.set(barcode, updatedProduct);
-    return updatedProduct;
+
+    const [product] = await db
+      .update(products)
+      .set(updateData)
+      .where(eq(products.barcode, barcode))
+      .returning();
+    
+    return product || undefined;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
