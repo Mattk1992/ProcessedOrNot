@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Shield } from "lucide-react";
+import { ScanLine } from "lucide-react";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ProgressiveProductResults from "@/components/progressive-product-results";
 import LanguageSwitcher from "@/components/language-switcher";
+import ThemeToggle from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -43,7 +44,7 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg">
-                <Shield className="w-6 h-6 text-white" />
+                <ScanLine className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -89,16 +90,22 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border/50 mt-16">
         <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="text-center text-sm text-muted-foreground">
-            Created by{" "}
-            <a
-              href="https://www.linkedin.com/in/matthias-kuchenbecker/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-foreground hover:text-primary transition-colors underline decoration-primary/30 hover:decoration-primary"
-            >
-              Matthias Kuchenbecker
-            </a>
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              Created by{" "}
+              <a
+                href="https://www.linkedin.com/in/matthias-kuchenbecker/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-foreground hover:text-primary transition-colors underline decoration-primary/30 hover:decoration-primary"
+              >
+                Matthias Kuchenbecker
+              </a>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Theme:</span>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </footer>
