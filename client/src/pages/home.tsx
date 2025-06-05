@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Shield } from "lucide-react";
 import BarcodeScanner from "@/components/barcode-scanner";
-import ProductResults from "@/components/product-results";
+import ProgressiveProductResults from "@/components/progressive-product-results";
 import LanguageSwitcher from "@/components/language-switcher";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -81,7 +81,7 @@ export default function Home() {
         
         {currentBarcode && (
           <div className="mt-12 slide-up">
-            <ProductResults barcode={currentBarcode} />
+            <ProgressiveProductResults barcode={currentBarcode} />
           </div>
         )}
       </main>
