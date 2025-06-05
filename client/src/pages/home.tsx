@@ -75,7 +75,7 @@ export default function Home() {
             <div className="mt-8 flex flex-wrap justify-center gap-4 fade-in">
               <div className="flex items-center gap-2 bg-primary/10 dark:bg-primary/20 px-4 py-2 rounded-full">
                 <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium">14 Database Sources</span>
+                <span className="text-sm font-medium">19 Database Sources</span>
               </div>
               <div className="flex items-center gap-2 bg-accent/10 dark:bg-accent/20 px-4 py-2 rounded-full">
                 <div className="w-2 h-2 bg-accent rounded-full animate-pulse delay-500"></div>
