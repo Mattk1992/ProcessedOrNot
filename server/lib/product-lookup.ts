@@ -9,7 +9,6 @@ import { fetchProductFromBarcodeSpider } from "./barcode-spider";
 import { fetchProductFromEANSearch } from "./ean-search";
 import { fetchProductFromProductAPI } from "./product-api";
 import { analyzeIngredients } from "./openai";
-import { broadcastSearchProgress } from "./search-progress";
 
 interface ProductLookupResult {
   product: InsertProduct | null;
