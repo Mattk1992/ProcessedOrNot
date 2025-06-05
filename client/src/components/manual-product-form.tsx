@@ -193,17 +193,17 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
                 {createProductMutation.isPending ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
+                    {t('form.saving')}
                   </>
                 ) : (
                   <>
                     <Plus className="mr-2 h-4 w-4" />
-                    Create Product
+                    {t('form.submit')}
                   </>
                 )}
               </Button>
               <Button type="button" variant="outline" onClick={onCancel}>
-                Cancel
+                {t('form.cancel')}
               </Button>
             </div>
           </form>
