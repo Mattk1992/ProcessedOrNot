@@ -3,6 +3,7 @@ import { Shield } from "lucide-react";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
+import ThemeToggle from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -119,6 +120,9 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* Theme Toggle */}
+      <ThemeToggle />
 
       {/* Background decoration */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
