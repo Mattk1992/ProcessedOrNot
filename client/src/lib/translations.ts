@@ -44,6 +44,16 @@ export const translations: Record<Language, Record<string, string>> = {
     'product.ingredients': 'Ingredients',
     'product.brand': 'Brand',
     'product.source': 'Data source',
+    'product.nutrition': 'Nutrition Facts',
+    'product.nutrition.nutrient': 'Nutrient',
+    'product.nutrition.per100g': 'Per 100g',
+    'product.nutrition.energy': 'Energy',
+    'product.nutrition.fat': 'Fat',
+    'product.nutrition.saturatedFat': 'Saturated fat',
+    'product.nutrition.carbs': 'Carbohydrates',
+    'product.nutrition.sugars': 'Sugars',
+    'product.nutrition.protein': 'Protein',
+    'product.nutrition.salt': 'Salt',
     
     // Manual Product Form
     'form.title': 'Add Product Information',
