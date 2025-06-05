@@ -8,6 +8,11 @@ import { fetchProductFromAustralianFood } from "./australia-food";
 import { fetchProductFromBarcodeSpider } from "./barcode-spider";
 import { fetchProductFromEANSearch } from "./ean-search";
 import { fetchProductFromProductAPI } from "./product-api";
+import { fetchProductFromKGG } from "./kenniscentrum-gezond-gewicht";
+import { fetchProductFromRIVM } from "./rivm";
+import { fetchProductFromFoodDataCentral } from "./fooddata-central";
+import { fetchProductFromNEVO } from "./nevo";
+import { fetchProductFromVoedingscentrum } from "./voedingscentrum";
 import { analyzeIngredients } from "./openai";
 import { broadcastSearchProgress } from "./search-progress";
 
@@ -65,9 +70,149 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('OpenFoodFacts lookup failed:', error);
   }
 
-  // 2. Secondary: USDA FoodData Central
+  // 2. Secondary: FoodData Central (USDA)
   try {
-    console.log('Trying USDA FoodData Central...');
+    console.log('Trying FoodData Central...');
+    const fdcProduct = await fetchProductFromFoodDataCentral(barcode);
+    
+    if (fdcProduct) {
+      // Analyze ingredients if available
+      if (fdcProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            fdcProduct.ingredientsText,
+            fdcProduct.productName || "Unknown Product"
+          );
+          fdcProduct.processingScore = analysis.score;
+          fdcProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze FoodData Central ingredients:", error);
+          fdcProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in FoodData Central');
+      return { product: fdcProduct, source: 'FoodData Central' };
+    }
+  } catch (error) {
+    console.error('FoodData Central lookup failed:', error);
+  }
+
+  // 3. NEVO (Dutch Food Database)
+  try {
+    console.log('Trying NEVO...');
+    const nevoProduct = await fetchProductFromNEVO(barcode);
+    
+    if (nevoProduct) {
+      // Analyze ingredients if available
+      if (nevoProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            nevoProduct.ingredientsText,
+            nevoProduct.productName || "Unknown Product"
+          );
+          nevoProduct.processingScore = analysis.score;
+          nevoProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze NEVO ingredients:", error);
+          nevoProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in NEVO');
+      return { product: nevoProduct, source: 'NEVO' };
+    }
+  } catch (error) {
+    console.error('NEVO lookup failed:', error);
+  }
+
+  // 4. RIVM
+  try {
+    console.log('Trying RIVM...');
+    const rivmProduct = await fetchProductFromRIVM(barcode);
+    
+    if (rivmProduct) {
+      // Analyze ingredients if available
+      if (rivmProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            rivmProduct.ingredientsText,
+            rivmProduct.productName || "Unknown Product"
+          );
+          rivmProduct.processingScore = analysis.score;
+          rivmProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze RIVM ingredients:", error);
+          rivmProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in RIVM');
+      return { product: rivmProduct, source: 'RIVM' };
+    }
+  } catch (error) {
+    console.error('RIVM lookup failed:', error);
+  }
+
+  // 5. Voedingscentrum
+  try {
+    console.log('Trying Voedingscentrum...');
+    const voedingscentrumProduct = await fetchProductFromVoedingscentrum(barcode);
+    
+    if (voedingscentrumProduct) {
+      // Analyze ingredients if available
+      if (voedingscentrumProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            voedingscentrumProduct.ingredientsText,
+            voedingscentrumProduct.productName || "Unknown Product"
+          );
+          voedingscentrumProduct.processingScore = analysis.score;
+          voedingscentrumProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze Voedingscentrum ingredients:", error);
+          voedingscentrumProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in Voedingscentrum');
+      return { product: voedingscentrumProduct, source: 'Voedingscentrum' };
+    }
+  } catch (error) {
+    console.error('Voedingscentrum lookup failed:', error);
+  }
+
+  // 6. Kenniscentrum Gezond Gewicht
+  try {
+    console.log('Trying Kenniscentrum Gezond Gewicht...');
+    const kggProduct = await fetchProductFromKGG(barcode);
+    
+    if (kggProduct) {
+      // Analyze ingredients if available
+      if (kggProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            kggProduct.ingredientsText,
+            kggProduct.productName || "Unknown Product"
+          );
+          kggProduct.processingScore = analysis.score;
+          kggProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze KGG ingredients:", error);
+          kggProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in Kenniscentrum Gezond Gewicht');
+      return { product: kggProduct, source: 'Kenniscentrum Gezond Gewicht' };
+    }
+  } catch (error) {
+    console.error('Kenniscentrum Gezond Gewicht lookup failed:', error);
+  }
+
+  // 7. Legacy USDA (for backwards compatibility)
+  try {
+    console.log('Trying Legacy USDA...');
     const usdaProduct = await fetchProductFromUSDA(barcode);
     
     if (usdaProduct) {
@@ -86,11 +231,11 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
         }
       }
 
-      console.log('Found product in USDA FoodData Central');
-      return { product: usdaProduct, source: 'USDA FoodData Central' };
+      console.log('Found product in Legacy USDA');
+      return { product: usdaProduct, source: 'USDA' };
     }
   } catch (error) {
-    console.error('USDA lookup failed:', error);
+    console.error('Legacy USDA lookup failed:', error);
   }
 
   // 3. Tertiary: EFSA (European Food Safety Authority)
