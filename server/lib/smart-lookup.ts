@@ -1,7 +1,7 @@
 import type { InsertProduct } from "@shared/schema";
 import { fetchProductFromOpenFoodFacts } from "./openfoodfacts";
 import { fetchProductFromFoodDataCentral } from "./fooddata-central";
-import { fetchProductFromNEVO } from "./nevo";
+import { fetchProductFromNEVO, searchNEVOByName } from "./nevo";
 import { fetchProductFromRIVM } from "./rivm";
 import { fetchProductFromVoedingscentrum } from "./voedingscentrum";
 import { fetchProductFromKGG } from "./kenniscentrum-gezond-gewicht";
@@ -97,7 +97,7 @@ async function searchUSDAByName(productName: string): Promise<InsertProduct | nu
 const DATABASE_SEARCH_FUNCTIONS = [
   { name: 'OpenFoodFacts', search: searchOpenFoodFactsByName },
   { name: 'USDA FoodData Central', search: searchUSDAByName },
-  { name: 'NEVO', search: async (name: string) => null }, // Placeholder - would need name search implementation
+  { name: 'NEVO (Dutch Food Database)', search: searchNEVOByName },
   { name: 'RIVM', search: async (name: string) => null },
   { name: 'Voedingscentrum', search: async (name: string) => null },
   { name: 'Kenniscentrum Gezond Gewicht', search: async (name: string) => null },
