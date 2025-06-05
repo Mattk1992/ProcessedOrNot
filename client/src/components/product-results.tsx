@@ -191,6 +191,12 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <Badge variant="outline" className="font-mono text-xs">
                     {product.barcode}
                   </Badge>
+                  {(product.dataSource || product.lookupSource) && (
+                    <Badge variant="secondary" className="text-xs">
+                      <Database className="h-3 w-3 mr-1" />
+                      {product.dataSource || product.lookupSource}
+                    </Badge>
+                  )}
                 </div>
               </div>
 
