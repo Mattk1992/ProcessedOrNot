@@ -6,6 +6,7 @@ import { analyzeIngredients } from "./lib/openai";
 import { generateSearchSuggestions } from "./lib/search-suggestions";
 import { getChatbotResponse } from "./lib/nutribot";
 import { getScanProgress } from "./lib/progress-store";
+import { searchProductByName } from "./lib/name-search";
 import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -112,6 +113,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ 
         message: "Failed to create product" 
+      });
+    }
+  });
+
+  // Manual product search by name
+  app.post("/api/products/manual-search", async (req, res) => {
+    try {
+      const { barcode, productName } = z.object({
+        barcode: z.string().min(8, "Barcode must be at least 8 digits"),
+        productName: z.string().min(1, "Product name is required")
+      }).parse(req.body);
+
+      // Search all databases by product name
+      const searchResult = await searchProductByName(productName);
+      
+      if (!searchResult.product) {
+        return res.status(404).json({ 
+          message: `No product found with name "${productName}" in any database`,
+          searchedDatabases: searchResult.searchedSources
+        });
+      }
+
+      // Create product with the provided barcode
+      const productData = {
+        ...searchResult.product,
+        barcode, // Use the provided barcode
+        lastUpdated: new Date().toISOString(),
+      };
+
+      const savedProduct = await storage.createProduct(productData);
+      
+      res.json({
+        ...savedProduct,
+        searchSource: searchResult.source,
+        message: `Product found in ${searchResult.source}`
+      });
+
+    } catch (error) {
+      console.error("Error in manual search:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid request data",
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to search for product" 
       });
     }
   });
