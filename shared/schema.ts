@@ -12,6 +12,7 @@ export const products = pgTable("products", {
   nutriments: jsonb("nutriments"),
   processingScore: integer("processing_score"),
   processingExplanation: text("processing_explanation"),
+  dataSource: text("data_source").default("OpenFoodFacts"),
   lastUpdated: text("last_updated"),
 });
 
