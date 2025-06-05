@@ -238,7 +238,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('Legacy USDA lookup failed:', error);
   }
 
-  // 3. Tertiary: EFSA (European Food Safety Authority)
+  // 8. EFSA (European Food Safety Authority)
   try {
     console.log('Trying EFSA...');
     const efsaProduct = await fetchProductFromEFSA(barcode);
@@ -266,7 +266,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('EFSA lookup failed:', error);
   }
 
-  // 4. Health Canada Food Database
+  // 9. Health Canada Food Database
   try {
     console.log('Trying Health Canada...');
     const healthCanadaProduct = await fetchProductFromHealthCanada(barcode);
@@ -294,7 +294,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('Health Canada lookup failed:', error);
   }
 
-  // 5. Australian Food Composition Database
+  // 10. Australian Food Composition Database
   try {
     console.log('Trying Australian Food Database...');
     const australianProduct = await fetchProductFromAustralianFood(barcode);
@@ -322,7 +322,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('Australian Food Database lookup failed:', error);
   }
 
-  // 6. Barcode Spider
+  // 11. Barcode Spider
   try {
     console.log('Trying Barcode Spider...');
     const barcodeSpiderProduct = await fetchProductFromBarcodeSpider(barcode);
@@ -350,7 +350,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('Barcode Spider lookup failed:', error);
   }
 
-  // 7. EAN Search
+  // 12. EAN Search
   try {
     console.log('Trying EAN Search...');
     const eanSearchProduct = await fetchProductFromEANSearch(barcode);
@@ -363,7 +363,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('EAN Search lookup failed:', error);
   }
 
-  // 8. Product API
+  // 13. Product API
   try {
     console.log('Trying Product API...');
     const productAPIProduct = await fetchProductFromProductAPI(barcode);
@@ -391,7 +391,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('Product API lookup failed:', error);
   }
 
-  // 9. UPC Database (fallback)
+  // 14. UPC Database (fallback)
   try {
     console.log('Trying UPC Database...');
     const upcProduct = await fetchProductFromUPCDatabase(barcode);
@@ -404,7 +404,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('UPC Database lookup failed:', error);
   }
 
-  // 10. All lookups failed
+  // 15. All lookups failed
   console.log('All database lookups failed for barcode:', barcode);
   return { 
     product: null, 
