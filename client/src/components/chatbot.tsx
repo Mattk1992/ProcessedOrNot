@@ -91,7 +91,7 @@ export default function Chatbot() {
       {/* Chat Toggle Button */}
       <Button
         onClick={() => setIsOpen(!isOpen)}
-        className={`fixed bottom-6 right-6 z-50 h-14 w-14 rounded-full shadow-lg transition-all duration-300 ${
+        className={`fixed bottom-6 right-20 z-50 h-14 w-14 rounded-full shadow-lg transition-all duration-300 ${
           isOpen 
             ? 'bg-destructive hover:bg-destructive/90' 
             : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700'
@@ -107,7 +107,7 @@ export default function Chatbot() {
 
       {/* Chat Window */}
       {isOpen && (
-        <Card className="fixed bottom-24 right-6 z-50 w-96 h-96 glass-effect border shadow-2xl slide-up">
+        <Card className="fixed bottom-24 right-20 z-50 w-96 h-96 glass-effect border shadow-2xl slide-up">
           <CardHeader className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-t-lg pb-4">
             <CardTitle className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
