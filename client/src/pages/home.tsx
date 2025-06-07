@@ -47,7 +47,7 @@ export default function Home() {
               <img 
                 src={logoPath}
                 alt="ProcessedOrNot Logo"
-                className="w-12 h-12 rounded-2xl shadow-lg glow-effect floating-animation"
+                className="w-16 h-16 rounded-2xl shadow-lg glow-effect floating-animation"
               />
               <div>
                 <h1 className="text-2xl font-bold gradient-text text-shadow">
