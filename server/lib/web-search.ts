@@ -23,10 +23,12 @@ export async function searchProductByText(productName: string): Promise<WebSearc
       "description": "brief product description", 
       "ingredients": "complete ingredients list if available",
       "category": "product category",
-      "found": true/false
+      "found": true/false,
+      "funFacts": ["fact1", "fact2", "fact3", "fact4", "fact5"]
     }
     
     If the product cannot be found or identified, set "found" to false.
+    Include 3-5 interesting and educational fun facts about this product, its ingredients, nutritional aspects, cultural significance, or manufacturing process.
     Focus on finding accurate ingredient information for food products.`;
 
     const response = await openai.chat.completions.create({

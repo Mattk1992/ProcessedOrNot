@@ -44,6 +44,7 @@ export async function cascadingProductLookup(input: string): Promise<ProductLook
       // Analyze ingredients if available
       let processingScore = 0;
       let processingExplanation = "No ingredients available for analysis";
+      let funFacts: string[] = [];
       
       if (product.ingredients_text) {
         try {
@@ -53,9 +54,11 @@ export async function cascadingProductLookup(input: string): Promise<ProductLook
           );
           processingScore = analysis.score;
           processingExplanation = analysis.explanation;
+          funFacts = analysis.funFacts;
         } catch (error) {
           console.error("Failed to analyze ingredients:", error);
           processingExplanation = "Unable to analyze ingredients at this time";
+          funFacts = ["This product contains common food ingredients found in many packaged foods."];
         }
       }
 
