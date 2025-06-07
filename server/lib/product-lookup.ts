@@ -71,6 +71,7 @@ export async function cascadingProductLookup(input: string): Promise<ProductLook
         nutriments: product.nutriments || null,
         processingScore,
         processingExplanation,
+        funFacts,
         dataSource: 'OpenFoodFacts'
       };
 

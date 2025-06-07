@@ -84,6 +84,7 @@ export async function searchProductByText(productName: string): Promise<WebSearc
       nutriments: null, // Web search doesn't provide detailed nutriments
       processingScore,
       processingExplanation,
+      funFacts: searchResult.funFacts || ["This product was found through web search with limited ingredient analysis."],
       dataSource: 'Web Search'
     };
 
