@@ -11,9 +11,9 @@ interface BarcodeScannerProps {
 }
 
 const sampleProducts = [
-  { barcode: "8720600618161", name: "Hak Chili sin carne schotel", description: "Ready meal" },
-  { barcode: "5449000000996", name: "Coca-Cola", description: "Soft drink" },
-  { barcode: "8710398500434", name: "Lays Chips Naturel 250gr", description: "Potato chips" },
+  { barcode: "8720600618161", name: "Hak Chili sin carne schotel", description: "Barcode lookup" },
+  { barcode: "Coca Cola", name: "Coca-Cola", description: "Text search" },
+  { barcode: "Greek yogurt", name: "Greek Yogurt", description: "Text search" },
 ];
 
 export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
@@ -26,7 +26,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (barcode.trim() && barcode.trim().length >= 8) {
+    if (barcode.trim()) {
       onScan(barcode.trim());
     }
   };
@@ -129,8 +129,8 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
             <Search className="w-8 h-8 text-white" />
           </div>
         </div>
-        <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">Scan Product Barcode</h2>
-        <p className="text-muted-foreground">Use your camera or enter barcode manually</p>
+        <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">Product Analyzer</h2>
+        <p className="text-muted-foreground">Scan barcodes or search by product name</p>
       </div>
       
       <Card className="border-0 shadow-none bg-transparent">
@@ -230,7 +230,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   type="text"
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
-                  placeholder="Enter barcode (e.g., 3017620425400)"
+                  placeholder="Enter barcode or product name (e.g., 3017620425400 or 'Coca Cola')"
                   className="w-full px-5 py-4 text-lg font-mono tracking-wider pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30"
                   disabled={isLoading}
                 />
