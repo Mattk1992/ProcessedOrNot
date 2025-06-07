@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import Chatbot from "@/components/chatbot";
 import Home from "@/pages/home";
 import NotFound from "@/pages/not-found";
 
@@ -25,6 +26,7 @@ function App() {
           <TooltipProvider>
             <Toaster />
             <Router />
+            <Chatbot />
           </TooltipProvider>
         </LanguageProvider>
       </ThemeProvider>

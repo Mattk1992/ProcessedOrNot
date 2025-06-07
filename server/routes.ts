@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { cascadingProductLookup } from "./lib/product-lookup";
 import { analyzeIngredients } from "./lib/openai";
+import { generateNutriBotResponse } from "./lib/nutribot";
 import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -142,6 +143,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ 
         message: "Failed to analyze ingredients" 
+      });
+    }
+  });
+
+  // Chat endpoint for NutriBot
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { message, messages } = req.body;
+      
+      if (!message || typeof message !== 'string') {
+        return res.status(400).json({ 
+          message: "Message is required" 
+        });
+      }
+
+      // Convert messages to the expected format
+      const previousMessages = messages?.slice(-6) || [];
+      
+      const response = await generateNutriBotResponse(message, previousMessages);
+      
+      res.json({ response });
+    } catch (error) {
+      console.error("Chat error:", error);
+      res.status(500).json({ 
+        message: "Failed to generate chat response" 
       });
     }
   });
