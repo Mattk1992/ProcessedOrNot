@@ -9,6 +9,8 @@ import { fetchProductFromBarcodeSpider } from "./barcode-spider";
 import { fetchProductFromEANSearch } from "./ean-search";
 import { fetchProductFromProductAPI } from "./product-api";
 import { analyzeIngredients } from "./openai";
+import { detectInputType } from "./input-detector";
+import { searchProductByText } from "./web-search";
 
 interface ProductLookupResult {
   product: InsertProduct | null;
@@ -16,8 +18,20 @@ interface ProductLookupResult {
   error?: string;
 }
 
-export async function cascadingProductLookup(barcode: string): Promise<ProductLookupResult> {
-  console.log(`Starting cascading lookup for barcode: ${barcode}`);
+export async function cascadingProductLookup(input: string): Promise<ProductLookupResult> {
+  console.log(`Starting lookup for input: ${input}`);
+  
+  // Detect if input is a barcode or text
+  const inputType = detectInputType(input);
+  console.log(`Detected input type: ${inputType}`);
+  
+  // If it's text, use web search
+  if (inputType === 'text') {
+    return await searchProductByText(input);
+  }
+  
+  // If it's a barcode, proceed with cascading database lookup
+  const barcode = input;
 
   // 1. Primary: OpenFoodFacts
   try {
