@@ -56,12 +56,12 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       codeReaderRef.current = new BrowserMultiFormatReader();
       
       await codeReaderRef.current.decodeFromVideoDevice(
-        undefined,
+        undefined as any,
         videoRef.current,
         (result, error) => {
           if (result) {
             const scannedCode = result.getText();
-            if (scannedCode && scannedCode.length >= 8) {
+            if (scannedCode && scannedCode.trim()) {
               stopCamera();
               onScan(scannedCode);
             }
@@ -244,7 +244,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
               <Button 
                 type="submit"
                 className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl glow-effect scale-on-hover"
-                disabled={isLoading || barcode.trim().length < 8}
+                disabled={isLoading || !barcode.trim()}
               >
                 {isLoading ? (
                   <>

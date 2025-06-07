@@ -14,10 +14,10 @@ export default function Home() {
   const { t } = useLanguage();
 
   const handleScan = async (barcode: string) => {
-    if (barcode.length < 8) {
+    if (!barcode.trim()) {
       toast({
         title: "Invalid Barcode",
-        description: "Barcode must be at least 8 digits long",
+        description: "Please enter a valid barcode",
         variant: "destructive",
       });
       return;
