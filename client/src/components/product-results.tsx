@@ -7,7 +7,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database } from "lucide-react";
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
-import FunFacts from "./fun-facts";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -512,16 +511,6 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
             </div>
           </CardContent>
         </Card>
-      )}
-
-      {/* Fun Facts Section */}
-      {product.funFacts && (
-        <div className="slide-up">
-          <FunFacts 
-            facts={product.funFacts as string[]} 
-            productName={product.productName || undefined}
-          />
-        </div>
       )}
     </div>
   );

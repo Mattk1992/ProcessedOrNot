@@ -6,7 +6,6 @@ import LanguageSwitcher from "@/components/language-switcher";
 import ThemeToggle from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749336369166.png";
 
 export default function Home() {
   const [currentBarcode, setCurrentBarcode] = useState<string>("");
@@ -44,16 +43,14 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <img 
-                src={logoPath}
-                alt="ProcessedOrNot Logo"
-                className="w-16 h-16 rounded-2xl shadow-lg glow-effect floating-animation"
-              />
+              <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg glow-effect floating-animation">
+                <Shield className="w-6 h-6 text-white" />
+              </div>
               <div>
                 <h1 className="text-2xl font-bold gradient-text text-shadow">
-                  ProcessedOrNot
+                  {t('home.title')}
                 </h1>
-                <p className="text-sm text-muted-foreground">AI-Powered Food Analysis</p>
+                <p className="text-sm text-muted-foreground">{t('home.subtitle')}</p>
               </div>
             </div>
             <div className="scale-on-hover">

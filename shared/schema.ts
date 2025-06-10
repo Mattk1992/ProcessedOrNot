@@ -12,7 +12,6 @@ export const products = pgTable("products", {
   nutriments: jsonb("nutriments"),
   processingScore: integer("processing_score"),
   processingExplanation: text("processing_explanation"),
-  funFacts: jsonb("fun_facts"),
   dataSource: text("data_source").default("OpenFoodFacts"),
   lastUpdated: text("last_updated"),
 });
@@ -55,7 +54,6 @@ export type ProcessingAnalysis = {
     processed: string[];
     minimallyProcessed: string[];
   };
-  funFacts: string[];
 };
 
 export const users = pgTable("users", {

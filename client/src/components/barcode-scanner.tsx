@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Loader2, Camera, X, RotateCcw } from "lucide-react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
-import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749336369166.png";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string) => void;
@@ -12,9 +11,9 @@ interface BarcodeScannerProps {
 }
 
 const sampleProducts = [
-  { barcode: "8720600618161", name: "Hak Chili sin carne schotel", description: "Barcode lookup" },
-  { barcode: "Coca Cola", name: "Coca-Cola", description: "Text search" },
-  { barcode: "Greek yogurt", name: "Greek Yogurt", description: "Text search" },
+  { barcode: "8720600618161", name: "Hak Chili sin carne schotel", description: "Ready meal" },
+  { barcode: "5449000000996", name: "Coca-Cola", description: "Soft drink" },
+  { barcode: "8710398500434", name: "Lays Chips Naturel 250gr", description: "Potato chips" },
 ];
 
 export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
@@ -27,7 +26,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (barcode.trim()) {
+    if (barcode.trim() && barcode.trim().length >= 8) {
       onScan(barcode.trim());
     }
   };
@@ -126,14 +125,12 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     <div className="space-y-10">
       <div className="text-center mb-8">
         <div className="flex items-center justify-center mb-4">
-          <img 
-            src={logoPath}
-            alt="ProcessedOrNot Logo"
-            className="w-16 h-16 rounded-2xl shadow-lg glow-effect floating-animation"
-          />
+          <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg glow-effect floating-animation">
+            <Search className="w-8 h-8 text-white" />
+          </div>
         </div>
-        <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">Product Analyzer</h2>
-        <p className="text-muted-foreground">Scan barcodes or search by product name</p>
+        <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">Scan Product Barcode</h2>
+        <p className="text-muted-foreground">Use your camera or enter barcode manually</p>
       </div>
       
       <Card className="border-0 shadow-none bg-transparent">
@@ -233,7 +230,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   type="text"
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
-                  placeholder="Enter barcode or product name (e.g., 3017620425400 or 'Coca Cola')"
+                  placeholder="Enter barcode (e.g., 3017620425400)"
                   className="w-full px-5 py-4 text-lg font-mono tracking-wider pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30"
                   disabled={isLoading}
                 />
@@ -269,14 +266,12 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       <div className="glass-card rounded-3xl p-8 glow-effect">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <img 
-              src={logoPath}
-              alt="ProcessedOrNot Logo"
-              className="w-12 h-12 rounded-2xl shadow-lg floating-animation"
-            />
+            <div className="w-12 h-12 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center shadow-lg floating-animation">
+              <Search className="w-6 h-6 text-white" />
+            </div>
           </div>
           <h3 className="text-2xl font-bold gradient-text mb-2">Try Sample Products</h3>
-          <p className="text-muted-foreground">Click on any product below to test the analyzer</p>
+          <p className="text-muted-foreground">Click on any product below to test the scanner</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -6,24 +6,24 @@ import { analyzeIngredients } from "./lib/openai";
 import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
-const inputSchema = z.object({
-  input: z.string().min(1, "Input cannot be empty"),
+const barcodeSchema = z.object({
+  barcode: z.string().min(8, "Barcode must be at least 8 digits"),
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Get product by input (barcode or text)
-  app.get("/api/products/:input", async (req, res) => {
+  // Get product by barcode
+  app.get("/api/products/:barcode", async (req, res) => {
     try {
-      const { input } = inputSchema.parse({ input: req.params.input });
+      const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
 
-      // Check if we have cached product data (for barcode inputs)
-      const cachedProduct = await storage.getProductByBarcode(input);
+      // Check if we have cached product data
+      const cachedProduct = await storage.getProductByBarcode(barcode);
       if (cachedProduct) {
         return res.json(cachedProduct);
       }
 
-      // Use input detection and lookup system
-      const lookupResult = await cascadingProductLookup(input);
+      // Use cascading fallback system
+      const lookupResult = await cascadingProductLookup(barcode);
       
       if (!lookupResult.product) {
         return res.status(404).json({ 
@@ -114,11 +114,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get detailed ingredient analysis
-  app.get("/api/products/:input/analysis", async (req, res) => {
+  app.get("/api/products/:barcode/analysis", async (req, res) => {
     try {
-      const { input } = inputSchema.parse({ input: req.params.input });
+      const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
 
-      const product = await storage.getProductByBarcode(input);
+      const product = await storage.getProductByBarcode(barcode);
       if (!product || !product.ingredientsText) {
         return res.status(404).json({ 
           message: "Product or ingredients not found" 
