@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Loader2, Camera, X, RotateCcw } from "lucide-react";
-import { BrowserMultiFormatReader, NotFoundException, Result } from "@zxing/library";
+import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string) => void;
@@ -37,78 +37,61 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   };
 
   const startCamera = useCallback(async () => {
-    setCameraError("");
-    setIsScanning(true);
-    
     try {
-      // Check browser support
-      if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error("Camera not supported in this browser");
+      setCameraError("");
+      setIsScanning(true);
+      
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Camera access is not supported in this browser. Please try entering the barcode manually.");
       }
 
-      // Show camera UI first
       setIsCameraActive(true);
-      
-      // Wait for video element to render
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       if (!videoRef.current) {
-        throw new Error("Video element not available");
+        throw new Error("Video element not ready");
       }
 
-      // Create fresh code reader instance
-      const codeReader = new BrowserMultiFormatReader();
-      codeReaderRef.current = codeReader;
-
-      console.log("Starting camera...");
-      setIsScanning(false);
-
-      // Start scanning with automatic device selection
-      const result = await codeReader.decodeFromVideoDevice(
-        undefined, // Let ZXing choose the best camera
+      codeReaderRef.current = new BrowserMultiFormatReader();
+      
+      await codeReaderRef.current.decodeFromVideoDevice(
+        undefined as any,
         videoRef.current,
-        (result: Result | undefined, error: Error | undefined) => {
+        (result, error) => {
           if (result) {
-            const code = result.getText();
-            console.log("Barcode detected:", code);
-            if (code && code.length >= 8) {
+            const scannedCode = result.getText();
+            if (scannedCode && scannedCode.trim()) {
               stopCamera();
-              onScan(code);
+              onScan(scannedCode);
             }
           }
           if (error && !(error instanceof NotFoundException)) {
-            console.warn("Scan error:", error.message);
+            console.warn("Barcode scanning error:", error);
           }
         }
       );
 
-      console.log("Camera started successfully");
-
     } catch (error) {
-      console.error("Camera initialization failed:", error);
+      console.error("Camera error:", error);
       setIsScanning(false);
       setIsCameraActive(false);
       
-      let errorMessage = "Camera access failed";
       if (error instanceof Error) {
-        switch (error.name) {
-          case 'NotAllowedError':
-            errorMessage = "Camera permission denied. Please allow camera access and try again.";
-            break;
-          case 'NotFoundError':
-            errorMessage = "No camera found. Please use manual entry.";
-            break;
-          case 'NotSupportedError':
-            errorMessage = "Camera not supported in this browser.";
-            break;
-          case 'NotReadableError':
-            errorMessage = "Camera is being used by another app.";
-            break;
-          default:
-            errorMessage = error.message || "Camera setup failed";
+        if (error.name === 'NotAllowedError') {
+          setCameraError("Camera permission denied. Please allow camera access in your browser settings and try again.");
+        } else if (error.name === 'NotFoundError') {
+          setCameraError("No camera found on this device. Please use manual barcode entry below.");
+        } else if (error.name === 'NotSupportedError') {
+          setCameraError("Camera is not supported in this browser. Please try a different browser or enter the barcode manually.");
+        } else if (error.name === 'NotReadableError') {
+          setCameraError("Camera is already in use by another application. Please close other camera apps and try again.");
+        } else {
+          setCameraError(error.message || "Failed to access camera. Please try manual entry below.");
         }
+      } else {
+        setCameraError("An unexpected error occurred while accessing the camera. Please try manual entry below.");
       }
-      setCameraError(errorMessage);
     }
   }, [onScan]);
 
