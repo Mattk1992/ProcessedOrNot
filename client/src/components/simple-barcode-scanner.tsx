@@ -1,9 +1,8 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Loader2, Camera, X, RotateCcw } from "lucide-react";
-import { BrowserMultiFormatReader, NotFoundException, Result } from "@zxing/library";
+import { Search, Loader2, Camera, X } from "lucide-react";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string) => void;
@@ -16,13 +15,13 @@ const sampleProducts = [
   { barcode: "8710398500434", name: "Lays Chips Naturel 250gr", description: "Potato chips" },
 ];
 
-export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
+export default function SimpleBarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
   const [barcode, setBarcode] = useState("");
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string>("");
-  const [isScanning, setIsScanning] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,107 +35,76 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     onScan(sampleBarcode);
   };
 
-  const startCamera = useCallback(async () => {
+  const startCamera = async () => {
     setCameraError("");
-    setIsScanning(true);
+    setIsInitializing(true);
     
     try {
-      // Check browser support
       if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error("Camera not supported in this browser");
+        throw new Error("Camera not supported");
       }
 
-      // Show camera UI first
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: "environment" }, // Prefer back camera
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
+
+      streamRef.current = stream;
       setIsCameraActive(true);
       
-      // Wait for video element to render
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      if (!videoRef.current) {
-        throw new Error("Video element not available");
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
       }
 
-      // Create fresh code reader instance
-      const codeReader = new BrowserMultiFormatReader();
-      codeReaderRef.current = codeReader;
-
-      console.log("Starting camera...");
-      setIsScanning(false);
-
-      // Start scanning with automatic device selection
-      const result = await codeReader.decodeFromVideoDevice(
-        undefined, // Let ZXing choose the best camera
-        videoRef.current,
-        (result: Result | undefined, error: Error | undefined) => {
-          if (result) {
-            const code = result.getText();
-            console.log("Barcode detected:", code);
-            if (code && code.length >= 8) {
-              stopCamera();
-              onScan(code);
-            }
-          }
-          if (error && !(error instanceof NotFoundException)) {
-            console.warn("Scan error:", error.message);
-          }
-        }
-      );
-
       console.log("Camera started successfully");
+      setIsInitializing(false);
 
     } catch (error) {
-      console.error("Camera initialization failed:", error);
-      setIsScanning(false);
+      console.error("Camera error:", error);
+      setIsInitializing(false);
       setIsCameraActive(false);
       
-      let errorMessage = "Camera access failed";
       if (error instanceof Error) {
         switch (error.name) {
           case 'NotAllowedError':
-            errorMessage = "Camera permission denied. Please allow camera access and try again.";
+            setCameraError("Camera permission denied. Please allow camera access.");
             break;
           case 'NotFoundError':
-            errorMessage = "No camera found. Please use manual entry.";
-            break;
-          case 'NotSupportedError':
-            errorMessage = "Camera not supported in this browser.";
-            break;
-          case 'NotReadableError':
-            errorMessage = "Camera is being used by another app.";
+            setCameraError("No camera found on this device.");
             break;
           default:
-            errorMessage = error.message || "Camera setup failed";
+            setCameraError("Failed to start camera: " + error.message);
         }
+      } else {
+        setCameraError("Unknown camera error occurred");
       }
-      setCameraError(errorMessage);
     }
-  }, [onScan]);
+  };
 
-  const stopCamera = useCallback(() => {
-    try {
-      if (codeReaderRef.current) {
-        codeReaderRef.current.reset();
-      }
-      
-      if (videoRef.current && videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
-        videoRef.current.srcObject = null;
-      }
-    } catch (error) {
-      console.error("Error stopping camera:", error);
-    } finally {
-      setIsCameraActive(false);
-      setIsScanning(false);
-      setCameraError("");
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
     }
-  }, []);
+    
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+    
+    setIsCameraActive(false);
+    setIsInitializing(false);
+    setCameraError("");
+  };
 
   useEffect(() => {
     return () => {
       stopCamera();
     };
-  }, [stopCamera]);
+  }, []);
 
   return (
     <div className="space-y-10">
@@ -163,23 +131,23 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   muted
                   style={{ transform: 'scaleX(-1)' }}
                 />
-                {isScanning && (
+                {isInitializing && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <div className="text-white text-center">
                       <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-primary" />
-                      <p className="text-lg font-medium">Initializing camera...</p>
+                      <p className="text-lg font-medium">Starting camera...</p>
                     </div>
                   </div>
                 )}
                 <div className="absolute inset-0 pointer-events-none">
-                  <div className="absolute inset-6 border-2 border-primary/60 rounded-2xl scan-line">
+                  <div className="absolute inset-6 border-2 border-primary/60 rounded-2xl">
                     <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-xl glow-effect"></div>
                     <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-xl glow-effect"></div>
                     <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-xl glow-effect"></div>
                     <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-xl glow-effect"></div>
                   </div>
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
-                    {isScanning ? "Starting camera..." : "Position barcode within the frame"}
+                    Position barcode within the frame and enter it manually below
                   </div>
                 </div>
               </div>
@@ -193,24 +161,16 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   <X className="w-4 h-4 mr-2" />
                   Stop Camera
                 </Button>
-                <Button
-                  onClick={startCamera}
-                  variant="outline"
-                  className="flex-1 border-2 border-primary/30 text-primary hover:bg-primary/10 bg-primary/5 rounded-xl scale-on-hover"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Restart
-                </Button>
               </div>
             </div>
           ) : (
             <div className="mb-8">
               <Button
                 onClick={startCamera}
-                disabled={isLoading || isScanning}
+                disabled={isLoading || isInitializing}
                 className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-6 px-8 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl glow-effect scale-on-hover mb-8"
               >
-                {isScanning ? (
+                {isInitializing ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
                     <span>Starting Camera...</span>
@@ -218,7 +178,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 ) : (
                   <>
                     <Camera className="w-5 h-5" />
-                    <span>Scan with Camera</span>
+                    <span>Start Camera</span>
                   </>
                 )}
               </Button>
@@ -234,49 +194,47 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   <div className="w-full border-t border-border/30"></div>
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-3 text-muted-foreground">Or enter manually</span>
+                  <span className="bg-card px-3 text-muted-foreground">Enter barcode manually</span>
                 </div>
               </div>
             </div>
           )}
           
-          {!isCameraActive && (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="relative group">
-                <Input
-                  type="text"
-                  value={barcode}
-                  onChange={(e) => setBarcode(e.target.value)}
-                  placeholder="Enter barcode (e.g., 3017620425400)"
-                  className="w-full px-5 py-4 text-lg font-mono tracking-wider pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30"
-                  disabled={isLoading}
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-4">
-                  <div className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors">
-                    <Search className="w-5 h-5" />
-                  </div>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="relative group">
+              <Input
+                type="text"
+                value={barcode}
+                onChange={(e) => setBarcode(e.target.value)}
+                placeholder="Enter barcode (e.g., 3017620425400)"
+                className="w-full px-5 py-4 text-lg font-mono tracking-wider pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30"
+                disabled={isLoading}
+              />
+              <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+                <div className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors">
+                  <Search className="w-5 h-5" />
                 </div>
               </div>
-              
-              <Button 
-                type="submit"
-                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl glow-effect scale-on-hover"
-                disabled={isLoading || !barcode.trim()}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Analyzing Product...</span>
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-5 h-5" />
-                    <span>Analyze Product</span>
-                  </>
-                )}
-              </Button>
-            </form>
-          )}
+            </div>
+            
+            <Button 
+              type="submit"
+              className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl glow-effect scale-on-hover"
+              disabled={isLoading || !barcode.trim()}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Analyzing Product...</span>
+                </>
+              ) : (
+                <>
+                  <Search className="w-5 h-5" />
+                  <span>Analyze Product</span>
+                </>
+              )}
+            </Button>
+          </form>
         </CardContent>
       </Card>
 
