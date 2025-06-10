@@ -4,6 +4,7 @@ import BarcodeScanner from "@/components/barcode-scanner-fixed";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
 import ThemeToggle from "@/components/theme-toggle";
+import CameraTest from "@/components/camera-test";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749336369166.png";
@@ -93,6 +94,9 @@ export default function Home() {
         <div className="slide-up">
           <div className="glass-card p-8 rounded-3xl morphing-border glow-effect">
             <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
+            <div className="mt-8 border-t pt-8">
+              <CameraTest />
+            </div>
           </div>
         </div>
         
