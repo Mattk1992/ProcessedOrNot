@@ -46,6 +46,22 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         throw new Error("Camera access is not supported in this browser. Please try entering the barcode manually.");
       }
 
+      // First, request camera permission explicitly
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'environment', // Use back camera if available
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        });
+        
+        // Stop the test stream immediately
+        stream.getTracks().forEach(track => track.stop());
+      } catch (permissionError) {
+        throw permissionError;
+      }
+
       setIsCameraActive(true);
 
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -80,13 +96,15 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError') {
-          setCameraError("Camera permission denied. Please allow camera access in your browser settings and try again.");
+          setCameraError("Camera permission denied. Please click 'Allow' when your browser asks for camera access, then try again.");
         } else if (error.name === 'NotFoundError') {
           setCameraError("No camera found on this device. Please use manual barcode entry below.");
         } else if (error.name === 'NotSupportedError') {
           setCameraError("Camera is not supported in this browser. Please try a different browser or enter the barcode manually.");
         } else if (error.name === 'NotReadableError') {
           setCameraError("Camera is already in use by another application. Please close other camera apps and try again.");
+        } else if (error.name === 'AbortError') {
+          setCameraError("Camera access was interrupted. Please try again.");
         } else {
           setCameraError(error.message || "Failed to access camera. Please try manual entry below.");
         }
@@ -210,8 +228,26 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
               </Button>
               
               {cameraError && (
-                <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                  <p className="text-destructive text-sm">{cameraError}</p>
+                <div className="mb-6 p-6 bg-destructive/10 border border-destructive/20 rounded-2xl">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0 w-5 h-5 rounded-full bg-destructive/20 flex items-center justify-center mt-0.5">
+                      <X className="w-3 h-3 text-destructive" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-destructive text-sm font-medium mb-2">Camera Access Issue</p>
+                      <p className="text-destructive/80 text-sm mb-3">{cameraError}</p>
+                      {cameraError.includes('permission denied') && (
+                        <div className="text-xs text-muted-foreground bg-card/50 p-3 rounded-lg border">
+                          <p className="font-medium mb-1">How to fix this:</p>
+                          <ol className="list-decimal list-inside space-y-1">
+                            <li>Look for the camera icon in your browser's address bar</li>
+                            <li>Click it and select "Allow" for camera access</li>
+                            <li>Refresh the page and try scanning again</li>
+                          </ol>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               )}
 
