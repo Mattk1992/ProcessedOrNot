@@ -3,7 +3,6 @@ import { Shield } from "lucide-react";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
-import ThemeToggle from "@/components/theme-toggle";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -14,10 +13,10 @@ export default function Home() {
   const { t } = useLanguage();
 
   const handleScan = async (barcode: string) => {
-    if (!barcode.trim()) {
+    if (barcode.length < 8) {
       toast({
         title: "Invalid Barcode",
-        description: "Please enter a valid barcode",
+        description: "Barcode must be at least 8 digits long",
         variant: "destructive",
       });
       return;
@@ -120,9 +119,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-
-      {/* Theme Toggle */}
-      <ThemeToggle />
 
       {/* Background decoration */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
