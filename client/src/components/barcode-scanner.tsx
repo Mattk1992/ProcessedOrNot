@@ -38,6 +38,54 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     onScan(sampleBarcode);
   };
 
+  const startCameraWithBasicConstraints = useCallback(async () => {
+    try {
+      console.log("Starting camera with basic constraints...");
+      setCameraError("");
+      setCameraStatus("Trying basic camera settings...");
+      setIsScanning(true);
+      setIsCameraActive(true);
+
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      if (!videoRef.current) {
+        throw new Error("Video element not ready");
+      }
+
+      codeReaderRef.current = new BrowserMultiFormatReader();
+      
+      // Use most basic constraints
+      await codeReaderRef.current.decodeFromVideoDevice(
+        undefined as any,
+        videoRef.current,
+        (result, error) => {
+          if (result) {
+            const scannedCode = result.getText();
+            console.log("Barcode detected with basic constraints:", scannedCode);
+            if (scannedCode && scannedCode.trim()) {
+              setCameraStatus("Barcode detected!");
+              stopCamera();
+              onScan(scannedCode);
+            }
+          }
+          if (error && !(error instanceof NotFoundException)) {
+            console.warn("Barcode scanning error:", error);
+          }
+        }
+      );
+
+      console.log("Basic camera started successfully");
+      setCameraStatus("Camera ready - Point at a barcode");
+
+    } catch (error) {
+      console.error("Basic camera error:", error);
+      setIsScanning(false);
+      setIsCameraActive(false);
+      setCameraStatus("");
+      setCameraError("Unable to start camera. Please check camera permissions and try again.");
+    }
+  }, []);
+
   const startCamera = useCallback(async () => {
     try {
       console.log("Starting camera initialization...");
@@ -106,9 +154,15 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       setCameraStatus("Camera ready - Point at a barcode");
 
     } catch (error) {
-      console.error("Camera error:", error);
+      console.error("Camera error details:", {
+        error,
+        name: (error as any)?.name,
+        message: (error as any)?.message,
+        stack: (error as any)?.stack
+      });
       setIsScanning(false);
       setIsCameraActive(false);
+      setCameraStatus("");
       
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError') {
@@ -119,6 +173,17 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           setCameraError("Camera is not supported in this browser. Please try a different browser or enter the barcode manually.");
         } else if (error.name === 'NotReadableError') {
           setCameraError("Camera is already in use by another application. Please close other camera apps and try again.");
+        } else if (error.name === 'OverconstrainedError') {
+          setCameraError("Camera settings not supported. Trying with basic settings...");
+          // Reset states and retry with basic constraints
+          setIsScanning(false);
+          setIsCameraActive(false);
+          setCameraStatus("");
+          setTimeout(async () => {
+            setCameraError("");
+            await startCameraWithBasicConstraints();
+          }, 1000);
+          return;
         } else {
           setCameraError(error.message || "Failed to access camera. Please try manual entry below.");
         }
@@ -126,7 +191,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         setCameraError("An unexpected error occurred while accessing the camera. Please try manual entry below.");
       }
     }
-  }, [onScan]);
+  }, [onScan, startCameraWithBasicConstraints]);
 
   const stopCamera = useCallback(() => {
     try {
@@ -225,7 +290,10 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           ) : (
             <div className="mb-8">
               <Button
-                onClick={startCamera}
+                onClick={() => {
+                  console.log("Camera button clicked, isLoading:", isLoading, "isScanning:", isScanning);
+                  startCamera();
+                }}
                 disabled={isLoading || isScanning}
                 className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-6 px-8 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl glow-effect scale-on-hover mb-8"
               >
