@@ -41,27 +41,52 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       setCameraError("");
       setIsScanning(true);
       
+      // Check if browser supports getUserMedia
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Camera access is not supported in this browser. Please try entering the barcode manually.");
       }
 
+      // Set camera active first to render the video element
       setIsCameraActive(true);
-
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      if (!videoRef.current) {
-        throw new Error("Video element not ready");
+      
+      // Wait for the video element to be rendered
+      await new Promise(resolve => setTimeout(resolve, 200));
+      
+      const videoElement = videoRef.current;
+      if (!videoElement) {
+        throw new Error("Camera interface failed to load. Please refresh the page and try again.");
       }
 
-      codeReaderRef.current = new BrowserMultiFormatReader();
+      // Initialize the code reader
+      if (!codeReaderRef.current) {
+        codeReaderRef.current = new BrowserMultiFormatReader();
+      }
+
+      // Get available video devices
+      const videoInputDevices = await codeReaderRef.current.listVideoInputDevices();
       
+      if (videoInputDevices.length === 0) {
+        throw new Error("No camera devices found on this device.");
+      }
+
+      // Use the back camera if available (usually better for scanning)
+      const selectedDeviceId = videoInputDevices.find(device => 
+        device.label.toLowerCase().includes('back') || 
+        device.label.toLowerCase().includes('rear') ||
+        device.label.toLowerCase().includes('environment')
+      )?.deviceId || videoInputDevices[0].deviceId;
+
+      setIsScanning(false);
+
+      // Start decoding from the camera
       await codeReaderRef.current.decodeFromVideoDevice(
-        undefined as any,
-        videoRef.current,
+        selectedDeviceId,
+        videoElement,
         (result, error) => {
           if (result) {
             const scannedCode = result.getText();
-            if (scannedCode && scannedCode.trim()) {
+            console.log("Scanned barcode:", scannedCode);
+            if (scannedCode && scannedCode.length >= 8) {
               stopCamera();
               onScan(scannedCode);
             }
