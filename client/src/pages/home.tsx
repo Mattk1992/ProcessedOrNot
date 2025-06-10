@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Shield } from "lucide-react";
-import BarcodeScanner from "@/components/barcode-scanner";
+import ProductSearch from "@/components/product-search";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
 import ThemeToggle from "@/components/theme-toggle";
@@ -14,18 +14,18 @@ export default function Home() {
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  const handleScan = async (barcode: string) => {
-    if (!barcode.trim()) {
+  const handleSearch = async (query: string) => {
+    if (!query.trim()) {
       toast({
-        title: "Invalid Barcode",
-        description: "Please enter a valid barcode",
+        title: "Invalid Input",
+        description: "Please enter a valid product name or barcode",
         variant: "destructive",
       });
       return;
     }
 
     setIsScanning(true);
-    setCurrentBarcode(barcode);
+    setCurrentBarcode(query);
     
     // Show success message
     toast({
@@ -92,7 +92,7 @@ export default function Home() {
       <main className="max-w-6xl mx-auto px-4 pb-12">
         <div className="slide-up">
           <div className="glass-card p-8 rounded-3xl morphing-border glow-effect">
-            <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
+            <ProductSearch onSearch={handleSearch} isLoading={isScanning} />
           </div>
         </div>
         
