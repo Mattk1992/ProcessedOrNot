@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Shield } from "lucide-react";
-import BarcodeScanner from "@/components/barcode-scanner";
+import BarcodeScanner from "@/components/barcode-scanner-fixed";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
 import ThemeToggle from "@/components/theme-toggle";
