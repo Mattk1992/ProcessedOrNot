@@ -22,6 +22,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string>("");
   const [isScanning, setIsScanning] = useState(false);
+  const [cameraStatus, setCameraStatus] = useState<string>("");
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
 
@@ -39,22 +40,48 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
   const startCamera = useCallback(async () => {
     try {
+      console.log("Starting camera initialization...");
       setCameraError("");
+      setCameraStatus("Initializing camera...");
       setIsScanning(true);
       
+      // Check for basic browser support
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Camera access is not supported in this browser. Please try entering the barcode manually.");
       }
 
+      console.log("Browser supports camera access");
+      setCameraStatus("Checking for available cameras...");
+
+      // Check for available video devices
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(device => device.kind === 'videoinput');
+        console.log(`Found ${videoDevices.length} video devices:`, videoDevices);
+        
+        if (videoDevices.length === 0) {
+          throw new Error("No camera devices found on this device.");
+        }
+      } catch (deviceError) {
+        console.warn("Could not enumerate devices:", deviceError);
+      }
+
+      setCameraStatus("Starting camera feed...");
       setIsCameraActive(true);
 
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Wait for DOM to update
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       if (!videoRef.current) {
         throw new Error("Video element not ready");
       }
 
+      console.log("Video element ready, initializing barcode reader...");
+      setCameraStatus("Initializing barcode reader...");
       codeReaderRef.current = new BrowserMultiFormatReader();
+      
+      console.log("Requesting camera access...");
+      setCameraStatus("Requesting camera permission...");
       
       await codeReaderRef.current.decodeFromVideoDevice(
         undefined as any,
@@ -62,7 +89,9 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         (result, error) => {
           if (result) {
             const scannedCode = result.getText();
+            console.log("Barcode detected:", scannedCode);
             if (scannedCode && scannedCode.trim()) {
+              setCameraStatus("Barcode detected!");
               stopCamera();
               onScan(scannedCode);
             }
@@ -72,6 +101,9 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           }
         }
       );
+
+      console.log("Camera started successfully");
+      setCameraStatus("Camera ready - Point at a barcode");
 
     } catch (error) {
       console.error("Camera error:", error);
@@ -113,6 +145,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       setIsCameraActive(false);
       setIsScanning(false);
       setCameraError("");
+      setCameraStatus("");
     }
   }, []);
 
@@ -153,7 +186,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                     <div className="text-white text-center">
                       <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-primary" />
-                      <p className="text-lg font-medium">Initializing camera...</p>
+                      <p className="text-lg font-medium">{cameraStatus || "Initializing camera..."}</p>
                     </div>
                   </div>
                 )}
@@ -165,7 +198,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                     <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-xl glow-effect"></div>
                   </div>
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
-                    {isScanning ? "Starting camera..." : "Position barcode within the frame"}
+                    {cameraStatus || (isScanning ? "Starting camera..." : "Position barcode within the frame")}
                   </div>
                 </div>
               </div>
