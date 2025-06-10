@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Loader2, Camera, X, RotateCcw } from "lucide-react";
-import { BrowserMultiFormatReader, NotFoundException, Result } from "@zxing/library";
+import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
+import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749336369166.png";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string) => void;
@@ -11,9 +12,9 @@ interface BarcodeScannerProps {
 }
 
 const sampleProducts = [
-  { barcode: "8720600618161", name: "Hak Chili sin carne schotel", description: "Ready meal" },
-  { barcode: "5449000000996", name: "Coca-Cola", description: "Soft drink" },
-  { barcode: "8710398500434", name: "Lays Chips Naturel 250gr", description: "Potato chips" },
+  { barcode: "8720600618161", name: "Hak Chili sin carne schotel", description: "Barcode lookup" },
+  { barcode: "Coca Cola", name: "Coca-Cola", description: "Text search" },
+  { barcode: "Greek yogurt", name: "Greek Yogurt", description: "Text search" },
 ];
 
 export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
@@ -26,7 +27,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (barcode.trim() && barcode.trim().length >= 8) {
+    if (barcode.trim()) {
       onScan(barcode.trim());
     }
   };
@@ -37,78 +38,61 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   };
 
   const startCamera = useCallback(async () => {
-    setCameraError("");
-    setIsScanning(true);
-    
     try {
-      // Check browser support
-      if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error("Camera not supported in this browser");
+      setCameraError("");
+      setIsScanning(true);
+      
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Camera access is not supported in this browser. Please try entering the barcode manually.");
       }
 
-      // Show camera UI first
       setIsCameraActive(true);
-      
-      // Wait for video element to render
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
+
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       if (!videoRef.current) {
-        throw new Error("Video element not available");
+        throw new Error("Video element not ready");
       }
 
-      // Create fresh code reader instance
-      const codeReader = new BrowserMultiFormatReader();
-      codeReaderRef.current = codeReader;
-
-      console.log("Starting camera...");
-      setIsScanning(false);
-
-      // Start scanning with automatic device selection
-      const result = await codeReader.decodeFromVideoDevice(
-        undefined, // Let ZXing choose the best camera
+      codeReaderRef.current = new BrowserMultiFormatReader();
+      
+      await codeReaderRef.current.decodeFromVideoDevice(
+        undefined as any,
         videoRef.current,
-        (result: Result | undefined, error: Error | undefined) => {
+        (result, error) => {
           if (result) {
-            const code = result.getText();
-            console.log("Barcode detected:", code);
-            if (code && code.length >= 8) {
+            const scannedCode = result.getText();
+            if (scannedCode && scannedCode.trim()) {
               stopCamera();
-              onScan(code);
+              onScan(scannedCode);
             }
           }
           if (error && !(error instanceof NotFoundException)) {
-            console.warn("Scan error:", error.message);
+            console.warn("Barcode scanning error:", error);
           }
         }
       );
 
-      console.log("Camera started successfully");
-
     } catch (error) {
-      console.error("Camera initialization failed:", error);
+      console.error("Camera error:", error);
       setIsScanning(false);
       setIsCameraActive(false);
       
-      let errorMessage = "Camera access failed";
       if (error instanceof Error) {
-        switch (error.name) {
-          case 'NotAllowedError':
-            errorMessage = "Camera permission denied. Please allow camera access and try again.";
-            break;
-          case 'NotFoundError':
-            errorMessage = "No camera found. Please use manual entry.";
-            break;
-          case 'NotSupportedError':
-            errorMessage = "Camera not supported in this browser.";
-            break;
-          case 'NotReadableError':
-            errorMessage = "Camera is being used by another app.";
-            break;
-          default:
-            errorMessage = error.message || "Camera setup failed";
+        if (error.name === 'NotAllowedError') {
+          setCameraError("Camera permission denied. Please allow camera access in your browser settings and try again.");
+        } else if (error.name === 'NotFoundError') {
+          setCameraError("No camera found on this device. Please use manual barcode entry below.");
+        } else if (error.name === 'NotSupportedError') {
+          setCameraError("Camera is not supported in this browser. Please try a different browser or enter the barcode manually.");
+        } else if (error.name === 'NotReadableError') {
+          setCameraError("Camera is already in use by another application. Please close other camera apps and try again.");
+        } else {
+          setCameraError(error.message || "Failed to access camera. Please try manual entry below.");
         }
+      } else {
+        setCameraError("An unexpected error occurred while accessing the camera. Please try manual entry below.");
       }
-      setCameraError(errorMessage);
     }
   }, [onScan]);
 
@@ -142,12 +126,14 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     <div className="space-y-10">
       <div className="text-center mb-8">
         <div className="flex items-center justify-center mb-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg glow-effect floating-animation">
-            <Search className="w-8 h-8 text-white" />
-          </div>
+          <img 
+            src={logoPath}
+            alt="ProcessedOrNot Logo"
+            className="w-16 h-16 rounded-2xl shadow-lg glow-effect floating-animation"
+          />
         </div>
-        <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">Scan Product Barcode</h2>
-        <p className="text-muted-foreground">Use your camera or enter barcode manually</p>
+        <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">Product Analyzer</h2>
+        <p className="text-muted-foreground">Scan barcodes or search by product name</p>
       </div>
       
       <Card className="border-0 shadow-none bg-transparent">
@@ -247,7 +233,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   type="text"
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
-                  placeholder="Enter barcode (e.g., 3017620425400)"
+                  placeholder="Enter barcode or product name (e.g., 3017620425400 or 'Coca Cola')"
                   className="w-full px-5 py-4 text-lg font-mono tracking-wider pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30"
                   disabled={isLoading}
                 />
@@ -283,12 +269,14 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       <div className="glass-card rounded-3xl p-8 glow-effect">
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-accent to-primary rounded-2xl flex items-center justify-center shadow-lg floating-animation">
-              <Search className="w-6 h-6 text-white" />
-            </div>
+            <img 
+              src={logoPath}
+              alt="ProcessedOrNot Logo"
+              className="w-12 h-12 rounded-2xl shadow-lg floating-animation"
+            />
           </div>
           <h3 className="text-2xl font-bold gradient-text mb-2">Try Sample Products</h3>
-          <p className="text-muted-foreground">Click on any product below to test the scanner</p>
+          <p className="text-muted-foreground">Click on any product below to test the analyzer</p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

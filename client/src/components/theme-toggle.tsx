@@ -6,8 +6,8 @@ export default function ThemeToggle() {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
-      <div className="glass-effect rounded-full px-4 py-3 shadow-lg pt-[8px] pb-[8px] ml-[0px] mr-[0px] mt-[29px] mb-[29px] pl-[67px] pr-[67px]">
+    <div className="fixed bottom-6 left-6 z-50">
+      <div className="glass-effect rounded-full px-4 py-3 shadow-lg">
         <div className="flex items-center space-x-3">
           <Sun className={`w-4 h-4 transition-colors ${
             theme === 'light' ? 'text-yellow-500' : 'text-muted-foreground'

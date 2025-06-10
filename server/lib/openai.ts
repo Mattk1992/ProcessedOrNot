@@ -23,6 +23,8 @@ Categorize each ingredient into one of these categories:
 - Processed: Refined ingredients, added sugars, processed dairy, refined oils
 - Minimally processed: Whole foods, basic ingredients with minimal modification
 
+Also generate 3-5 interesting and educational fun facts about this product, its ingredients, nutritional aspects, cultural significance, or manufacturing process.
+
 Provide your response in JSON format with this structure:
 {
   "score": number,
@@ -31,7 +33,8 @@ Provide your response in JSON format with this structure:
     "ultraProcessed": ["ingredient1", "ingredient2"],
     "processed": ["ingredient3", "ingredient4"],
     "minimallyProcessed": ["ingredient5", "ingredient6"]
-  }
+  },
+  "funFacts": ["fact1", "fact2", "fact3", "fact4", "fact5"]
 }`;
 
     const response = await openai.chat.completions.create({
@@ -60,6 +63,7 @@ Provide your response in JSON format with this structure:
         processed: result.categories?.processed || [],
         minimallyProcessed: result.categories?.minimallyProcessed || [],
       },
+      funFacts: result.funFacts || ["This product contains common food ingredients found in many packaged foods."],
     };
   } catch (error) {
     console.error("Error analyzing ingredients with OpenAI:", error);

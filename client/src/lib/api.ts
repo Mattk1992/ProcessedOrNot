@@ -2,8 +2,8 @@ import { apiRequest } from "./queryClient";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 export const api = {
-  async getProduct(barcode: string): Promise<Product & { lookupSource?: string }> {
-    const response = await apiRequest("GET", `/api/products/${barcode}`);
+  async getProduct(input: string): Promise<Product & { lookupSource?: string }> {
+    const response = await apiRequest("GET", `/api/products/${encodeURIComponent(input)}`);
     return response.json();
   },
 
@@ -12,8 +12,8 @@ export const api = {
     return response.json();
   },
 
-  async getProductAnalysis(barcode: string): Promise<ProcessingAnalysis> {
-    const response = await apiRequest("GET", `/api/products/${barcode}/analysis`);
+  async getProductAnalysis(input: string): Promise<ProcessingAnalysis> {
+    const response = await apiRequest("GET", `/api/products/${encodeURIComponent(input)}/analysis`);
     return response.json();
   },
 };
