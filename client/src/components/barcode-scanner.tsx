@@ -132,10 +132,48 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">Scan Product Barcode</h2>
         <p className="text-muted-foreground">Use your camera or enter barcode manually</p>
       </div>
+
+      {/* Camera Button - Moved to Front */}
+      {!isCameraActive && (
+        <div className="mb-8">
+          <Button
+            onClick={startCamera}
+            disabled={isLoading || isScanning}
+            className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-6 px-8 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl glow-effect scale-on-hover"
+          >
+            {isScanning ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                <span>Starting Camera...</span>
+              </>
+            ) : (
+              <>
+                <Camera className="w-5 h-5" />
+                <span>Scan with Camera</span>
+              </>
+            )}
+          </Button>
+          
+          {cameraError && (
+            <div className="mt-4 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <p className="text-destructive text-sm">{cameraError}</p>
+            </div>
+          )}
+
+          <div className="relative mt-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border/30"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-3 text-muted-foreground">Or enter manually</span>
+            </div>
+          </div>
+        </div>
+      )}
       
       <Card className="border-0 shadow-none bg-transparent">
         <CardContent className="p-0">
-          {isCameraActive ? (
+          {isCameraActive && (
             <div className="space-y-6 mb-8">
               <div className="relative bg-black rounded-3xl overflow-hidden shadow-2xl glow-effect">
                 <video
@@ -184,41 +222,6 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Restart
                 </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="mb-8">
-              <Button
-                onClick={startCamera}
-                disabled={isLoading || isScanning}
-                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-6 px-8 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl glow-effect scale-on-hover mb-8"
-              >
-                {isScanning ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Starting Camera...</span>
-                  </>
-                ) : (
-                  <>
-                    <Camera className="w-5 h-5" />
-                    <span>Scan with Camera</span>
-                  </>
-                )}
-              </Button>
-              
-              {cameraError && (
-                <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-                  <p className="text-destructive text-sm">{cameraError}</p>
-                </div>
-              )}
-
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-border/30"></div>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-3 text-muted-foreground">Or enter manually</span>
-                </div>
               </div>
             </div>
           )}
