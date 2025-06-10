@@ -9,8 +9,6 @@ import { fetchProductFromBarcodeSpider } from "./barcode-spider";
 import { fetchProductFromEANSearch } from "./ean-search";
 import { fetchProductFromProductAPI } from "./product-api";
 import { analyzeIngredients } from "./openai";
-import { detectInputType } from "./input-detector";
-import { searchProductByText } from "./web-search";
 
 interface ProductLookupResult {
   product: InsertProduct | null;
@@ -18,20 +16,8 @@ interface ProductLookupResult {
   error?: string;
 }
 
-export async function cascadingProductLookup(input: string): Promise<ProductLookupResult> {
-  console.log(`Starting lookup for input: ${input}`);
-  
-  // Detect if input is a barcode or text
-  const inputType = detectInputType(input);
-  console.log(`Detected input type: ${inputType}`);
-  
-  // If it's text, use web search
-  if (inputType === 'text') {
-    return await searchProductByText(input);
-  }
-  
-  // If it's a barcode, proceed with cascading database lookup
-  const barcode = input;
+export async function cascadingProductLookup(barcode: string): Promise<ProductLookupResult> {
+  console.log(`Starting cascading lookup for barcode: ${barcode}`);
 
   // 1. Primary: OpenFoodFacts
   try {
@@ -44,7 +30,6 @@ export async function cascadingProductLookup(input: string): Promise<ProductLook
       // Analyze ingredients if available
       let processingScore = 0;
       let processingExplanation = "No ingredients available for analysis";
-      let funFacts: string[] = [];
       
       if (product.ingredients_text) {
         try {
@@ -54,11 +39,9 @@ export async function cascadingProductLookup(input: string): Promise<ProductLook
           );
           processingScore = analysis.score;
           processingExplanation = analysis.explanation;
-          funFacts = analysis.funFacts;
         } catch (error) {
           console.error("Failed to analyze ingredients:", error);
           processingExplanation = "Unable to analyze ingredients at this time";
-          funFacts = ["This product contains common food ingredients found in many packaged foods."];
         }
       }
 
@@ -71,7 +54,6 @@ export async function cascadingProductLookup(input: string): Promise<ProductLook
         nutriments: product.nutriments || null,
         processingScore,
         processingExplanation,
-        funFacts,
         dataSource: 'OpenFoodFacts'
       };
 
