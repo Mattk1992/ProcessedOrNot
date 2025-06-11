@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Shield } from "lucide-react";
+import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
@@ -43,9 +43,11 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg glow-effect floating-animation">
-                <Shield className="w-6 h-6 text-white" />
-              </div>
+              <img 
+                src={logoPath} 
+                alt="ProcessedOrNot Logo" 
+                className="w-12 h-12 rounded-xl shadow-lg floating-animation"
+              />
               <div>
                 <h1 className="text-2xl font-bold gradient-text text-shadow">
                   {t('home.title')}
@@ -77,7 +79,7 @@ export default function Home() {
             <div className="mt-8 flex justify-center">
               <div className="glass-card px-6 py-3 rounded-full">
                 <p className="text-sm text-muted-foreground">
-                  Powered by <span className="gradient-text font-medium">9 Global Databases</span>
+                  Powered by <span className="gradient-text font-medium">14 Global Databases</span>
                 </p>
               </div>
             </div>
