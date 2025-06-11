@@ -8,6 +8,11 @@ import { fetchProductFromAustralianFood } from "./australia-food";
 import { fetchProductFromBarcodeSpider } from "./barcode-spider";
 import { fetchProductFromEANSearch } from "./ean-search";
 import { fetchProductFromProductAPI } from "./product-api";
+import { fetchProductFromRIVM } from "./rivm";
+import { fetchProductFromNEVO } from "./nevo";
+import { fetchProductFromVoedingscentrum } from "./voedingscentrum";
+import { fetchProductFromFoodDataCentral } from "./fooddata-central";
+import { fetchProductFromKenniscentrum } from "./kenniscentrum";
 import { analyzeIngredients } from "./openai";
 import { isBarcode, searchProductByText } from "./text-search";
 
@@ -106,7 +111,147 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('USDA lookup failed:', error);
   }
 
-  // 3. Tertiary: EFSA (European Food Safety Authority)
+  // 3. Kenniscentrum Gezond Gewicht (Knowledge Centre Healthy Weight)
+  try {
+    console.log('Trying Kenniscentrum Gezond Gewicht...');
+    const kenniscentrumProduct = await fetchProductFromKenniscentrum(barcode);
+    
+    if (kenniscentrumProduct) {
+      // Analyze ingredients if available
+      if (kenniscentrumProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            kenniscentrumProduct.ingredientsText,
+            kenniscentrumProduct.productName || "Unknown Product"
+          );
+          kenniscentrumProduct.processingScore = analysis.score;
+          kenniscentrumProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze Kenniscentrum ingredients:", error);
+          kenniscentrumProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in Kenniscentrum Gezond Gewicht');
+      return { product: kenniscentrumProduct, source: 'Kenniscentrum Gezond Gewicht' };
+    }
+  } catch (error) {
+    console.error('Kenniscentrum lookup failed:', error);
+  }
+
+  // 4. NEVO (Nederlandse Voedingsstoffenbestand)
+  try {
+    console.log('Trying NEVO...');
+    const nevoProduct = await fetchProductFromNEVO(barcode);
+    
+    if (nevoProduct) {
+      // Analyze ingredients if available
+      if (nevoProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            nevoProduct.ingredientsText,
+            nevoProduct.productName || "Unknown Product"
+          );
+          nevoProduct.processingScore = analysis.score;
+          nevoProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze NEVO ingredients:", error);
+          nevoProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in NEVO');
+      return { product: nevoProduct, source: 'NEVO' };
+    }
+  } catch (error) {
+    console.error('NEVO lookup failed:', error);
+  }
+
+  // 5. RIVM (Rijksinstituut voor Volksgezondheid en Milieu)
+  try {
+    console.log('Trying RIVM...');
+    const rivmProduct = await fetchProductFromRIVM(barcode);
+    
+    if (rivmProduct) {
+      // Analyze ingredients if available
+      if (rivmProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            rivmProduct.ingredientsText,
+            rivmProduct.productName || "Unknown Product"
+          );
+          rivmProduct.processingScore = analysis.score;
+          rivmProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze RIVM ingredients:", error);
+          rivmProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in RIVM');
+      return { product: rivmProduct, source: 'RIVM' };
+    }
+  } catch (error) {
+    console.error('RIVM lookup failed:', error);
+  }
+
+  // 6. Voedingscentrum (Netherlands Nutrition Centre)
+  try {
+    console.log('Trying Voedingscentrum...');
+    const voedingscentrumProduct = await fetchProductFromVoedingscentrum(barcode);
+    
+    if (voedingscentrumProduct) {
+      // Analyze ingredients if available
+      if (voedingscentrumProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            voedingscentrumProduct.ingredientsText,
+            voedingscentrumProduct.productName || "Unknown Product"
+          );
+          voedingscentrumProduct.processingScore = analysis.score;
+          voedingscentrumProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze Voedingscentrum ingredients:", error);
+          voedingscentrumProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in Voedingscentrum');
+      return { product: voedingscentrumProduct, source: 'Voedingscentrum' };
+    }
+  } catch (error) {
+    console.error('Voedingscentrum lookup failed:', error);
+  }
+
+  // 7. FoodData Central (USDA)
+  try {
+    console.log('Trying FoodData Central...');
+    const foodDataCentralProduct = await fetchProductFromFoodDataCentral(barcode);
+    
+    if (foodDataCentralProduct) {
+      // Analyze ingredients if available
+      if (foodDataCentralProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            foodDataCentralProduct.ingredientsText,
+            foodDataCentralProduct.productName || "Unknown Product"
+          );
+          foodDataCentralProduct.processingScore = analysis.score;
+          foodDataCentralProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze FoodData Central ingredients:", error);
+          foodDataCentralProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in FoodData Central');
+      return { product: foodDataCentralProduct, source: 'FoodData Central' };
+    }
+  } catch (error) {
+    console.error('FoodData Central lookup failed:', error);
+  }
+
+  // 8. EFSA (European Food Safety Authority)
   try {
     console.log('Trying EFSA...');
     const efsaProduct = await fetchProductFromEFSA(barcode);
@@ -134,7 +279,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('EFSA lookup failed:', error);
   }
 
-  // 4. Health Canada Food Database
+  // 9. Health Canada Food Database
   try {
     console.log('Trying Health Canada...');
     const healthCanadaProduct = await fetchProductFromHealthCanada(barcode);
