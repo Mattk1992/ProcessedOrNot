@@ -181,6 +181,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutribot.insights.analyzing': 'Analyzing nutrition...',
     'nutribot.insights.loading': 'NutriBot is analyzing this product...',
     
+    // Quick Stats Nutrition
+    'nutrition.quick.energy': 'kcal/100g',
+    'nutrition.quick.sugars': 'Sugars',
+    'nutrition.quick.fat': 'Fat',
+    'nutrition.quick.protein': 'Protein',
+    
     // Product Information
     'product.image.alt': 'Product image',
     'product.barcode': 'Barcode',
@@ -417,6 +423,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutribot.insights.analyzing': 'Analizando nutrición...',
     'nutribot.insights.loading': 'NutriBot está analizando este producto...',
     
+    // Quick Stats Nutrition
+    'nutrition.quick.energy': 'kcal/100g',
+    'nutrition.quick.sugars': 'Azúcares',
+    'nutrition.quick.fat': 'Grasa',
+    'nutrition.quick.protein': 'Proteína',
+    
     // Product Information
     'product.image.alt': 'Imagen del producto',
     'product.barcode': 'Código de barras',
@@ -638,6 +650,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutribot.insights.subtitle': 'Analyse Nutritionnelle par IA',
     'nutribot.insights.analyzing': 'Analyse de la nutrition...',
     'nutribot.insights.loading': 'NutriBot analyse ce produit...',
+    
+    // Quick Stats Nutrition
+    'nutrition.quick.energy': 'kcal/100g',
+    'nutrition.quick.sugars': 'Sucres',
+    'nutrition.quick.fat': 'Graisse',
+    'nutrition.quick.protein': 'Protéine',
     
     // Product Information
     'product.image.alt': 'Image du produit',
@@ -863,6 +881,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutribot.insights.analyzing': 'Ernährung analysieren...',
     'nutribot.insights.loading': 'NutriBot analysiert dieses Produkt...',
     
+    // Quick Stats Nutrition
+    'nutrition.quick.energy': 'kcal/100g',
+    'nutrition.quick.sugars': 'Zucker',
+    'nutrition.quick.fat': 'Fett',
+    'nutrition.quick.protein': 'Protein',
+    
     // Product Information
     'product.image.alt': 'Produktbild',
     'product.barcode': 'Barcode',
@@ -1080,6 +1104,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'processing.categories.minimal': '最低限度加工成分',
     'processing.insight.title': 'NutriBot分析',
     'processing.insight.loading': '获取营养信息...',
+    
+    // Quick Stats Nutrition
+    'nutrition.quick.energy': 'kcal/100g',
+    'nutrition.quick.sugars': '糖',
+    'nutrition.quick.fat': '脂肪',
+    'nutrition.quick.protein': '蛋白质',
     
     // Product Information
     'product.image.alt': '产品图片',
@@ -1304,6 +1334,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutribot.insights.subtitle': 'AI駆動の栄養分析',
     'nutribot.insights.analyzing': '栄養を分析中...',
     'nutribot.insights.loading': 'NutriBotがこの製品を分析しています...',
+    
+    // Quick Stats Nutrition
+    'nutrition.quick.energy': 'kcal/100g',
+    'nutrition.quick.sugars': '糖分',
+    'nutrition.quick.fat': '脂肪',
+    'nutrition.quick.protein': 'タンパク質',
     
     // Product Information
     'product.image.alt': '製品画像',

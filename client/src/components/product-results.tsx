@@ -228,7 +228,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                         return nutrients?.energy_100g ? String(nutrients.energy_100g) : "N/A";
                       })()}
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium">kcal/100g</div>
+                    <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.energy')}</div>
                   </div>
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
@@ -237,7 +237,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                         return nutrients?.sugars_100g ? `${nutrients.sugars_100g}g` : "N/A";
                       })()}
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium">Sugars</div>
+                    <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.sugars')}</div>
                   </div>
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-primary/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
@@ -246,7 +246,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                         return nutrients?.fat_100g ? `${nutrients.fat_100g}g` : "N/A";
                       })()}
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium">Fat</div>
+                    <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.fat')}</div>
                   </div>
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
@@ -255,7 +255,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                         return nutrients?.proteins_100g ? `${nutrients.proteins_100g}g` : "N/A";
                       })()}
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium">Protein</div>
+                    <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.protein')}</div>
                   </div>
                 </div>
               )}
