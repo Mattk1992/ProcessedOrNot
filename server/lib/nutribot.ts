@@ -136,6 +136,68 @@ Return as JSON array: [{"title": "Fact Title", "fact": "The actual fact text", "
   }
 }
 
+export async function generateNutritionSpotlightInsights(productName: string, nutriments: Record<string, any>, processingScore: number, language: string = 'en'): Promise<any> {
+  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+  const languageInstructions = {
+    'en': 'Respond in English',
+    'es': 'Responde en español',
+    'fr': 'Répondez en français',
+    'de': 'Antworten Sie auf Deutsch',
+    'zh': '请用中文回答',
+    'ja': '日本語で回答してください',
+    'nl': 'Antwoord in het Nederlands'
+  };
+
+  const instruction = languageInstructions[language as keyof typeof languageInstructions] || languageInstructions['en'];
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: `You are a nutrition expert analyzing food products. ${instruction}. Analyze the nutritional data and provide insights in JSON format with detailed nutrient analysis including descriptions, health impacts, and recommendations for each key nutrient.
+
+Return a JSON object with this structure:
+{
+  "nutrients": [
+    {
+      "name": "string",
+      "value": number,
+      "unit": "string", 
+      "description": "string",
+      "healthImpact": "string",
+      "category": "good" | "moderate" | "high",
+      "recommendation": "string"
+    }
+  ],
+  "overallAssessment": "string",
+  "healthScore": number
+}`
+        },
+        {
+          role: "user",
+          content: `Analyze the nutrition data for "${productName}":
+Nutrients: ${JSON.stringify(nutriments)}
+Processing Score: ${processingScore}/10
+
+Provide detailed insights about the key nutrients, their health impacts, and overall nutritional assessment.`
+        }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+      max_tokens: 1500
+    });
+
+    const result = JSON.parse(response.choices[0].message.content || '{}');
+    return result;
+  } catch (error) {
+    console.error('Error generating nutrition spotlight insights:', error);
+    throw error;
+  }
+}
+
 export async function generateProductNutritionInsight(productName: string, ingredients: string, processingScore: number, language: string = 'en'): Promise<string> {
   try {
     const prompt = `As NutriBot, provide a friendly nutritional insight about this product:

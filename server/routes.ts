@@ -123,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get detailed ingredient analysis
   app.get("/api/products/:barcode/analysis", async (req, res) => {
     try {
-      const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
+      const barcode = req.params.barcode;
       const { language } = req.query;
 
       const product = await storage.getProductByBarcode(barcode);
@@ -143,12 +143,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error("Error analyzing ingredients:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid barcode format",
-          errors: error.errors 
-        });
-      }
       res.status(500).json({ 
         message: "Failed to analyze ingredients" 
       });
@@ -180,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate product nutrition insight
   app.get("/api/products/:barcode/nutribot-insight", async (req, res) => {
     try {
-      const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
+      const barcode = req.params.barcode;
       const { language } = req.query;
 
       const product = await storage.getProductByBarcode(barcode);
@@ -201,12 +195,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error("Error generating product insight:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid barcode format",
-          errors: error.errors 
-        });
-      }
       res.status(500).json({ 
         message: "Failed to generate product insight" 
       });
@@ -216,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate fun facts
   app.get("/api/products/:barcode/fun-facts", async (req, res) => {
     try {
-      const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
+      const barcode = req.params.barcode;
       const { language } = req.query;
 
       const product = await storage.getProductByBarcode(barcode);
@@ -238,14 +226,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error("Error generating fun facts:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid barcode format",
-          errors: error.errors 
-        });
-      }
       res.status(500).json({ 
         message: "Failed to generate fun facts" 
+      });
+    }
+  });
+
+  // Generate nutrition spotlight insights
+  app.get("/api/products/:barcode/nutrition-spotlight", async (req, res) => {
+    try {
+      const barcode = req.params.barcode;
+      const { language } = req.query;
+
+      const product = await storage.getProductByBarcode(barcode);
+      if (!product || !product.nutriments) {
+        return res.status(404).json({ 
+          message: "Product or nutrition data not found" 
+        });
+      }
+
+      // Generate AI-powered nutrition insights
+      const insights = await generateNutritionSpotlightInsights(
+        product.productName || "Unknown Product",
+        product.nutriments,
+        product.processingScore || 0,
+        (language as string) || 'en'
+      );
+
+      res.json(insights);
+
+    } catch (error) {
+      console.error("Error generating nutrition spotlight:", error);
+      res.status(500).json({ 
+        message: "Failed to generate nutrition insights" 
       });
     }
   });
