@@ -156,9 +156,9 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
   };
 
   const getScoreLabel = (score: number) => {
-    if (score <= 3) return "Minimally Processed";
-    if (score <= 6) return "Processed";
-    return "Ultra-Processed";
+    if (score <= 3) return t('processing.level.minimal');
+    if (score <= 6) return t('processing.level.processed');
+    return t('processing.level.ultra');
   };
 
   const getScoreBorderColor = (score: number) => {

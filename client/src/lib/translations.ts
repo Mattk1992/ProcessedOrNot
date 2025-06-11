@@ -1067,8 +1067,10 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Processing Analysis
     'processing.title': '加工分析',
+    'processing.aiPowered': 'AI驱动',
+    'processing.level': '加工程度',
     'processing.score': '加工评分',
-    'processing.outof': '满分10分',
+    'processing.outof': '10',
     'processing.level.minimal': '最低限度加工',
     'processing.level.processed': '加工',
     'processing.level.ultra': '超加工',
@@ -1283,8 +1285,10 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Processing Analysis
     'processing.title': '加工分析',
+    'processing.aiPowered': 'AI駆動',
+    'processing.level': '加工レベル',
     'processing.score': '加工スコア',
-    'processing.outof': '10点満点',
+    'processing.outof': '10',
     'processing.level.minimal': '最小限の加工',
     'processing.level.processed': '加工済み',
     'processing.level.ultra': '超加工',
@@ -1294,6 +1298,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'processing.categories.minimal': '最小限の加工成分',
     'processing.insight.title': 'NutriBot分析',
     'processing.insight.loading': '栄養情報を取得中...',
+    
+    // NutriBot Insights
+    'nutribot.insights.title': 'NutriBotインサイト',
+    'nutribot.insights.subtitle': 'AI駆動の栄養分析',
+    'nutribot.insights.analyzing': '栄養を分析中...',
+    'nutribot.insights.loading': 'NutriBotがこの製品を分析しています...',
     
     // Product Information
     'product.image.alt': '製品画像',
@@ -1469,8 +1479,10 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Processing Analysis
     'processing.title': 'Verwerkingsanalyse',
+    'processing.aiPowered': 'AI-aangedreven',
+    'processing.level': 'Verwerkingsniveau',
     'processing.score': 'Verwerkingsscore',
-    'processing.outof': 'van 10',
+    'processing.outof': '10',
     'processing.level.minimal': 'Minimaal Bewerkt',
     'processing.level.processed': 'Bewerkt',
     'processing.level.ultra': 'Ultra-Bewerkt',
