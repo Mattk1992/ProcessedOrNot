@@ -50,9 +50,9 @@ export default function Home() {
               />
               <div>
                 <h1 className="text-2xl font-bold gradient-text text-shadow">
-                  {t('home.title')}
+                  {t('brand.title')}
                 </h1>
-                <p className="text-sm text-muted-foreground">{t('home.subtitle')}</p>
+                <p className="text-sm text-muted-foreground">{t('brand.subtitle')}</p>
               </div>
             </div>
             <div className="scale-on-hover">
@@ -70,16 +70,16 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6 fade-in text-shadow">
-              Discover How Processed
-              <span className="gradient-text block mt-2">Your Food Really Is</span>
+              {t('hero.title.part1')}
+              <span className="gradient-text block mt-2">{t('hero.title.part2')}</span>
             </h2>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto fade-in leading-relaxed">
-              Scan any barcode to get instant AI analysis of processing levels, ingredients, and nutritional insights
+              {t('hero.description')}
             </p>
             <div className="mt-8 flex justify-center">
               <div className="glass-card px-6 py-3 rounded-full">
                 <p className="text-sm text-muted-foreground">
-                  Powered by <span className="gradient-text font-medium">14 Global Databases</span>
+                  {t('hero.databases')}
                 </p>
               </div>
             </div>
@@ -110,12 +110,13 @@ export default function Home() {
       <footer className="border-t border-border/50 mt-16">
         <div className="max-w-6xl mx-auto px-4 py-6">
           <div className="text-center text-sm text-muted-foreground">
-            Created by{" "}
+            {t('footer.createdBy')}{" "}
             <a
               href="https://www.linkedin.com/in/matthias-kuchenbecker/"
               target="_blank"
               rel="noopener noreferrer"
               className="font-medium text-foreground hover:text-primary transition-colors underline decoration-primary/30 hover:decoration-primary"
+              aria-label={t('footer.linkedin')}
             >
               Matthias Kuchenbecker
             </a>

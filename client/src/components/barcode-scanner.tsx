@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, Loader2, Camera, X, RotateCcw } from "lucide-react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string) => void;

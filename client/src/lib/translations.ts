@@ -71,6 +71,114 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': 'Select Language',
     'language.current': 'Current language',
+    
+    // Header and Branding
+    'brand.title': 'ProcessedOrNot Scanner',
+    'brand.subtitle': 'For fast, simple, and advanced product analysis and processing detection',
+    
+    // Hero Section
+    'hero.title.part1': 'Discover How Processed',
+    'hero.title.part2': 'Your Food Really Is',
+    'hero.description': 'Scan any barcode to get instant AI analysis of processing levels, ingredients, and nutritional insights',
+    'hero.databases': 'Powered by 14 Global Databases',
+    
+    // Scanner Section
+    'scanner.header.title': 'Find Your Product',
+    'scanner.header.description': 'Scan barcode, enter numbers, or type product name',
+    'scanner.camera.start': 'Start Camera Scanner',
+    'scanner.camera.stop': 'Stop Camera',
+    'scanner.camera.switch': 'Switch Camera',
+    'scanner.camera.error': 'Camera Error',
+    'scanner.camera.permission': 'Camera permission required to scan barcodes',
+    'scanner.input.placeholder': 'Enter barcode or product name',
+    'scanner.input.button': 'Analyze Product',
+    'scanner.input.analyzing': 'Analyzing Product...',
+    'scanner.samples.title': 'Try Sample Searches',
+    'scanner.samples.description': 'Test barcode scanning or text-based product search',
+    'scanner.samples.click': 'Click to scan',
+    'scanner.samples.barcode': 'Barcode scan',
+    'scanner.samples.text': 'Text search',
+    
+    // Nutrition Spotlight
+    'nutrition.title': 'Nutrition Spotlight',
+    'nutrition.subtitle': 'Key nutritional insights',
+    'nutrition.dailyValue': 'Daily Value',
+    'nutrition.basedOn': 'Based on a 2000 calorie diet',
+    'nutrition.energy': 'Energy',
+    'nutrition.fat': 'Fat',
+    'nutrition.saturatedFat': 'Saturated Fat',
+    'nutrition.sugars': 'Sugars',
+    'nutrition.protein': 'Protein',
+    'nutrition.salt': 'Salt',
+    'nutrition.fiber': 'Fiber',
+    'nutrition.carbohydrates': 'Carbohydrates',
+    'nutrition.category.low': 'Low',
+    'nutrition.category.medium': 'Medium',
+    'nutrition.category.high': 'High',
+    'nutrition.description.energy': 'Energy content per 100g',
+    'nutrition.description.fat': 'Total fat content',
+    'nutrition.description.saturatedFat': 'Saturated fat content',
+    'nutrition.description.sugars': 'Sugar content',
+    'nutrition.description.protein': 'Protein content',
+    'nutrition.description.salt': 'Salt content',
+    
+    // Fun Facts
+    'funfacts.title': 'Fun Facts',
+    'funfacts.subtitle': 'Interesting insights about this product',
+    'funfacts.category.nutrition': 'nutrition',
+    'funfacts.category.history': 'history',
+    'funfacts.category.processing': 'processing',
+    'funfacts.category.environment': 'environment',
+    
+    // NutriBot Chat
+    'nutribot.title': 'Ask NutriBot',
+    'nutribot.subtitle': 'Your AI nutrition assistant',
+    'nutribot.placeholder': 'Ask about nutrition, ingredients, or health...',
+    'nutribot.send': 'Send',
+    'nutribot.thinking': 'NutriBot is thinking...',
+    'nutribot.welcome': 'Hi! I\'m NutriBot, your nutrition assistant. Ask me anything about food, ingredients, or healthy eating!',
+    'nutribot.error': 'Sorry, I encountered an error. Please try again.',
+    
+    // Processing Analysis
+    'processing.title': 'Processing Analysis',
+    'processing.score': 'Processing Score',
+    'processing.outof': 'out of 10',
+    'processing.level.minimal': 'Minimally Processed',
+    'processing.level.processed': 'Processed',
+    'processing.level.ultra': 'Ultra-Processed',
+    'processing.categories.title': 'Ingredient Categories',
+    'processing.categories.ultra': 'Ultra-processed ingredients',
+    'processing.categories.processed': 'Processed ingredients',
+    'processing.categories.minimal': 'Minimally processed ingredients',
+    'processing.insight.title': 'NutriBot Insight',
+    'processing.insight.loading': 'Getting nutrition insights...',
+    
+    // Product Information
+    'product.image.alt': 'Product image',
+    'product.barcode': 'Barcode',
+    'product.notfound.title': 'Product Not Found',
+    'product.notfound.description': 'We couldn\'t find this product in our databases.',
+    'product.notfound.add': 'Add Product Information',
+    'product.addmanual.title': 'Add Product Manually',
+    'product.addmanual.description': 'Help improve our database by adding this product',
+    
+    // Theme Toggle
+    'theme.light': 'Light mode',
+    'theme.dark': 'Dark mode',
+    'theme.toggle': 'Toggle theme',
+    
+    // Footer
+    'footer.createdBy': 'Created by',
+    'footer.linkedin': 'LinkedIn Profile',
+    
+    // Status Messages
+    'status.scanning': 'Scanning Barcode',
+    'status.scanning.description': 'Searching product databases...',
+    'status.searching': 'Searching Product',
+    'status.searching.description': 'Finding product information and analyzing ingredients...',
+    'status.loading': 'Loading',
+    'status.success': 'Success',
+    'status.error': 'Error',
   },
   
   es: {
@@ -134,6 +242,114 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': 'Seleccionar Idioma',
     'language.current': 'Idioma actual',
+    
+    // Header and Branding
+    'brand.title': 'Escáner ProcessedOrNot',
+    'brand.subtitle': 'Para análisis rápido, simple y avanzado de productos y detección de procesamiento',
+    
+    // Hero Section
+    'hero.title.part1': 'Descubre Qué Tan Procesada',
+    'hero.title.part2': 'Está Realmente Tu Comida',
+    'hero.description': 'Escanea cualquier código de barras para obtener análisis instantáneo de IA sobre niveles de procesamiento, ingredientes e información nutricional',
+    'hero.databases': 'Impulsado por 14 Bases de Datos Globales',
+    
+    // Scanner Section
+    'scanner.header.title': 'Encuentra Tu Producto',
+    'scanner.header.description': 'Escanea código de barras, ingresa números o escribe el nombre del producto',
+    'scanner.camera.start': 'Iniciar Escáner de Cámara',
+    'scanner.camera.stop': 'Detener Cámara',
+    'scanner.camera.switch': 'Cambiar Cámara',
+    'scanner.camera.error': 'Error de Cámara',
+    'scanner.camera.permission': 'Se requiere permiso de cámara para escanear códigos de barras',
+    'scanner.input.placeholder': 'Ingresa código de barras o nombre del producto',
+    'scanner.input.button': 'Analizar Producto',
+    'scanner.input.analyzing': 'Analizando Producto...',
+    'scanner.samples.title': 'Prueba Búsquedas de Muestra',
+    'scanner.samples.description': 'Prueba escaneo de códigos de barras o búsqueda de productos basada en texto',
+    'scanner.samples.click': 'Haz clic para escanear',
+    'scanner.samples.barcode': 'Escaneo de código de barras',
+    'scanner.samples.text': 'Búsqueda de texto',
+    
+    // Nutrition Spotlight
+    'nutrition.title': 'Enfoque Nutricional',
+    'nutrition.subtitle': 'Información nutricional clave',
+    'nutrition.dailyValue': 'Valor Diario',
+    'nutrition.basedOn': 'Basado en una dieta de 2000 calorías',
+    'nutrition.energy': 'Energía',
+    'nutrition.fat': 'Grasa',
+    'nutrition.saturatedFat': 'Grasa Saturada',
+    'nutrition.sugars': 'Azúcares',
+    'nutrition.protein': 'Proteína',
+    'nutrition.salt': 'Sal',
+    'nutrition.fiber': 'Fibra',
+    'nutrition.carbohydrates': 'Carbohidratos',
+    'nutrition.category.low': 'Bajo',
+    'nutrition.category.medium': 'Medio',
+    'nutrition.category.high': 'Alto',
+    'nutrition.description.energy': 'Contenido energético por 100g',
+    'nutrition.description.fat': 'Contenido total de grasa',
+    'nutrition.description.saturatedFat': 'Contenido de grasa saturada',
+    'nutrition.description.sugars': 'Contenido de azúcar',
+    'nutrition.description.protein': 'Contenido de proteína',
+    'nutrition.description.salt': 'Contenido de sal',
+    
+    // Fun Facts
+    'funfacts.title': 'Datos Curiosos',
+    'funfacts.subtitle': 'Información interesante sobre este producto',
+    'funfacts.category.nutrition': 'nutrición',
+    'funfacts.category.history': 'historia',
+    'funfacts.category.processing': 'procesamiento',
+    'funfacts.category.environment': 'medio ambiente',
+    
+    // NutriBot Chat
+    'nutribot.title': 'Pregunta a NutriBot',
+    'nutribot.subtitle': 'Tu asistente de nutrición con IA',
+    'nutribot.placeholder': 'Pregunta sobre nutrición, ingredientes o salud...',
+    'nutribot.send': 'Enviar',
+    'nutribot.thinking': 'NutriBot está pensando...',
+    'nutribot.welcome': '¡Hola! Soy NutriBot, tu asistente de nutrición. ¡Pregúntame cualquier cosa sobre comida, ingredientes o alimentación saludable!',
+    'nutribot.error': 'Lo siento, encontré un error. Por favor inténtalo de nuevo.',
+    
+    // Processing Analysis
+    'processing.title': 'Análisis de Procesamiento',
+    'processing.score': 'Puntuación de Procesamiento',
+    'processing.outof': 'de 10',
+    'processing.level.minimal': 'Mínimamente Procesado',
+    'processing.level.processed': 'Procesado',
+    'processing.level.ultra': 'Ultra-Procesado',
+    'processing.categories.title': 'Categorías de Ingredientes',
+    'processing.categories.ultra': 'Ingredientes ultra-procesados',
+    'processing.categories.processed': 'Ingredientes procesados',
+    'processing.categories.minimal': 'Ingredientes mínimamente procesados',
+    'processing.insight.title': 'Análisis de NutriBot',
+    'processing.insight.loading': 'Obteniendo información nutricional...',
+    
+    // Product Information
+    'product.image.alt': 'Imagen del producto',
+    'product.barcode': 'Código de barras',
+    'product.notfound.title': 'Producto No Encontrado',
+    'product.notfound.description': 'No pudimos encontrar este producto en nuestras bases de datos.',
+    'product.notfound.add': 'Agregar Información del Producto',
+    'product.addmanual.title': 'Agregar Producto Manualmente',
+    'product.addmanual.description': 'Ayuda a mejorar nuestra base de datos agregando este producto',
+    
+    // Theme Toggle
+    'theme.light': 'Modo claro',
+    'theme.dark': 'Modo oscuro',
+    'theme.toggle': 'Cambiar tema',
+    
+    // Footer
+    'footer.createdBy': 'Creado por',
+    'footer.linkedin': 'Perfil de LinkedIn',
+    
+    // Status Messages
+    'status.scanning': 'Escaneando Código de Barras',
+    'status.scanning.description': 'Buscando en bases de datos de productos...',
+    'status.searching': 'Buscando Producto',
+    'status.searching.description': 'Encontrando información del producto y analizando ingredientes...',
+    'status.loading': 'Cargando',
+    'status.success': 'Éxito',
+    'status.error': 'Error',
   },
   
   fr: {
