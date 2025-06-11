@@ -140,13 +140,13 @@ export async function generateNutritionSpotlightInsights(productName: string, nu
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const languageInstructions = {
-    'en': 'Respond in English',
-    'es': 'Responde en español',
-    'fr': 'Répondez en français',
-    'de': 'Antworten Sie auf Deutsch',
-    'zh': '请用中文回答',
-    'ja': '日本語で回答してください',
-    'nl': 'Antwoord in het Nederlands'
+    'en': 'Respond entirely in English. All text including nutrient names, descriptions, health impacts, and recommendations must be in English.',
+    'es': 'Responde completamente en español. Todo el texto incluyendo nombres de nutrientes, descripciones, impactos en la salud y recomendaciones debe estar en español.',
+    'fr': 'Répondez entièrement en français. Tout le texte, y compris les noms des nutriments, les descriptions, les impacts sur la santé et les recommandations doit être en français.',
+    'de': 'Antworten Sie vollständig auf Deutsch. Der gesamte Text einschließlich Nährstoffnamen, Beschreibungen, Gesundheitsauswirkungen und Empfehlungen muss auf Deutsch sein.',
+    'zh': '请完全用中文回答。所有文本包括营养素名称、描述、健康影响和建议都必须是中文。',
+    'ja': '完全に日本語で回答してください。栄養素名、説明、健康への影響、推奨事項を含むすべてのテキストは日本語である必要があります。',
+    'nl': 'Antwoord volledig in het Nederlands. Alle tekst inclusief nutriëntnamen, beschrijvingen, gezondheidseffecten en aanbevelingen moet in het Nederlands zijn.'
   };
 
   const instruction = languageInstructions[language as keyof typeof languageInstructions] || languageInstructions['en'];
