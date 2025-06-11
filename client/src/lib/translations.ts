@@ -1,4 +1,4 @@
-export type Language = 'en' | 'es' | 'fr' | 'de' | 'zh' | 'ja';
+export type Language = 'en' | 'es' | 'fr' | 'de' | 'zh' | 'ja' | 'nl';
 
 export const languages: Record<Language, { name: string; flag: string }> = {
   en: { name: 'English', flag: '🇺🇸' },
@@ -7,6 +7,7 @@ export const languages: Record<Language, { name: string; flag: string }> = {
   de: { name: 'Deutsch', flag: '🇩🇪' },
   zh: { name: '中文', flag: '🇨🇳' },
   ja: { name: '日本語', flag: '🇯🇵' },
+  nl: { name: 'Nederlands', flag: '🇳🇱' },
 };
 
 export const translations: Record<Language, Record<string, string>> = {
@@ -1034,5 +1035,146 @@ export const translations: Record<Language, Record<string, string>> = {
     'status.loading': '読み込み中',
     'status.success': '成功',
     'status.error': 'エラー',
+  },
+
+  nl: {
+    // Navigation
+    'nav.home': 'Home',
+    'nav.products': 'Producten',
+
+    // Home Page
+    'home.title': 'ProcessedOrNot Scanner',
+    'home.subtitle': 'Voor snelle, eenvoudige en geavanceerde productanalyse en verwerkingsdetectie',
+    'home.scan.button': 'Product Scannen',
+    'home.manual.placeholder': 'Voer barcode of productnaam in',
+    'home.manual.submit': 'Zoeken',
+
+    // Scanner
+    'scanner.title': 'Productscanner',
+    'scanner.subtitle': 'Scan barcodes of zoek producten op naam',
+    'scanner.start': 'Scanner Starten',
+    'scanner.stop': 'Scanner Stoppen',
+    'scanner.error': 'Scanner fout',
+    'scanner.permission': 'Camera toestemming vereist',
+
+    // Common
+    'common.loading': 'Laden...',
+    'common.error': 'Fout',
+    'common.retry': 'Opnieuw proberen',
+    'common.close': 'Sluiten',
+    'common.save': 'Opslaan',
+    'common.cancel': 'Annuleren',
+    
+    // Language
+    'language.select': 'Taal Selecteren',
+    'language.current': 'Huidige taal',
+    
+    // Header and Branding
+    'brand.title': 'ProcessedOrNot Scanner',
+    'brand.subtitle': 'Voor snelle, eenvoudige en geavanceerde productanalyse en verwerkingsdetectie',
+    
+    // Hero Section
+    'hero.title.part1': 'Ontdek Hoe Bewerkt',
+    'hero.title.part2': 'Uw Voedsel Werkelijk Is',
+    'hero.description': 'Scan elke barcode voor directe AI-analyse van verwerkingsniveaus, ingrediënten en voedingsinformatie',
+    'hero.databases': 'Aangedreven door 14 Wereldwijde Databases',
+    
+    // Scanner Section
+    'scanner.header.title': 'Vind Uw Product',
+    'scanner.header.description': 'Barcode scannen, nummers invoeren of productnaam typen',
+    'scanner.camera.start': 'Camera Scanner Starten',
+    'scanner.camera.stop': 'Camera Stoppen',
+    'scanner.camera.switch': 'Camera Wisselen',
+    'scanner.camera.error': 'Camera Fout',
+    'scanner.camera.permission': 'Camera toestemming vereist voor het scannen van barcodes',
+    'scanner.input.placeholder': 'Barcode of productnaam invoeren',
+    'scanner.input.button': 'Product Analyseren',
+    'scanner.input.analyzing': 'Product Analyseren...',
+    'scanner.samples.title': 'Probeer Voorbeeldzoekopdrachten',
+    'scanner.samples.description': 'Test barcode scannen of tekstgebaseerd producten zoeken',
+    'scanner.samples.click': 'Klik om te scannen',
+    'scanner.samples.barcode': 'Barcode scan',
+    'scanner.samples.text': 'Tekst zoeken',
+    
+    // Nutrition Spotlight
+    'nutrition.title': 'Voeding Spotlight',
+    'nutrition.subtitle': 'Belangrijke voedingsinformatie',
+    'nutrition.dailyValue': 'Dagelijkse Waarde',
+    'nutrition.basedOn': 'Gebaseerd op een 2000 calorie dieet',
+    'nutrition.energy': 'Energie',
+    'nutrition.fat': 'Vet',
+    'nutrition.saturatedFat': 'Verzadigd Vet',
+    'nutrition.sugars': 'Suikers',
+    'nutrition.protein': 'Eiwit',
+    'nutrition.salt': 'Zout',
+    'nutrition.fiber': 'Vezel',
+    'nutrition.carbohydrates': 'Koolhydraten',
+    'nutrition.category.low': 'Laag',
+    'nutrition.category.medium': 'Gemiddeld',
+    'nutrition.category.high': 'Hoog',
+    'nutrition.description.energy': 'Energie-inhoud per 100g',
+    'nutrition.description.fat': 'Totaal vetgehalte',
+    'nutrition.description.saturatedFat': 'Verzadigd vetgehalte',
+    'nutrition.description.sugars': 'Suikergehalte',
+    'nutrition.description.protein': 'Eiwitgehalte',
+    'nutrition.description.salt': 'Zoutgehalte',
+    
+    // Fun Facts
+    'funfacts.title': 'Leuke Weetjes',
+    'funfacts.subtitle': 'Interessante inzichten over dit product',
+    'funfacts.category.nutrition': 'voeding',
+    'funfacts.category.history': 'geschiedenis',
+    'funfacts.category.processing': 'verwerking',
+    'funfacts.category.environment': 'milieu',
+    
+    // NutriBot Chat
+    'nutribot.title': 'Vraag NutriBot',
+    'nutribot.subtitle': 'Uw AI voeding assistent',
+    'nutribot.placeholder': 'Stel vragen over voeding, ingrediënten of gezondheid...',
+    'nutribot.send': 'Verzenden',
+    'nutribot.thinking': 'NutriBot denkt na...',
+    'nutribot.welcome': 'Hallo! Ik ben NutriBot, uw voeding assistent. Vraag me alles over eten, ingrediënten of gezonde voeding!',
+    'nutribot.error': 'Sorry, ik kreeg een fout. Probeer het opnieuw.',
+    
+    // Processing Analysis
+    'processing.title': 'Verwerkingsanalyse',
+    'processing.score': 'Verwerkingsscore',
+    'processing.outof': 'van 10',
+    'processing.level.minimal': 'Minimaal Bewerkt',
+    'processing.level.processed': 'Bewerkt',
+    'processing.level.ultra': 'Ultra-Bewerkt',
+    'processing.categories.title': 'Ingrediënt Categorieën',
+    'processing.categories.ultra': 'Ultra-bewerkte ingrediënten',
+    'processing.categories.processed': 'Bewerkte ingrediënten',
+    'processing.categories.minimal': 'Minimaal bewerkte ingrediënten',
+    'processing.insight.title': 'NutriBot Analyse',
+    'processing.insight.loading': 'Voedingsinformatie ophalen...',
+    
+    // Product Information
+    'product.image.alt': 'Product afbeelding',
+    'product.barcode': 'Barcode',
+    'product.notfound.title': 'Product Niet Gevonden',
+    'product.notfound.description': 'We konden dit product niet vinden in onze databases.',
+    'product.notfound.add': 'Productinformatie Toevoegen',
+    'product.addmanual.title': 'Product Handmatig Toevoegen',
+    'product.addmanual.description': 'Help onze database te verbeteren door dit product toe te voegen',
+    
+    // Theme Toggle
+    'theme.light': 'Lichte modus',
+    'theme.dark': 'Donkere modus',
+    'theme.toggle': 'Thema omschakelen',
+    
+    // Footer
+    'footer.createdBy': 'Gemaakt door',
+    'footer.linkedin': 'LinkedIn Profiel',
+    
+    // Status Messages
+    'status.scanning': 'Barcode Scannen',
+    'status.scanning.description': 'Productdatabases doorzoeken...',
+    'status.searching': 'Product Zoeken',
+    'status.searching.description': 'Productinformatie vinden en ingrediënten analyseren...',
+    'status.loading': 'Laden',
+    'status.success': 'Succesvol',
+    'status.error': 'Fout',
   },
 };

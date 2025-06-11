@@ -16,7 +16,8 @@ function getNutriBotSystemPrompt(language: string): string {
     'fr': 'Réponds en français de manière naturelle et fluide.',
     'de': 'Antworte auf Deutsch in natürlicher und fließender Weise.',
     'zh': '用中文自然流畅地回答。',
-    'ja': '日本語で自然で流暢に回答してください。'
+    'ja': '日本語で自然で流暢に回答してください。',
+    'nl': 'Antwoord in het Nederlands op een natuurlijke en vloeiende manier.'
   };
 
   const languageInstruction = languageInstructions[language] || languageInstructions['en'];

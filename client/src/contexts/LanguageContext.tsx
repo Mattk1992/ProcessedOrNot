@@ -13,7 +13,7 @@ const STORAGE_KEY = 'preferred-language';
 
 function detectBrowserLanguage(): Language {
   const browserLang = navigator.language.split('-')[0];
-  const supportedLanguages: Language[] = ['en', 'es', 'fr', 'de', 'zh', 'ja'];
+  const supportedLanguages: Language[] = ['en', 'es', 'fr', 'de', 'zh', 'ja', 'nl'];
   
   if (supportedLanguages.includes(browserLang as Language)) {
     return browserLang as Language;
