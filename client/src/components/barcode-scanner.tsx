@@ -11,9 +11,10 @@ interface BarcodeScannerProps {
 }
 
 const sampleProducts = [
-  { barcode: "8720600618161", name: "Hak Chili sin carne schotel", description: "Ready meal" },
-  { barcode: "5449000000996", name: "Coca-Cola", description: "Soft drink" },
-  { barcode: "8710398500434", name: "Lays Chips Naturel 250gr", description: "Potato chips" },
+  { barcode: "8720600618161", name: "Hak Chili sin carne schotel", description: "Barcode scan" },
+  { barcode: "5449000000996", name: "Coca-Cola", description: "Barcode scan" },
+  { barcode: "Nutella", name: "Nutella", description: "Text search" },
+  { barcode: "Organic Oatmeal", name: "Organic Oatmeal", description: "Text search" },
 ];
 
 export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
@@ -167,8 +168,8 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
             <Search className="w-8 h-8 text-white" />
           </div>
         </div>
-        <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">Scan Product Barcode</h2>
-        <p className="text-muted-foreground">Use your camera or enter barcode manually</p>
+        <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">Find Your Product</h2>
+        <p className="text-muted-foreground">Scan barcode, enter numbers, or type product name</p>
       </div>
       
       <Card className="border-0 shadow-none bg-transparent">
@@ -315,8 +316,8 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       <Card className="bg-gradient-to-br from-card to-muted/30 border-2 border-border/20 shadow-lg">
         <CardContent className="pt-8 pb-8">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-foreground mb-2">Try Sample Products</h3>
-            <p className="text-muted-foreground">Click on any product below to test the scanner</p>
+            <h3 className="text-2xl font-bold text-foreground mb-2">Try Sample Searches</h3>
+            <p className="text-muted-foreground">Test barcode scanning or text-based product search</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -329,10 +330,22 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-start justify-between mb-3">
-                  <div className="font-mono text-sm bg-primary/10 text-primary px-3 py-1 rounded-lg group-hover:bg-primary/20 transition-colors">
+                  <div className={`font-mono text-sm px-3 py-1 rounded-lg transition-colors ${
+                    product.description === "Barcode scan" 
+                      ? "bg-primary/10 text-primary group-hover:bg-primary/20" 
+                      : "bg-accent/10 text-accent group-hover:bg-accent/20"
+                  }`}>
                     {product.barcode}
                   </div>
-                  <div className="w-2 h-2 bg-accent rounded-full pulse-subtle"></div>
+                  <div className={`w-3 h-3 rounded-full flex items-center justify-center ${
+                    product.description === "Barcode scan" ? "bg-primary/20" : "bg-accent/20"
+                  }`}>
+                    {product.description === "Barcode scan" ? (
+                      <div className="w-1 h-1 bg-primary rounded-full"></div>
+                    ) : (
+                      <div className="w-1 h-1 bg-accent rounded-full"></div>
+                    )}
+                  </div>
                 </div>
                 <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
                   {product.name}

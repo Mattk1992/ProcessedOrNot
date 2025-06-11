@@ -13,24 +13,24 @@ export default function Home() {
   const { toast } = useToast();
   const { t } = useLanguage();
 
-  const handleScan = async (barcode: string) => {
-    if (barcode.length < 8) {
-      toast({
-        title: "Invalid Barcode",
-        description: "Barcode must be at least 8 digits long",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleScan = async (input: string) => {
     setIsScanning(true);
-    setCurrentBarcode(barcode);
+    setCurrentBarcode(input);
     
-    // Show success message
-    toast({
-      title: "Analyzing Product",
-      description: "Fetching product data and analyzing ingredients...",
-    });
+    // Determine if input is barcode or text for appropriate messaging
+    const isNumeric = /^[0-9\s-]+$/.test(input.replace(/\s/g, ''));
+    
+    if (isNumeric) {
+      toast({
+        title: "Scanning Barcode",
+        description: "Searching product databases...",
+      });
+    } else {
+      toast({
+        title: "Searching Product",
+        description: "Finding product information and analyzing ingredients...",
+      });
+    }
 
     // The ProductResults component will handle the actual loading
     setTimeout(() => setIsScanning(false), 500);
