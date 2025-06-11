@@ -413,6 +413,114 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': 'Sélectionner la Langue',
     'language.current': 'Langue actuelle',
+    
+    // Header and Branding
+    'brand.title': 'Scanner ProcessedOrNot',
+    'brand.subtitle': 'Pour une analyse de produits rapide, simple et avancée et la détection de traitement',
+    
+    // Hero Section
+    'hero.title.part1': 'Découvrez À Quel Point',
+    'hero.title.part2': 'Votre Nourriture Est Vraiment Transformée',
+    'hero.description': 'Scannez n\'importe quel code-barres pour obtenir une analyse IA instantanée des niveaux de transformation, des ingrédients et des informations nutritionnelles',
+    'hero.databases': 'Alimenté par 14 Bases de Données Mondiales',
+    
+    // Scanner Section
+    'scanner.header.title': 'Trouvez Votre Produit',
+    'scanner.header.description': 'Scannez le code-barres, saisissez des numéros ou tapez le nom du produit',
+    'scanner.camera.start': 'Démarrer le Scanner Caméra',
+    'scanner.camera.stop': 'Arrêter la Caméra',
+    'scanner.camera.switch': 'Changer de Caméra',
+    'scanner.camera.error': 'Erreur de Caméra',
+    'scanner.camera.permission': 'Autorisation de caméra requise pour scanner les codes-barres',
+    'scanner.input.placeholder': 'Saisissez le code-barres ou le nom du produit',
+    'scanner.input.button': 'Analyser le Produit',
+    'scanner.input.analyzing': 'Analyse du Produit...',
+    'scanner.samples.title': 'Essayez des Recherches d\'Échantillon',
+    'scanner.samples.description': 'Testez le scan de codes-barres ou la recherche de produits basée sur le texte',
+    'scanner.samples.click': 'Cliquez pour scanner',
+    'scanner.samples.barcode': 'Scan de code-barres',
+    'scanner.samples.text': 'Recherche de texte',
+    
+    // Nutrition Spotlight
+    'nutrition.title': 'Focus Nutrition',
+    'nutrition.subtitle': 'Informations nutritionnelles clés',
+    'nutrition.dailyValue': 'Valeur Quotidienne',
+    'nutrition.basedOn': 'Basé sur un régime de 2000 calories',
+    'nutrition.energy': 'Énergie',
+    'nutrition.fat': 'Graisse',
+    'nutrition.saturatedFat': 'Graisse Saturée',
+    'nutrition.sugars': 'Sucres',
+    'nutrition.protein': 'Protéine',
+    'nutrition.salt': 'Sel',
+    'nutrition.fiber': 'Fibre',
+    'nutrition.carbohydrates': 'Glucides',
+    'nutrition.category.low': 'Faible',
+    'nutrition.category.medium': 'Moyen',
+    'nutrition.category.high': 'Élevé',
+    'nutrition.description.energy': 'Contenu énergétique pour 100g',
+    'nutrition.description.fat': 'Contenu total en graisse',
+    'nutrition.description.saturatedFat': 'Contenu en graisse saturée',
+    'nutrition.description.sugars': 'Contenu en sucre',
+    'nutrition.description.protein': 'Contenu en protéine',
+    'nutrition.description.salt': 'Contenu en sel',
+    
+    // Fun Facts
+    'funfacts.title': 'Faits Amusants',
+    'funfacts.subtitle': 'Informations intéressantes sur ce produit',
+    'funfacts.category.nutrition': 'nutrition',
+    'funfacts.category.history': 'histoire',
+    'funfacts.category.processing': 'transformation',
+    'funfacts.category.environment': 'environnement',
+    
+    // NutriBot Chat
+    'nutribot.title': 'Demandez à NutriBot',
+    'nutribot.subtitle': 'Votre assistant nutrition IA',
+    'nutribot.placeholder': 'Posez des questions sur la nutrition, les ingrédients ou la santé...',
+    'nutribot.send': 'Envoyer',
+    'nutribot.thinking': 'NutriBot réfléchit...',
+    'nutribot.welcome': 'Salut ! Je suis NutriBot, votre assistant nutrition. Demandez-moi tout sur l\'alimentation, les ingrédients ou l\'alimentation saine !',
+    'nutribot.error': 'Désolé, j\'ai rencontré une erreur. Veuillez réessayer.',
+    
+    // Processing Analysis
+    'processing.title': 'Analyse de Transformation',
+    'processing.score': 'Score de Transformation',
+    'processing.outof': 'sur 10',
+    'processing.level.minimal': 'Minimalement Transformé',
+    'processing.level.processed': 'Transformé',
+    'processing.level.ultra': 'Ultra-Transformé',
+    'processing.categories.title': 'Catégories d\'Ingrédients',
+    'processing.categories.ultra': 'Ingrédients ultra-transformés',
+    'processing.categories.processed': 'Ingrédients transformés',
+    'processing.categories.minimal': 'Ingrédients minimalement transformés',
+    'processing.insight.title': 'Analyse NutriBot',
+    'processing.insight.loading': 'Obtention d\'informations nutritionnelles...',
+    
+    // Product Information
+    'product.image.alt': 'Image du produit',
+    'product.barcode': 'Code-barres',
+    'product.notfound.title': 'Produit Non Trouvé',
+    'product.notfound.description': 'Nous n\'avons pas pu trouver ce produit dans nos bases de données.',
+    'product.notfound.add': 'Ajouter les Informations du Produit',
+    'product.addmanual.title': 'Ajouter le Produit Manuellement',
+    'product.addmanual.description': 'Aidez à améliorer notre base de données en ajoutant ce produit',
+    
+    // Theme Toggle
+    'theme.light': 'Mode clair',
+    'theme.dark': 'Mode sombre',
+    'theme.toggle': 'Basculer le thème',
+    
+    // Footer
+    'footer.createdBy': 'Créé par',
+    'footer.linkedin': 'Profil LinkedIn',
+    
+    // Status Messages
+    'status.scanning': 'Scan du Code-Barres',
+    'status.scanning.description': 'Recherche dans les bases de données de produits...',
+    'status.searching': 'Recherche de Produit',
+    'status.searching.description': 'Recherche d\'informations sur le produit et analyse des ingrédients...',
+    'status.loading': 'Chargement',
+    'status.success': 'Succès',
+    'status.error': 'Erreur',
   },
   
   de: {

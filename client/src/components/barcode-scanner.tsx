@@ -20,6 +20,7 @@ const sampleProducts = [
 ];
 
 export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
+  const { t } = useLanguage();
   const [barcode, setBarcode] = useState("");
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string>("");
@@ -172,8 +173,8 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
             className="w-20 h-20 rounded-2xl shadow-lg glow-effect floating-animation"
           />
         </div>
-        <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">Find Your Product</h2>
-        <p className="text-muted-foreground">Scan barcode, enter numbers, or type product name</p>
+        <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">{t('scanner.header.title')}</h2>
+        <p className="text-muted-foreground">{t('scanner.header.description')}</p>
       </div>
       
       <Card className="border-0 shadow-none bg-transparent">
@@ -277,7 +278,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   type="text"
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
-                  placeholder="Enter barcode or product name (e.g., 3017620425400 or 'Coca Cola')"
+                  placeholder={t('scanner.input.placeholder')}
                   className="w-full px-5 py-4 text-lg font-mono tracking-wider pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30"
                   disabled={isLoading}
                 />
@@ -301,13 +302,13 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 {isLoading ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Analyzing Product...</span>
+                    <span>{t('scanner.input.analyzing')}</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl shimmer"></div>
                   </>
                 ) : (
                   <>
                     <Search className="w-5 h-5" />
-                    <span>Analyze Product</span>
+                    <span>{t('scanner.input.button')}</span>
                   </>
                 )}
               </Button>
@@ -320,8 +321,8 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       <Card className="bg-gradient-to-br from-card to-muted/30 border-2 border-border/20 shadow-lg">
         <CardContent className="pt-8 pb-8">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-foreground mb-2">Try Sample Searches</h3>
-            <p className="text-muted-foreground">Test barcode scanning or text-based product search</p>
+            <h3 className="text-2xl font-bold text-foreground mb-2">{t('scanner.samples.title')}</h3>
+            <p className="text-muted-foreground">{t('scanner.samples.description')}</p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -354,9 +355,9 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 <h4 className="font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
                   {product.name}
                 </h4>
-                <p className="text-sm text-muted-foreground">{product.description}</p>
+                <p className="text-sm text-muted-foreground">{t(`scanner.samples.${product.description === "Barcode scan" ? "barcode" : "text"}`)}</p>
                 <div className="mt-3 flex items-center text-xs text-primary opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span>Click to scan</span>
+                  <span>{t('scanner.samples.click')}</span>
                   <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
                   </svg>
