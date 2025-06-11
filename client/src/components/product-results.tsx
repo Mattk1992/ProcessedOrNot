@@ -540,7 +540,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-foreground">Nutrition Facts</h3>
+              <h3 className="text-2xl font-bold text-foreground">{t('nutrition.facts.title')}</h3>
             </div>
             
             <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
@@ -548,13 +548,13 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b-2 border-border/30">
-                      <th className="text-left py-4 text-lg font-semibold text-foreground">Nutrient</th>
-                      <th className="text-right py-4 text-lg font-semibold text-foreground">Per 100g</th>
+                      <th className="text-left py-4 text-lg font-semibold text-foreground">{t('nutrition.facts.nutrient')}</th>
+                      <th className="text-right py-4 text-lg font-semibold text-foreground">{t('nutrition.facts.per100g')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/20">
                     <tr className="hover:bg-muted/30 transition-colors">
-                      <td className="py-4 text-foreground font-medium">Energy</td>
+                      <td className="py-4 text-foreground font-medium">{t('nutrition.facts.energy')}</td>
                       <td className="py-4 text-right text-muted-foreground font-mono">
                         {(product.nutriments as any).energy_100g ? `${(product.nutriments as any).energy_100g} kcal` : "N/A"}
                       </td>

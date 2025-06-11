@@ -115,13 +115,24 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.carbohydrates': 'Carbohydrates',
     'nutrition.category.low': 'Low',
     'nutrition.category.medium': 'Medium',
-    'nutrition.category.high': 'High',
     'nutrition.description.energy': 'Energy content per 100g',
     'nutrition.description.fat': 'Total fat content',
     'nutrition.description.saturatedFat': 'Saturated fat content',
     'nutrition.description.sugars': 'Sugar content',
     'nutrition.description.protein': 'Protein content',
     'nutrition.description.salt': 'Salt content',
+    
+    // Nutrition Facts Table
+    'nutrition.facts.title': 'Nutrition Facts',
+    'nutrition.facts.nutrient': 'Nutrient',
+    'nutrition.facts.per100g': 'Per 100g',
+    'nutrition.facts.energy': 'Energy',
+    'nutrition.facts.fat': 'Fat',
+    'nutrition.facts.saturatedFat': 'Saturated fat',
+    'nutrition.facts.carbohydrates': 'Carbohydrates',
+    'nutrition.facts.sugars': 'Sugars',
+    'nutrition.facts.protein': 'Protein',
+    'nutrition.facts.salt': 'Salt',
     
     // Fun Facts
     'funfacts.title': 'Fun Facts',
@@ -217,7 +228,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.spotlight.overall_assessment': 'Overall Assessment',
     'nutrition.category.good': 'Good',
     'nutrition.category.moderate': 'Moderate',
-    'nutrition.category.high': 'High',
   },
   
   es: {
@@ -331,6 +341,18 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.description.sugars': 'Contenido de azúcar',
     'nutrition.description.protein': 'Contenido de proteína',
     'nutrition.description.salt': 'Contenido de sal',
+    
+    // Nutrition Facts Table
+    'nutrition.facts.title': 'Información Nutricional',
+    'nutrition.facts.nutrient': 'Nutriente',
+    'nutrition.facts.per100g': 'Por 100g',
+    'nutrition.facts.energy': 'Energía',
+    'nutrition.facts.fat': 'Grasa',
+    'nutrition.facts.saturatedFat': 'Grasa saturada',
+    'nutrition.facts.carbohydrates': 'Carbohidratos',
+    'nutrition.facts.sugars': 'Azúcares',
+    'nutrition.facts.protein': 'Proteína',
+    'nutrition.facts.salt': 'Sal',
     
     // Fun Facts
     'funfacts.title': 'Datos Curiosos',
