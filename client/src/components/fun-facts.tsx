@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sparkles, RefreshCw, Lightbulb, Zap } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface FunFactsProps {
   productName: string;
@@ -21,6 +22,7 @@ interface FunFact {
 export default function FunFacts({ productName, ingredients, nutriments, processingScore }: FunFactsProps) {
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
   const [isRotating, setIsRotating] = useState(false);
+  const { t } = useLanguage();
 
   const generateFunFacts = (): FunFact[] => {
     const facts: FunFact[] = [];

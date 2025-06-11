@@ -9,6 +9,7 @@ import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
 import NutritionSpotlight from "./nutrition-spotlight";
 import FunFacts from "./fun-facts";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -17,6 +18,7 @@ interface ProductResultsProps {
 
 export default function ProductResults({ barcode }: ProductResultsProps) {
   const [showManualForm, setShowManualForm] = useState(false);
+  const { t, language } = useLanguage();
 
   const { data: product, isLoading: isLoadingProduct, error: productError, refetch } = useQuery<Product & { lookupSource?: string }>({
     queryKey: ["/api/products", barcode],
@@ -32,9 +34,9 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
   });
 
   const { data: nutriBotInsight, isLoading: isLoadingInsight } = useQuery<{ insight: string }>({
-    queryKey: ["/api/products", barcode, "nutribot-insight"],
+    queryKey: ["/api/products", barcode, "nutribot-insight", language],
     queryFn: async () => {
-      const response = await fetch(`/api/products/${barcode}/nutribot-insight`);
+      const response = await fetch(`/api/products/${barcode}/nutribot-insight?language=${language}`);
       if (!response.ok) throw new Error('Failed to get NutriBot insight');
       return response.json();
     },
@@ -107,7 +109,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
         <Alert className="border-2 border-destructive/20 bg-destructive/5 rounded-2xl shadow-lg fade-in">
           <AlertTriangle className="h-5 w-5 text-destructive" />
           <AlertDescription className="text-destructive font-medium">
-            {errorMessage || "Product not found. Please check the barcode and try again."}
+            {allowsManualEntry ? t('product.notfound.description') : errorMessage || t('product.notfound.description')}
           </AlertDescription>
         </Alert>
 
@@ -119,16 +121,16 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <Database className="h-12 w-12 text-muted-foreground" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">Product Not Found</h3>
+                  <h3 className="font-semibold text-lg mb-2">{t('product.notfound.title')}</h3>
                   <p className="text-muted-foreground mb-4">
-                    We couldn't find this product in OpenFoodFacts, USDA FoodData Central, or UPC Database.
+                    {t('product.addmanual.description')}
                   </p>
                   <Button 
                     onClick={() => setShowManualForm(true)}
                     className="flex items-center gap-2"
                   >
                     <Plus className="h-4 w-4" />
-                    Add Product Manually
+                    {t('product.notfound.add')}
                   </Button>
                 </div>
               </div>

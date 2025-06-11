@@ -74,7 +74,7 @@ export default function NutriBotChat() {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "I'm sorry, I'm having trouble connecting right now. Please try again in a moment!",
+        content: t('nutribot.error'),
         role: 'assistant',
         timestamp: new Date(),
       };
