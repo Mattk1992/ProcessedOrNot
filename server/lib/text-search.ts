@@ -30,21 +30,32 @@ export async function searchProductByText(productName: string): Promise<ProductS
   try {
     console.log(`Starting text search for product: ${productName}`);
 
-    // Use OpenAI to search for product information and ingredients
+    // Use OpenAI to search for comprehensive product information
     const searchPrompt = `Search for detailed information about the product: "${productName}"
 
-Please provide the following information in JSON format:
+Please provide comprehensive information in JSON format:
 {
   "productName": "official product name",
-  "brands": "brand name if available",
+  "brands": "brand name if available", 
   "description": "brief description",
   "ingredientsText": "complete ingredients list if available",
   "category": "product category",
+  "nutriments": {
+    "energy_100g": number_in_kcal,
+    "fat_100g": number_in_grams,
+    "saturated_fat_100g": number_in_grams,
+    "carbohydrates_100g": number_in_grams,
+    "sugars_100g": number_in_grams,
+    "proteins_100g": number_in_grams,
+    "salt_100g": number_in_grams,
+    "sodium_100g": number_in_mg,
+    "fiber_100g": number_in_grams
+  },
   "found": true/false
 }
 
-If you cannot find specific information about this product, return {"found": false}.
-Focus on finding real, accurate product information including ingredients when possible.`;
+Include nutrition facts per 100g when available. If you cannot find specific information, return {"found": false}.
+Focus on finding real, accurate product information including ingredients and nutrition data.`;
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
@@ -131,7 +142,7 @@ Provide only the ingredients list in this format:
       brands: searchResult.brands || null,
       imageUrl: null, // Text search doesn't provide images
       ingredientsText: searchResult.ingredientsText || null,
-      nutriments: null, // Could be enhanced to search for nutritional info
+      nutriments: searchResult.nutriments || null,
       processingScore,
       processingExplanation,
       dataSource: 'Text Search'
