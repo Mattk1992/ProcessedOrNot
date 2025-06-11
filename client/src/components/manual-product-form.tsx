@@ -63,6 +63,7 @@ export default function ManualProductForm({ barcode, onProductCreated, onCancel 
         processingExplanation: data.processingExplanation || "",
         dataSource: data.dataSource || "Manual Entry",
         lastUpdated: null,
+        language: language, // Include language for AI analysis
       };
       return api.createProduct(productData);
     },
