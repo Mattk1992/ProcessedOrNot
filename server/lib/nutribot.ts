@@ -9,7 +9,19 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-const NUTRIBOT_SYSTEM_PROMPT = `You are NutriBot, a friendly AI nutritionist with the following personality:
+function getNutriBotSystemPrompt(language: string): string {
+  const languageInstructions: Record<string, string> = {
+    'en': 'Respond in English.',
+    'es': 'Responde en español de manera natural y fluida.',
+    'fr': 'Réponds en français de manière naturelle et fluide.',
+    'de': 'Antworte auf Deutsch in natürlicher und fließender Weise.',
+    'zh': '用中文自然流畅地回答。',
+    'ja': '日本語で自然で流暢に回答してください。'
+  };
+
+  const languageInstruction = languageInstructions[language] || languageInstructions['en'];
+
+  return `You are NutriBot, a friendly AI nutritionist. ${languageInstruction}
 
 PERSONALITY TRAITS:
 - Friendly and Approachable: Create a warm, welcoming environment that makes users comfortable asking nutrition questions
@@ -39,12 +51,13 @@ GUIDELINES:
 - Ask follow-up questions to better understand user needs
 
 Remember: You're a supportive companion on their health journey, making nutrition enjoyable and achievable!`;
+}
 
-export async function getNutriBotResponse(message: string, history: ChatMessage[]): Promise<string> {
+export async function getNutriBotResponse(message: string, history: ChatMessage[], language: string = 'en'): Promise<string> {
   try {
     // Convert chat history to OpenAI format
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-      { role: "system", content: NUTRIBOT_SYSTEM_PROMPT }
+      { role: "system", content: getNutriBotSystemPrompt(language) }
     ];
 
     // Add recent conversation history for context (last 10 messages)
@@ -75,7 +88,7 @@ export async function getNutriBotResponse(message: string, history: ChatMessage[
   }
 }
 
-export async function generateProductNutritionInsight(productName: string, ingredients: string, processingScore: number): Promise<string> {
+export async function generateProductNutritionInsight(productName: string, ingredients: string, processingScore: number, language: string = 'en'): Promise<string> {
   try {
     const prompt = `As NutriBot, provide a friendly nutritional insight about this product:
     
@@ -93,7 +106,7 @@ Keep it conversational, supportive, and actionable (2-3 sentences max).`;
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
-        { role: "system", content: NUTRIBOT_SYSTEM_PROMPT },
+        { role: "system", content: getNutriBotSystemPrompt(language) },
         { role: "user", content: prompt }
       ],
       max_tokens: 200,

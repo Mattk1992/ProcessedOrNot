@@ -154,7 +154,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // NutriBot Chat API
   app.post("/api/nutribot/chat", async (req, res) => {
     try {
-      const { message, history } = req.body;
+      const { message, history, language } = req.body;
 
       if (!message || typeof message !== 'string') {
         return res.status(400).json({ 
@@ -162,7 +162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const response = await getNutriBotResponse(message.trim(), history || []);
+      const response = await getNutriBotResponse(message.trim(), history || [], language || 'en');
       res.json({ response });
 
     } catch (error) {
@@ -177,6 +177,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products/:barcode/nutribot-insight", async (req, res) => {
     try {
       const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
+      const { language } = req.query;
 
       const product = await storage.getProductByBarcode(barcode);
       if (!product) {
@@ -188,7 +189,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const insight = await generateProductNutritionInsight(
         product.productName || "Unknown Product",
         product.ingredientsText || "No ingredients available",
-        product.processingScore || 0
+        product.processingScore || 0,
+        (language as string) || 'en'
       );
 
       res.json({ insight });

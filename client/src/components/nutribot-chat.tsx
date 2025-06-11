@@ -19,7 +19,7 @@ export default function NutriBotChat() {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -52,6 +52,7 @@ export default function NutriBotChat() {
         body: JSON.stringify({
           message: content.trim(),
           history: messages.slice(-10), // Send last 10 messages for context
+          language: language,
         }),
       });
 
