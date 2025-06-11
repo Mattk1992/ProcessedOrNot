@@ -157,23 +157,23 @@ export async function generateNutritionSpotlightInsights(productName: string, nu
       messages: [
         {
           role: "system",
-          content: `You are a nutrition expert analyzing food products. ${instruction}. Analyze the nutritional data and provide insights in JSON format with detailed nutrient analysis including descriptions, health impacts, and recommendations for each key nutrient.
+          content: `You are a nutrition expert. ${instruction}. Analyze nutrition data and provide insights in JSON format. Focus on 3-4 key nutrients only.
 
-Return a JSON object with this structure:
+Return JSON:
 {
   "nutrients": [
     {
       "name": "string",
       "value": number,
       "unit": "string", 
-      "description": "string",
-      "healthImpact": "string",
+      "description": "brief description",
+      "healthImpact": "brief impact",
       "category": "good" | "moderate" | "high",
-      "recommendation": "string"
+      "recommendation": "brief tip"
     }
   ],
-  "overallAssessment": "string",
-  "healthScore": number
+  "overallAssessment": "brief summary",
+  "healthScore": number_1_to_10
 }`
         },
         {
@@ -187,7 +187,7 @@ Provide detailed insights about the key nutrients, their health impacts, and ove
       ],
       response_format: { type: "json_object" },
       temperature: 0.7,
-      max_tokens: 1500
+      max_tokens: 800
     });
 
     const result = JSON.parse(response.choices[0].message.content || '{}');
