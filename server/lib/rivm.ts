@@ -70,13 +70,12 @@ export async function fetchProductFromRIVM(barcode: string): Promise<InsertProdu
     const productData: InsertProduct = {
       barcode,
       productName: food.food_name,
-      brand: null,
+      brands: null,
       imageUrl: null,
       ingredientsText: food.ingredients || null,
       nutriments: Object.keys(nutriments).length > 0 ? nutriments : null,
       processingScore: null,
-      categories: null,
-      lookupSource: 'RIVM'
+      dataSource: 'RIVM'
     };
 
     return productData;
