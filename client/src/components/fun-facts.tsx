@@ -231,8 +231,8 @@ export default function FunFacts({ productName, ingredients, nutriments, process
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-xl font-bold">Fun Facts</h3>
-              <p className="text-sm text-white/80">Interesting insights about this product</p>
+              <h3 className="text-xl font-bold">{t('funfacts.title')}</h3>
+              <p className="text-sm text-white/80">{t('funfacts.subtitle')}</p>
             </div>
           </div>
           {facts.length > 1 && (
@@ -256,7 +256,7 @@ export default function FunFacts({ productName, ingredients, nutriments, process
                 {currentFact.icon}
               </div>
               <Badge className={`${getCategoryColor(currentFact.category)} border capitalize`}>
-                {currentFact.category}
+                {t(`funfacts.category.${currentFact.category}`)}
               </Badge>
             </div>
             
