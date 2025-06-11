@@ -276,7 +276,7 @@ export default function NutritionSpotlight({ productName, nutriments, processing
                 onClick={() => setCurrentSpotlight(index)}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   index === currentSpotlight 
-                    ? 'bg-primary scale-125 glow-effect' 
+                    ? 'bg-primary scale-125 glow-effect nutrient-dot-pulse' 
                     : 'bg-muted hover:bg-muted-foreground/30 scale-on-hover'
                 }`}
               />
@@ -288,25 +288,29 @@ export default function NutritionSpotlight({ productName, nutriments, processing
             {nutrients.slice(0, 6).map((nutrient, index) => (
               <div 
                 key={nutrient.name}
-                className={`p-3 rounded-xl border transition-all duration-300 cursor-pointer ${
+                className={`p-3 rounded-xl border transition-all duration-300 cursor-pointer nutrient-card-enter ${
                   index === currentSpotlight 
-                    ? 'border-primary/50 bg-primary/5 scale-105' 
+                    ? 'border-primary/50 bg-primary/5 scale-105 nutrient-highlight' 
                     : 'border-border/20 bg-card/50 hover:border-primary/30 scale-on-hover'
                 }`}
                 onClick={() => setCurrentSpotlight(index)}
+                style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-center space-x-2">
-                  <div className={`${nutrient.color} opacity-70`}>
+                  <div className={`${nutrient.color} opacity-70 ${index === currentSpotlight ? 'nutrition-bounce' : ''}`}>
                     {nutrient.icon}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium text-foreground truncate">
                       {nutrient.name}
                     </div>
-                    <div className={`text-xs ${nutrient.color}`}>
+                    <div className={`text-xs ${nutrient.color} ${index === currentSpotlight ? 'value-counter' : ''}`}>
                       {nutrient.value.toFixed(1)}{nutrient.unit}
                     </div>
                   </div>
+                  {index === currentSpotlight && (
+                    <div className="w-2 h-2 bg-primary rounded-full nutrient-dot-pulse"></div>
+                  )}
                 </div>
               </div>
             ))}
