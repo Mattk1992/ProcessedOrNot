@@ -224,7 +224,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-primary/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
                       {(() => {
-                        const nutrients = product.nutriments as any;
+                        const nutrients = product.nutriments as Record<string, any>;
                         return nutrients?.energy_100g ? String(nutrients.energy_100g) : "N/A";
                       })()}
                     </div>
@@ -355,7 +355,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
       )}
 
       {/* NutriBot Insights Card */}
-      {nutriBotInsight && (
+      {nutriBotInsight && typeof nutriBotInsight === 'string' && (
         <Card className="glass-card border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up glow-effect">
           <CardHeader className="bg-gradient-to-r from-primary to-accent text-white rounded-t-lg">
             <CardTitle className="flex items-center space-x-3">
@@ -372,7 +372,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
           <CardContent className="pt-6 pb-6">
             <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
               <p className="text-foreground leading-relaxed text-lg">
-                {nutriBotInsight.insight}
+                {nutriBotInsight}
               </p>
             </div>
           </CardContent>
@@ -404,11 +404,11 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
       )}
 
       {/* Nutrition Spotlight */}
-      {product.nutriments && (
+      {product.nutriments && typeof product.nutriments === 'object' && (
         <div className="slide-up">
           <NutritionSpotlight 
             productName={product.productName || "Unknown Product"}
-            nutriments={product.nutriments}
+            nutriments={product.nutriments as Record<string, any> | null}
             processingScore={product.processingScore || 0}
             barcode={barcode}
           />
@@ -420,7 +420,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
         <FunFacts 
           productName={product.productName || "Unknown Product"}
           ingredients={product.ingredientsText || ""}
-          nutriments={product.nutriments}
+          nutriments={product.nutriments as Record<string, any> | null}
           processingScore={product.processingScore || 0}
           barcode={barcode}
         />
