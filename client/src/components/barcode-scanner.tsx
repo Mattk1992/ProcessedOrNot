@@ -15,8 +15,10 @@ interface BarcodeScannerProps {
 const sampleProducts = [
   { barcode: "8720600618161", name: "Hak Chili sin carne schotel", description: "Barcode scan" },
   { barcode: "5449000000996", name: "Coca-Cola", description: "Barcode scan" },
-  { barcode: "Nutella", name: "Nutella", description: "Text search" },
+  { barcode: "3017620425400", name: "Nutella", description: "Barcode scan" },
   { barcode: "Organic Oatmeal", name: "Organic Oatmeal", description: "Text search" },
+  { barcode: "Greek Yogurt", name: "Greek Yogurt", description: "Text search" },
+  { barcode: "Dark Chocolate", name: "Dark Chocolate", description: "Text search" },
 ];
 
 export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
