@@ -421,6 +421,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
           ingredients={product.ingredientsText || ""}
           nutriments={product.nutriments}
           processingScore={product.processingScore || 0}
+          barcode={barcode}
         />
       </div>
 

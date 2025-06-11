@@ -36,183 +36,26 @@ export default function FunFacts({ productName, ingredients, nutriments, process
     enabled: !!barcode,
   });
 
-  const generateFunFacts = (): FunFact[] => {
-    const facts: FunFact[] = [];
-
-    // Nutrition-based facts
-    if (nutriments) {
-      if (nutriments.energy_100g || nutriments.energy) {
-        const energy = nutriments.energy_100g || nutriments.energy;
-        facts.push({
-          title: "Energy Equivalent",
-          fact: `${energy} calories is enough energy to power an LED light bulb for about ${Math.round(energy / 0.01)} hours!`,
-          category: 'nutrition',
-          icon: <Zap className="w-4 h-4" />
-        });
-      }
-
-      if (nutriments.sugars_100g || nutriments.sugars) {
-        const sugars = nutriments.sugars_100g || nutriments.sugars;
-        const sugarCubes = Math.round(sugars / 4);
-        if (sugarCubes > 0) {
-          facts.push({
-            title: "Sugar Content",
-            fact: `This product contains about ${sugarCubes} sugar cube${sugarCubes !== 1 ? 's' : ''} worth of sugar per 100g.`,
-            category: 'nutrition',
-            icon: <Sparkles className="w-4 h-4" />
-          });
-        }
-      }
-
-      if (nutriments.proteins_100g || nutriments.proteins) {
-        const proteins = nutriments.proteins_100g || nutriments.proteins;
-        if (proteins > 15) {
-          facts.push({
-            title: "Protein Power",
-            fact: `With ${proteins.toFixed(1)}g of protein per 100g, this product contains more protein than most nuts!`,
-            category: 'nutrition',
-            icon: <Lightbulb className="w-4 h-4" />
-          });
-        }
-      }
+  const getIconForCategory = (category: string): React.ReactNode => {
+    switch (category) {
+      case 'nutrition': return <Zap className="w-4 h-4" />;
+      case 'history': return <Lightbulb className="w-4 h-4" />;
+      case 'processing': return <Sparkles className="w-4 h-4" />;
+      case 'environment': return <Leaf className="w-4 h-4" />;
+      default: return <Globe className="w-4 h-4" />;
     }
-
-    // Processing-based facts
-    if (processingScore) {
-      if (processingScore >= 8) {
-        facts.push({
-          title: "Ultra-Processed",
-          fact: "Ultra-processed foods were first categorized by Brazilian nutrition researcher Carlos Monteiro in 2009.",
-          category: 'processing',
-          icon: <Lightbulb className="w-4 h-4" />
-        });
-      } else if (processingScore <= 3) {
-        facts.push({
-          title: "Minimally Processed",
-          fact: "Minimally processed foods retain most of their natural nutritional and physical properties.",
-          category: 'processing',
-          icon: <Sparkles className="w-4 h-4" />
-        });
-      }
-    }
-
-    // Ingredient-based facts
-    if (ingredients) {
-      const ingredientList = ingredients.toLowerCase();
-      
-      if (ingredientList.includes('palm oil')) {
-        facts.push({
-          title: "Palm Oil Impact",
-          fact: "Palm oil is the most widely used vegetable oil globally, found in about 50% of packaged products.",
-          category: 'environment',
-          icon: <Lightbulb className="w-4 h-4" />
-        });
-      }
-
-      if (ingredientList.includes('cocoa') || ingredientList.includes('chocolate')) {
-        facts.push({
-          title: "Cocoa History",
-          fact: "Cocoa beans were so valuable to the Aztecs that they used them as currency!",
-          category: 'history',
-          icon: <Sparkles className="w-4 h-4" />
-        });
-      }
-
-      if (ingredientList.includes('vanilla')) {
-        facts.push({
-          title: "Vanilla Fact",
-          fact: "Vanilla is the second most expensive spice in the world after saffron because it's hand-pollinated!",
-          category: 'history',
-          icon: <Lightbulb className="w-4 h-4" />
-        });
-      }
-
-      if (ingredientList.includes('milk') || ingredientList.includes('dairy')) {
-        facts.push({
-          title: "Dairy Science",
-          fact: "A single cow produces an average of 6-7 gallons of milk per day!",
-          category: 'nutrition',
-          icon: <Zap className="w-4 h-4" />
-        });
-      }
-    }
-
-    // Product-specific facts based on name
-    const productLower = productName.toLowerCase();
-    
-    if (productLower.includes('cola') || productLower.includes('coca')) {
-      facts.push({
-        title: "Cola Origins",
-        fact: "The original Coca-Cola recipe included coca leaf extract and was sold as a medicinal tonic in 1886.",
-        category: 'history',
-        icon: <Lightbulb className="w-4 h-4" />
-      });
-    }
-
-    if (productLower.includes('potato') || productLower.includes('chips') || productLower.includes('crisp')) {
-      facts.push({
-        title: "Potato Chips",
-        fact: "Potato chips were invented by accident in 1853 when a chef tried to make the thinnest french fries possible!",
-        category: 'history',
-        icon: <Sparkles className="w-4 h-4" />
-      });
-    }
-
-    if (productLower.includes('bread') || productLower.includes('wheat')) {
-      facts.push({
-        title: "Bread History",
-        fact: "Bread is one of humanity's oldest prepared foods, with evidence of bread-making dating back 30,000 years!",
-        category: 'history',
-        icon: <Lightbulb className="w-4 h-4" />
-      });
-    }
-
-    // General fun facts if we don't have enough specific ones
-    if (facts.length < 3) {
-      facts.push(
-        {
-          title: "Food Packaging",
-          fact: "The average person encounters over 300 food products in a typical grocery store visit!",
-          category: 'environment',
-          icon: <Sparkles className="w-4 h-4" />
-        },
-        {
-          title: "Taste Buds",
-          fact: "Humans have about 10,000 taste buds, and they regenerate every 1-2 weeks!",
-          category: 'nutrition',
-          icon: <Zap className="w-4 h-4" />
-        },
-        {
-          title: "Food Colors",
-          fact: "The colors of food can actually affect how we perceive taste - red foods often taste sweeter!",
-          category: 'nutrition',
-          icon: <Lightbulb className="w-4 h-4" />
-        }
-      );
-    }
-
-    return facts.slice(0, 5); // Limit to 5 facts
   };
 
-  const facts = generateFunFacts();
+  const processedFacts: FunFact[] = apiFacts?.facts?.map(fact => ({
+    title: fact.title,
+    fact: fact.fact,
+    category: fact.category as 'nutrition' | 'history' | 'processing' | 'environment',
+    icon: getIconForCategory(fact.category)
+  })) || [];
 
-  useEffect(() => {
-    if (facts.length <= 1) return;
+  const facts = processedFacts;
 
-    const interval = setInterval(() => {
-      setIsRotating(true);
-      setTimeout(() => {
-        setCurrentFactIndex((prev) => (prev + 1) % facts.length);
-        setIsRotating(false);
-      }, 200);
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [facts.length]);
-
-  const rotateFact = () => {
-    if (facts.length <= 1) return;
-    
+  const nextFact = () => {
     setIsRotating(true);
     setTimeout(() => {
       setCurrentFactIndex((prev) => (prev + 1) % facts.length);
@@ -220,17 +63,43 @@ export default function FunFacts({ productName, ingredients, nutriments, process
     }, 200);
   };
 
+  useEffect(() => {
+    if (facts.length > 0) {
+      const interval = setInterval(nextFact, 8000);
+      return () => clearInterval(interval);
+    }
+  }, [facts.length]);
+
+  if (isLoading) {
+    return (
+      <Card className="nutrition-spotlight-entrance">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Sparkles className="w-5 h-5 text-primary" />
+            {t('funfacts.title')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8">
+            <RefreshCw className="w-6 h-6 mx-auto animate-spin text-muted-foreground mb-2" />
+            <p className="text-muted-foreground text-sm">{t('funfacts.loading')}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (facts.length === 0) return null;
 
   const currentFact = facts[currentFactIndex];
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'nutrition': return 'bg-green-100 text-green-800 border-green-200';
-      case 'history': return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'processing': return 'bg-purple-100 text-purple-800 border-purple-200';
-      case 'environment': return 'bg-orange-100 text-orange-800 border-orange-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'nutrition': return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900 dark:text-green-200 dark:border-green-700';
+      case 'history': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700';
+      case 'processing': return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900 dark:text-purple-200 dark:border-purple-700';
+      case 'environment': return 'bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900 dark:text-orange-200 dark:border-orange-700';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:border-gray-600';
     }
   };
 
@@ -244,60 +113,52 @@ export default function FunFacts({ productName, ingredients, nutriments, process
             </div>
             <div>
               <h3 className="text-xl font-bold">{t('funfacts.title')}</h3>
-              <p className="text-sm text-white/80">{t('funfacts.subtitle')}</p>
+              <p className="text-white/80 text-sm">{t('funfacts.subtitle')}</p>
             </div>
           </div>
-          {facts.length > 1 && (
+          <div className="flex items-center space-x-2">
+            <Badge className={getCategoryColor(currentFact.category)}>
+              {currentFact.icon}
+              <span className="ml-1.5 capitalize">{t(`funfacts.category.${currentFact.category}`)}</span>
+            </Badge>
             <Button
               variant="ghost"
               size="sm"
-              onClick={rotateFact}
-              className="text-white hover:bg-white/20"
+              onClick={nextFact}
+              className="text-white hover:bg-white/20 p-2"
+              disabled={isRotating}
             >
               <RefreshCw className={`w-4 h-4 ${isRotating ? 'animate-spin' : ''}`} />
             </Button>
-          )}
+          </div>
         </CardTitle>
       </CardHeader>
-
-      <CardContent className="p-8">
-        <div className={`transition-all duration-500 transform ${isRotating ? 'scale-95 opacity-50' : 'scale-100 opacity-100'}`}>
-          <div className="text-center mb-6">
-            <div className="flex items-center justify-center mb-4">
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-r from-accent/20 to-primary/20 text-accent mr-4">
-                {currentFact.icon}
-              </div>
-              <Badge className={`${getCategoryColor(currentFact.category)} border capitalize`}>
-                {t(`funfacts.category.${currentFact.category}`)}
-              </Badge>
-            </div>
-            
-            <h4 className="text-xl font-bold text-foreground mb-3">
-              {currentFact.title}
-            </h4>
-            
-            <p className="text-muted-foreground text-lg leading-relaxed">
-              {currentFact.fact}
-            </p>
-          </div>
-
-          {/* Fact Navigation Dots */}
-          {facts.length > 1 && (
-            <div className="flex justify-center space-x-2">
-              {facts.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => setCurrentFactIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    index === currentFactIndex 
-                      ? 'bg-accent scale-125 glow-effect' 
-                      : 'bg-muted hover:bg-muted-foreground/30 scale-on-hover'
-                  }`}
-                />
-              ))}
-            </div>
-          )}
+      <CardContent className="p-6">
+        <div className={`transition-all duration-300 ${isRotating ? 'opacity-0 transform scale-95' : 'opacity-100 transform scale-100'}`}>
+          <h4 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+            {currentFact.icon}
+            {currentFact.title}
+          </h4>
+          <p className="text-muted-foreground leading-relaxed">
+            {currentFact.fact}
+          </p>
         </div>
+        
+        {facts.length > 1 && (
+          <div className="flex justify-center mt-6 space-x-2">
+            {facts.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentFactIndex(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                  index === currentFactIndex
+                    ? 'bg-primary w-6'
+                    : 'bg-muted-foreground/30 hover:bg-muted-foreground/60'
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
