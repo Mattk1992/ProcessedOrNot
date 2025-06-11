@@ -33,6 +33,7 @@ export default function DietaryFilter({ onFiltersChange, className = "" }: Dieta
   const { t } = useLanguage();
   const [selectedFilters, setSelectedFilters] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [bounceFilter, setBounceFilter] = useState<string | null>(null);
 
   const dietaryRestrictions: DietaryRestriction[] = [
     {
@@ -107,6 +108,10 @@ export default function DietaryFilter({ onFiltersChange, className = "" }: Dieta
     
     setSelectedFilters(newFilters);
     onFiltersChange(newFilters);
+    
+    // Add bounce animation
+    setBounceFilter(restrictionId);
+    setTimeout(() => setBounceFilter(null), 300);
   };
 
   const clearAllFilters = () => {
@@ -144,10 +149,11 @@ export default function DietaryFilter({ onFiltersChange, className = "" }: Dieta
                 key={restriction.id}
                 className={`
                   inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 
-                  cursor-pointer hover:scale-105 active:scale-95 border
+                  cursor-pointer hover:scale-105 active:scale-95 border transform
+                  ${bounceFilter === restriction.id ? 'animate-bounce' : ''}
                   ${isSelected 
-                    ? restriction.color + " shadow-sm" 
-                    : "bg-background text-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                    ? restriction.color + " shadow-lg shadow-current/20" 
+                    : "bg-background text-foreground border-border hover:bg-accent hover:text-accent-foreground hover:shadow-md"
                   }
                 `}
                 onClick={() => toggleFilter(restriction.id)}

@@ -30,33 +30,34 @@
 --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
+  
   .dark {
-      --background: 215 28% 9%; /* #0F1419 */
---foreground: 210 40% 98%; /* #FAFBFC */
---muted: 215 27% 12%; /* #1A1F2E */
---muted-foreground: 215 15% 65%; /* #94A3B8 */
---popover: 215 28% 9%;
---popover-foreground: 210 40% 98%;
---card: 215 25% 11%; /* #161B26 */
---card-foreground: 210 40% 98%;
---border: 215 27% 17%; /* #273244 */
---input: 215 27% 15%; /* #21293A */
---primary: 212 100% 58%; /* #3B82F6 */
---primary-foreground: 0 0% 100%;
---secondary: 215 27% 12%;
---secondary-foreground: 210 40% 98%;
---accent: 169 84% 58%; /* #34D399 */
---accent-foreground: 215 28% 9%;
---destructive: 0 75% 65%; /* #F87171 */
---destructive-foreground: 0 0% 100%;
---ring: 212 100% 58%;
---radius: 0.75rem;
---gradient-primary: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
---gradient-accent: linear-gradient(135deg, #34D399 0%, #059669 100%);
---gradient-surface: linear-gradient(135deg, #161B26 0%, #1A1F2E 100%);
---shadow-soft: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
---shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
---shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
+    --background: 215 28% 9%; /* #0F1419 */
+    --foreground: 210 40% 98%; /* #FAFBFC */
+    --muted: 215 27% 12%; /* #1A1F2E */
+    --muted-foreground: 215 15% 65%; /* #94A3B8 */
+    --popover: 215 28% 9%;
+    --popover-foreground: 210 40% 98%;
+    --card: 215 25% 11%; /* #161B26 */
+    --card-foreground: 210 40% 98%;
+    --border: 215 27% 17%; /* #273244 */
+    --input: 215 27% 15%; /* #21293A */
+    --primary: 212 100% 58%; /* #3B82F6 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 215 27% 12%;
+    --secondary-foreground: 210 40% 98%;
+    --accent: 169 84% 58%; /* #34D399 */
+    --accent-foreground: 215 28% 9%;
+    --destructive: 0 75% 65%; /* #F87171 */
+    --destructive-foreground: 0 0% 100%;
+    --ring: 212 100% 58%;
+    --radius: 0.75rem;
+    --gradient-primary: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+    --gradient-accent: linear-gradient(135deg, #34D399 0%, #059669 100%);
+    --gradient-surface: linear-gradient(135deg, #161B26 0%, #1A1F2E 100%);
+    --shadow-soft: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px 0 rgba(0, 0, 0, 0.2);
+    --shadow-medium: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    --shadow-large: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
   }
 
 @layer base {
@@ -248,7 +249,57 @@
   .dark .glass-card {
     background: rgba(22, 27, 38, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Nintendo-style Dietary Filter Animations */
+  .dietary-filter-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dietary-filter-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  }
+
+  .dark .dietary-filter-card {
+    background: rgba(15, 20, 30, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .dark .dietary-filter-card:hover {
+    background: rgba(15, 20, 30, 0.6);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Playful bounce animation for filter buttons */
+  @keyframes filter-bounce {
+    0% { transform: scale(1) translateY(0); }
+    50% { transform: scale(1.1) translateY(-4px); }
+    100% { transform: scale(1) translateY(0); }
+  }
+
+  .filter-bounce {
+    animation: filter-bounce 0.3s ease-out;
+  }
+
+  /* Wiggle animation for fun interaction */
+  @keyframes wiggle {
+    0%, 7% { transform: rotateZ(0); }
+    15% { transform: rotateZ(-15deg); }
+    20% { transform: rotateZ(10deg); }
+    25% { transform: rotateZ(-10deg); }
+    30% { transform: rotateZ(6deg); }
+    35% { transform: rotateZ(-4deg); }
+    40%, 100% { transform: rotateZ(0); }
+  }
+
+  .wiggle {
+    animation: wiggle 0.6s ease-in-out;
   }
 
   .progress-glow {
@@ -376,4 +427,3 @@
       transform: translateY(0) rotateX(0deg);
     }
   }
-}
