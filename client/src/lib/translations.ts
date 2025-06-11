@@ -966,6 +966,18 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.description.protein': '蛋白质含量',
     'nutrition.description.salt': '盐含量',
     
+    // Nutrition Facts Table
+    'nutrition.facts.title': '营养成分',
+    'nutrition.facts.nutrient': '营养素',
+    'nutrition.facts.per100g': '每100克',
+    'nutrition.facts.energy': '能量',
+    'nutrition.facts.fat': '脂肪',
+    'nutrition.facts.saturatedFat': '饱和脂肪',
+    'nutrition.facts.carbohydrates': '碳水化合物',
+    'nutrition.facts.sugars': '糖',
+    'nutrition.facts.protein': '蛋白质',
+    'nutrition.facts.salt': '盐',
+    
     // Fun Facts
     'funfacts.title': '有趣事实',
     'funfacts.subtitle': '关于此产品的有趣见解',
@@ -1162,6 +1174,18 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.description.protein': 'タンパク質含有量',
     'nutrition.description.salt': '塩含有量',
     
+    // Nutrition Facts Table
+    'nutrition.facts.title': '栄養成分表',
+    'nutrition.facts.nutrient': '栄養素',
+    'nutrition.facts.per100g': '100gあたり',
+    'nutrition.facts.energy': 'エネルギー',
+    'nutrition.facts.fat': '脂質',
+    'nutrition.facts.saturatedFat': '飽和脂肪酸',
+    'nutrition.facts.carbohydrates': '炭水化物',
+    'nutrition.facts.sugars': '糖類',
+    'nutrition.facts.protein': 'たんぱく質',
+    'nutrition.facts.salt': '食塩相当量',
+    
     // Fun Facts
     'funfacts.title': '楽しい事実',
     'funfacts.subtitle': 'この製品に関する興味深い洞察',
@@ -1327,6 +1351,18 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.description.sugars': 'Suikergehalte',
     'nutrition.description.protein': 'Eiwitgehalte',
     'nutrition.description.salt': 'Zoutgehalte',
+    
+    // Nutrition Facts Table
+    'nutrition.facts.title': 'Voedingswaarde',
+    'nutrition.facts.nutrient': 'Voedingsstof',
+    'nutrition.facts.per100g': 'Per 100g',
+    'nutrition.facts.energy': 'Energie',
+    'nutrition.facts.fat': 'Vet',
+    'nutrition.facts.saturatedFat': 'Verzadigd vet',
+    'nutrition.facts.carbohydrates': 'Koolhydraten',
+    'nutrition.facts.sugars': 'Suikers',
+    'nutrition.facts.protein': 'Eiwit',
+    'nutrition.facts.salt': 'Zout',
     
     // Fun Facts
     'funfacts.title': 'Leuke Weetjes',
