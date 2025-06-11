@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Sparkles, RefreshCw, Lightbulb, Zap } from 'lucide-react';
+import { Sparkles, RefreshCw, Lightbulb, Zap, Leaf, Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface FunFactsProps {
@@ -10,6 +11,7 @@ interface FunFactsProps {
   ingredients: string;
   nutriments: Record<string, any> | null;
   processingScore: number;
+  barcode: string;
 }
 
 interface FunFact {
@@ -19,10 +21,20 @@ interface FunFact {
   icon: React.ReactNode;
 }
 
-export default function FunFacts({ productName, ingredients, nutriments, processingScore }: FunFactsProps) {
+export default function FunFacts({ productName, ingredients, nutriments, processingScore, barcode }: FunFactsProps) {
   const [currentFactIndex, setCurrentFactIndex] = useState(0);
   const [isRotating, setIsRotating] = useState(false);
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  const { data: apiFacts, isLoading } = useQuery<{ facts: Array<{title: string, fact: string, category: string}> }>({
+    queryKey: ["/api/products", barcode, "fun-facts", language],
+    queryFn: async () => {
+      const response = await fetch(`/api/products/${barcode}/fun-facts?language=${language}`);
+      if (!response.ok) throw new Error('Failed to get fun facts');
+      return response.json();
+    },
+    enabled: !!barcode,
+  });
 
   const generateFunFacts = (): FunFact[] => {
     const facts: FunFact[] = [];

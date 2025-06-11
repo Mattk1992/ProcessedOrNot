@@ -89,6 +89,53 @@ export async function getNutriBotResponse(message: string, history: ChatMessage[
   }
 }
 
+export async function generateFunFacts(productName: string, ingredients: string, nutriments: Record<string, any> | null, processingScore: number, language: string = 'en'): Promise<Array<{title: string, fact: string, category: string}>> {
+  try {
+    const nutritionData = nutriments ? Object.entries(nutriments)
+      .filter(([key, value]) => typeof value === 'number' && value > 0)
+      .map(([key, value]) => `${key}: ${value}`)
+      .join(', ') : 'No nutrition data available';
+
+    const prompt = `Generate 4 interesting fun facts about this food product:
+    
+Product: ${productName}
+Ingredients: ${ingredients}
+Nutrition per 100g: ${nutritionData}
+Processing Score: ${processingScore}/10
+
+Create exactly 4 fun facts covering:
+1. A surprising nutritional comparison or energy equivalent
+2. An interesting food history or cultural fact
+3. A processing or ingredient insight
+4. An environmental or sustainability angle
+
+Make each fact engaging, educational, and memorable. Each fact should be 1-2 sentences.
+
+Return as JSON array: [{"title": "Fact Title", "fact": "The actual fact text", "category": "nutrition|history|processing|environment"}]`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        { role: "system", content: getNutriBotSystemPrompt(language) + " Always respond with valid JSON format." },
+        { role: "user", content: prompt }
+      ],
+      max_tokens: 500,
+      temperature: 0.8,
+      response_format: { type: "json_object" }
+    });
+
+    const content = response.choices[0].message.content;
+    if (!content) throw new Error('No content generated');
+    
+    const result = JSON.parse(content);
+    return Array.isArray(result) ? result : result.facts || [];
+
+  } catch (error) {
+    console.error('Fun facts generation error:', error);
+    throw new Error('Failed to generate fun facts');
+  }
+}
+
 export async function generateProductNutritionInsight(productName: string, ingredients: string, processingScore: number, language: string = 'en'): Promise<string> {
   try {
     const prompt = `As NutriBot, provide a friendly nutritional insight about this product:

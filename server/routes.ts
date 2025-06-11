@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { smartProductLookup, cascadingProductLookup } from "./lib/product-lookup";
 import { analyzeIngredients } from "./lib/openai";
-import { getNutriBotResponse, generateProductNutritionInsight } from "./lib/nutribot";
+import { getNutriBotResponse, generateProductNutritionInsight, generateFunFacts } from "./lib/nutribot";
 import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -209,6 +209,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       res.status(500).json({ 
         message: "Failed to generate product insight" 
+      });
+    }
+  });
+
+  // Generate fun facts
+  app.get("/api/products/:barcode/fun-facts", async (req, res) => {
+    try {
+      const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
+      const { language } = req.query;
+
+      const product = await storage.getProductByBarcode(barcode);
+      if (!product) {
+        return res.status(404).json({ 
+          message: "Product not found" 
+        });
+      }
+
+      const facts = await generateFunFacts(
+        product.productName || "Unknown Product",
+        product.ingredientsText || "No ingredients available",
+        product.nutriments || null,
+        product.processingScore || 0,
+        (language as string) || 'en'
+      );
+
+      res.json({ facts });
+
+    } catch (error) {
+      console.error("Error generating fun facts:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid barcode format",
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to generate fun facts" 
       });
     }
   });
