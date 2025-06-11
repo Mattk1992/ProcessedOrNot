@@ -4,6 +4,7 @@ import BarcodeScanner from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
 import NutriBotChat from "@/components/nutribot-chat";
+import DietaryFilter from "@/components/dietary-filter";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
