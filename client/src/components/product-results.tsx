@@ -560,38 +560,38 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       </td>
                     </tr>
                     <tr className="hover:bg-muted/30 transition-colors">
-                      <td className="py-4 text-foreground font-medium">Fat</td>
+                      <td className="py-4 text-foreground font-medium">{t('nutrition.facts.fat')}</td>
                       <td className="py-4 text-right text-muted-foreground font-mono">
                         {(product.nutriments as any).fat_100g ? `${(product.nutriments as any).fat_100g}g` : "N/A"}
                       </td>
                     </tr>
                     {(product.nutriments as any).saturated_fat_100g && (
                       <tr className="hover:bg-muted/30 transition-colors">
-                        <td className="py-4 text-muted-foreground font-medium pl-6">Saturated fat</td>
+                        <td className="py-4 text-muted-foreground font-medium pl-6">{t('nutrition.facts.saturatedFat')}</td>
                         <td className="py-4 text-right text-muted-foreground font-mono">{(product.nutriments as any).saturated_fat_100g}g</td>
                       </tr>
                     )}
                     <tr className="hover:bg-muted/30 transition-colors">
-                      <td className="py-4 text-foreground font-medium">Carbohydrates</td>
+                      <td className="py-4 text-foreground font-medium">{t('nutrition.facts.carbohydrates')}</td>
                       <td className="py-4 text-right text-muted-foreground font-mono">
                         {(product.nutriments as any).carbohydrates_100g ? `${(product.nutriments as any).carbohydrates_100g}g` : "N/A"}
                       </td>
                     </tr>
                     {(product.nutriments as any).sugars_100g && (
                       <tr className="hover:bg-muted/30 transition-colors">
-                        <td className="py-4 text-muted-foreground font-medium pl-6">Sugars</td>
+                        <td className="py-4 text-muted-foreground font-medium pl-6">{t('nutrition.facts.sugars')}</td>
                         <td className="py-4 text-right text-muted-foreground font-mono">{(product.nutriments as any).sugars_100g}g</td>
                       </tr>
                     )}
                     <tr className="hover:bg-muted/30 transition-colors">
-                      <td className="py-4 text-foreground font-medium">Protein</td>
+                      <td className="py-4 text-foreground font-medium">{t('nutrition.facts.protein')}</td>
                       <td className="py-4 text-right text-muted-foreground font-mono">
                         {(product.nutriments as any).proteins_100g ? `${(product.nutriments as any).proteins_100g}g` : "N/A"}
                       </td>
                     </tr>
                     {(product.nutriments as any).salt_100g && (
                       <tr className="hover:bg-muted/30 transition-colors">
-                        <td className="py-4 text-foreground font-medium">Salt</td>
+                        <td className="py-4 text-foreground font-medium">{t('nutrition.facts.salt')}</td>
                         <td className="py-4 text-right text-muted-foreground font-mono">{(product.nutriments as any).salt_100g}g</td>
                       </tr>
                     )}

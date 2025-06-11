@@ -550,6 +550,18 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.description.protein': 'Contenu en protéine',
     'nutrition.description.salt': 'Contenu en sel',
     
+    // Nutrition Facts Table
+    'nutrition.facts.title': 'Informations Nutritionnelles',
+    'nutrition.facts.nutrient': 'Nutriment',
+    'nutrition.facts.per100g': 'Pour 100g',
+    'nutrition.facts.energy': 'Énergie',
+    'nutrition.facts.fat': 'Matières grasses',
+    'nutrition.facts.saturatedFat': 'Acides gras saturés',
+    'nutrition.facts.carbohydrates': 'Glucides',
+    'nutrition.facts.sugars': 'Sucres',
+    'nutrition.facts.protein': 'Protéines',
+    'nutrition.facts.salt': 'Sel',
+    
     // Fun Facts
     'funfacts.title': 'Faits Amusants',
     'funfacts.subtitle': 'Informations intéressantes sur ce produit',
@@ -745,6 +757,18 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.description.sugars': 'Zuckergehalt',
     'nutrition.description.protein': 'Proteingehalt',
     'nutrition.description.salt': 'Salzgehalt',
+    
+    // Nutrition Facts Table
+    'nutrition.facts.title': 'Nährwerte',
+    'nutrition.facts.nutrient': 'Nährstoff',
+    'nutrition.facts.per100g': 'Pro 100g',
+    'nutrition.facts.energy': 'Energie',
+    'nutrition.facts.fat': 'Fett',
+    'nutrition.facts.saturatedFat': 'Gesättigte Fettsäuren',
+    'nutrition.facts.carbohydrates': 'Kohlenhydrate',
+    'nutrition.facts.sugars': 'Zucker',
+    'nutrition.facts.protein': 'Eiweiß',
+    'nutrition.facts.salt': 'Salz',
     
     // Fun Facts
     'funfacts.title': 'Lustige Fakten',
