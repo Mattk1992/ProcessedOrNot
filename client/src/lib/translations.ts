@@ -134,6 +134,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.facts.protein': 'Protein',
     'nutrition.facts.salt': 'Salt',
     
+    // Ingredients Analysis
+    'ingredients.title': 'Ingredients Analysis',
+    'ingredients.fullList': 'Full Ingredients List',
+    'ingredients.ultraProcessed': 'Ultra-processed',
+    'ingredients.processed': 'Processed',
+    'ingredients.minimallyProcessed': 'Minimally processed',
+    'ingredients.noneDetected': 'None detected',
+    
     // Fun Facts
     'funfacts.title': 'Fun Facts',
     'funfacts.subtitle': 'Interesting insights about this product',
@@ -354,6 +362,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.facts.protein': 'Proteína',
     'nutrition.facts.salt': 'Sal',
     
+    // Ingredients Analysis
+    'ingredients.title': 'Análisis de Ingredientes',
+    'ingredients.fullList': 'Lista Completa de Ingredientes',
+    'ingredients.ultraProcessed': 'Ultra-procesado',
+    'ingredients.processed': 'Procesado',
+    'ingredients.minimallyProcessed': 'Mínimamente procesado',
+    'ingredients.noneDetected': 'Ninguno detectado',
+    
     // Fun Facts
     'funfacts.title': 'Datos Curiosos',
     'funfacts.subtitle': 'Información interesante sobre este producto',
@@ -561,6 +577,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.facts.sugars': 'Sucres',
     'nutrition.facts.protein': 'Protéines',
     'nutrition.facts.salt': 'Sel',
+    
+    // Ingredients Analysis
+    'ingredients.title': 'Analyse des Ingrédients',
+    'ingredients.fullList': 'Liste Complète des Ingrédients',
+    'ingredients.ultraProcessed': 'Ultra-transformé',
+    'ingredients.processed': 'Transformé',
+    'ingredients.minimallyProcessed': 'Peu transformé',
+    'ingredients.noneDetected': 'Aucun détecté',
     
     // Fun Facts
     'funfacts.title': 'Faits Amusants',

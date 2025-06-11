@@ -436,12 +436,12 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-foreground">Ingredients Analysis</h3>
+              <h3 className="text-2xl font-bold text-foreground">{t('ingredients.title')}</h3>
             </div>
             
             <div className="space-y-8">
               <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
-                <h4 className="text-lg font-semibold text-foreground mb-4">Full Ingredients List</h4>
+                <h4 className="text-lg font-semibold text-foreground mb-4">{t('ingredients.fullList')}</h4>
                 <div className="bg-card/50 rounded-xl p-4 border border-border/20">
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {String(product.ingredientsText)}
@@ -461,7 +461,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <div className="border-2 border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
                     <div className="flex items-center space-x-3 mb-4">
                       <div className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></div>
-                      <span className="text-base font-semibold text-red-800">Ultra-processed</span>
+                      <span className="text-base font-semibold text-red-800">{t('ingredients.ultraProcessed')}</span>
                     </div>
                     <ul className="text-sm text-red-700 space-y-2">
                       {analysis.categories.ultraProcessed.length > 0 ? (
@@ -483,7 +483,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <div className="border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
                     <div className="flex items-center space-x-3 mb-4">
                       <div className="w-4 h-4 bg-yellow-500 rounded-full shadow-sm"></div>
-                      <span className="text-base font-semibold text-yellow-800">Processed</span>
+                      <span className="text-base font-semibold text-yellow-800">{t('ingredients.processed')}</span>
                     </div>
                     <ul className="text-sm text-yellow-700 space-y-2">
                       {analysis.categories.processed.length > 0 ? (
@@ -505,7 +505,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   <div className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
                     <div className="flex items-center space-x-3 mb-4">
                       <div className="w-4 h-4 bg-emerald-500 rounded-full shadow-sm"></div>
-                      <span className="text-base font-semibold text-emerald-800">Minimally processed</span>
+                      <span className="text-base font-semibold text-emerald-800">{t('ingredients.minimallyProcessed')}</span>
                     </div>
                     <ul className="text-sm text-emerald-700 space-y-2">
                       {analysis.categories.minimallyProcessed.length > 0 ? (
