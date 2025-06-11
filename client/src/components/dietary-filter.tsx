@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { 
@@ -141,21 +140,21 @@ export default function DietaryFilter({ onFiltersChange, className = "" }: Dieta
           {visibleRestrictions.map((restriction) => {
             const isSelected = selectedFilters.includes(restriction.id);
             return (
-              <Badge
+              <button
                 key={restriction.id}
-                variant={isSelected ? "default" : "outline"}
                 className={`
-                  cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95
+                  inline-flex items-center rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 
+                  cursor-pointer hover:scale-105 active:scale-95 border
                   ${isSelected 
                     ? restriction.color + " shadow-sm" 
-                    : "hover:bg-gray-50 dark:hover:bg-gray-800"
+                    : "bg-background text-foreground border-border hover:bg-accent hover:text-accent-foreground"
                   }
                 `}
                 onClick={() => toggleFilter(restriction.id)}
               >
                 <span className="mr-1.5">{restriction.icon}</span>
                 {restriction.name}
-              </Badge>
+              </button>
             );
           })}
         </div>

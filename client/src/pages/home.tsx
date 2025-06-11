@@ -11,6 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 export default function Home() {
   const [currentBarcode, setCurrentBarcode] = useState<string>("");
   const [isScanning, setIsScanning] = useState(false);
+  const [dietaryFilters, setDietaryFilters] = useState<string[]>([]);
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -94,6 +95,14 @@ export default function Home() {
           <div className="glass-card p-8 rounded-3xl morphing-border glow-effect">
             <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
           </div>
+        </div>
+        
+        {/* Dietary Filters */}
+        <div className="mt-8 slide-up">
+          <DietaryFilter 
+            onFiltersChange={setDietaryFilters}
+            className="max-w-4xl mx-auto"
+          />
         </div>
         
         {currentBarcode && (
