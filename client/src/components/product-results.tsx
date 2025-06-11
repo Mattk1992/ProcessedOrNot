@@ -474,7 +474,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       ) : (
                         <li className="flex items-center space-x-2 text-red-600">
                           <CheckCircle className="w-4 h-4" />
-                          <span>None detected</span>
+                          <span>{t('ingredients.noneDetected')}</span>
                         </li>
                       )}
                     </ul>
@@ -496,7 +496,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       ) : (
                         <li className="flex items-center space-x-2 text-yellow-600">
                           <CheckCircle className="w-4 h-4" />
-                          <span>None detected</span>
+                          <span>{t('ingredients.noneDetected')}</span>
                         </li>
                       )}
                     </ul>
@@ -518,7 +518,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       ) : (
                         <li className="flex items-center space-x-2 text-emerald-600">
                           <AlertTriangle className="w-4 h-4" />
-                          <span>None detected</span>
+                          <span>{t('ingredients.noneDetected')}</span>
                         </li>
                       )}
                     </ul>

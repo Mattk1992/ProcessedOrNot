@@ -794,6 +794,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.facts.protein': 'Eiweiß',
     'nutrition.facts.salt': 'Salz',
     
+    // Ingredients Analysis
+    'ingredients.title': 'Zutatenanalyse',
+    'ingredients.fullList': 'Vollständige Zutatenliste',
+    'ingredients.ultraProcessed': 'Ultra-verarbeitet',
+    'ingredients.processed': 'Verarbeitet',
+    'ingredients.minimallyProcessed': 'Minimal verarbeitet',
+    'ingredients.noneDetected': 'Keine erkannt',
+    
     // Fun Facts
     'funfacts.title': 'Lustige Fakten',
     'funfacts.subtitle': 'Interessante Einblicke zu diesem Produkt',
@@ -1001,6 +1009,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.facts.sugars': '糖',
     'nutrition.facts.protein': '蛋白质',
     'nutrition.facts.salt': '盐',
+    
+    // Ingredients Analysis
+    'ingredients.title': '成分分析',
+    'ingredients.fullList': '完整成分表',
+    'ingredients.ultraProcessed': '超加工',
+    'ingredients.processed': '加工',
+    'ingredients.minimallyProcessed': '最低限度加工',
+    'ingredients.noneDetected': '未检测到',
     
     // Fun Facts
     'funfacts.title': '有趣事实',
@@ -1210,6 +1226,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.facts.protein': 'たんぱく質',
     'nutrition.facts.salt': '食塩相当量',
     
+    // Ingredients Analysis
+    'ingredients.title': '原材料分析',
+    'ingredients.fullList': '全原材料リスト',
+    'ingredients.ultraProcessed': '超加工',
+    'ingredients.processed': '加工済み',
+    'ingredients.minimallyProcessed': '最小限加工',
+    'ingredients.noneDetected': '検出されません',
+    
     // Fun Facts
     'funfacts.title': '楽しい事実',
     'funfacts.subtitle': 'この製品に関する興味深い洞察',
@@ -1387,6 +1411,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.facts.sugars': 'Suikers',
     'nutrition.facts.protein': 'Eiwit',
     'nutrition.facts.salt': 'Zout',
+    
+    // Ingredients Analysis
+    'ingredients.title': 'Ingrediëntenanalyse',
+    'ingredients.fullList': 'Volledige ingrediëntenlijst',
+    'ingredients.ultraProcessed': 'Ultra-bewerkt',
+    'ingredients.processed': 'Bewerkt',
+    'ingredients.minimallyProcessed': 'Minimaal bewerkt',
+    'ingredients.noneDetected': 'Geen gedetecteerd',
     
     // Fun Facts
     'funfacts.title': 'Leuke Weetjes',
