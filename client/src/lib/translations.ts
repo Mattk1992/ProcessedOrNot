@@ -1535,6 +1535,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutribot.insights.analyzing': 'Voeding analyseren...',
     'nutribot.insights.loading': 'NutriBot analyseert dit product...',
     
+    // Quick Stats Nutrition
+    'nutrition.quick.energy': 'kcal/100g',
+    'nutrition.quick.sugars': 'Suikers',
+    'nutrition.quick.fat': 'Vet',
+    'nutrition.quick.protein': 'Eiwit',
+    
     // Product Information
     'product.image.alt': 'Product afbeelding',
     'product.barcode': 'Barcode',
