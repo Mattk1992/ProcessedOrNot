@@ -1493,6 +1493,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'processing.insight.title': 'NutriBot Analyse',
     'processing.insight.loading': 'Voedingsinformatie ophalen...',
     
+    // NutriBot Insights
+    'nutribot.insights.title': 'NutriBot Inzichten',
+    'nutribot.insights.subtitle': 'AI-aangedreven voedingsanalyse',
+    'nutribot.insights.analyzing': 'Voeding analyseren...',
+    'nutribot.insights.loading': 'NutriBot analyseert dit product...',
+    
     // Product Information
     'product.image.alt': 'Product afbeelding',
     'product.barcode': 'Barcode',
