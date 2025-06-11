@@ -161,8 +161,10 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Processing Analysis
     'processing.title': 'Processing Analysis',
+    'processing.aiPowered': 'AI Powered',
+    'processing.level': 'Processing Level',
     'processing.score': 'Processing Score',
-    'processing.outof': 'out of 10',
+    'processing.outof': '10',
     'processing.level.minimal': 'Minimally Processed',
     'processing.level.processed': 'Processed',
     'processing.level.ultra': 'Ultra-Processed',
@@ -172,6 +174,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'processing.categories.minimal': 'Minimally processed ingredients',
     'processing.insight.title': 'NutriBot Insight',
     'processing.insight.loading': 'Getting nutrition insights...',
+    
+    // NutriBot Insights
+    'nutribot.insights.title': 'NutriBot Insights',
+    'nutribot.insights.subtitle': 'AI-Powered Nutritional Analysis',
+    'nutribot.insights.analyzing': 'Analyzing nutrition...',
+    'nutribot.insights.loading': 'NutriBot is analyzing this product...',
     
     // Product Information
     'product.image.alt': 'Product image',
@@ -389,8 +397,10 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Processing Analysis
     'processing.title': 'Análisis de Procesamiento',
+    'processing.aiPowered': 'Impulsado por IA',
+    'processing.level': 'Nivel de Procesamiento',
     'processing.score': 'Puntuación de Procesamiento',
-    'processing.outof': 'de 10',
+    'processing.outof': '10',
     'processing.level.minimal': 'Mínimamente Procesado',
     'processing.level.processed': 'Procesado',
     'processing.level.ultra': 'Ultra-Procesado',
@@ -400,6 +410,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'processing.categories.minimal': 'Ingredientes mínimamente procesados',
     'processing.insight.title': 'Análisis de NutriBot',
     'processing.insight.loading': 'Obteniendo información nutricional...',
+    
+    // NutriBot Insights
+    'nutribot.insights.title': 'Perspectivas de NutriBot',
+    'nutribot.insights.subtitle': 'Análisis Nutricional con IA',
+    'nutribot.insights.analyzing': 'Analizando nutrición...',
+    'nutribot.insights.loading': 'NutriBot está analizando este producto...',
     
     // Product Information
     'product.image.alt': 'Imagen del producto',
@@ -617,6 +633,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'processing.insight.title': 'Analyse NutriBot',
     'processing.insight.loading': 'Obtention d\'informations nutritionnelles...',
     
+    // NutriBot Insights
+    'nutribot.insights.title': 'Perspectives NutriBot',
+    'nutribot.insights.subtitle': 'Analyse Nutritionnelle par IA',
+    'nutribot.insights.analyzing': 'Analyse de la nutrition...',
+    'nutribot.insights.loading': 'NutriBot analyse ce produit...',
+    
     // Product Information
     'product.image.alt': 'Image du produit',
     'product.barcode': 'Code-barres',
@@ -821,8 +843,10 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Processing Analysis
     'processing.title': 'Verarbeitungsanalyse',
+    'processing.aiPowered': 'KI-gestützt',
+    'processing.level': 'Verarbeitungsgrad',
     'processing.score': 'Verarbeitungspunktzahl',
-    'processing.outof': 'von 10',
+    'processing.outof': '10',
     'processing.level.minimal': 'Minimal Verarbeitet',
     'processing.level.processed': 'Verarbeitet',
     'processing.level.ultra': 'Ultra-Verarbeitet',
@@ -832,6 +856,12 @@ export const translations: Record<Language, Record<string, string>> = {
     'processing.categories.minimal': 'Minimal verarbeitete Zutaten',
     'processing.insight.title': 'NutriBot Analyse',
     'processing.insight.loading': 'Ernährungsinformationen werden abgerufen...',
+    
+    // NutriBot Insights
+    'nutribot.insights.title': 'NutriBot Einblicke',
+    'nutribot.insights.subtitle': 'KI-gestützte Ernährungsanalyse',
+    'nutribot.insights.analyzing': 'Ernährung analysieren...',
+    'nutribot.insights.loading': 'NutriBot analysiert dieses Produkt...',
     
     // Product Information
     'product.image.alt': 'Produktbild',
