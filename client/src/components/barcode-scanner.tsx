@@ -289,15 +289,13 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                     </svg>
                   </div>
                 </div>
-                {barcode.length > 0 && barcode.length < 8 && (
-                  <p className="text-xs text-destructive mt-1 fade-in">Barcode must be at least 8 digits</p>
-                )}
+
               </div>
               
               <Button 
                 type="submit"
                 className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
-                disabled={isLoading || barcode.trim().length < 8}
+                disabled={isLoading || barcode.trim().length < 1}
               >
                 {isLoading ? (
                   <>

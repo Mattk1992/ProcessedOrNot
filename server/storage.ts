@@ -1,6 +1,6 @@
 import { users, type User, type InsertUser, products, type Product, type InsertProduct } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -33,8 +33,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getProductByBarcode(barcode: string): Promise<Product | undefined> {
+    // First try exact barcode match
     const [product] = await db.select().from(products).where(eq(products.barcode, barcode));
-    return product || undefined;
+    if (product) return product;
+    
+    // If not found and input looks like a text search, try finding by product name
+    if (!barcode.match(/^\d+$/) && barcode.length > 0) {
+      const [nameMatch] = await db.select().from(products)
+        .where(eq(products.productName, barcode))
+        .orderBy(products.id)
+        .limit(1);
+      return nameMatch || undefined;
+    }
+    
+    return undefined;
   }
 
   async createProduct(insertProduct: InsertProduct): Promise<Product> {
