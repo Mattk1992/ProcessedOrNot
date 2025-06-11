@@ -269,23 +269,23 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-bold text-foreground">Processing Analysis</h3>
+              <h3 className="text-2xl font-bold text-foreground">{t('processing.title')}</h3>
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center">
                   <Lightbulb className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-sm text-muted-foreground font-medium">AI Powered</span>
+                <span className="text-sm text-muted-foreground font-medium">{t('processing.aiPowered')}</span>
               </div>
             </div>
 
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-lg font-semibold text-foreground">Processing Level</span>
+                <span className="text-lg font-semibold text-foreground">{t('processing.level')}</span>
                 <div className="text-right">
                   <span className={`text-4xl font-bold ${getScoreColor(product.processingScore)}`}>
                     {product.processingScore}
                   </span>
-                  <span className="text-2xl text-muted-foreground">/10</span>
+                  <span className="text-2xl text-muted-foreground">/{t('processing.outof')}</span>
                 </div>
               </div>
               
@@ -363,8 +363,8 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                 <Bot className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold">NutriBot Insights</h3>
-                <p className="text-sm text-white/80">AI-Powered Nutritional Analysis</p>
+                <h3 className="text-xl font-bold">{t('nutribot.insights.title')}</h3>
+                <p className="text-sm text-white/80">{t('nutribot.insights.subtitle')}</p>
               </div>
               <Sparkles className="w-5 h-5 text-white/80 ml-auto" />
             </CardTitle>
@@ -387,8 +387,8 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                 <Bot className="w-6 h-6 text-white animate-pulse" />
               </div>
               <div>
-                <h3 className="text-xl font-bold">NutriBot Insights</h3>
-                <p className="text-sm text-white/80">Analyzing nutrition...</p>
+                <h3 className="text-xl font-bold">{t('nutribot.insights.title')}</h3>
+                <p className="text-sm text-white/80">{t('nutribot.insights.analyzing')}</p>
               </div>
             </CardTitle>
           </CardHeader>
@@ -396,7 +396,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
             <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
               <div className="flex items-center space-x-3">
                 <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-muted-foreground">NutriBot is analyzing this product...</p>
+                <p className="text-muted-foreground">{t('nutribot.insights.loading')}</p>
               </div>
             </div>
           </CardContent>
