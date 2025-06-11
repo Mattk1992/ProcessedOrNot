@@ -344,7 +344,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       product.processingScore <= 3 ? 'text-emerald-700' : 
                       product.processingScore <= 6 ? 'text-yellow-700' : 'text-red-700'
                     }`}>
-                      {product.processingExplanation}
+                      {analysis?.explanation || product.processingExplanation}
                     </p>
                   </div>
                 </div>
