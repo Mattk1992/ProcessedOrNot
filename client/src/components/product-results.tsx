@@ -7,6 +7,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles } from "lucide-react";
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
+import NutritionSpotlight from "./nutrition-spotlight";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -393,6 +394,17 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
             </div>
           </CardContent>
         </Card>
+      )}
+
+      {/* Nutrition Spotlight */}
+      {product.nutriments && (
+        <div className="slide-up">
+          <NutritionSpotlight 
+            productName={product.productName || "Unknown Product"}
+            nutriments={product.nutriments}
+            processingScore={product.processingScore || 0}
+          />
+        </div>
       )}
 
       {/* Ingredients Card */}
