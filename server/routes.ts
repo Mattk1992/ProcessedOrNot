@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { cascadingProductLookup } from "./lib/product-lookup";
 import { analyzeIngredients } from "./lib/openai";
+import { getNutriBotResponse, generateProductNutritionInsight } from "./lib/nutribot";
 import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
