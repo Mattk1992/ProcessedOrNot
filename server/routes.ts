@@ -123,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get detailed ingredient analysis
   app.get("/api/products/:barcode/analysis", async (req, res) => {
     try {
-      const barcode = req.params.barcode;
+      const barcode = decodeURIComponent(req.params.barcode);
       const { language } = req.query;
 
       const product = await storage.getProductByBarcode(barcode);
@@ -174,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate product nutrition insight
   app.get("/api/products/:barcode/nutribot-insight", async (req, res) => {
     try {
-      const barcode = req.params.barcode;
+      const barcode = decodeURIComponent(req.params.barcode);
       const { language } = req.query;
 
       const product = await storage.getProductByBarcode(barcode);
@@ -204,7 +204,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate fun facts
   app.get("/api/products/:barcode/fun-facts", async (req, res) => {
     try {
-      const barcode = req.params.barcode;
+      const barcode = decodeURIComponent(req.params.barcode);
       const { language } = req.query;
 
       const product = await storage.getProductByBarcode(barcode);
@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Generate nutrition spotlight insights
   app.get("/api/products/:barcode/nutrition-spotlight", async (req, res) => {
     try {
-      const barcode = req.params.barcode;
+      const barcode = decodeURIComponent(req.params.barcode);
       const { language } = req.query;
 
       const product = await storage.getProductByBarcode(barcode);
