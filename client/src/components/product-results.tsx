@@ -410,6 +410,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
             productName={product.productName || "Unknown Product"}
             nutriments={product.nutriments}
             processingScore={product.processingScore || 0}
+            barcode={barcode}
           />
         </div>
       )}
