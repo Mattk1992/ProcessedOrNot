@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { insertProductSchema } from "@shared/schema";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,6 +33,7 @@ interface ManualProductFormProps {
 export default function ManualProductForm({ barcode, onProductCreated, onCancel }: ManualProductFormProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { language } = useLanguage();
 
   const form = useForm<ManualProductFormData>({
     resolver: zodResolver(manualProductSchema),

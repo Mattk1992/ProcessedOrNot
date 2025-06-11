@@ -69,7 +69,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Manual product entry
   app.post("/api/products", async (req, res) => {
     try {
-      const productData = insertProductSchema.parse(req.body);
+      const { language, ...productDataInput } = req.body;
+      const productData = insertProductSchema.parse(productDataInput);
 
       // Check if product already exists
       const existingProduct = await storage.getProductByBarcode(productData.barcode);
@@ -84,7 +85,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           const analysis = await analyzeIngredients(
             productData.ingredientsText,
-            productData.productName || "Unknown Product"
+            productData.productName || "Unknown Product",
+            language || 'en'
           );
           productData.processingScore = analysis.score;
           productData.processingExplanation = analysis.explanation;
@@ -122,6 +124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products/:barcode/analysis", async (req, res) => {
     try {
       const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
+      const { language } = req.query;
 
       const product = await storage.getProductByBarcode(barcode);
       if (!product || !product.ingredientsText) {
@@ -132,7 +135,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const analysis = await analyzeIngredients(
         product.ingredientsText,
-        product.productName || "Unknown Product"
+        product.productName || "Unknown Product",
+        (language as string) || 'en'
       );
 
       res.json(analysis);

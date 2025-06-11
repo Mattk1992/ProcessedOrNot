@@ -28,8 +28,12 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
   });
 
   const { data: analysis, isLoading: isLoadingAnalysis } = useQuery<ProcessingAnalysis>({
-    queryKey: ["/api/products", barcode, "analysis"],
-    queryFn: () => api.getProductAnalysis(barcode),
+    queryKey: ["/api/products", barcode, "analysis", language],
+    queryFn: async () => {
+      const response = await fetch(`/api/products/${barcode}/analysis?language=${language}`);
+      if (!response.ok) throw new Error('Failed to get product analysis');
+      return response.json();
+    },
     enabled: !!product?.ingredientsText,
   });
 

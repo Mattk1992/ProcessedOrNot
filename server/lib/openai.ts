@@ -6,9 +6,21 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key"
 });
 
-export async function analyzeIngredients(ingredientsText: string, productName: string): Promise<ProcessingAnalysis> {
+export async function analyzeIngredients(ingredientsText: string, productName: string, language: string = 'en'): Promise<ProcessingAnalysis> {
   try {
-    const prompt = `Analyze the following food product ingredients for processing level. Provide a score from 0-10 where:
+    const languageInstructions: Record<string, string> = {
+      'en': 'Provide your analysis in English.',
+      'es': 'Proporciona tu análisis en español.',
+      'fr': 'Fournissez votre analyse en français.',
+      'de': 'Stellen Sie Ihre Analyse auf Deutsch bereit.',
+      'zh': '请用中文提供分析。',
+      'ja': '日本語で分析を提供してください。',
+      'nl': 'Geef je analyse in het Nederlands.'
+    };
+
+    const languageInstruction = languageInstructions[language] || languageInstructions['en'];
+
+    const prompt = `Analyze the following food product ingredients for processing level. ${languageInstruction} Provide a score from 0-10 where:
 0-2: Minimally processed (whole foods, basic preparation)
 3-4: Processed culinary ingredients (oils, butter, sugar, salt)
 5-6: Processed foods (canned vegetables, simple breads, cheese)
@@ -26,7 +38,7 @@ Categorize each ingredient into one of these categories:
 Provide your response in JSON format with this structure:
 {
   "score": number,
-  "explanation": "detailed explanation of the processing level and reasoning",
+  "explanation": "detailed explanation of the processing level and reasoning in the requested language",
   "categories": {
     "ultraProcessed": ["ingredient1", "ingredient2"],
     "processed": ["ingredient3", "ingredient4"],
