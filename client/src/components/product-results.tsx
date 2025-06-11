@@ -8,6 +8,7 @@ import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles } 
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
 import NutritionSpotlight from "./nutrition-spotlight";
+import FunFacts from "./fun-facts";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -406,6 +407,16 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
           />
         </div>
       )}
+
+      {/* Fun Facts */}
+      <div className="slide-up">
+        <FunFacts 
+          productName={product.productName || "Unknown Product"}
+          ingredients={product.ingredientsText || ""}
+          nutriments={product.nutriments}
+          processingScore={product.processingScore || 0}
+        />
+      </div>
 
       {/* Ingredients Card */}
       {product.ingredientsText && (
