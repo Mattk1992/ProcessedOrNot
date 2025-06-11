@@ -26,7 +26,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (barcode.trim() && barcode.trim().length >= 8) {
+    if (barcode.trim()) {
       onScan(barcode.trim());
     }
   };
@@ -97,7 +97,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           if (result) {
             const scannedCode = result.getText();
             console.log("Scanned barcode:", scannedCode);
-            if (scannedCode && scannedCode.length >= 8) {
+            if (scannedCode) {
               stopCamera();
               onScan(scannedCode);
             }
@@ -272,7 +272,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   type="text"
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
-                  placeholder="Enter barcode (e.g., 3017620425400)"
+                  placeholder="Enter barcode or product name (e.g., 3017620425400 or 'Coca Cola')"
                   className="w-full px-5 py-4 text-lg font-mono tracking-wider pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30"
                   disabled={isLoading}
                 />

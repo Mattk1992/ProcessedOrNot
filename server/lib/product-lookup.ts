@@ -9,11 +9,25 @@ import { fetchProductFromBarcodeSpider } from "./barcode-spider";
 import { fetchProductFromEANSearch } from "./ean-search";
 import { fetchProductFromProductAPI } from "./product-api";
 import { analyzeIngredients } from "./openai";
+import { isBarcode, searchProductByText } from "./text-search";
 
 interface ProductLookupResult {
   product: InsertProduct | null;
   source: string;
   error?: string;
+}
+
+export async function smartProductLookup(input: string): Promise<ProductLookupResult> {
+  console.log(`Starting smart lookup for input: ${input}`);
+
+  // Check if input is a barcode or text
+  if (isBarcode(input)) {
+    console.log('Input detected as barcode, using cascading fallback system');
+    return cascadingProductLookup(input);
+  } else {
+    console.log('Input detected as text, using text search');
+    return searchProductByText(input);
+  }
 }
 
 export async function cascadingProductLookup(barcode: string): Promise<ProductLookupResult> {

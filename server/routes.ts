@@ -1,14 +1,18 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { cascadingProductLookup } from "./lib/product-lookup";
+import { smartProductLookup, cascadingProductLookup } from "./lib/product-lookup";
 import { analyzeIngredients } from "./lib/openai";
 import { getNutriBotResponse, generateProductNutritionInsight } from "./lib/nutribot";
 import { insertProductSchema } from "@shared/schema";
 import { z } from "zod";
 
+const inputSchema = z.object({
+  input: z.string().min(1, "Input cannot be empty"),
+});
+
 const barcodeSchema = z.object({
-  barcode: z.string().min(8, "Barcode must be at least 8 digits"),
+  barcode: z.string().min(1, "Input cannot be empty"),
 });
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -23,8 +27,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json(cachedProduct);
       }
 
-      // Use cascading fallback system
-      const lookupResult = await cascadingProductLookup(barcode);
+      // Use smart lookup system (auto-detects barcode vs text)
+      const lookupResult = await smartProductLookup(barcode);
       
       if (!lookupResult.product) {
         return res.status(404).json({ 
