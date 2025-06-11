@@ -165,9 +165,11 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     <div className="space-y-10">
       <div className="text-center mb-8">
         <div className="flex items-center justify-center mb-4">
-          <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center shadow-lg glow-effect floating-animation">
-            <Search className="w-8 h-8 text-white" />
-          </div>
+          <img 
+            src={logoPath} 
+            alt="ProcessedOrNot Logo" 
+            className="w-20 h-20 rounded-2xl shadow-lg glow-effect floating-animation"
+          />
         </div>
         <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">Find Your Product</h2>
         <p className="text-muted-foreground">Scan barcode, enter numbers, or type product name</p>
