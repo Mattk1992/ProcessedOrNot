@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database } from "lucide-react";
+import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles } from "lucide-react";
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
@@ -27,6 +27,16 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
     queryKey: ["/api/products", barcode, "analysis"],
     queryFn: () => api.getProductAnalysis(barcode),
     enabled: !!product?.ingredientsText,
+  });
+
+  const { data: nutriBotInsight, isLoading: isLoadingInsight } = useQuery<{ insight: string }>({
+    queryKey: ["/api/products", barcode, "nutribot-insight"],
+    queryFn: async () => {
+      const response = await fetch(`/api/products/${barcode}/nutribot-insight`);
+      if (!response.ok) throw new Error('Failed to get NutriBot insight');
+      return response.json();
+    },
+    enabled: !!product,
   });
 
   if (isLoadingProduct) {
@@ -330,6 +340,55 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                     </p>
                   </div>
                 </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* NutriBot Insights Card */}
+      {nutriBotInsight && (
+        <Card className="glass-card border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up glow-effect">
+          <CardHeader className="bg-gradient-to-r from-primary to-accent text-white rounded-t-lg">
+            <CardTitle className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center floating-animation">
+                <Bot className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">NutriBot Insights</h3>
+                <p className="text-sm text-white/80">AI-Powered Nutritional Analysis</p>
+              </div>
+              <Sparkles className="w-5 h-5 text-white/80 ml-auto" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 pb-6">
+            <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+              <p className="text-foreground leading-relaxed text-lg">
+                {nutriBotInsight.insight}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {isLoadingInsight && (
+        <Card className="glass-card border-2 border-primary/20 shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-primary to-accent text-white rounded-t-lg">
+            <CardTitle className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                <Bot className="w-6 h-6 text-white animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">NutriBot Insights</h3>
+                <p className="text-sm text-white/80">Analyzing nutrition...</p>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 pb-6">
+            <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+              <div className="flex items-center space-x-3">
+                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-muted-foreground">NutriBot is analyzing this product...</p>
               </div>
             </div>
           </CardContent>

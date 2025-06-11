@@ -3,6 +3,7 @@ import { Shield } from "lucide-react";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
+import NutriBotChat from "@/components/nutribot-chat";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -119,6 +120,9 @@ export default function Home() {
           </div>
         </div>
       </footer>
+
+      {/* NutriBot Chat */}
+      <NutriBotChat />
 
       {/* Background decoration */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
