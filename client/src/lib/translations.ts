@@ -584,6 +584,114 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': 'Sprache Auswählen',
     'language.current': 'Aktuelle Sprache',
+    
+    // Header and Branding
+    'brand.title': 'ProcessedOrNot Scanner',
+    'brand.subtitle': 'Für schnelle, einfache und fortschrittliche Produktanalyse und Verarbeitungserkennung',
+    
+    // Hero Section
+    'hero.title.part1': 'Entdecken Sie Wie Verarbeitet',
+    'hero.title.part2': 'Ihr Essen Wirklich Ist',
+    'hero.description': 'Scannen Sie jeden Barcode für sofortige KI-Analyse von Verarbeitungsgraden, Zutaten und Nährwertinformationen',
+    'hero.databases': 'Unterstützt von 14 Globalen Datenbanken',
+    
+    // Scanner Section
+    'scanner.header.title': 'Finden Sie Ihr Produkt',
+    'scanner.header.description': 'Barcode scannen, Zahlen eingeben oder Produktname tippen',
+    'scanner.camera.start': 'Kamera-Scanner Starten',
+    'scanner.camera.stop': 'Kamera Stoppen',
+    'scanner.camera.switch': 'Kamera Wechseln',
+    'scanner.camera.error': 'Kamera-Fehler',
+    'scanner.camera.permission': 'Kamera-Berechtigung erforderlich zum Scannen von Barcodes',
+    'scanner.input.placeholder': 'Barcode oder Produktname eingeben',
+    'scanner.input.button': 'Produkt Analysieren',
+    'scanner.input.analyzing': 'Produkt Wird Analysiert...',
+    'scanner.samples.title': 'Beispielsuchen Ausprobieren',
+    'scanner.samples.description': 'Barcode-Scannen oder textbasierte Produktsuche testen',
+    'scanner.samples.click': 'Zum Scannen klicken',
+    'scanner.samples.barcode': 'Barcode-Scan',
+    'scanner.samples.text': 'Textsuche',
+    
+    // Nutrition Spotlight
+    'nutrition.title': 'Ernährungs-Spotlight',
+    'nutrition.subtitle': 'Wichtige Nährwertinformationen',
+    'nutrition.dailyValue': 'Tageswert',
+    'nutrition.basedOn': 'Basierend auf einer 2000-Kalorien-Diät',
+    'nutrition.energy': 'Energie',
+    'nutrition.fat': 'Fett',
+    'nutrition.saturatedFat': 'Gesättigte Fettsäuren',
+    'nutrition.sugars': 'Zucker',
+    'nutrition.protein': 'Protein',
+    'nutrition.salt': 'Salz',
+    'nutrition.fiber': 'Ballaststoffe',
+    'nutrition.carbohydrates': 'Kohlenhydrate',
+    'nutrition.category.low': 'Niedrig',
+    'nutrition.category.medium': 'Mittel',
+    'nutrition.category.high': 'Hoch',
+    'nutrition.description.energy': 'Energiegehalt pro 100g',
+    'nutrition.description.fat': 'Gesamtfettgehalt',
+    'nutrition.description.saturatedFat': 'Gesättigte Fettsäuren Gehalt',
+    'nutrition.description.sugars': 'Zuckergehalt',
+    'nutrition.description.protein': 'Proteingehalt',
+    'nutrition.description.salt': 'Salzgehalt',
+    
+    // Fun Facts
+    'funfacts.title': 'Lustige Fakten',
+    'funfacts.subtitle': 'Interessante Einblicke zu diesem Produkt',
+    'funfacts.category.nutrition': 'ernährung',
+    'funfacts.category.history': 'geschichte',
+    'funfacts.category.processing': 'verarbeitung',
+    'funfacts.category.environment': 'umwelt',
+    
+    // NutriBot Chat
+    'nutribot.title': 'Fragen Sie NutriBot',
+    'nutribot.subtitle': 'Ihr KI-Ernährungsassistent',
+    'nutribot.placeholder': 'Fragen Sie nach Ernährung, Zutaten oder Gesundheit...',
+    'nutribot.send': 'Senden',
+    'nutribot.thinking': 'NutriBot denkt nach...',
+    'nutribot.welcome': 'Hallo! Ich bin NutriBot, Ihr Ernährungsassistent. Fragen Sie mich alles über Essen, Zutaten oder gesunde Ernährung!',
+    'nutribot.error': 'Entschuldigung, ich bin auf einen Fehler gestoßen. Bitte versuchen Sie es erneut.',
+    
+    // Processing Analysis
+    'processing.title': 'Verarbeitungsanalyse',
+    'processing.score': 'Verarbeitungspunktzahl',
+    'processing.outof': 'von 10',
+    'processing.level.minimal': 'Minimal Verarbeitet',
+    'processing.level.processed': 'Verarbeitet',
+    'processing.level.ultra': 'Ultra-Verarbeitet',
+    'processing.categories.title': 'Zutatenkategorien',
+    'processing.categories.ultra': 'Ultra-verarbeitete Zutaten',
+    'processing.categories.processed': 'Verarbeitete Zutaten',
+    'processing.categories.minimal': 'Minimal verarbeitete Zutaten',
+    'processing.insight.title': 'NutriBot Analyse',
+    'processing.insight.loading': 'Ernährungsinformationen werden abgerufen...',
+    
+    // Product Information
+    'product.image.alt': 'Produktbild',
+    'product.barcode': 'Barcode',
+    'product.notfound.title': 'Produkt Nicht Gefunden',
+    'product.notfound.description': 'Wir konnten dieses Produkt nicht in unseren Datenbanken finden.',
+    'product.notfound.add': 'Produktinformationen Hinzufügen',
+    'product.addmanual.title': 'Produkt Manuell Hinzufügen',
+    'product.addmanual.description': 'Helfen Sie dabei, unsere Datenbank zu verbessern, indem Sie dieses Produkt hinzufügen',
+    
+    // Theme Toggle
+    'theme.light': 'Heller Modus',
+    'theme.dark': 'Dunkler Modus',
+    'theme.toggle': 'Design umschalten',
+    
+    // Footer
+    'footer.createdBy': 'Erstellt von',
+    'footer.linkedin': 'LinkedIn-Profil',
+    
+    // Status Messages
+    'status.scanning': 'Barcode Wird Gescannt',
+    'status.scanning.description': 'Durchsuche Produktdatenbanken...',
+    'status.searching': 'Produkt Wird Gesucht',
+    'status.searching.description': 'Produktinformationen werden gefunden und Zutaten analysiert...',
+    'status.loading': 'Lädt',
+    'status.success': 'Erfolgreich',
+    'status.error': 'Fehler',
   },
   
   zh: {
@@ -647,6 +755,114 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': '选择语言',
     'language.current': '当前语言',
+    
+    // Header and Branding
+    'brand.title': 'ProcessedOrNot 扫描器',
+    'brand.subtitle': '快速、简单、先进的产品分析和加工检测',
+    
+    // Hero Section
+    'hero.title.part1': '发现您的食物',
+    'hero.title.part2': '到底加工了多少',
+    'hero.description': '扫描任何条形码，获得即时AI分析加工水平、成分和营养信息',
+    'hero.databases': '由14个全球数据库提供支持',
+    
+    // Scanner Section
+    'scanner.header.title': '查找您的产品',
+    'scanner.header.description': '扫描条形码、输入数字或输入产品名称',
+    'scanner.camera.start': '启动相机扫描器',
+    'scanner.camera.stop': '停止相机',
+    'scanner.camera.switch': '切换相机',
+    'scanner.camera.error': '相机错误',
+    'scanner.camera.permission': '需要相机权限来扫描条形码',
+    'scanner.input.placeholder': '输入条形码或产品名称',
+    'scanner.input.button': '分析产品',
+    'scanner.input.analyzing': '正在分析产品...',
+    'scanner.samples.title': '试用示例搜索',
+    'scanner.samples.description': '测试条形码扫描或基于文本的产品搜索',
+    'scanner.samples.click': '点击扫描',
+    'scanner.samples.barcode': '条形码扫描',
+    'scanner.samples.text': '文本搜索',
+    
+    // Nutrition Spotlight
+    'nutrition.title': '营养聚焦',
+    'nutrition.subtitle': '关键营养信息',
+    'nutrition.dailyValue': '每日价值',
+    'nutrition.basedOn': '基于2000卡路里饮食',
+    'nutrition.energy': '能量',
+    'nutrition.fat': '脂肪',
+    'nutrition.saturatedFat': '饱和脂肪',
+    'nutrition.sugars': '糖',
+    'nutrition.protein': '蛋白质',
+    'nutrition.salt': '盐',
+    'nutrition.fiber': '纤维',
+    'nutrition.carbohydrates': '碳水化合物',
+    'nutrition.category.low': '低',
+    'nutrition.category.medium': '中等',
+    'nutrition.category.high': '高',
+    'nutrition.description.energy': '每100克能量含量',
+    'nutrition.description.fat': '总脂肪含量',
+    'nutrition.description.saturatedFat': '饱和脂肪含量',
+    'nutrition.description.sugars': '糖含量',
+    'nutrition.description.protein': '蛋白质含量',
+    'nutrition.description.salt': '盐含量',
+    
+    // Fun Facts
+    'funfacts.title': '有趣事实',
+    'funfacts.subtitle': '关于此产品的有趣见解',
+    'funfacts.category.nutrition': '营养',
+    'funfacts.category.history': '历史',
+    'funfacts.category.processing': '加工',
+    'funfacts.category.environment': '环境',
+    
+    // NutriBot Chat
+    'nutribot.title': '询问NutriBot',
+    'nutribot.subtitle': '您的AI营养助手',
+    'nutribot.placeholder': '询问营养、成分或健康问题...',
+    'nutribot.send': '发送',
+    'nutribot.thinking': 'NutriBot正在思考...',
+    'nutribot.welcome': '您好！我是NutriBot，您的营养助手。请向我询问任何关于食物、成分或健康饮食的问题！',
+    'nutribot.error': '抱歉，我遇到了错误。请重试。',
+    
+    // Processing Analysis
+    'processing.title': '加工分析',
+    'processing.score': '加工评分',
+    'processing.outof': '满分10分',
+    'processing.level.minimal': '最低限度加工',
+    'processing.level.processed': '加工',
+    'processing.level.ultra': '超加工',
+    'processing.categories.title': '成分类别',
+    'processing.categories.ultra': '超加工成分',
+    'processing.categories.processed': '加工成分',
+    'processing.categories.minimal': '最低限度加工成分',
+    'processing.insight.title': 'NutriBot分析',
+    'processing.insight.loading': '获取营养信息...',
+    
+    // Product Information
+    'product.image.alt': '产品图片',
+    'product.barcode': '条形码',
+    'product.notfound.title': '未找到产品',
+    'product.notfound.description': '我们在数据库中找不到此产品。',
+    'product.notfound.add': '添加产品信息',
+    'product.addmanual.title': '手动添加产品',
+    'product.addmanual.description': '通过添加此产品来帮助改善我们的数据库',
+    
+    // Theme Toggle
+    'theme.light': '浅色模式',
+    'theme.dark': '深色模式',
+    'theme.toggle': '切换主题',
+    
+    // Footer
+    'footer.createdBy': '创建者',
+    'footer.linkedin': 'LinkedIn档案',
+    
+    // Status Messages
+    'status.scanning': '扫描条形码',
+    'status.scanning.description': '正在搜索产品数据库...',
+    'status.searching': '搜索产品',
+    'status.searching.description': '正在查找产品信息并分析成分...',
+    'status.loading': '加载中',
+    'status.success': '成功',
+    'status.error': '错误',
   },
   
   ja: {
@@ -710,5 +926,113 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': '言語を選択',
     'language.current': '現在の言語',
+    
+    // Header and Branding
+    'brand.title': 'ProcessedOrNot スキャナー',
+    'brand.subtitle': '迅速で簡単で高度な製品分析と加工検出',
+    
+    // Hero Section
+    'hero.title.part1': 'あなたの食べ物が',
+    'hero.title.part2': 'どれほど加工されているかを発見',
+    'hero.description': 'バーコードをスキャンして、加工レベル、成分、栄養情報のAI分析を即座に取得',
+    'hero.databases': '14のグローバルデータベースによる強化',
+    
+    // Scanner Section
+    'scanner.header.title': '製品を見つける',
+    'scanner.header.description': 'バーコードをスキャン、数字を入力、または製品名を入力',
+    'scanner.camera.start': 'カメラスキャナーを開始',
+    'scanner.camera.stop': 'カメラを停止',
+    'scanner.camera.switch': 'カメラを切り替え',
+    'scanner.camera.error': 'カメラエラー',
+    'scanner.camera.permission': 'バーコードをスキャンするためにカメラの権限が必要です',
+    'scanner.input.placeholder': 'バーコードまたは製品名を入力',
+    'scanner.input.button': '製品を分析',
+    'scanner.input.analyzing': '製品を分析中...',
+    'scanner.samples.title': 'サンプル検索を試す',
+    'scanner.samples.description': 'バーコードスキャンまたはテキストベースの製品検索をテスト',
+    'scanner.samples.click': 'クリックしてスキャン',
+    'scanner.samples.barcode': 'バーコードスキャン',
+    'scanner.samples.text': 'テキスト検索',
+    
+    // Nutrition Spotlight
+    'nutrition.title': '栄養スポットライト',
+    'nutrition.subtitle': '主要な栄養情報',
+    'nutrition.dailyValue': '1日の値',
+    'nutrition.basedOn': '2000カロリーの食事に基づく',
+    'nutrition.energy': 'エネルギー',
+    'nutrition.fat': '脂肪',
+    'nutrition.saturatedFat': '飽和脂肪',
+    'nutrition.sugars': '糖類',
+    'nutrition.protein': 'タンパク質',
+    'nutrition.salt': '塩',
+    'nutrition.fiber': '繊維',
+    'nutrition.carbohydrates': '炭水化物',
+    'nutrition.category.low': '低',
+    'nutrition.category.medium': '中',
+    'nutrition.category.high': '高',
+    'nutrition.description.energy': '100gあたりのエネルギー含有量',
+    'nutrition.description.fat': '総脂肪含有量',
+    'nutrition.description.saturatedFat': '飽和脂肪含有量',
+    'nutrition.description.sugars': '糖含有量',
+    'nutrition.description.protein': 'タンパク質含有量',
+    'nutrition.description.salt': '塩含有量',
+    
+    // Fun Facts
+    'funfacts.title': '楽しい事実',
+    'funfacts.subtitle': 'この製品に関する興味深い洞察',
+    'funfacts.category.nutrition': '栄養',
+    'funfacts.category.history': '歴史',
+    'funfacts.category.processing': '加工',
+    'funfacts.category.environment': '環境',
+    
+    // NutriBot Chat
+    'nutribot.title': 'NutriBotに質問',
+    'nutribot.subtitle': 'あなたのAI栄養アシスタント',
+    'nutribot.placeholder': '栄養、成分、健康について質問...',
+    'nutribot.send': '送信',
+    'nutribot.thinking': 'NutriBotが考えています...',
+    'nutribot.welcome': 'こんにちは！私はNutriBot、あなたの栄養アシスタントです。食べ物、成分、健康的な食事について何でも聞いてください！',
+    'nutribot.error': '申し訳ございませんが、エラーが発生いたしました。もう一度お試しください。',
+    
+    // Processing Analysis
+    'processing.title': '加工分析',
+    'processing.score': '加工スコア',
+    'processing.outof': '10点満点',
+    'processing.level.minimal': '最小限の加工',
+    'processing.level.processed': '加工済み',
+    'processing.level.ultra': '超加工',
+    'processing.categories.title': '成分カテゴリー',
+    'processing.categories.ultra': '超加工成分',
+    'processing.categories.processed': '加工成分',
+    'processing.categories.minimal': '最小限の加工成分',
+    'processing.insight.title': 'NutriBot分析',
+    'processing.insight.loading': '栄養情報を取得中...',
+    
+    // Product Information
+    'product.image.alt': '製品画像',
+    'product.barcode': 'バーコード',
+    'product.notfound.title': '製品が見つかりません',
+    'product.notfound.description': 'データベースでこの製品を見つけることができませんでした。',
+    'product.notfound.add': '製品情報を追加',
+    'product.addmanual.title': '製品を手動で追加',
+    'product.addmanual.description': 'この製品を追加してデータベースの改善にご協力ください',
+    
+    // Theme Toggle
+    'theme.light': 'ライトモード',
+    'theme.dark': 'ダークモード',
+    'theme.toggle': 'テーマを切り替え',
+    
+    // Footer
+    'footer.createdBy': '作成者',
+    'footer.linkedin': 'LinkedInプロフィール',
+    
+    // Status Messages
+    'status.scanning': 'バーコードスキャン中',
+    'status.scanning.description': '製品データベースを検索中...',
+    'status.searching': '製品検索中',
+    'status.searching.description': '製品情報を見つけて成分を分析中...',
+    'status.loading': '読み込み中',
+    'status.success': '成功',
+    'status.error': 'エラー',
   },
 };
