@@ -103,6 +103,14 @@ export const translations: Record<Language, Record<string, string>> = {
     // Nutrition Spotlight
     'nutrition.title': 'Nutrition Spotlight',
     'nutrition.subtitle': 'Key nutritional insights',
+    'nutrition.spotlight.title': 'Nutrition Spotlight',
+    'nutrition.spotlight.subtitle': 'AI-Powered Analysis',
+    'nutrition.spotlight.loading': 'Analyzing nutrition...',
+    'nutrition.spotlight.level': 'Level',
+    'nutrition.spotlight.description': 'Description',
+    'nutrition.spotlight.health_impact': 'Health Impact',
+    'nutrition.spotlight.recommendation': 'Recommendation',
+    'nutrition.spotlight.overall_assessment': 'Overall Assessment',
     'nutrition.dailyValue': 'Daily Value',
     'nutrition.basedOn': 'Based on a 2000 calorie diet',
     'nutrition.energy': 'Energy',
@@ -115,6 +123,9 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.carbohydrates': 'Carbohydrates',
     'nutrition.category.low': 'Low',
     'nutrition.category.medium': 'Medium',
+    'nutrition.category.good': 'Good',
+    'nutrition.category.moderate': 'Moderate',
+    'nutrition.category.high': 'High',
     'nutrition.description.energy': 'Energy content per 100g',
     'nutrition.description.fat': 'Total fat content',
     'nutrition.description.saturatedFat': 'Saturated fat content',
@@ -238,18 +249,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'dietary.kosher_desc': 'Jewish dietary laws',
     'status.success': 'Success',
     'status.error': 'Error',
-    
-    // Nutrition Spotlight
-    'nutrition.spotlight.title': 'Nutrition Spotlight',
-    'nutrition.spotlight.subtitle': 'AI-Powered Nutritional Analysis',
-    'nutrition.spotlight.loading': 'Analyzing nutrition data...',
-    'nutrition.spotlight.level': 'Level',
-    'nutrition.spotlight.description': 'Description',
-    'nutrition.spotlight.health_impact': 'Health Impact',
-    'nutrition.spotlight.recommendation': 'Recommendation',
-    'nutrition.spotlight.overall_assessment': 'Overall Assessment',
-    'nutrition.category.good': 'Good',
-    'nutrition.category.moderate': 'Moderate',
+
   },
   
   es: {
