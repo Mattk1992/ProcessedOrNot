@@ -210,7 +210,7 @@ export default function SearchHistory() {
                             <div className="space-y-1">
                               {item.productName && (
                                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                                  <span className="font-medium">{t("product.name")}:</span> {item.productName}
+                                  <span className="font-medium">{t("searchHistory.productFound")}:</span> {item.productName}
                                 </p>
                               )}
                               {item.productBrand && (
@@ -220,7 +220,7 @@ export default function SearchHistory() {
                               )}
                               {item.processingScore !== null && (
                                 <div className="flex items-center gap-2">
-                                  <span className="text-sm text-gray-600 dark:text-gray-300">{t("processing.score")}:</span>
+                                  <span className="text-sm text-gray-600 dark:text-gray-300">{t("searchHistory.processingScore")}:</span>
                                   <Badge className={getProcessingColor(item.processingScore)}>
                                     {item.processingScore}/10 - {getProcessingLevel(item.processingScore)}
                                   </Badge>
