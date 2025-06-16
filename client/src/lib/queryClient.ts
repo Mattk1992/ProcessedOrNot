@@ -2,7 +2,20 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
+    let text: string;
+    try {
+      // Try to get JSON error message first
+      const contentType = res.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        const errorJson = await res.json();
+        text = errorJson.message || JSON.stringify(errorJson);
+      } else {
+        text = await res.text();
+      }
+    } catch {
+      // If we can't parse the response, fall back to status text
+      text = res.statusText;
+    }
     throw new Error(`${res.status}: ${text}`);
   }
 }
@@ -24,7 +37,15 @@ export async function apiRequest(
   });
 
   await throwIfResNotOk(res);
-  return await res.json();
+  
+  // Check if response is JSON before parsing
+  const contentType = res.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return await res.json();
+  }
+  
+  // If not JSON, return the text content
+  return await res.text();
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -42,7 +63,15 @@ export const getQueryFn: <T>(options: {
     }
 
     await throwIfResNotOk(res);
-    return await res.json();
+    
+    // Check if response is JSON before parsing
+    const contentType = res.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      return await res.json();
+    }
+    
+    // If not JSON, return the text content
+    return await res.text();
   };
 
 export const queryClient = new QueryClient({
