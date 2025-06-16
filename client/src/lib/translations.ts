@@ -96,6 +96,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'brand.title': 'ProcessedOrNot Scanner',
     'brand.subtitle': 'For fast, simple, and advanced product analysis and processing detection',
     
+
+    
     // Hero Section
     'hero.title.part1': 'Discover How Processed',
     'hero.title.part2': 'Your Food Really Is',
@@ -389,7 +391,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'help.contact.description': 'If you have questions not covered in this guide, feel free to reach out for personalized support and assistance.',
     'help.contact.button': 'Contact Support',
 
-    // Authentication - Login Page
+    // Authentication - Login and Register
     'auth.backToHome': 'Back to Home',
     'auth.securityNotice': 'Your data is protected with end-to-end encryption and industry-standard security measures.',
     'auth.login.title': 'Welcome Back',
@@ -407,8 +409,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.login.welcomeBack': 'Welcome back!',
     'auth.login.error': 'Login failed',
     'auth.login.invalidCredentials': 'Invalid username or password',
-    
-    // Register
     'auth.register.title': 'Create Account',
     'auth.register.subtitle': 'Join to access advanced nutritional analysis and personalized features',
     'auth.register.firstName': 'First Name',
@@ -428,8 +428,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.register.passwordStrong': 'Strong password',
     'auth.register.createAccount': 'Create Account',
     'auth.register.creating': 'Creating account...',
-    'Creating account...': 'Creating account...',
-    'Create Account': 'Create Account',
     'auth.register.hasAccount': 'Already have an account?',
     'auth.register.signIn': 'Sign in',
     'auth.register.success': 'Account Created',
