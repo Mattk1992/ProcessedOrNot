@@ -34,7 +34,6 @@ declare module 'express-session' {
   interface SessionData {
     userId?: number;
     user?: any;
-    keepLoggedIn?: boolean;
   }
 }
 
@@ -121,21 +120,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Set session duration based on "Keep logged in" option
-      const sessionDuration = validatedData.keepLoggedIn 
-        ? 30 * 24 * 60 * 60 * 1000 // 30 days
-        : 7 * 24 * 60 * 60 * 1000;  // 7 days (default)
-
-      // Configure session with appropriate max age
-      req.session.cookie.maxAge = sessionDuration;
+      // Start session
       req.session.userId = user.id;
       req.session.user = sanitizeUser(user);
-      req.session.keepLoggedIn = validatedData.keepLoggedIn || false;
 
       res.json({
         message: "Login successful",
-        user: sanitizeUser(user),
-        sessionDuration: sessionDuration
+        user: sanitizeUser(user)
       });
     } catch (error: any) {
       if (error.name === 'ZodError') {

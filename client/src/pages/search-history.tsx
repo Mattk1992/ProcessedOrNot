@@ -130,7 +130,7 @@ export default function SearchHistory() {
                 <Search className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">{(stats as SearchHistoryStats).totalSearches}</div>
+                <div className="text-2xl font-bold text-blue-600">{(stats as any).totalSearches}</div>
                 <p className="text-xs text-muted-foreground">{t("searchHistory.allTimeSearches")}</p>
               </CardContent>
             </Card>
@@ -141,9 +141,9 @@ export default function SearchHistory() {
                 <CheckCircle className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{(stats as SearchHistoryStats).successfulSearches}</div>
+                <div className="text-2xl font-bold text-green-600">{(stats as any).successfulSearches}</div>
                 <p className="text-xs text-muted-foreground">
-                  {t("searchHistory.successRate")}: {((stats as SearchHistoryStats).totalSearches > 0 ? Math.round(((stats as SearchHistoryStats).successfulSearches / (stats as SearchHistoryStats).totalSearches) * 100) : 0)}%
+                  {t("searchHistory.successRate")}: {((stats as any).totalSearches > 0 ? Math.round(((stats as any).successfulSearches / (stats as any).totalSearches) * 100) : 0)}%
                 </p>
               </CardContent>
             </Card>
@@ -154,7 +154,7 @@ export default function SearchHistory() {
                 <TrendingUp className="h-4 w-4 text-purple-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-purple-600">{(stats as SearchHistoryStats).recentSearches}</div>
+                <div className="text-2xl font-bold text-purple-600">{(stats as any).recentSearches}</div>
                 <p className="text-xs text-muted-foreground">{t("searchHistory.lastSevenDays")}</p>
               </CardContent>
             </Card>
@@ -210,7 +210,7 @@ export default function SearchHistory() {
                             <div className="space-y-1">
                               {item.productName && (
                                 <p className="text-sm text-gray-600 dark:text-gray-300">
-                                  <span className="font-medium">{t("searchHistory.productFound")}:</span> {item.productName}
+                                  <span className="font-medium">{t("product.name")}:</span> {item.productName}
                                 </p>
                               )}
                               {item.productBrand && (
@@ -220,7 +220,7 @@ export default function SearchHistory() {
                               )}
                               {item.processingScore !== null && (
                                 <div className="flex items-center gap-2">
-                                  <span className="text-sm text-gray-600 dark:text-gray-300">{t("searchHistory.processingScore")}:</span>
+                                  <span className="text-sm text-gray-600 dark:text-gray-300">{t("processing.score")}:</span>
                                   <Badge className={getProcessingColor(item.processingScore)}>
                                     {item.processingScore}/10 - {getProcessingLevel(item.processingScore)}
                                   </Badge>
