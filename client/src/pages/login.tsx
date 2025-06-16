@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { loginUserSchema, type LoginUser } from "@shared/schema";
 import { apiRequest } from "@/lib/queryClient";
@@ -26,6 +27,7 @@ export default function Login() {
     defaultValues: {
       username: "",
       password: "",
+      keepLoggedIn: false,
     },
   });
 
@@ -145,6 +147,25 @@ export default function Login() {
                         </div>
                       </FormControl>
                       <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="keepLoggedIn"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          className="border-gray-300 dark:border-gray-600"
+                        />
+                      </FormControl>
+                      <FormLabel className="text-sm text-gray-700 dark:text-gray-300 font-normal cursor-pointer">
+                        {t("auth.login.keepLoggedIn")}
+                      </FormLabel>
                     </FormItem>
                   )}
                 />

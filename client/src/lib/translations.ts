@@ -432,6 +432,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.login.usernamePlaceholder': 'Enter your username or email',
     'auth.login.password': 'Password',
     'auth.login.passwordPlaceholder': 'Enter your password',
+    'auth.login.keepLoggedIn': 'Keep me logged in for 30 days',
     'auth.login.forgotPassword': 'Forgot your password?',
     'auth.login.signIn': 'Sign In',
     'auth.login.loggingIn': 'Signing in...',
