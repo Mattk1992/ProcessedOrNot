@@ -138,7 +138,7 @@ export default function AdminPanel() {
         </div>
 
         {/* Statistics Cards */}
-        {stats && (
+        {stats && (stats as any).totalUsers !== undefined && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
             <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -146,7 +146,7 @@ export default function AdminPanel() {
                 <Users className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">{stats.totalUsers}</div>
+                <div className="text-2xl font-bold text-blue-600">{(stats as any).totalUsers}</div>
                 <p className="text-xs text-muted-foreground">Registered accounts</p>
               </CardContent>
             </Card>
@@ -157,7 +157,7 @@ export default function AdminPanel() {
                 <Crown className="h-4 w-4 text-purple-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-purple-600">{stats.adminUsers}</div>
+                <div className="text-2xl font-bold text-purple-600">{(stats as any).adminUsers}</div>
                 <p className="text-xs text-muted-foreground">Administrator accounts</p>
               </CardContent>
             </Card>
@@ -168,7 +168,7 @@ export default function AdminPanel() {
                 <UserCheck className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{stats.regularUsers}</div>
+                <div className="text-2xl font-bold text-green-600">{(stats as any).regularUsers}</div>
                 <p className="text-xs text-muted-foreground">Standard accounts</p>
               </CardContent>
             </Card>
@@ -179,7 +179,7 @@ export default function AdminPanel() {
                 <UserCheck className="h-4 w-4 text-emerald-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-emerald-600">{stats.verifiedUsers}</div>
+                <div className="text-2xl font-bold text-emerald-600">{(stats as any).verifiedUsers}</div>
                 <p className="text-xs text-muted-foreground">Email verified</p>
               </CardContent>
             </Card>
@@ -190,7 +190,7 @@ export default function AdminPanel() {
                 <Database className="h-4 w-4 text-orange-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-orange-600">{stats.totalProducts}</div>
+                <div className="text-2xl font-bold text-orange-600">{(stats as any).totalProducts}</div>
                 <p className="text-xs text-muted-foreground">Scanned products</p>
               </CardContent>
             </Card>
@@ -201,7 +201,7 @@ export default function AdminPanel() {
                 <Activity className="h-4 w-4 text-indigo-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-indigo-600">{stats.recentRegistrations}</div>
+                <div className="text-2xl font-bold text-indigo-600">{(stats as any).recentRegistrations}</div>
                 <p className="text-xs text-muted-foreground">Last 7 days</p>
               </CardContent>
             </Card>
@@ -345,7 +345,7 @@ export default function AdminPanel() {
                   <h4 className="text-sm font-medium">Current Admin</h4>
                   <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
                     <Crown className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-medium">{user?.username}</span>
+                    <span className="text-sm font-medium">{(user as any)?.username}</span>
                     <Badge variant="outline">Admin</Badge>
                   </div>
                 </div>
