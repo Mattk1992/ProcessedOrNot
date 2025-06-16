@@ -11,14 +11,8 @@ export const languages: Record<Language, { name: string; flag: string }> = {
 };
 
 export function getTranslation(key: string, language: string): string {
-  const keys = key.split('.');
-  let value: any = translations[language as keyof typeof translations] || translations.en;
-  
-  for (const k of keys) {
-    value = value?.[k];
-  }
-  
-  return value || key;
+  const languageTranslations = translations[language as keyof typeof translations] || translations.en;
+  return languageTranslations[key] || translations.en[key] || key;
 }
 
 export const translations: Record<Language, Record<string, string>> = {
@@ -71,6 +65,60 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.success': 'Product saved successfully!',
     'form.error': 'Error saving product',
     
+    // Authentication
+    'auth.login.title': 'Welcome Back',
+    'auth.login.subtitle': 'Sign in to your account to continue',
+    'auth.login.usernameLabel': 'Username or Email',
+    'auth.login.usernamePlaceholder': 'Enter your username or email',
+    'auth.login.passwordLabel': 'Password',
+    'auth.login.passwordPlaceholder': 'Enter your password',
+    'auth.login.keepLoggedIn': 'Keep me logged in',
+    'auth.login.signInButton': 'Sign In',
+    'auth.login.signingIn': 'Signing In...',
+    'auth.login.noAccount': 'Don\'t have an account?',
+    'auth.login.createAccount': 'Create Account',
+    'auth.login.forgotPassword': 'Forgot Password?',
+    'auth.login.secureConnection': 'Secure Connection',
+    'auth.login.dataProtection': 'Data Protection',
+    'auth.login.success': 'Login successful',
+    'auth.login.welcomeBack': 'Welcome back!',
+    'auth.login.error': 'Login failed',
+    'auth.login.invalidCredentials': 'Invalid username or password',
+    'auth.login.termsNotice': 'By signing in, you agree to our Terms of Service and Privacy Policy',
+    
+    'auth.register.title': 'Create Account',
+    'auth.register.subtitle': 'Join us to start analyzing your food products',
+    'auth.register.usernameLabel': 'Username',
+    'auth.register.usernamePlaceholder': 'Choose a username',
+    'auth.register.emailLabel': 'Email',
+    'auth.register.emailPlaceholder': 'Enter your email address',
+    'auth.register.passwordLabel': 'Password',
+    'auth.register.passwordPlaceholder': 'Create a secure password',
+    'auth.register.confirmPassword': 'Confirm Password',
+    'auth.register.confirmPasswordPlaceholder': 'Confirm your password',
+    'auth.register.passwordWeak': 'Weak Password',
+    'auth.register.passwordMedium': 'Medium Password',
+    'auth.register.passwordStrong': 'Strong Password',
+    'auth.register.createAccount': 'Create Account',
+    'auth.register.creating': 'Creating account...',
+    'auth.register.hasAccount': 'Already have an account?',
+    'auth.register.signIn': 'Sign in',
+    'auth.register.secureEncryption': 'Secure Encryption',
+    'auth.register.emailVerification': 'Email Verification',
+    'auth.register.termsNotice': 'By creating an account, you agree to our Terms of Service and Privacy Policy',
+    
+    // Search History
+    'history.title': 'Search History',
+    'history.subtitle': 'Your recent product searches',
+    'history.noHistory': 'No search history yet',
+    'history.noHistoryDescription': 'Start scanning products to see your search history here',
+    'history.clearAll': 'Clear All History',
+    'history.searchedOn': 'Searched on',
+    'history.viewProduct': 'View Product',
+    'history.deleteEntry': 'Delete Entry',
+    'history.confirmClear': 'Are you sure you want to clear all search history?',
+    'history.confirmDelete': 'Are you sure you want to delete this search?',
+    
     // Common
     'common.loading': 'Loading...',
     'common.error': 'An error occurred',
@@ -79,6 +127,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'common.close': 'Close',
     'common.save': 'Save',
     'common.cancel': 'Cancel',
+    'common.confirm': 'Confirm',
+    'common.delete': 'Delete',
     
     // Language
     'language.select': 'Select Language',
@@ -423,58 +473,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'help.contact.description': 'If you have questions not covered in this guide, feel free to reach out for personalized support and assistance.',
     'help.contact.button': 'Contact Support',
 
-    // Authentication - Login Page
-    'auth.backToHome': 'Back to Home',
-    'auth.securityNotice': 'Your data is protected with end-to-end encryption and industry-standard security measures.',
-    'auth.login.title': 'Welcome Back',
-    'auth.login.subtitle': 'Enter your credentials to access your account',
-    'auth.login.usernameOrEmail': 'Username or Email',
-    'auth.login.usernamePlaceholder': 'Enter your username or email',
-    'auth.login.password': 'Password',
-    'auth.login.passwordPlaceholder': 'Enter your password',
-    'auth.login.keepLoggedIn': 'Keep me logged in for 30 days',
-    'auth.login.forgotPassword': 'Forgot your password?',
-    'auth.login.signIn': 'Sign In',
-    'auth.login.loggingIn': 'Signing in...',
-    'auth.login.noAccount': 'Don\'t have an account?',
-    'auth.login.signUp': 'Sign up',
-    'auth.login.success': 'Login successful',
-    'auth.login.welcomeBack': 'Welcome back!',
-    'auth.login.error': 'Login failed',
-    'auth.login.invalidCredentials': 'Invalid username or password',
-    
-    // Register
-    'auth.register.title': 'Create Account',
-    'auth.register.subtitle': 'Join to access advanced nutritional analysis and personalized features',
-    'auth.register.firstName': 'First Name',
-    'auth.register.firstNamePlaceholder': 'Your first name',
-    'auth.register.lastName': 'Last Name',
-    'auth.register.lastNamePlaceholder': 'Your last name',
-    'auth.register.username': 'Username',
-    'auth.register.usernamePlaceholder': 'Choose a username',
-    'auth.register.email': 'Email',
-    'auth.register.emailPlaceholder': 'your@email.com',
-    'auth.register.password': 'Password',
-    'auth.register.passwordPlaceholder': 'Create a secure password',
-    'auth.register.confirmPassword': 'Confirm Password',
-    'auth.register.confirmPasswordPlaceholder': 'Confirm your password',
-    'auth.register.passwordWeak': 'Weak password',
-    'auth.register.passwordMedium': 'Medium password',
-    'auth.register.passwordStrong': 'Strong password',
-    'auth.register.createAccount': 'Create Account',
-    'auth.register.creating': 'Creating account...',
-    'Creating account...': 'Creating account...',
-    'Create Account': 'Create Account',
-    'auth.register.hasAccount': 'Already have an account?',
-    'auth.register.signIn': 'Sign in',
-    'auth.register.success': 'Account Created',
-    'auth.register.verificationSent': 'Verification email sent',
-    'auth.register.error': 'Registration Error',
-    'auth.register.failed': 'Failed to create account',
-    'auth.register.secureEncryption': 'Secure Encryption',
-    'auth.register.emailVerification': 'Email Verification',
-    'auth.register.termsNotice': 'By creating an account, you agree to our terms of service and privacy policy.',
-
     // Home Page Call-to-Action
     'home.cta.title': 'Log in or register to explore all the exciting features and benefits that await you!',
     'home.cta.createAccount': 'Create Account',
@@ -530,6 +528,48 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.saving': 'Guardando...',
     'form.success': '¡Producto guardado exitosamente!',
     'form.error': 'Error al guardar producto',
+    
+    // Authentication
+    'auth.login.title': 'Bienvenido de Vuelta',
+    'auth.login.subtitle': 'Inicia sesión en tu cuenta para continuar',
+    'auth.login.usernameLabel': 'Usuario o Correo',
+    'auth.login.usernamePlaceholder': 'Ingresa tu usuario o correo',
+    'auth.login.passwordLabel': 'Contraseña',
+    'auth.login.passwordPlaceholder': 'Ingresa tu contraseña',
+    'auth.login.keepLoggedIn': 'Mantenerme conectado',
+    'auth.login.signInButton': 'Iniciar Sesión',
+    'auth.login.signingIn': 'Iniciando Sesión...',
+    'auth.login.noAccount': '¿No tienes una cuenta?',
+    'auth.login.createAccount': 'Crear Cuenta',
+    'auth.login.forgotPassword': '¿Olvidaste tu Contraseña?',
+    'auth.login.secureConnection': 'Conexión Segura',
+    'auth.login.dataProtection': 'Protección de Datos',
+    'auth.login.success': 'Inicio de sesión exitoso',
+    'auth.login.welcomeBack': '¡Bienvenido de vuelta!',
+    'auth.login.error': 'Error de inicio de sesión',
+    'auth.login.invalidCredentials': 'Usuario o contraseña inválidos',
+    'auth.login.termsNotice': 'Al iniciar sesión, aceptas nuestros Términos de Servicio y Política de Privacidad',
+    
+    'auth.register.title': 'Crear Cuenta',
+    'auth.register.subtitle': 'Únete para comenzar a analizar tus productos alimenticios',
+    'auth.register.usernameLabel': 'Usuario',
+    'auth.register.usernamePlaceholder': 'Elige un nombre de usuario',
+    'auth.register.emailLabel': 'Correo Electrónico',
+    'auth.register.emailPlaceholder': 'Ingresa tu dirección de correo',
+    'auth.register.passwordLabel': 'Contraseña',
+    'auth.register.passwordPlaceholder': 'Crea una contraseña segura',
+    'auth.register.confirmPassword': 'Confirmar Contraseña',
+    'auth.register.confirmPasswordPlaceholder': 'Confirma tu contraseña',
+    'auth.register.passwordWeak': 'Contraseña Débil',
+    'auth.register.passwordMedium': 'Contraseña Media',
+    'auth.register.passwordStrong': 'Contraseña Fuerte',
+    'auth.register.createAccount': 'Crear Cuenta',
+    'auth.register.creating': 'Creando cuenta...',
+    'auth.register.hasAccount': '¿Ya tienes una cuenta?',
+    'auth.register.signIn': 'Iniciar sesión',
+    'auth.register.secureEncryption': 'Encriptación Segura',
+    'auth.register.emailVerification': 'Verificación de Correo',
+    'auth.register.termsNotice': 'Al crear una cuenta, aceptas nuestros Términos de Servicio y Política de Privacidad',
     
     // Common
     'common.loading': 'Cargando...',
