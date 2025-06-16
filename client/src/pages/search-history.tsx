@@ -130,7 +130,7 @@ export default function SearchHistory() {
                 <Search className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-blue-600">{(stats as any).totalSearches}</div>
+                <div className="text-2xl font-bold text-blue-600">{(stats as SearchHistoryStats).totalSearches}</div>
                 <p className="text-xs text-muted-foreground">{t("searchHistory.allTimeSearches")}</p>
               </CardContent>
             </Card>
@@ -141,9 +141,9 @@ export default function SearchHistory() {
                 <CheckCircle className="h-4 w-4 text-green-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-600">{(stats as any).successfulSearches}</div>
+                <div className="text-2xl font-bold text-green-600">{(stats as SearchHistoryStats).successfulSearches}</div>
                 <p className="text-xs text-muted-foreground">
-                  {t("searchHistory.successRate")}: {((stats as any).totalSearches > 0 ? Math.round(((stats as any).successfulSearches / (stats as any).totalSearches) * 100) : 0)}%
+                  {t("searchHistory.successRate")}: {((stats as SearchHistoryStats).totalSearches > 0 ? Math.round(((stats as SearchHistoryStats).successfulSearches / (stats as SearchHistoryStats).totalSearches) * 100) : 0)}%
                 </p>
               </CardContent>
             </Card>
@@ -154,7 +154,7 @@ export default function SearchHistory() {
                 <TrendingUp className="h-4 w-4 text-purple-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-purple-600">{(stats as any).recentSearches}</div>
+                <div className="text-2xl font-bold text-purple-600">{(stats as SearchHistoryStats).recentSearches}</div>
                 <p className="text-xs text-muted-foreground">{t("searchHistory.lastSevenDays")}</p>
               </CardContent>
             </Card>

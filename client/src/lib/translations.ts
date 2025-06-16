@@ -2337,6 +2337,21 @@ export const translations: Record<Language, Record<string, string>> = {
     'scanner.error': 'Scanner fout',
     'scanner.permission': 'Camera toestemming vereist',
 
+    // Product Results
+    'product.loading': 'Product opzoeken...',
+    'product.notFound': 'Product niet gevonden',
+    'product.error': 'Fout bij laden product',
+    'product.analysis': 'Verwerkingsanalyse',
+    'product.score': 'Verwerkingsscore',
+    'product.explanation': 'Uitleg',
+    'product.categories.title': 'Ingrediënt Categorieën',
+    'product.categories.ultraProcessed': 'Ultra-verwerkt',
+    'product.categories.processed': 'Verwerkt',
+    'product.categories.minimal': 'Minimaal verwerkt',
+    'product.ingredients': 'Ingrediënten',
+    'product.brand': 'Merk',
+    'product.source': 'Gegevensbron',
+
     // Common
     'common.loading': 'Laden...',
     'common.error': 'Fout',
