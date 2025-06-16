@@ -4,7 +4,19 @@ import { storage } from "./storage";
 import { smartProductLookup, cascadingProductLookup } from "./lib/product-lookup";
 import { analyzeIngredients } from "./lib/openai";
 import { getNutriBotResponse, generateProductNutritionInsight, generateFunFacts, generateNutritionSpotlightInsights } from "./lib/nutribot";
-import { insertProductSchema } from "@shared/schema";
+import { 
+  insertProductSchema,
+  registerUserSchema,
+  loginUserSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  type RegisterUser,
+  type LoginUser,
+  type ForgotPassword,
+  type ResetPassword
+} from "@shared/schema";
+import { generatePasswordResetToken, sendPasswordResetEmail, sendEmailVerification, sanitizeUser } from "./lib/auth";
+import session from "express-session";
 import { z } from "zod";
 
 const inputSchema = z.object({
@@ -15,7 +27,229 @@ const barcodeSchema = z.object({
   barcode: z.string().min(1, "Input cannot be empty"),
 });
 
+// Configure session middleware
+declare module 'express-session' {
+  interface SessionData {
+    userId?: number;
+    user?: any;
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configure session middleware
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'default-secret-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    },
+  }));
+
+  // Authentication middleware
+  const requireAuth = (req: any, res: any, next: any) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    next();
+  };
+
+  // User registration endpoint
+  app.post("/api/auth/register", async (req, res) => {
+    try {
+      const validatedData = registerUserSchema.parse(req.body);
+      
+      // Check if username or email already exists
+      const existingUsername = await storage.getUserByUsername(validatedData.username);
+      if (existingUsername) {
+        return res.status(400).json({ 
+          message: "Username already exists",
+          field: "username"
+        });
+      }
+
+      const existingEmail = await storage.getUserByEmail(validatedData.email);
+      if (existingEmail) {
+        return res.status(400).json({ 
+          message: "Email already exists",
+          field: "email"
+        });
+      }
+
+      // Create new user
+      const user = await storage.createUser(validatedData);
+      
+      // Send email verification
+      if (user.emailVerificationToken) {
+        await sendEmailVerification(user.email, user.emailVerificationToken);
+      }
+
+      // Start session
+      req.session.userId = user.id;
+      req.session.user = sanitizeUser(user);
+
+      res.status(201).json({
+        message: "Registration successful",
+        user: sanitizeUser(user)
+      });
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors
+        });
+      }
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "Registration failed" });
+    }
+  });
+
+  // User login endpoint
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const validatedData = loginUserSchema.parse(req.body);
+      
+      const user = await storage.verifyUserCredentials(validatedData.username, validatedData.password);
+      if (!user) {
+        return res.status(401).json({ 
+          message: "Invalid username or password"
+        });
+      }
+
+      // Start session
+      req.session.userId = user.id;
+      req.session.user = sanitizeUser(user);
+
+      res.json({
+        message: "Login successful",
+        user: sanitizeUser(user)
+      });
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors
+        });
+      }
+      console.error("Login error:", error);
+      res.status(500).json({ message: "Login failed" });
+    }
+  });
+
+  // User logout endpoint
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Logout failed" });
+      }
+      res.clearCookie('connect.sid');
+      res.json({ message: "Logout successful" });
+    });
+  });
+
+  // Get current user endpoint
+  app.get("/api/auth/me", async (req, res) => {
+    if (!req.session.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    try {
+      const user = await storage.getUserById(req.session.userId);
+      if (!user) {
+        req.session.destroy(() => {});
+        return res.status(401).json({ message: "User not found" });
+      }
+
+      res.json({
+        user: sanitizeUser(user)
+      });
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "Failed to get user" });
+    }
+  });
+
+  // Forgot password endpoint
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const validatedData = forgotPasswordSchema.parse(req.body);
+      
+      const user = await storage.getUserByEmail(validatedData.email);
+      if (!user) {
+        // Don't reveal if email exists for security
+        return res.json({ 
+          message: "If the email exists, a password reset link has been sent"
+        });
+      }
+
+      const resetToken = generatePasswordResetToken();
+      await storage.setPasswordResetToken(validatedData.email, resetToken);
+      await sendPasswordResetEmail(validatedData.email, resetToken);
+
+      res.json({ 
+        message: "If the email exists, a password reset link has been sent"
+      });
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors
+        });
+      }
+      console.error("Forgot password error:", error);
+      res.status(500).json({ message: "Password reset failed" });
+    }
+  });
+
+  // Reset password endpoint
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const validatedData = resetPasswordSchema.parse(req.body);
+      
+      const success = await storage.resetPassword(validatedData.token, validatedData.password);
+      if (!success) {
+        return res.status(400).json({ 
+          message: "Invalid or expired reset token"
+        });
+      }
+
+      res.json({ 
+        message: "Password reset successful"
+      });
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors
+        });
+      }
+      console.error("Reset password error:", error);
+      res.status(500).json({ message: "Password reset failed" });
+    }
+  });
+
+  // Email verification endpoint
+  app.get("/api/auth/verify-email", async (req, res) => {
+    try {
+      const token = req.query.token as string;
+      if (!token) {
+        return res.status(400).json({ message: "Verification token required" });
+      }
+
+      const success = await storage.verifyEmail(token);
+      if (!success) {
+        return res.status(400).json({ message: "Invalid or expired verification token" });
+      }
+
+      res.json({ message: "Email verified successfully" });
+    } catch (error) {
+      console.error("Email verification error:", error);
+      res.status(500).json({ message: "Email verification failed" });
+    }
+  });
+
   // Get product by barcode
   app.get("/api/products/:barcode", async (req, res) => {
     try {

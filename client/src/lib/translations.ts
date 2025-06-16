@@ -10,6 +10,17 @@ export const languages: Record<Language, { name: string; flag: string }> = {
   nl: { name: 'Nederlands', flag: '🇳🇱' },
 };
 
+export function getTranslation(key: string, language: string): string {
+  const keys = key.split('.');
+  let value: any = translations[language as keyof typeof translations] || translations.en;
+  
+  for (const k of keys) {
+    value = value?.[k];
+  }
+  
+  return value || key;
+}
+
 export const translations: Record<Language, Record<string, string>> = {
   en: {
     // Navigation
@@ -814,6 +825,57 @@ export const translations: Record<Language, Record<string, string>> = {
     'help.contact.title': '¿Aún Necesitas Ayuda?',
     'help.contact.description': 'Si tienes preguntas no cubiertas en esta guía, siéntete libre de contactarnos para soporte personalizado y asistencia.',
     'help.contact.button': 'Contactar Soporte',
+
+    // Authentication
+    'auth.backToHome': 'Volver al Inicio',
+    'auth.securityNotice': 'Tu información está protegida con encriptación de grado empresarial y las mejores prácticas de seguridad.',
+    
+    // Login
+    'auth.login.title': 'Iniciar Sesión',
+    'auth.login.subtitle': 'Accede a tu cuenta para obtener análisis nutricionales personalizados',
+    'auth.login.usernameOrEmail': 'Usuario o Email',
+    'auth.login.usernamePlaceholder': 'Ingresa tu usuario o email',
+    'auth.login.password': 'Contraseña',
+    'auth.login.passwordPlaceholder': 'Ingresa tu contraseña',
+    'auth.login.forgotPassword': '¿Olvidaste tu contraseña?',
+    'auth.login.signIn': 'Iniciar Sesión',
+    'auth.login.loggingIn': 'Iniciando sesión...',
+    'auth.login.noAccount': '¿No tienes una cuenta?',
+    'auth.login.signUp': 'Regístrate',
+    'auth.login.success': 'Sesión Iniciada',
+    'auth.login.welcomeBack': 'Bienvenido de vuelta',
+    'auth.login.error': 'Error de Inicio de Sesión',
+    'auth.login.invalidCredentials': 'Usuario o contraseña incorrectos',
+    
+    // Register
+    'auth.register.title': 'Crear Cuenta',
+    'auth.register.subtitle': 'Únete para acceder a análisis nutricionales avanzados y características personalizadas',
+    'auth.register.firstName': 'Nombre',
+    'auth.register.firstNamePlaceholder': 'Tu nombre',
+    'auth.register.lastName': 'Apellido',
+    'auth.register.lastNamePlaceholder': 'Tu apellido',
+    'auth.register.username': 'Usuario',
+    'auth.register.usernamePlaceholder': 'Elige un nombre de usuario',
+    'auth.register.email': 'Email',
+    'auth.register.emailPlaceholder': 'tu@email.com',
+    'auth.register.password': 'Contraseña',
+    'auth.register.passwordPlaceholder': 'Crea una contraseña segura',
+    'auth.register.confirmPassword': 'Confirmar Contraseña',
+    'auth.register.confirmPasswordPlaceholder': 'Confirma tu contraseña',
+    'auth.register.passwordWeak': 'Contraseña débil',
+    'auth.register.passwordMedium': 'Contraseña media',
+    'auth.register.passwordStrong': 'Contraseña fuerte',
+    'auth.register.createAccount': 'Crear Cuenta',
+    'auth.register.creating': 'Creando cuenta...',
+    'auth.register.hasAccount': '¿Ya tienes una cuenta?',
+    'auth.register.signIn': 'Inicia sesión',
+    'auth.register.success': 'Cuenta Creada',
+    'auth.register.verificationSent': 'Se ha enviado un email de verificación',
+    'auth.register.error': 'Error de Registro',
+    'auth.register.failed': 'No se pudo crear la cuenta',
+    'auth.register.secureEncryption': 'Encriptación Segura',
+    'auth.register.emailVerification': 'Verificación por Email',
+    'auth.register.termsNotice': 'Al crear una cuenta, aceptas nuestros términos de servicio y política de privacidad.',
 
   },
   
