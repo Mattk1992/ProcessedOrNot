@@ -33,14 +33,11 @@ export async function apiRequest(
     throw new Error(`${res.status}: ${text}`);
   }
   
-  // Check content type before parsing
+  // Check response content type to avoid JSON parsing errors
   const contentType = res.headers.get('content-type');
   if (!contentType || !contentType.includes('application/json')) {
-    const text = await res.text();
-    console.error('Expected JSON but got:', contentType);
-    console.error('URL:', url);
-    console.error('Response preview:', text.substring(0, 200));
-    throw new Error(`Expected JSON response from ${url} but got ${contentType}`);
+    console.warn(`Non-JSON response from ${url}:`, contentType);
+    return null;
   }
   
   return await res.json();
@@ -54,9 +51,10 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     const url = queryKey[0] as string;
     
-    // Validate URL format
-    if (!url || !url.startsWith('/')) {
-      throw new Error(`Invalid query key: ${url}. Expected URL starting with '/'`);
+    // Validate URL format and fix malformed requests
+    if (!url || typeof url !== 'string' || !url.startsWith('/')) {
+      console.error('Invalid query key detected:', queryKey);
+      throw new Error(`Invalid query key: ${JSON.stringify(queryKey)}. Expected URL starting with '/'`);
     }
     
     const res = await fetch(url, {
@@ -72,13 +70,20 @@ export const getQueryFn: <T>(options: {
       throw new Error(`${res.status}: ${text}`);
     }
     
+    // Check response content type to avoid JSON parsing errors
+    const contentType = res.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.warn(`Non-JSON response from ${url}:`, contentType);
+      return null;
+    }
+    
     return await res.json();
   };
 
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "throw" }),
+      queryFn: getQueryFn({ on401: "returnNull" }),
       refetchInterval: false,
       refetchOnWindowFocus: false,
       staleTime: Infinity,
