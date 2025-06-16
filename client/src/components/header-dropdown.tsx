@@ -20,7 +20,7 @@ export default function HeaderDropdown() {
       label: t('dropdown.help') || 'Help',
       icon: <HelpCircle className="w-4 h-4" />,
       action: () => {
-        console.log('Help clicked');
+        setLocation('/help');
       }
     },
     {
