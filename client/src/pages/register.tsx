@@ -36,7 +36,8 @@ export default function Register() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: RegisterUser) => {
-      return await apiRequest("/api/auth/register", { method: "POST", body: data });
+      const response = await apiRequest("POST", "/api/auth/register", data);
+      return await response.json();
     },
     onSuccess: (data) => {
       toast({
@@ -88,7 +89,7 @@ export default function Register() {
           <Link href="/">
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              {t("auth.backToHome")}
+              {t("Back to Home")}
             </Button>
           </Link>
         </div>
@@ -100,10 +101,10 @@ export default function Register() {
             </div>
             <div>
               <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                {t("auth.register.title")}
+                {t("Create Account")}
               </CardTitle>
               <CardDescription className="text-gray-600 dark:text-gray-400 mt-2">
-                {t("auth.register.subtitle")}
+                {t("Join us to access advanced nutritional analysis and personalized features")}
               </CardDescription>
             </div>
           </CardHeader>
@@ -119,13 +120,13 @@ export default function Register() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-gray-700 dark:text-gray-300">
-                          {t("auth.register.firstName")}
+                          {t("First Name")}
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             type="text"
-                            placeholder={t("auth.register.firstNamePlaceholder")}
+                            placeholder={t("Your first name")}
                             className="bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="given-name"
                           />
@@ -141,13 +142,13 @@ export default function Register() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-gray-700 dark:text-gray-300">
-                          {t("auth.register.lastName")}
+                          {t("Last Name")}
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             type="text"
-                            placeholder={t("auth.register.lastNamePlaceholder")}
+                            placeholder={t("Your last name")}
                             className="bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="family-name"
                           />
@@ -165,7 +166,7 @@ export default function Register() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 dark:text-gray-300">
-                        {t("auth.register.username")}
+                        {t("Username")}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -173,7 +174,7 @@ export default function Register() {
                           <Input
                             {...field}
                             type="text"
-                            placeholder={t("auth.register.usernamePlaceholder")}
+                            placeholder={t("Choose a username")}
                             className="pl-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="username"
                           />
@@ -191,7 +192,7 @@ export default function Register() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 dark:text-gray-300">
-                        {t("auth.register.email")}
+                        {t("Email")}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -199,7 +200,7 @@ export default function Register() {
                           <Input
                             {...field}
                             type="email"
-                            placeholder={t("auth.register.emailPlaceholder")}
+                            placeholder={t("your@email.com")}
                             className="pl-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="email"
                           />
@@ -217,7 +218,7 @@ export default function Register() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 dark:text-gray-300">
-                        {t("auth.register.password")}
+                        {t("Password")}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -225,7 +226,7 @@ export default function Register() {
                           <Input
                             {...field}
                             type={showPassword ? "text" : "password"}
-                            placeholder={t("auth.register.passwordPlaceholder")}
+                            placeholder={t("Create a secure password")}
                             className="pl-10 pr-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="new-password"
                           />
@@ -258,10 +259,10 @@ export default function Register() {
                           </div>
                           <p className="text-xs text-gray-600 dark:text-gray-400">
                             {passwordStrength <= 2
-                              ? t("auth.register.passwordWeak")
+                              ? t("Weak Password ")
                               : passwordStrength <= 3
-                              ? t("auth.register.passwordMedium")
-                              : t("auth.register.passwordStrong")}
+                              ? t("Medium Password")
+                              : t("Strong Password")}
                           </p>
                         </div>
                       )}
@@ -277,7 +278,7 @@ export default function Register() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 dark:text-gray-300">
-                        {t("auth.register.confirmPassword")}
+                        {t("Confirm Password ")}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -285,7 +286,7 @@ export default function Register() {
                           <Input
                             {...field}
                             type={showConfirmPassword ? "text" : "password"}
-                            placeholder={t("auth.register.confirmPasswordPlaceholder")}
+                            placeholder={t("Confirm your password")}
                             className="pl-10 pr-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="new-password"
                           />
@@ -308,17 +309,17 @@ export default function Register() {
                   className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-medium py-2.5"
                   disabled={registerMutation.isPending}
                 >
-                  {registerMutation.isPending ? t("auth.register.creating") : t("auth.register.createAccount")}
+                  {registerMutation.isPending ? t("Creating account...") : t("Create Account")}
                 </Button>
               </form>
             </Form>
 
             <div className="text-center space-y-2">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {t("auth.register.hasAccount")}{" "}
+                {t("Already have an account?")}{" "}
                 <Link href="/login">
                   <Button variant="link" size="sm" className="text-blue-600 dark:text-blue-400 p-0 h-auto font-medium">
-                    {t("auth.register.signIn")}
+                    {t("Sign in")}
                   </Button>
                 </Link>
               </p>
@@ -331,15 +332,15 @@ export default function Register() {
           <div className="flex items-center justify-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center space-x-1">
               <Check className="w-3 h-3 text-green-500" />
-              <span>{t("auth.register.secureEncryption")}</span>
+              <span>{t("Secure Encryption")}</span>
             </div>
             <div className="flex items-center space-x-1">
               <Check className="w-3 h-3 text-green-500" />
-              <span>{t("auth.register.emailVerification")}</span>
+              <span>{t("Email Verification")}</span>
             </div>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-md mx-auto">
-            {t("auth.register.termsNotice")}
+            {t("Terms Notice")}
           </p>
         </div>
       </div>
