@@ -15,12 +15,8 @@ export default function Home() {
   const [isScanning, setIsScanning] = useState(false);
 
   const { toast } = useToast();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
-  
-  // Debug logging
-  console.log('Current language:', language);
-  console.log('Translation test:', t('home.cta.title'));
 
   const handleScan = async (input: string) => {
     setIsScanning(true);

@@ -1454,6 +1454,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'dietary.kosher_desc': 'Jüdische Speisegesetze',
     'status.success': 'Erfolgreich',
     'status.error': 'Fehler',
+
+    // Home Page Call-to-Action
+    'home.cta.title': 'Melden Sie sich an oder registrieren Sie sich, um alle aufregenden Funktionen und Vorteile zu entdecken, die auf Sie warten!',
+    'home.cta.createAccount': 'Konto Erstellen',
+    'home.cta.signIn': 'Anmelden',
   },
   
   zh: {
@@ -1696,6 +1701,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'dietary.kosher_desc': '犹太饮食法',
     'status.success': '成功',
     'status.error': '错误',
+
+    // Home Page Call-to-Action
+    'home.cta.title': '登录或注册以探索等待您的所有激动人心的功能和好处！',
+    'home.cta.createAccount': '创建账户',
+    'home.cta.signIn': '登录',
   },
   
   ja: {
@@ -1944,6 +1954,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'dietary.kosher_desc': 'ユダヤ食事法',
     'status.success': '成功',
     'status.error': 'エラー',
+
+    // Home Page Call-to-Action
+    'home.cta.title': 'ログインまたは登録して、あなたを待っているすべてのエキサイティングな機能と利点を探求しましょう！',
+    'home.cta.createAccount': 'アカウント作成',
+    'home.cta.signIn': 'サインイン',
   },
 
   nl: {
@@ -2162,5 +2177,10 @@ export const translations: Record<Language, Record<string, string>> = {
     'dietary.kosher_desc': 'Joodse spijswetten',
     'status.success': 'Succesvol',
     'status.error': 'Fout',
+
+    // Home Page Call-to-Action
+    'home.cta.title': 'Log in of registreer om alle spannende functies en voordelen te ontdekken die op je wachten!',
+    'home.cta.createAccount': 'Account Aanmaken',
+    'home.cta.signIn': 'Inloggen',
   },
 };
