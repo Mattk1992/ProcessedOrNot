@@ -19,6 +19,21 @@ import { generatePasswordResetToken, sendPasswordResetEmail, sendEmailVerificati
 import session from "express-session";
 import { z } from "zod";
 
+// Authentication middleware
+interface AuthenticatedRequest extends Express.Request {
+  session: session.Session & Partial<session.SessionData> & {
+    userId?: number;
+    user?: any;
+  };
+}
+
+const isAuthenticated = (req: AuthenticatedRequest, res: Express.Response, next: Express.NextFunction) => {
+  if (!req.session?.userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  next();
+};
+
 const inputSchema = z.object({
   input: z.string().min(1, "Input cannot be empty"),
 });
@@ -247,6 +262,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Email verification error:", error);
       res.status(500).json({ message: "Email verification failed" });
+    }
+  });
+
+  // Admin role management endpoints
+  app.put("/api/admin/users/:id/role", requireAuth, async (req: any, res) => {
+    try {
+      // Check if current user is admin
+      const currentUser = await storage.getUserById(req.session.userId!);
+      if (!currentUser || currentUser.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const userId = parseInt(req.params.id);
+      const { role } = req.body;
+
+      if (!role || !['Admin', 'Regular'].includes(role)) {
+        return res.status(400).json({ message: "Valid role required (Admin or Regular)" });
+      }
+
+      const updatedUser = await storage.updateUserRole(userId, role);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        message: "User role updated successfully",
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error("Role update error:", error);
+      res.status(500).json({ message: "Failed to update user role" });
+    }
+  });
+
+  app.get("/api/admin/users/role/:role", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+    try {
+      // Check if current user is admin
+      const currentUser = await storage.getUserById(req.session.userId!);
+      if (!currentUser || currentUser.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const role = req.params.role;
+      if (!['Admin', 'Regular'].includes(role)) {
+        return res.status(400).json({ message: "Valid role required (Admin or Regular)" });
+      }
+
+      const users = await storage.getUsersByRole(role);
+      res.json({ users });
+    } catch (error) {
+      console.error("Get users by role error:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
     }
   });
 

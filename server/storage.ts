@@ -30,6 +30,10 @@ export interface IStorage {
   // Email verification methods
   verifyEmail(token: string): Promise<boolean>;
   
+  // Role management methods
+  updateUserRole(userId: number, role: string): Promise<User | undefined>;
+  getUsersByRole(role: string): Promise<User[]>;
+  
   // Product storage methods
   getProductByBarcode(barcode: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
@@ -167,6 +171,37 @@ export class DatabaseStorage implements IStorage {
   // Legacy methods for backwards compatibility
   async getUser(id: number): Promise<User | undefined> {
     return this.getUserById(id);
+  }
+
+  // Role management methods
+  async updateUserRole(userId: number, role: string): Promise<User | undefined> {
+    try {
+      const [updatedUser] = await db
+        .update(users)
+        .set({ role, updatedAt: new Date() })
+        .where(eq(users.id, userId))
+        .returning();
+      
+      return updatedUser ? sanitizeUser(updatedUser) : undefined;
+    } catch (error) {
+      console.error("Error updating user role:", error);
+      return undefined;
+    }
+  }
+
+  async getUsersByRole(role: string): Promise<User[]> {
+    try {
+      const userList = await db
+        .select()
+        .from(users)
+        .where(eq(users.role, role))
+        .orderBy(users.createdAt);
+      
+      return userList.map(sanitizeUser);
+    } catch (error) {
+      console.error("Error fetching users by role:", error);
+      return [];
+    }
   }
 
   async getProductByBarcode(barcode: string): Promise<Product | undefined> {
