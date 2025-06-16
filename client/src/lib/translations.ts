@@ -135,6 +135,10 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': 'Select Language',
     'language.current': 'Current language',
+    
+    // Header and Branding
+    'brand.title': 'ProcessedOrNot Scanner',
+    'brand.subtitle': 'For fast, simple, and advanced product analysis and processing detection',
   },
   
   es: {
@@ -256,6 +260,10 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': 'Seleccionar Idioma',
     'language.current': 'Idioma actual',
+    
+    // Header and Branding
+    'brand.title': 'Escáner ProcessedOrNot',
+    'brand.subtitle': 'Para análisis rápido, simple y avanzado de productos y detección de procesamiento',
   },
   
   fr: {
@@ -377,6 +385,10 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': 'Sélectionner la Langue',
     'language.current': 'Langue actuelle',
+    
+    // Header and Branding
+    'brand.title': 'Scanner ProcessedOrNot',
+    'brand.subtitle': 'Pour une analyse rapide, simple et avancée des produits et la détection du traitement',
   },
   
   de: {
@@ -498,6 +510,10 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': 'Sprache Auswählen',
     'language.current': 'Aktuelle Sprache',
+    
+    // Header and Branding
+    'brand.title': 'ProcessedOrNot Scanner',
+    'brand.subtitle': 'Für schnelle, einfache und erweiterte Produktanalyse und Verarbeitungserkennung',
   },
   
   zh: {
@@ -619,6 +635,10 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': '选择语言',
     'language.current': '当前语言',
+    
+    // Header and Branding
+    'brand.title': 'ProcessedOrNot 扫描器',
+    'brand.subtitle': '用于快速、简单和高级产品分析及加工检测',
   },
   
   ja: {
@@ -740,6 +760,10 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': '言語を選択',
     'language.current': '現在の言語',
+    
+    // Header and Branding
+    'brand.title': 'ProcessedOrNot スキャナー',
+    'brand.subtitle': '迅速、簡単、高度な製品分析と加工検出のため',
   },
   
   nl: {
@@ -861,5 +885,9 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': 'Taal Selecteren',
     'language.current': 'Huidige taal',
+    
+    // Header and Branding
+    'brand.title': 'ProcessedOrNot Scanner',
+    'brand.subtitle': 'Voor snelle, eenvoudige en geavanceerde productanalyse en verwerkingsdetectie',
   },
 };
