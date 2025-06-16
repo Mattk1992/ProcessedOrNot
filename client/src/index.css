@@ -248,7 +248,133 @@
 
   .dark .glass-card {
     background: rgba(22, 27, 38, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Language Selector Animations */
+  .language-flag-bounce {
+    animation: flagBounce 0.6s ease-out;
+  }
+
+  .language-flag-pulse {
+    animation: flagPulse 1.5s ease-in-out infinite;
+  }
+
+  .language-item-slide-in {
+    animation: slideInFromLeft 0.3s ease-out forwards;
+  }
+
+  .language-selector-glow {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .language-selector-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(59, 130, 246, 0.3),
+      transparent
+    );
+    transition: left 0.5s ease-in-out;
+  }
+
+  .language-selector-glow:hover::before {
+    left: 100%;
+  }
+
+  @keyframes flagBounce {
+    0% {
+      transform: scale(1) rotate(0deg);
+    }
+    30% {
+      transform: scale(1.3) rotate(5deg);
+    }
+    60% {
+      transform: scale(1.1) rotate(-2deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+    }
+  }
+
+  @keyframes flagPulse {
+    0%, 100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+    50% {
+      transform: scale(1.05);
+      opacity: 0.8;
+    }
+  }
+
+  @keyframes slideInFromLeft {
+    0% {
+      transform: translateX(-20px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Flag transition effects */
+  .flag-transition {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: center;
+  }
+
+  .flag-transition:hover {
+    transform: scale(1.2) rotate(8deg);
+    filter: brightness(1.2) drop-shadow(0 0 8px rgba(59, 130, 246, 0.4));
+  }
+
+  /* Language dropdown enhancement */
+  .language-dropdown-enter {
+    animation: dropdownSlideIn 0.3s ease-out;
+  }
+
+  .language-item-hover {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .language-item-hover::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(59, 130, 246, 0.1),
+      transparent
+    );
+    transition: left 0.3s ease-in-out;
+  }
+
+  .language-item-hover:hover::after {
+    left: 100%;
+  }
+
+  @keyframes dropdownSlideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.95);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
   }
 
   /* Nintendo-style Dietary Filter Animations */
