@@ -8,31 +8,28 @@ export default function HeaderDropdown() {
 
   const menuItems = [
     {
-      label: t('dropdown.about'),
+      label: t('dropdown.about') || 'About',
       icon: <Info className="w-4 h-4" />,
       action: () => {
-        // Add about modal or page navigation
         console.log('About clicked');
       }
     },
     {
-      label: t('dropdown.help'),
+      label: t('dropdown.help') || 'Help',
       icon: <HelpCircle className="w-4 h-4" />,
       action: () => {
-        // Add help modal or page navigation
         console.log('Help clicked');
       }
     },
     {
-      label: t('dropdown.settings'),
+      label: t('dropdown.settings') || 'Settings',
       icon: <Settings className="w-4 h-4" />,
       action: () => {
-        // Add settings modal or page navigation
         console.log('Settings clicked');
       }
     },
     {
-      label: t('dropdown.github'),
+      label: t('dropdown.github') || 'GitHub',
       icon: <Github className="w-4 h-4" />,
       action: () => {
         window.open('https://github.com', '_blank');
@@ -45,13 +42,13 @@ export default function HeaderDropdown() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/20"
+        className="flex items-center space-x-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg transition-all duration-200 backdrop-blur-sm border border-white/30 shadow-lg"
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
         <User className="w-5 h-5 text-white" />
-        <span className="text-white text-sm font-medium hidden sm:inline">
-          {t('dropdown.menu')}
+        <span className="text-white text-sm font-medium">
+          {t('dropdown.menu') || 'Menu'}
         </span>
         <ChevronDown className={`w-4 h-4 text-white transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>

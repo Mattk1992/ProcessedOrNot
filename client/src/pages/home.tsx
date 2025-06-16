@@ -3,6 +3,7 @@ import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_174962362
 import BarcodeScanner from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
+import HeaderDropdown from "@/components/header-dropdown";
 import NutriBotChat from "@/components/nutribot-chat";
 import DietaryFilter from "@/components/dietary-filter";
 import { useToast } from "@/hooks/use-toast";
