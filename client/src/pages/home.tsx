@@ -71,7 +71,6 @@ export default function Home() {
           </div>
         </div>
       </header>
-
       {/* Hero Section */}
       <section className="relative overflow-hidden py-16">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent"></div>
@@ -99,7 +98,7 @@ export default function Home() {
               <div className="mt-12 fade-in" style={{animationDelay: '0.5s'}}>
                 <div className="glass-card p-8 rounded-3xl max-w-2xl mx-auto glow-effect">
                   <div className="text-center">
-                    <h3 className="text-xl md:text-2xl font-bold text-foreground mb-4 gradient-text">
+                    <h3 className="md:text-2xl text-foreground mb-4 gradient-text font-semibold text-[21px]">
                       Register or log in now to unlock the scanner's full potential and discover all the amazing features and benefits waiting for you!
                     </h3>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -123,7 +122,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 pb-12">
         <div className="slide-up">
@@ -143,7 +141,6 @@ export default function Home() {
           </div>
         )}
       </main>
-
       {/* Footer */}
       <footer className="border-t border-border/50 mt-16">
         <div className="max-w-6xl mx-auto px-4 py-6">
@@ -161,10 +158,8 @@ export default function Home() {
           </div>
         </div>
       </footer>
-
       {/* NutriBot Chat */}
       <NutriBotChat />
-
       {/* Background decoration */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-20 -right-40 w-80 h-80 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full blur-3xl"></div>
