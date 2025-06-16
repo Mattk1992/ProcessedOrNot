@@ -81,9 +81,18 @@ export default function BarcodeScanner({ onScan, isLoading = false, detectionSys
 
   // Determine which detection system to use
   useEffect(() => {
+    // Get user preference from localStorage if detectionSystem is 'auto'
+    let systemToUse = detectionSystem;
     if (detectionSystem === 'auto') {
-      setActiveDetectionSystem(isBarcodeDetectorSupported() ? 'native' : 'zxing');
-    } else if (detectionSystem === 'native') {
+      const savedSystem = localStorage.getItem('barcodeDetectionSystem') as BarcodeDetectionSystem;
+      if (savedSystem && ['native', 'zxing'].includes(savedSystem)) {
+        systemToUse = savedSystem;
+      } else {
+        systemToUse = isBarcodeDetectorSupported() ? 'native' : 'zxing';
+      }
+    }
+
+    if (systemToUse === 'native') {
       if (isBarcodeDetectorSupported()) {
         setActiveDetectionSystem('native');
       } else {
@@ -206,21 +215,30 @@ export default function BarcodeScanner({ onScan, isLoading = false, detectionSys
 
         console.log("Using ZXing barcode detection");
         
-        // Start ZXing decoding
-        codeReaderRef.current.decodeFromVideoDevice(
-          null, // Use default device
-          finalVideoElement,
-          (result: any) => {
-            if (result) {
-              const scannedCode = result.getText();
-              console.log("ZXing barcode detected:", scannedCode);
-              if (scannedCode) {
-                stopCamera();
-                onScan(scannedCode);
+        // Start ZXing decoding with proper error handling
+        try {
+          await codeReaderRef.current.decodeFromVideoDevice(
+            null, // Use default device
+            finalVideoElement,
+            (result: any, error: any) => {
+              if (result) {
+                const scannedCode = result.getText();
+                console.log("ZXing barcode detected:", scannedCode);
+                if (scannedCode) {
+                  stopCamera();
+                  onScan(scannedCode);
+                }
+              }
+              // Silently ignore NotFoundException as it's expected during scanning
+              if (error && error.name !== 'NotFoundException') {
+                console.warn("ZXing scanning error:", error);
               }
             }
-          }
-        );
+          );
+        } catch (err) {
+          console.error("Failed to start ZXing decoder:", err);
+          setCameraError("Failed to initialize barcode scanner");
+        }
       }
 
     } catch (error) {
