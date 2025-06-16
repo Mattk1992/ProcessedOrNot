@@ -96,6 +96,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'brand.title': 'ProcessedOrNot Scanner',
     'brand.subtitle': 'For fast, simple, and advanced product analysis and processing detection',
     
+
+    
     // Hero Section
     'hero.title.part1': 'Discover How Processed',
     'hero.title.part2': 'Your Food Really Is',
@@ -389,7 +391,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'help.contact.description': 'If you have questions not covered in this guide, feel free to reach out for personalized support and assistance.',
     'help.contact.button': 'Contact Support',
 
-    // Authentication - Login Page
+    // Authentication - Login and Register
     'auth.backToHome': 'Back to Home',
     'auth.securityNotice': 'Your data is protected with end-to-end encryption and industry-standard security measures.',
     'auth.login.title': 'Welcome Back',
@@ -407,8 +409,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.login.welcomeBack': 'Welcome back!',
     'auth.login.error': 'Login failed',
     'auth.login.invalidCredentials': 'Invalid username or password',
-    
-    // Register
     'auth.register.title': 'Create Account',
     'auth.register.subtitle': 'Join to access advanced nutritional analysis and personalized features',
     'auth.register.firstName': 'First Name',
@@ -428,8 +428,6 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.register.passwordStrong': 'Strong password',
     'auth.register.createAccount': 'Create Account',
     'auth.register.creating': 'Creating account...',
-    'Creating account...': 'Creating account...',
-    'Create Account': 'Create Account',
     'auth.register.hasAccount': 'Already have an account?',
     'auth.register.signIn': 'Sign in',
     'auth.register.success': 'Account Created',
@@ -520,6 +518,53 @@ export const translations: Record<Language, Record<string, string>> = {
     // Header and Branding
     'brand.title': 'Escáner ProcessedOrNot',
     'brand.subtitle': 'Para análisis rápido, simple y avanzado de productos y detección de procesamiento',
+
+    // Authentication - Login and Register
+    'auth.backToHome': 'Volver al Inicio',
+    'auth.securityNotice': 'Tus datos están protegidos con cifrado de extremo a extremo y medidas de seguridad estándar de la industria.',
+    'auth.login.title': 'Bienvenido de Vuelta',
+    'auth.login.subtitle': 'Ingresa tus credenciales para acceder a tu cuenta',
+    'auth.login.usernameOrEmail': 'Usuario o Email',
+    'auth.login.usernamePlaceholder': 'Ingresa tu usuario o email',
+    'auth.login.password': 'Contraseña',
+    'auth.login.passwordPlaceholder': 'Ingresa tu contraseña',
+    'auth.login.forgotPassword': '¿Olvidaste tu contraseña?',
+    'auth.login.signIn': 'Iniciar Sesión',
+    'auth.login.loggingIn': 'Iniciando sesión...',
+    'auth.login.noAccount': '¿No tienes una cuenta?',
+    'auth.login.signUp': 'Regístrate',
+    'auth.login.success': 'Inicio de sesión exitoso',
+    'auth.login.welcomeBack': '¡Bienvenido de vuelta!',
+    'auth.login.error': 'Error al iniciar sesión',
+    'auth.login.invalidCredentials': 'Usuario o contraseña inválidos',
+    'auth.register.title': 'Crear Cuenta',
+    'auth.register.subtitle': 'Únete para acceder a análisis nutricional avanzado y funciones personalizadas',
+    'auth.register.firstName': 'Nombre',
+    'auth.register.firstNamePlaceholder': 'Tu nombre',
+    'auth.register.lastName': 'Apellido',
+    'auth.register.lastNamePlaceholder': 'Tu apellido',
+    'auth.register.username': 'Usuario',
+    'auth.register.usernamePlaceholder': 'Elige un nombre de usuario',
+    'auth.register.email': 'Email',
+    'auth.register.emailPlaceholder': 'tu@email.com',
+    'auth.register.password': 'Contraseña',
+    'auth.register.passwordPlaceholder': 'Crea una contraseña segura',
+    'auth.register.confirmPassword': 'Confirmar Contraseña',
+    'auth.register.confirmPasswordPlaceholder': 'Confirma tu contraseña',
+    'auth.register.passwordWeak': 'Contraseña débil',
+    'auth.register.passwordMedium': 'Contraseña media',
+    'auth.register.passwordStrong': 'Contraseña fuerte',
+    'auth.register.createAccount': 'Crear Cuenta',
+    'auth.register.creating': 'Creando cuenta...',
+    'auth.register.hasAccount': '¿Ya tienes una cuenta?',
+    'auth.register.signIn': 'Iniciar sesión',
+    'auth.register.success': 'Cuenta Creada',
+    'auth.register.verificationSent': 'Email de verificación enviado',
+    'auth.register.error': 'Error de Registro',
+    'auth.register.failed': 'Error al crear la cuenta',
+    'auth.register.secureEncryption': 'Cifrado Seguro',
+    'auth.register.emailVerification': 'Verificación de Email',
+    'auth.register.termsNotice': 'Al crear una cuenta, aceptas nuestros términos de servicio y política de privacidad.',
     
     // Hero Section
     'hero.title.part1': 'Descubre Qué Tan Procesada',
