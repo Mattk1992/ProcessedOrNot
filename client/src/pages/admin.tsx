@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft } from "lucide-react";
+import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, Database, Activity } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 interface User {
@@ -46,7 +46,7 @@ export default function AdminPanel() {
 
   // Redirect if not admin
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'Admin') {
+    if (!isAuthenticated || (user as any)?.role !== 'Admin') {
       setLocation('/');
     }
   }, [isAuthenticated, user, setLocation]);
@@ -54,13 +54,13 @@ export default function AdminPanel() {
   // Fetch admin statistics
   const { data: stats } = useQuery({
     queryKey: ["/api/admin/stats"],
-    enabled: user?.role === 'Admin',
+    enabled: (user as any)?.role === 'Admin',
   });
 
   // Fetch all users
   const { data: usersData } = useQuery({
     queryKey: ["/api/admin/users"],
-    enabled: user?.role === 'Admin',
+    enabled: (user as any)?.role === 'Admin',
   });
 
   // Update user role mutation
@@ -103,11 +103,11 @@ export default function AdminPanel() {
     updateRoleMutation.mutate({ userId: user.id, role: newRole });
   };
 
-  if (!isAuthenticated || user?.role !== 'Admin') {
+  if (!isAuthenticated || (user as any)?.role !== 'Admin') {
     return null;
   }
 
-  const users = usersData?.users || [];
+  const users = (usersData as any)?.users || [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
@@ -187,18 +187,18 @@ export default function AdminPanel() {
             <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-                <BarChart3 className="h-4 w-4 text-orange-500" />
+                <Database className="h-4 w-4 text-orange-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-orange-600">{stats.totalProducts}</div>
-                <p className="text-xs text-muted-foreference">Scanned products</p>
+                <p className="text-xs text-muted-foreground">Scanned products</p>
               </CardContent>
             </Card>
 
             <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg hover:shadow-xl transition-shadow">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">Recent Signups</CardTitle>
-                <Users className="h-4 w-4 text-indigo-500" />
+                <Activity className="h-4 w-4 text-indigo-500" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-indigo-600">{stats.recentRegistrations}</div>
@@ -222,7 +222,7 @@ export default function AdminPanel() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-96 overflow-y-auto">
                 {users.map((user: User) => (
                   <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg bg-white/50 dark:bg-gray-700/50">
                     <div className="flex-1">
@@ -313,117 +313,45 @@ export default function AdminPanel() {
                     <span className="text-sm text-muted-foreground">Authentication</span>
                     <span className="text-sm font-medium">Active</span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">User Sessions</span>
+                    <span className="text-sm font-medium">Secure</span>
+                  </div>
                 </div>
 
                 <Separator />
 
                 <div className="space-y-2">
-                  <h4 className="text-sm font-medium">Quick Actions</h4>
+                  <h4 className="text-sm font-medium">Admin Actions</h4>
                   <div className="grid grid-cols-2 gap-2">
                     <Button variant="outline" size="sm" className="text-xs">
                       Export Users
                     </Button>
                     <Button variant="outline" size="sm" className="text-xs">
-                      System Backup
+                      System Logs
                     </Button>
                     <Button variant="outline" size="sm" className="text-xs">
                       Clear Cache
                     </Button>
                     <Button variant="outline" size="sm" className="text-xs">
-                      View Logs
+                      Database Stats
                     </Button>
+                  </div>
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Current Admin</h4>
+                  <div className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded">
+                    <Crown className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium">{user?.username}</span>
+                    <Badge variant="outline">Admin</Badge>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
-    </div>
-  );
-}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Role Management Panel */}
-          <div>
-            <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="h-5 w-5" />
-                  Role Management
-                </CardTitle>
-                <CardDescription>
-                  Update user roles and permissions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {selectedUser ? (
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium">Selected User</Label>
-                      <div className="mt-1 p-3 border rounded-lg bg-gray-50 dark:bg-gray-700">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{selectedUser.username}</span>
-                          <Badge variant="outline">{selectedUser.role}</Badge>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          {selectedUser.email}
-                        </p>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <Label htmlFor="role-select" className="text-sm font-medium">
-                        New Role
-                      </Label>
-                      <Select value={newRole} onValueChange={setNewRole}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select new role" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Regular">Regular User</SelectItem>
-                          <SelectItem value="Admin">Administrator</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => handleRoleUpdate(selectedUser)}
-                        disabled={updateRoleMutation.isPending || !newRole}
-                        className="flex-1"
-                      >
-                        {updateRoleMutation.isPending ? "Updating..." : "Update Role"}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedUser(null);
-                          setNewRole("");
-                        }}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 dark:text-gray-300">
-                      Select a user to manage their role
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
         </div>
       </div>
     </div>
