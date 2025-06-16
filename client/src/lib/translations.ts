@@ -959,7 +959,7 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Header Dropdown
     'dropdown.menu': 'Menu',
-    'dropdown.about': 'À propos',
+    'dropdown.about': 'À propos de nous',
     'dropdown.help': 'Aide',
     'dropdown.settings': 'Paramètres',
     'dropdown.github': 'GitHub',
