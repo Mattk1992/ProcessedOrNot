@@ -396,7 +396,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
       )}
 
       {/* NutriBot Insights Card */}
-      {nutriBotInsight && typeof nutriBotInsight === 'string' && (
+      {nutriBotInsight && (nutriBotInsight as any)?.insight && (
         <Card className="glass-card border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up glow-effect">
           <CardHeader className="bg-gradient-to-r from-primary to-accent text-white rounded-t-lg">
             <CardTitle className="flex items-center space-x-3">
@@ -413,7 +413,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
           <CardContent className="pt-6 pb-6">
             <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
               <p className="text-foreground leading-relaxed text-lg">
-                {nutriBotInsight}
+                {(nutriBotInsight as any)?.insight}
               </p>
             </div>
           </CardContent>
