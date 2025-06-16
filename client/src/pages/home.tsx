@@ -5,14 +5,14 @@ import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
 import HeaderDropdown from "@/components/header-dropdown";
 import NutriBotChat from "@/components/nutribot-chat";
-import DietaryFilter from "@/components/dietary-filter";
+
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Home() {
   const [currentBarcode, setCurrentBarcode] = useState<string>("");
   const [isScanning, setIsScanning] = useState(false);
-  const [dietaryFilters, setDietaryFilters] = useState<string[]>([]);
+
   const { toast } = useToast();
   const { t } = useLanguage();
 
@@ -102,14 +102,7 @@ export default function Home() {
             <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
           </div>
         </div>
-        
-        {/* Dietary Filters */}
-        <div className="mt-8 slide-up">
-          <DietaryFilter 
-            onFiltersChange={setDietaryFilters}
-            className="max-w-4xl mx-auto"
-          />
-        </div>
+
         
         {currentBarcode && (
           <div className="mt-12 slide-up">
