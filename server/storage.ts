@@ -1,11 +1,34 @@
-import { users, type User, type InsertUser, products, type Product, type InsertProduct } from "@shared/schema";
+import { 
+  users, 
+  type User, 
+  type InsertUser, 
+  type RegisterUser,
+  type LoginUser,
+  products, 
+  type Product, 
+  type InsertProduct 
+} from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, or } from "drizzle-orm";
+import { hashPassword, verifyPassword, generateEmailVerificationToken, generatePasswordResetToken, sanitizeUser } from "./lib/auth";
 
 export interface IStorage {
-  getUser(id: number): Promise<User | undefined>;
+  // User authentication methods
+  getUserById(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User | undefined>;
+  createUser(user: RegisterUser): Promise<User>;
+  updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
+  verifyUserCredentials(username: string, password: string): Promise<User | null>;
+  
+  // Password reset methods
+  setPasswordResetToken(email: string, token: string): Promise<boolean>;
+  getUserByPasswordResetToken(token: string): Promise<User | undefined>;
+  resetPassword(token: string, newPassword: string): Promise<boolean>;
+  
+  // Email verification methods
+  verifyEmail(token: string): Promise<boolean>;
   
   // Product storage methods
   getProductByBarcode(barcode: string): Promise<Product | undefined>;
@@ -14,7 +37,8 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  async getUser(id: number): Promise<User | undefined> {
+  // User authentication methods
+  async getUserById(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
   }
@@ -24,12 +48,125 @@ export class DatabaseStorage implements IStorage {
     return user || undefined;
   }
 
-  async createUser(insertUser: InsertUser): Promise<User> {
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user || undefined;
+  }
+
+  async getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users)
+      .where(or(eq(users.username, usernameOrEmail), eq(users.email, usernameOrEmail)));
+    return user || undefined;
+  }
+
+  async createUser(registerUser: RegisterUser): Promise<User> {
+    const hashedPassword = await hashPassword(registerUser.password);
+    const emailVerificationToken = generateEmailVerificationToken();
+    
     const [user] = await db
       .insert(users)
-      .values(insertUser)
+      .values({
+        username: registerUser.username,
+        email: registerUser.email,
+        passwordHash: hashedPassword,
+        firstName: registerUser.firstName,
+        lastName: registerUser.lastName,
+        emailVerificationToken,
+        isEmailVerified: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
       .returning();
+    
     return user;
+  }
+
+  async updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user || undefined;
+  }
+
+  async verifyUserCredentials(username: string, password: string): Promise<User | null> {
+    const user = await this.getUserByUsernameOrEmail(username);
+    if (!user) return null;
+    
+    const isValidPassword = await verifyPassword(password, user.passwordHash);
+    if (!isValidPassword) return null;
+    
+    // Update last login time
+    await this.updateUser(user.id, { lastLoginAt: new Date() });
+    
+    return user;
+  }
+
+  // Password reset methods
+  async setPasswordResetToken(email: string, token: string): Promise<boolean> {
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour from now
+    
+    const result = await db
+      .update(users)
+      .set({ 
+        passwordResetToken: token,
+        passwordResetExpires: expiresAt,
+        updatedAt: new Date()
+      })
+      .where(eq(users.email, email));
+    
+    return result.rowCount > 0;
+  }
+
+  async getUserByPasswordResetToken(token: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users)
+      .where(eq(users.passwordResetToken, token));
+    
+    if (!user || !user.passwordResetExpires) return undefined;
+    
+    // Check if token is expired
+    if (new Date() > user.passwordResetExpires) return undefined;
+    
+    return user;
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<boolean> {
+    const user = await this.getUserByPasswordResetToken(token);
+    if (!user) return false;
+    
+    const hashedPassword = await hashPassword(newPassword);
+    
+    const result = await db
+      .update(users)
+      .set({
+        passwordHash: hashedPassword,
+        passwordResetToken: null,
+        passwordResetExpires: null,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, user.id));
+    
+    return result.rowCount > 0;
+  }
+
+  // Email verification methods
+  async verifyEmail(token: string): Promise<boolean> {
+    const result = await db
+      .update(users)
+      .set({
+        isEmailVerified: true,
+        emailVerificationToken: null,
+        updatedAt: new Date()
+      })
+      .where(eq(users.emailVerificationToken, token));
+    
+    return result.rowCount > 0;
+  }
+
+  // Legacy methods for backwards compatibility
+  async getUser(id: number): Promise<User | undefined> {
+    return this.getUserById(id);
   }
 
   async getProductByBarcode(barcode: string): Promise<Product | undefined> {
