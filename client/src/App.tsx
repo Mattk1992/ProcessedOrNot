@@ -7,12 +7,14 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import ThemeToggle from "@/components/theme-toggle";
 import Home from "@/pages/home";
+import About from "@/pages/about";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/about" component={About} />
       <Route component={NotFound} />
     </Switch>
   );

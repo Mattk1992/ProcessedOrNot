@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, User, Settings, Info, HelpCircle, Github, ExternalLink } from 'lucide-react';
+import { ChevronDown, User, Settings, Info, HelpCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export default function HeaderDropdown() {
@@ -27,14 +27,6 @@ export default function HeaderDropdown() {
       action: () => {
         console.log('Settings clicked');
       }
-    },
-    {
-      label: t('dropdown.github') || 'GitHub',
-      icon: <Github className="w-4 h-4" />,
-      action: () => {
-        window.open('https://github.com', '_blank');
-      },
-      external: true
     }
   ];
 
@@ -81,9 +73,7 @@ export default function HeaderDropdown() {
                       {item.label}
                     </span>
                   </div>
-                  {item.external && (
-                    <ExternalLink className="w-3 h-3 text-gray-400" />
-                  )}
+
                 </button>
               ))}
             </div>
