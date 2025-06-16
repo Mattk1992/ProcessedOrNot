@@ -9,6 +9,7 @@ import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
 import NutritionSpotlight from "./nutrition-spotlight";
 import FunFacts from "./fun-facts";
+import SocialShare from "./social-share";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
@@ -423,6 +424,18 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
           nutriments={product.nutriments as Record<string, any> | null}
           processingScore={product.processingScore || 0}
           barcode={barcode}
+        />
+      </div>
+
+      {/* Social Sharing */}
+      <div className="slide-up">
+        <SocialShare 
+          productName={product.productName || "Unknown Product"}
+          processingScore={product.processingScore || 0}
+          processingExplanation={product.processingExplanation || ""}
+          barcode={barcode}
+          nutriments={product.nutriments as Record<string, any> | null}
+          dataSource={product.dataSource || product.lookupSource || "Database"}
         />
       </div>
 
