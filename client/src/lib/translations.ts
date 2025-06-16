@@ -86,7 +86,7 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Header Dropdown
     'dropdown.menu': 'Menu',
-    'dropdown.about': 'About',
+    'dropdown.about': 'About us',
     'dropdown.help': 'Help',
     'dropdown.settings': 'Settings',
     'dropdown.github': 'GitHub',
@@ -269,42 +269,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'status.success': 'Success',
     'status.error': 'Error',
 
-    // About Page
-    'about.title': 'About ProcessedOrNot Scanner',
-    'about.backToHome': 'Back to Home',
-    'about.hero.title': 'About ProcessedOrNot Scanner',
-    'about.hero.subtitle': 'Your intelligent companion for making informed food choices through advanced barcode scanning and AI-powered nutritional analysis.',
-    'about.mission.title': 'Our Mission',
-    'about.mission.description': 'We believe everyone deserves access to clear, accurate information about the food they consume. ProcessedOrNot Scanner empowers consumers to make healthier choices by providing instant access to comprehensive nutritional data, processing analysis, and personalized insights for thousands of food products worldwide.',
-    'about.features.title': 'Key Features',
-    'about.features.scanning.title': 'Advanced Scanning',
-    'about.features.scanning.description': 'Scan barcodes instantly or search by product name with our intelligent recognition system that works with multiple barcode formats.',
-    'about.features.ai.title': 'AI-Powered Analysis',
-    'about.features.ai.description': 'Get detailed processing scores and nutritional insights powered by OpenAI technology for comprehensive food analysis.',
-    'about.features.multilingual.title': 'Global Access',
-    'about.features.multilingual.description': 'Available in 7 languages with automatic detection, making healthy choices accessible to users worldwide.',
-    'about.features.privacy.title': 'Privacy First',
-    'about.features.privacy.description': 'Your scans and searches are processed securely without storing personal data or tracking your food choices.',
-    'about.features.instant.title': 'Instant Results',
-    'about.features.instant.description': 'Get comprehensive product information, nutritional data, and health insights in seconds, not minutes.',
-    'about.features.community.title': 'Comprehensive Database',
-    'about.features.community.description': 'Access data from 14+ food databases including OpenFoodFacts, USDA, and international nutrition databases.',
-    'about.technology.title': 'Technology Behind the Scanner',
-    'about.technology.databases.title': 'Food Databases',
-    'about.technology.databases.description': 'We integrate with multiple authoritative food databases to provide the most comprehensive product information available.',
-    'about.technology.databases.more': 'And 8+ more international databases',
-    'about.technology.ai.title': 'Artificial Intelligence',
-    'about.technology.ai.description': 'Our AI system analyzes ingredients and provides personalized nutritional insights, processing scores, and health recommendations.',
-    'about.technology.ai.features.processing': 'Ultra-processed food detection',
-    'about.technology.ai.features.nutrition': 'Personalized nutrition analysis',
-    'about.technology.ai.features.chatbot': 'Interactive nutrition assistant',
-    'about.technology.ai.features.insights': 'Smart health recommendations',
-    'about.developer.title': 'About the Developer',
-    'about.developer.description': 'ProcessedOrNot Scanner was created by Matthias Kuchenbecker, a passionate developer dedicated to making nutrition information accessible and actionable for everyone.',
-    'about.developer.connect': 'Connect on LinkedIn',
-    'about.cta.title': 'Ready to Make Better Food Choices?',
-    'about.cta.description': 'Start scanning products and discover the nutritional insights that matter to you.',
-    'about.cta.button': 'Start Scanning Now',
+
 
     // Social Sharing
     'social.title': 'Share Your Analysis',
@@ -540,7 +505,7 @@ export const translations: Record<Language, Record<string, string>> = {
     
     // Header Dropdown
     'dropdown.menu': 'Menú',
-    'dropdown.about': 'Acerca de',
+    'dropdown.about': 'Acerca de nosotros',
     'dropdown.help': 'Ayuda',
     'dropdown.settings': 'Configuración',
     'dropdown.github': 'GitHub',
