@@ -271,6 +271,31 @@ export const translations: Record<Language, Record<string, string>> = {
 
 
 
+    // Search History
+    'searchHistory.title': 'Search History',
+    'searchHistory.subtitle': 'View your recent product searches and analysis history',
+    'searchHistory.backToHome': 'Back to Home',
+    'searchHistory.totalSearches': 'Total Searches',
+    'searchHistory.successfulSearches': 'Successful Searches',
+    'searchHistory.recentSearches': 'Recent Searches',
+    'searchHistory.allTimeSearches': 'All time searches',
+    'searchHistory.successRate': 'Success rate',
+    'searchHistory.lastSevenDays': 'Last 7 days',
+    'searchHistory.recentActivity': 'Recent Activity',
+    'searchHistory.yourSearchHistory': 'Your complete search history with results and analysis',
+    'searchHistory.barcode': 'Barcode',
+    'searchHistory.textSearch': 'Text Search',
+    'searchHistory.noResultFound': 'No result found',
+    'searchHistory.noSearches': 'No searches yet',
+    'searchHistory.startSearching': 'Start scanning products to see your search history here',
+    'searchHistory.startFirstSearch': 'Start Your First Search',
+    'searchHistory.justNow': 'Just now',
+    'searchHistory.minutesAgo': '{minutes} minutes ago',
+    'searchHistory.hoursAgo': '{hours} hours ago',
+    'searchHistory.daysAgo': '{days} days ago',
+    'searchHistory.unknown': 'Unknown',
+    'dropdown.searchHistory': 'Search History',
+
     // Social Sharing
     'social.title': 'Share Your Analysis',
     'social.description': 'Share this nutrition analysis with friends and family',

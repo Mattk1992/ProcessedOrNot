@@ -585,6 +585,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Authentication middleware
+  const isAuthenticated = (req: any, res: any, next: any) => {
+    if (req.session && req.session.userId) {
+      return next();
+    }
+    return res.status(401).json({ message: "Not authenticated" });
+  };
+
+  // Search history routes
+  app.get("/api/search-history", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const limit = parseInt(req.query.limit as string) || 50;
+      
+      const searchHistory = await storage.getUserSearchHistory(userId, limit);
+      res.json(searchHistory);
+    } catch (error) {
+      console.error("Error fetching search history:", error);
+      res.status(500).json({ message: "Failed to fetch search history" });
+    }
+  });
+
+  app.get("/api/search-history/stats", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      
+      const stats = await storage.getSearchHistoryStats(userId);
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching search history stats:", error);
+      res.status(500).json({ message: "Failed to fetch search history statistics" });
+    }
+  });
+
+  app.post("/api/search-history", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const searchData = {
+        ...req.body,
+        userId
+      };
+      
+      const searchHistory = await storage.createSearchHistory(searchData);
+      res.json(searchHistory);
+    } catch (error) {
+      console.error("Error creating search history:", error);
+      res.status(500).json({ message: "Failed to save search history" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

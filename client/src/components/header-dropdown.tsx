@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield } from 'lucide-react';
+import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Clock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
@@ -46,6 +46,11 @@ export default function HeaderDropdown() {
       icon: <Shield className="w-4 h-4" />,
       action: () => setLocation('/admin')
     }] : []),
+    {
+      label: t('dropdown.searchHistory') || 'Search History',
+      icon: <Clock className="w-4 h-4" />,
+      action: () => setLocation('/search-history')
+    },
     {
       label: t('dropdown.settings') || 'Settings',
       icon: <Settings className="w-4 h-4" />,
