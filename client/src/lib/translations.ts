@@ -428,6 +428,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.register.passwordStrong': 'Strong password',
     'auth.register.createAccount': 'Create Account',
     'auth.register.creating': 'Creating account...',
+    'Creating account...': 'Creating account...',
+    'Create Account': 'Create Account',
     'auth.register.hasAccount': 'Already have an account?',
     'auth.register.signIn': 'Sign in',
     'auth.register.success': 'Account Created',

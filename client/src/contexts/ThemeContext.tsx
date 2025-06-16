@@ -16,15 +16,25 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem('theme');
-    return (saved as Theme) || 'light';
+    if (typeof window === 'undefined') return 'light';
+    try {
+      const saved = localStorage.getItem('theme');
+      return (saved as Theme) || 'light';
+    } catch {
+      return 'light';
+    }
   });
 
   useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove('light', 'dark');
-    root.classList.add(theme);
-    localStorage.setItem('theme', theme);
+    if (typeof window === 'undefined') return;
+    try {
+      const root = window.document.documentElement;
+      root.classList.remove('light', 'dark');
+      root.classList.add(theme);
+      localStorage.setItem('theme', theme);
+    } catch (error) {
+      console.warn('Failed to update theme:', error);
+    }
   }, [theme]);
 
   const toggleTheme = () => {

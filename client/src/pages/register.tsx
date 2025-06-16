@@ -309,7 +309,7 @@ export default function Register() {
                   className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-medium py-2.5"
                   disabled={registerMutation.isPending}
                 >
-                  {registerMutation.isPending ? t("Creating account...) : t("Create Account")}
+                  {registerMutation.isPending ? t("Creating account...") : t("Create Account")}
                 </Button>
               </form>
             </Form>
