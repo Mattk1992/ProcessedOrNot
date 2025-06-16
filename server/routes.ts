@@ -19,20 +19,7 @@ import { generatePasswordResetToken, sendPasswordResetEmail, sendEmailVerificati
 import session from "express-session";
 import { z } from "zod";
 
-// Authentication middleware
-interface AuthenticatedRequest extends Express.Request {
-  session: session.Session & Partial<session.SessionData> & {
-    userId?: number;
-    user?: any;
-  };
-}
 
-const isAuthenticated = (req: AuthenticatedRequest, res: Express.Response, next: Express.NextFunction) => {
-  if (!req.session?.userId) {
-    return res.status(401).json({ message: "Not authenticated" });
-  }
-  next();
-};
 
 const inputSchema = z.object({
   input: z.string().min(1, "Input cannot be empty"),
@@ -296,7 +283,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/users/role/:role", isAuthenticated, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/admin/users/role/:role", requireAuth, async (req: any, res) => {
     try {
       // Check if current user is admin
       const currentUser = await storage.getUserById(req.session.userId!);
