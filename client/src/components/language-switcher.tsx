@@ -132,12 +132,20 @@ export default function LanguageSwitcher() {
           </DropdownMenuItem>
         ))}
         
-        {/* Current language display at bottom */}
-        <div className="mt-2 pt-2 border-t border-border/50">
-          <div className="flex items-center gap-2 px-2 py-1 text-xs text-muted-foreground">
-            <span>{t('language.current')}:</span>
-            <span className="text-lg animate-pulse">{languages[language].flag}</span>
-            <span className="font-medium text-foreground">{languages[language].name}</span>
+        {/* Enhanced current language display at bottom */}
+        <div className="mt-4 pt-3 border-t border-gradient-to-r from-primary/20 via-accent/20 to-primary/20">
+          <div className="flex items-center justify-center gap-3 px-3 py-2 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg">
+            <span className="text-xs font-medium text-muted-foreground">{t('language.current')}:</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xl language-flag-pulse">{languages[language].flag}</span>
+              <span className="font-bold text-primary text-sm">{languages[language].name}</span>
+            </div>
+            {justChanged && (
+              <div className="flex items-center gap-1 text-green-500 animate-in slide-in-from-right-2 duration-300">
+                <Check className="h-3 w-3" />
+                <span className="text-xs font-medium">Updated!</span>
+              </div>
+            )}
           </div>
         </div>
       </DropdownMenuContent>
