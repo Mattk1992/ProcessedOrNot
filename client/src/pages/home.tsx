@@ -27,13 +27,13 @@ export default function Home() {
     
     if (isNumeric) {
       toast({
-        title: "Scanning Barcode",
-        description: "Searching product databases...",
+        title: t("scanner.loading"),
+        description: t("product.loading"),
       });
     } else {
       toast({
-        title: "Searching Product",
-        description: "Finding product information and analyzing ingredients...",
+        title: t("product.loading"),
+        description: t("scanner.instructions"),
       });
     }
 

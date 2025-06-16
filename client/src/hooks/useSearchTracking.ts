@@ -14,11 +14,11 @@ interface SearchTrackingData {
 }
 
 export function useSearchTracking() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const trackSearchMutation = useMutation({
     mutationFn: async (searchData: SearchTrackingData) => {
-      if (!isAuthenticated || isLoading) return null;
+      if (!isAuthenticated) return null;
       
       return await apiRequest("/api/search-history", {
         method: "POST",
@@ -26,16 +26,13 @@ export function useSearchTracking() {
       });
     },
     onError: (error) => {
-      // Silently fail for authentication errors to not spam logs
-      if (!error.message.includes('401') && !error.message.includes('Unauthorized')) {
-        console.error("Failed to track search:", error);
-      }
+      console.error("Failed to track search:", error);
+      // Silently fail to not disrupt user experience
     }
   });
 
   const trackSearch = (searchData: SearchTrackingData) => {
-    // Only track if user is authenticated and not still loading
-    if (isAuthenticated && !isLoading) {
+    if (isAuthenticated) {
       trackSearchMutation.mutate(searchData);
     }
   };

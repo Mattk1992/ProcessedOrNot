@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,7 +12,6 @@ import FunFacts from "./fun-facts";
 import SocialShare from "./social-share";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSearchTracking } from "@/hooks/useSearchTracking";
-import { useAuth } from "@/hooks/useAuth";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -35,17 +34,11 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
   const isBarcode = /^\d+$/.test(barcode?.trim() || '');
   const searchType = isBarcode ? 'barcode' : 'text';
 
-  // Track search when product data loads or fails (only for authenticated users)
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const trackedSearches = useRef(new Set<string>());
-  
+  // Track search when product data loads or fails
   useEffect(() => {
-    // Only track for authenticated users to prevent spam
-    if (!isAuthenticated || authLoading || !barcode || trackedSearches.current.has(barcode)) return;
-    
-    // Wait for query to complete before tracking
-    if (isLoadingProduct) return;
+    if (!barcode) return;
 
+    // Track successful search
     if (product) {
       trackSearch({
         searchInput: barcode,
@@ -57,16 +50,16 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
         processingScore: product.processingScore || undefined,
         dataSource: product.lookupSource || product.dataSource || undefined,
       });
-      trackedSearches.current.add(barcode);
-    } else if (productError) {
+    }
+    // Track failed search
+    else if (productError && !isLoadingProduct) {
       trackSearch({
         searchInput: barcode,
         searchType,
         foundResult: false,
       });
-      trackedSearches.current.add(barcode);
     }
-  }, [product, productError, isLoadingProduct, barcode, searchType, trackSearch, isAuthenticated, authLoading]);
+  }, [product, productError, isLoadingProduct, barcode, searchType, trackSearch]);
 
   const { data: analysis, isLoading: isLoadingAnalysis } = useQuery<ProcessingAnalysis>({
     queryKey: ["/api/products", barcode, "analysis", language],
@@ -267,7 +260,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       {(() => {
                         const nutrients = product.nutriments as Record<string, any>;
                         return nutrients?.energy_100g ? String(nutrients.energy_100g) : "N/A";
-                      })() as React.ReactNode}
+                      })()}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.energy')}</div>
                   </div>
@@ -276,7 +269,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       {(() => {
                         const nutrients = product.nutriments as any;
                         return nutrients?.sugars_100g ? `${nutrients.sugars_100g}g` : "N/A";
-                      })() as React.ReactNode}
+                      })()}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.sugars')}</div>
                   </div>
@@ -285,7 +278,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       {(() => {
                         const nutrients = product.nutriments as any;
                         return nutrients?.fat_100g ? `${nutrients.fat_100g}g` : "N/A";
-                      })() as React.ReactNode}
+                      })()}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.fat')}</div>
                   </div>
@@ -294,7 +287,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       {(() => {
                         const nutrients = product.nutriments as any;
                         return nutrients?.proteins_100g ? `${nutrients.proteins_100g}g` : "N/A";
-                      })() as React.ReactNode}
+                      })()}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.protein')}</div>
                   </div>
@@ -396,7 +389,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
       )}
 
       {/* NutriBot Insights Card */}
-      {nutriBotInsight && (nutriBotInsight as any)?.insight && (
+      {nutriBotInsight && typeof nutriBotInsight === 'string' && (
         <Card className="glass-card border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up glow-effect">
           <CardHeader className="bg-gradient-to-r from-primary to-accent text-white rounded-t-lg">
             <CardTitle className="flex items-center space-x-3">
@@ -413,7 +406,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
           <CardContent className="pt-6 pb-6">
             <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
               <p className="text-foreground leading-relaxed text-lg">
-                {(nutriBotInsight as any)?.insight}
+                {nutriBotInsight}
               </p>
             </div>
           </CardContent>
