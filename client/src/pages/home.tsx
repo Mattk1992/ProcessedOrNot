@@ -58,8 +58,13 @@ export default function Home() {
                 <p className="text-sm text-muted-foreground">{t('brand.subtitle')}</p>
               </div>
             </div>
-            <div className="scale-on-hover">
-              <LanguageSwitcher />
+            <div className="flex items-center space-x-3">
+              <div className="scale-on-hover">
+                <LanguageSwitcher />
+              </div>
+              <div className="scale-on-hover">
+                <HeaderDropdown />
+              </div>
             </div>
           </div>
         </div>
