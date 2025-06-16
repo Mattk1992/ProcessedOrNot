@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, User, Settings, Info, HelpCircle } from 'lucide-react';
+import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useLocation } from 'wouter';
 
@@ -9,6 +9,20 @@ export default function HeaderDropdown() {
   const [, setLocation] = useLocation();
 
   const menuItems = [
+    {
+      label: 'Sign In',
+      icon: <LogIn className="w-4 h-4" />,
+      action: () => {
+        setLocation('/login');
+      }
+    },
+    {
+      label: 'Create Account',
+      icon: <UserPlus className="w-4 h-4" />,
+      action: () => {
+        setLocation('/register');
+      }
+    },
     {
       label: t('dropdown.about') || 'About',
       icon: <Info className="w-4 h-4" />,
