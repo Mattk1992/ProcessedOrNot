@@ -439,6 +439,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.register.emailVerification': 'Email Verification',
     'auth.register.termsNotice': 'By creating an account, you agree to our terms of service and privacy policy.',
 
+    // Home Page Call-to-Action
+    'home.cta.title': 'Log in or register to explore all the exciting features and benefits that await you!',
+    'home.cta.createAccount': 'Create Account',
+    'home.cta.signIn': 'Sign In',
+
   },
   
   es: {
@@ -893,6 +898,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.register.emailVerification': 'Verificación por Email',
     'auth.register.termsNotice': 'Al crear una cuenta, aceptas nuestros términos de servicio y política de privacidad.',
 
+    // Home Page Call-to-Action
+    'home.cta.title': '¡Inicia sesión o regístrate para explorar todas las características emocionantes y beneficios que te esperan!',
+    'home.cta.createAccount': 'Crear Cuenta',
+    'home.cta.signIn': 'Iniciar Sesión',
+
   },
   
   fr: {
@@ -1190,6 +1200,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.register.secureEncryption': 'Chiffrement Sécurisé',
     'auth.register.emailVerification': 'Vérification par Email',
     'auth.register.termsNotice': 'En créant un compte, vous acceptez nos conditions d\'utilisation et notre politique de confidentialité.',
+
+    // Home Page Call-to-Action
+    'home.cta.title': 'Connectez-vous ou inscrivez-vous pour explorer toutes les fonctionnalités passionnantes et les avantages qui vous attendent !',
+    'home.cta.createAccount': 'Créer un Compte',
+    'home.cta.signIn': 'Se Connecter',
 
   },
   

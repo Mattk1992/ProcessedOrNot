@@ -98,19 +98,19 @@ export default function Home() {
               <div className="mt-12 fade-in" style={{animationDelay: '0.5s'}}>
                 <div className="glass-card p-8 rounded-3xl max-w-2xl mx-auto glow-effect">
                   <div className="text-center">
-                    <h3 className="md:text-2xl text-foreground mb-4 gradient-text font-semibold text-[21px]">Log in or register to explore all the exciting features and benefits that await you!</h3>
+                    <h3 className="md:text-2xl text-foreground mb-4 gradient-text font-semibold text-[21px]">{t('home.cta.title')}</h3>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                       <button
                         onClick={() => window.location.href = '/register'}
                         className="px-8 py-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                       >
-                        Create Account
+                        {t('home.cta.createAccount')}
                       </button>
                       <button
                         onClick={() => window.location.href = '/login'}
                         className="px-8 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-foreground font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
                       >
-                        Sign In
+                        {t('home.cta.signIn')}
                       </button>
                     </div>
                   </div>
