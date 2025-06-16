@@ -91,6 +91,31 @@ export default function Home() {
                 </p>
               </div>
             </div>
+
+            {/* Login/Register Call-to-Action */}
+            <div className="mt-12 fade-in" style={{animationDelay: '0.5s'}}>
+              <div className="glass-card p-8 rounded-3xl max-w-2xl mx-auto glow-effect">
+                <div className="text-center">
+                  <h3 className="text-xl md:text-2xl font-bold text-foreground mb-4 gradient-text">
+                    Register or log in now to unlock the scanner's full potential and discover all the amazing features and benefits waiting for you!
+                  </h3>
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <button
+                      onClick={() => window.location.href = '/register'}
+                      className="px-8 py-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    >
+                      Create Account
+                    </button>
+                    <button
+                      onClick={() => window.location.href = '/login'}
+                      className="px-8 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-foreground font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    >
+                      Sign In
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
