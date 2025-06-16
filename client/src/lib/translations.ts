@@ -66,6 +66,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.error': 'Error saving product',
     
     // Authentication - Login
+    'auth.backToHome': 'Back to Home',
     'auth.login.title': 'Welcome Back',
     'auth.login.subtitle': 'Sign in to your account to continue',
     'auth.login.usernameLabel': 'Username or Email',
@@ -186,6 +187,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.error': 'Error al guardar producto',
     
     // Authentication - Login
+    'auth.backToHome': 'Volver al Inicio',
     'auth.login.title': 'Bienvenido de Vuelta',
     'auth.login.subtitle': 'Inicia sesión en tu cuenta para continuar',
     'auth.login.usernameLabel': 'Usuario o Correo',
@@ -306,6 +308,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.error': 'Erreur lors de la sauvegarde du produit',
     
     // Authentication - Login
+    'auth.backToHome': 'Retour à l\'Accueil',
     'auth.login.title': 'Bon Retour',
     'auth.login.subtitle': 'Connectez-vous à votre compte pour continuer',
     'auth.login.usernameLabel': 'Nom d\'utilisateur ou Email',
@@ -426,6 +429,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.error': 'Fehler beim Speichern des Produkts',
     
     // Authentication - Login
+    'auth.backToHome': 'Zurück zur Startseite',
     'auth.login.title': 'Willkommen Zurück',
     'auth.login.subtitle': 'Melden Sie sich in Ihrem Konto an, um fortzufahren',
     'auth.login.usernameLabel': 'Benutzername oder E-Mail',
@@ -546,6 +550,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.error': '保存产品时出错',
     
     // Authentication - Login
+    'auth.backToHome': '返回主页',
     'auth.login.title': '欢迎回来',
     'auth.login.subtitle': '登录您的账户以继续',
     'auth.login.usernameLabel': '用户名或邮箱',
@@ -666,6 +671,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.error': '製品の保存エラー',
     
     // Authentication - Login
+    'auth.backToHome': 'ホームに戻る',
     'auth.login.title': 'お帰りなさい',
     'auth.login.subtitle': 'アカウントにサインインして続行',
     'auth.login.usernameLabel': 'ユーザー名またはメール',
@@ -786,6 +792,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'form.error': 'Fout bij het opslaan van product',
     
     // Authentication - Login
+    'auth.backToHome': 'Terug naar Home',
     'auth.login.title': 'Welkom Terug',
     'auth.login.subtitle': 'Log in op uw account om door te gaan',
     'auth.login.usernameLabel': 'Gebruikersnaam of E-mail',
