@@ -33,6 +33,15 @@ export interface IStorage {
   // Role management methods
   updateUserRole(userId: number, role: string): Promise<User | undefined>;
   getUsersByRole(role: string): Promise<User[]>;
+  getAllUsers(): Promise<User[]>;
+  getAdminStats(): Promise<{
+    totalUsers: number;
+    adminUsers: number;
+    regularUsers: number;
+    verifiedUsers: number;
+    totalProducts: number;
+    recentRegistrations: number;
+  }>;
   
   // Product storage methods
   getProductByBarcode(barcode: string): Promise<Product | undefined>;
@@ -201,6 +210,73 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error fetching users by role:", error);
       return [];
+    }
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    try {
+      const userList = await db
+        .select()
+        .from(users)
+        .orderBy(desc(users.createdAt));
+      
+      return userList.map(sanitizeUser);
+    } catch (error) {
+      console.error("Error fetching all users:", error);
+      return [];
+    }
+  }
+
+  async getAdminStats(): Promise<{
+    totalUsers: number;
+    adminUsers: number;
+    regularUsers: number;
+    verifiedUsers: number;
+    totalProducts: number;
+    recentRegistrations: number;
+  }> {
+    try {
+      // Get user counts
+      const totalUsersResult = await db.select({ count: sql`count(*)` }).from(users);
+      const totalUsers = Number(totalUsersResult[0]?.count) || 0;
+
+      const adminUsersResult = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.role, 'Admin'));
+      const adminUsers = Number(adminUsersResult[0]?.count) || 0;
+
+      const regularUsersResult = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.role, 'Regular'));
+      const regularUsers = Number(regularUsersResult[0]?.count) || 0;
+
+      const verifiedUsersResult = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.isEmailVerified, true));
+      const verifiedUsers = Number(verifiedUsersResult[0]?.count) || 0;
+
+      // Get product count
+      const totalProductsResult = await db.select({ count: sql`count(*)` }).from(products);
+      const totalProducts = Number(totalProductsResult[0]?.count) || 0;
+
+      // Get recent registrations (last 7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const recentRegistrationsResult = await db.select({ count: sql`count(*)` }).from(users).where(sql`${users.createdAt} >= ${sevenDaysAgo}`);
+      const recentRegistrations = Number(recentRegistrationsResult[0]?.count) || 0;
+
+      return {
+        totalUsers,
+        adminUsers,
+        regularUsers,
+        verifiedUsers,
+        totalProducts,
+        recentRegistrations,
+      };
+    } catch (error) {
+      console.error("Error fetching admin stats:", error);
+      return {
+        totalUsers: 0,
+        adminUsers: 0,
+        regularUsers: 0,
+        verifiedUsers: 0,
+        totalProducts: 0,
+        recentRegistrations: 0,
+      };
     }
   }
 

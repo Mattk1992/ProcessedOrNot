@@ -304,6 +304,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all users (admin only)
+  app.get("/api/admin/users", requireAuth, async (req: any, res) => {
+    try {
+      // Check if current user is admin
+      const currentUser = await storage.getUserById(req.session.userId!);
+      if (!currentUser || currentUser.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const allUsers = await storage.getAllUsers();
+      res.json({ users: allUsers });
+    } catch (error) {
+      console.error("Get all users error:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
+    }
+  });
+
+  // Get admin statistics
+  app.get("/api/admin/stats", requireAuth, async (req: any, res) => {
+    try {
+      // Check if current user is admin
+      const currentUser = await storage.getUserById(req.session.userId!);
+      if (!currentUser || currentUser.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const stats = await storage.getAdminStats();
+      res.json(stats);
+    } catch (error) {
+      console.error("Get admin stats error:", error);
+      res.status(500).json({ message: "Failed to fetch statistics" });
+    }
+  });
+
   // Get product by barcode
   app.get("/api/products/:barcode", async (req, res) => {
     try {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut } from 'lucide-react';
+import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
@@ -41,6 +41,11 @@ export default function HeaderDropdown() {
 
   // Menu items for authenticated users
   const userMenuItems = [
+    ...(user?.role === 'Admin' ? [{
+      label: 'Admin Panel',
+      icon: <Shield className="w-4 h-4" />,
+      action: () => setLocation('/admin')
+    }] : []),
     {
       label: t('dropdown.settings') || 'Settings',
       icon: <Settings className="w-4 h-4" />,
