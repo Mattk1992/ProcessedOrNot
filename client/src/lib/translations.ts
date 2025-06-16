@@ -867,11 +867,9 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Authentication
     'auth.backToHome': 'Volver al Inicio',
-    'auth.securityNotice': 'Tu información está protegida con encriptación de grado empresarial y las mejores prácticas de seguridad.',
-    
-    // Login
-    'auth.login.title': 'Iniciar Sesión',
-    'auth.login.subtitle': 'Accede a tu cuenta para obtener análisis nutricionales personalizados',
+    'auth.securityNotice': 'Tus datos están protegidos con cifrado de extremo a extremo y medidas de seguridad estándar de la industria.',
+    'auth.login.title': 'Bienvenido de Vuelta',
+    'auth.login.subtitle': 'Ingresa tus credenciales para acceder a tu cuenta',
     'auth.login.usernameOrEmail': 'Usuario o Email',
     'auth.login.usernamePlaceholder': 'Ingresa tu usuario o email',
     'auth.login.password': 'Contraseña',
@@ -880,11 +878,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.login.signIn': 'Iniciar Sesión',
     'auth.login.loggingIn': 'Iniciando sesión...',
     'auth.login.noAccount': '¿No tienes una cuenta?',
-    'auth.login.signUp': 'Regístrate',
-    'auth.login.success': 'Sesión Iniciada',
-    'auth.login.welcomeBack': 'Bienvenido de vuelta',
-    'auth.login.error': 'Error de Inicio de Sesión',
-    'auth.login.invalidCredentials': 'Usuario o contraseña incorrectos',
+    'auth.login.signUp': 'Registrarse',
+    'auth.login.success': 'Inicio de sesión exitoso',
+    'auth.login.welcomeBack': '¡Bienvenido de vuelta!',
+    'auth.login.error': 'Error de inicio de sesión',
+    'auth.login.invalidCredentials': 'Usuario o contraseña inválidos',
     
     // Register
     'auth.register.title': 'Crear Cuenta',
@@ -1170,24 +1168,22 @@ export const translations: Record<Language, Record<string, string>> = {
 
     // Authentication
     'auth.backToHome': 'Retour à l\'Accueil',
-    'auth.securityNotice': 'Vos informations sont protégées par un chiffrement de niveau entreprise et les meilleures pratiques de sécurité.',
-    
-    // Login
-    'auth.login.title': 'Se Connecter',
-    'auth.login.subtitle': 'Accédez à votre compte pour une analyse nutritionnelle personnalisée',
+    'auth.securityNotice': 'Vos données sont protégées par un chiffrement de bout en bout et des mesures de sécurité conformes aux normes de l\'industrie.',
+    'auth.login.title': 'Bon retour',
+    'auth.login.subtitle': 'Entrez vos identifiants pour accéder à votre compte',
     'auth.login.usernameOrEmail': 'Nom d\'utilisateur ou Email',
     'auth.login.usernamePlaceholder': 'Entrez votre nom d\'utilisateur ou email',
     'auth.login.password': 'Mot de passe',
     'auth.login.passwordPlaceholder': 'Entrez votre mot de passe',
     'auth.login.forgotPassword': 'Mot de passe oublié ?',
-    'auth.login.signIn': 'Se Connecter',
+    'auth.login.signIn': 'Se connecter',
     'auth.login.loggingIn': 'Connexion en cours...',
-    'auth.login.noAccount': 'Pas de compte ?',
+    'auth.login.noAccount': 'Vous n\'avez pas de compte ?',
     'auth.login.signUp': 'S\'inscrire',
-    'auth.login.success': 'Connecté',
-    'auth.login.welcomeBack': 'Bon retour',
-    'auth.login.error': 'Erreur de Connexion',
-    'auth.login.invalidCredentials': 'Nom d\'utilisateur ou mot de passe incorrect',
+    'auth.login.success': 'Connexion réussie',
+    'auth.login.welcomeBack': 'Bon retour !',
+    'auth.login.error': 'Échec de la connexion',
+    'auth.login.invalidCredentials': 'Nom d\'utilisateur ou mot de passe invalide',
     
     // Register
     'auth.register.title': 'Créer un Compte',
