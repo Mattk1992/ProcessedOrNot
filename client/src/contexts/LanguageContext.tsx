@@ -61,7 +61,12 @@ export function LanguageProvider({ children }: LanguageProviderProps) {
   };
 
   const t = (key: string): string => {
-    return translations[language][key] || key;
+    try {
+      return translations[language]?.[key] || translations.en?.[key] || key;
+    } catch (error) {
+      console.warn('Translation error for key:', key, error);
+      return key;
+    }
   };
 
   useEffect(() => {

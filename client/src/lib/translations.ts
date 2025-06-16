@@ -758,24 +758,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'social.download.error': 'Error en Descarga',
     'social.download.error_description': 'No se pudo generar la tarjeta compartible',
     
-    // Authentication - Login Page
-    'auth.backToHome': 'Volver al Inicio',
-    'auth.securityNotice': 'Tus datos están protegidos con cifrado de extremo a extremo y medidas de seguridad estándar de la industria.',
-    'auth.login.title': 'Bienvenido de Vuelta',
-    'auth.login.subtitle': 'Ingresa tus credenciales para acceder a tu cuenta',
-    'auth.login.usernameOrEmail': 'Usuario o Email',
-    'auth.login.usernamePlaceholder': 'Ingresa tu usuario o email',
-    'auth.login.password': 'Contraseña',
-    'auth.login.passwordPlaceholder': 'Ingresa tu contraseña',
-    'auth.login.forgotPassword': '¿Olvidaste tu contraseña?',
-    'auth.login.signIn': 'Iniciar Sesión',
-    'auth.login.loggingIn': 'Iniciando sesión...',
-    'auth.login.noAccount': '¿No tienes una cuenta?',
-    'auth.login.signUp': 'Registrarse',
-    'auth.login.success': 'Inicio de sesión exitoso',
-    'auth.login.welcomeBack': '¡Bienvenido de vuelta!',
-    'auth.login.error': 'Error de inicio de sesión',
-    'auth.login.invalidCredentials': 'Usuario o contraseña inválidos',
+
 
     // Help Page
     'help.title': 'Ayuda y Soporte',
@@ -883,7 +866,7 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.login.welcomeBack': '¡Bienvenido de vuelta!',
     'auth.login.error': 'Error de inicio de sesión',
     'auth.login.invalidCredentials': 'Usuario o contraseña inválidos',
-    
+
     // Register
     'auth.register.title': 'Crear Cuenta',
     'auth.register.subtitle': 'Únete para acceder a análisis nutricionales avanzados y características personalizadas',
