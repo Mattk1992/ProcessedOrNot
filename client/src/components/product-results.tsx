@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +11,7 @@ import NutritionSpotlight from "./nutrition-spotlight";
 import FunFacts from "./fun-facts";
 import SocialShare from "./social-share";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useSearchTracking } from "@/hooks/useSearchTracking";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -20,6 +21,7 @@ interface ProductResultsProps {
 export default function ProductResults({ barcode }: ProductResultsProps) {
   const [showManualForm, setShowManualForm] = useState(false);
   const { t, language } = useLanguage();
+  const { trackSearch } = useSearchTracking();
 
   const { data: product, isLoading: isLoadingProduct, error: productError, refetch } = useQuery<Product & { lookupSource?: string }>({
     queryKey: ["/api/products", barcode],
@@ -27,6 +29,37 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
     enabled: !!barcode,
     retry: false, // Don't retry on 404s for manual entry option
   });
+
+  // Determine search type based on input pattern
+  const isBarcode = /^\d+$/.test(barcode?.trim() || '');
+  const searchType = isBarcode ? 'barcode' : 'text';
+
+  // Track search when product data loads or fails
+  useEffect(() => {
+    if (!barcode) return;
+
+    // Track successful search
+    if (product) {
+      trackSearch({
+        searchInput: barcode,
+        searchType,
+        productBarcode: product.barcode,
+        productName: product.productName || undefined,
+        productBrand: product.brands || undefined,
+        foundResult: true,
+        processingScore: product.processingScore || undefined,
+        dataSource: product.lookupSource || product.dataSource || undefined,
+      });
+    }
+    // Track failed search
+    else if (productError && !isLoadingProduct) {
+      trackSearch({
+        searchInput: barcode,
+        searchType,
+        foundResult: false,
+      });
+    }
+  }, [product, productError, isLoadingProduct, barcode, searchType, trackSearch]);
 
   const { data: analysis, isLoading: isLoadingAnalysis } = useQuery<ProcessingAnalysis>({
     queryKey: ["/api/products", barcode, "analysis", language],
