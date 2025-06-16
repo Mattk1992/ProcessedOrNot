@@ -10,9 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, User, Globe, Palette, Bell, Shield, Download, Trash2 } from "lucide-react";
+import { ArrowLeft, User, Globe, Palette, Bell, Shield, Download, Trash2, Scan } from "lucide-react";
 import { languages, Language } from "@/lib/translations";
 import LanguageSwitcher from "@/components/language-switcher";
+import { BarcodeDetectionSystem } from "@/components/barcode-scanner";
 
 export default function Settings() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -23,6 +24,20 @@ export default function Settings() {
   const [notifications, setNotifications] = useState(true);
   const [emailUpdates, setEmailUpdates] = useState(false);
   const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
+  const [barcodeDetectionSystem, setBarcodeDetectionSystem] = useState<BarcodeDetectionSystem>('auto');
+
+  // Load barcode detection system setting from localStorage
+  useEffect(() => {
+    const savedSystem = localStorage.getItem('barcodeDetectionSystem') as BarcodeDetectionSystem;
+    if (savedSystem && ['auto', 'native', 'zxing'].includes(savedSystem)) {
+      setBarcodeDetectionSystem(savedSystem);
+    }
+  }, []);
+
+  // Save barcode detection system setting to localStorage
+  useEffect(() => {
+    localStorage.setItem('barcodeDetectionSystem', barcodeDetectionSystem);
+  }, [barcodeDetectionSystem]);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -201,6 +216,46 @@ export default function Settings() {
                     <SelectItem value="system">System</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Barcode Detection Settings */}
+          <Card className="glass-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Scan className="h-5 w-5" />
+                Barcode Detection System
+              </CardTitle>
+              <CardDescription>
+                Choose which barcode detection technology to use for scanning
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-medium">Detection Engine</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {barcodeDetectionSystem === 'auto' && 'Automatically choose the best available system'}
+                    {barcodeDetectionSystem === 'native' && 'Use browser\'s native BarcodeDetector API (faster)'}
+                    {barcodeDetectionSystem === 'zxing' && 'Use ZXing library (more compatible)'}
+                  </p>
+                </div>
+                <Select value={barcodeDetectionSystem} onValueChange={(value: BarcodeDetectionSystem) => setBarcodeDetectionSystem(value)}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">Auto</SelectItem>
+                    <SelectItem value="native">Native API</SelectItem>
+                    <SelectItem value="zxing">ZXing</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
+                <p><strong>Auto:</strong> Automatically selects the best detection system for your browser</p>
+                <p><strong>Native API:</strong> Uses browser's built-in barcode detection (Chrome, Edge) - faster but limited browser support</p>
+                <p><strong>ZXing:</strong> JavaScript library with broad compatibility across all browsers</p>
               </div>
             </CardContent>
           </Card>

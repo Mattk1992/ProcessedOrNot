@@ -207,9 +207,10 @@ export default function BarcodeScanner({ onScan, isLoading = false, detectionSys
         console.log("Using ZXing barcode detection");
         
         // Start ZXing decoding
-        await codeReaderRef.current.decodeFromVideoElement(
+        codeReaderRef.current.decodeFromVideoDevice(
+          null, // Use default device
           finalVideoElement,
-          (result: any, error: any) => {
+          (result: any) => {
             if (result) {
               const scannedCode = result.getText();
               console.log("ZXing barcode detected:", scannedCode);
@@ -217,9 +218,6 @@ export default function BarcodeScanner({ onScan, isLoading = false, detectionSys
                 stopCamera();
                 onScan(scannedCode);
               }
-            }
-            if (error && !(error instanceof NotFoundException)) {
-              console.warn("ZXing barcode scanning error:", error);
             }
           }
         );
