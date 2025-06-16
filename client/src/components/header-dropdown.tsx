@@ -1,50 +1,69 @@
 import { useState } from 'react';
-import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus } from 'lucide-react';
+import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
 
 export default function HeaderDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useLanguage();
+  const { isAuthenticated, user } = useAuth();
   const [, setLocation] = useLocation();
 
-  const menuItems = [
+  const handleLogout = () => {
+    // Redirect to logout endpoint
+    window.location.href = '/api/logout';
+  };
+
+  // Menu items for non-authenticated users
+  const guestMenuItems = [
     {
       label: 'Sign In',
       icon: <LogIn className="w-4 h-4" />,
-      action: () => {
-        setLocation('/login');
-      }
+      action: () => setLocation('/login')
     },
     {
       label: 'Create Account',
       icon: <UserPlus className="w-4 h-4" />,
-      action: () => {
-        setLocation('/register');
-      }
+      action: () => setLocation('/register')
     },
     {
-      label: t('dropdown.about') || 'About',
+      label: t('dropdown.about') || 'About us',
       icon: <Info className="w-4 h-4" />,
-      action: () => {
-        setLocation('/about');
-      }
+      action: () => setLocation('/about')
     },
     {
       label: t('dropdown.help') || 'Help',
       icon: <HelpCircle className="w-4 h-4" />,
-      action: () => {
-        setLocation('/help');
-      }
-    },
+      action: () => setLocation('/help')
+    }
+  ];
+
+  // Menu items for authenticated users
+  const userMenuItems = [
     {
       label: t('dropdown.settings') || 'Settings',
       icon: <Settings className="w-4 h-4" />,
-      action: () => {
-        console.log('Settings clicked');
-      }
+      action: () => setLocation('/settings')
+    },
+    {
+      label: t('dropdown.about') || 'About us',
+      icon: <Info className="w-4 h-4" />,
+      action: () => setLocation('/about')
+    },
+    {
+      label: t('dropdown.help') || 'Help',
+      icon: <HelpCircle className="w-4 h-4" />,
+      action: () => setLocation('/help')
+    },
+    {
+      label: 'Sign Out',
+      icon: <LogOut className="w-4 h-4" />,
+      action: handleLogout
     }
   ];
+
+  const menuItems = isAuthenticated ? userMenuItems : guestMenuItems;
 
   return (
     <div className="relative">

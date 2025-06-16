@@ -11,6 +11,7 @@ import About from "@/pages/about";
 import Help from "@/pages/help";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
+import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/help" component={Help} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );
