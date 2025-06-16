@@ -7,9 +7,37 @@ import { Search, Loader2, Camera, X, RotateCcw } from "lucide-react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
 
+// Type definitions for BarcodeDetector API
+declare global {
+  interface Window {
+    BarcodeDetector?: {
+      new (options?: { formats?: string[] }): BarcodeDetector;
+      getSupportedFormats(): Promise<string[]>;
+    };
+  }
+}
+
+interface DetectedBarcode {
+  rawValue: string;
+  format: string;
+  boundingBox?: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+}
+
+interface BarcodeDetector {
+  detect(source: ImageBitmapSource): Promise<DetectedBarcode[]>;
+}
+
+export type BarcodeDetectionSystem = 'zxing' | 'native' | 'auto';
+
 interface BarcodeScannerProps {
   onScan: (barcode: string) => void;
   isLoading?: boolean;
+  detectionSystem?: BarcodeDetectionSystem;
 }
 
 const sampleProducts = [
@@ -21,14 +49,18 @@ const sampleProducts = [
   { barcode: "Dark Chocolate", name: "Dark Chocolate", description: "Text search" },
 ];
 
-export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
+export default function BarcodeScanner({ onScan, isLoading = false, detectionSystem = 'auto' }: BarcodeScannerProps) {
   const { t } = useLanguage();
   const [barcode, setBarcode] = useState("");
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string>("");
   const [isScanning, setIsScanning] = useState(false);
+  const [activeDetectionSystem, setActiveDetectionSystem] = useState<'zxing' | 'native'>('zxing');
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
+  const barcodeDetectorRef = useRef<BarcodeDetector | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +73,80 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     setBarcode(sampleBarcode);
     onScan(sampleBarcode);
   };
+
+  // Check if BarcodeDetector API is supported
+  const isBarcodeDetectorSupported = useCallback(() => {
+    return 'BarcodeDetector' in window;
+  }, []);
+
+  // Determine which detection system to use
+  useEffect(() => {
+    // Get user preference from localStorage if detectionSystem is 'auto'
+    let systemToUse = detectionSystem;
+    if (detectionSystem === 'auto') {
+      const savedSystem = localStorage.getItem('barcodeDetectionSystem') as BarcodeDetectionSystem;
+      if (savedSystem && ['native', 'zxing'].includes(savedSystem)) {
+        systemToUse = savedSystem;
+      } else {
+        systemToUse = isBarcodeDetectorSupported() ? 'native' : 'zxing';
+      }
+    }
+
+    if (systemToUse === 'native') {
+      if (isBarcodeDetectorSupported()) {
+        setActiveDetectionSystem('native');
+      } else {
+        console.warn('BarcodeDetector API not supported, falling back to ZXing');
+        setActiveDetectionSystem('zxing');
+      }
+    } else {
+      setActiveDetectionSystem('zxing');
+    }
+  }, [detectionSystem, isBarcodeDetectorSupported]);
+
+  // Native BarcodeDetector scanning function
+  const scanWithNativeDetector = useCallback(async () => {
+    if (!videoRef.current || !barcodeDetectorRef.current) return;
+
+    try {
+      // Create canvas to capture video frame
+      if (!canvasRef.current) {
+        canvasRef.current = document.createElement('canvas');
+      }
+      
+      const canvas = canvasRef.current;
+      const video = videoRef.current;
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) return;
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+
+      // Detect barcodes in the frame
+      const barcodes = await barcodeDetectorRef.current.detect(canvas);
+      
+      if (barcodes.length > 0) {
+        const detectedBarcode = barcodes[0].rawValue;
+        console.log("Native barcode detected:", detectedBarcode);
+        stopCamera();
+        onScan(detectedBarcode);
+        return;
+      }
+
+      // Continue scanning
+      if (isCameraActive) {
+        animationFrameRef.current = requestAnimationFrame(scanWithNativeDetector);
+      }
+    } catch (error) {
+      console.warn("Native barcode detection error:", error);
+      // Continue scanning despite errors
+      if (isCameraActive) {
+        animationFrameRef.current = requestAnimationFrame(scanWithNativeDetector);
+      }
+    }
+  }, [isCameraActive, onScan]);
 
   const startCamera = useCallback(async () => {
     try {
@@ -72,47 +178,68 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         }
       }
 
-      // Initialize the code reader
-      if (!codeReaderRef.current) {
-        codeReaderRef.current = new BrowserMultiFormatReader();
-      }
-
       const finalVideoElement = videoRef.current!;
 
-      // Get camera permissions and start scanning
-      const videoInputDevices = await codeReaderRef.current.listVideoInputDevices();
-      
-      if (videoInputDevices.length === 0) {
-        throw new Error("No camera devices found on this device.");
-      }
+      // Get user media stream
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: 'environment' }, // Prefer back camera
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
 
-      // Use the back camera if available (usually better for scanning)
-      const selectedDeviceId = videoInputDevices.find(device => 
-        device.label.toLowerCase().includes('back') || 
-        device.label.toLowerCase().includes('rear') ||
-        device.label.toLowerCase().includes('environment')
-      )?.deviceId || videoInputDevices[0].deviceId;
+      finalVideoElement.srcObject = stream;
+      finalVideoElement.setAttribute('playsinline', 'true');
+      await finalVideoElement.play();
 
       setIsScanning(false);
 
-      // Start decoding from the camera
-      await codeReaderRef.current.decodeFromVideoDevice(
-        selectedDeviceId,
-        finalVideoElement,
-        (result, error) => {
-          if (result) {
-            const scannedCode = result.getText();
-            console.log("Scanned barcode:", scannedCode);
-            if (scannedCode) {
-              stopCamera();
-              onScan(scannedCode);
-            }
-          }
-          if (error && !(error instanceof NotFoundException)) {
-            console.warn("Barcode scanning error:", error);
-          }
+      // Initialize detection system based on active system
+      if (activeDetectionSystem === 'native' && isBarcodeDetectorSupported()) {
+        // Initialize BarcodeDetector
+        if (!barcodeDetectorRef.current) {
+          barcodeDetectorRef.current = new window.BarcodeDetector!({
+            formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'code_93', 'codabar', 'itf', 'qr_code', 'data_matrix', 'pdf417']
+          });
         }
-      );
+        
+        console.log("Using native BarcodeDetector API");
+        // Start native barcode detection
+        animationFrameRef.current = requestAnimationFrame(scanWithNativeDetector);
+      } else {
+        // Use ZXing
+        if (!codeReaderRef.current) {
+          codeReaderRef.current = new BrowserMultiFormatReader();
+        }
+
+        console.log("Using ZXing barcode detection");
+        
+        // Start ZXing decoding with proper error handling
+        try {
+          await codeReaderRef.current.decodeFromVideoDevice(
+            null, // Use default device
+            finalVideoElement,
+            (result: any, error: any) => {
+              if (result) {
+                const scannedCode = result.getText();
+                console.log("ZXing barcode detected:", scannedCode);
+                if (scannedCode) {
+                  stopCamera();
+                  onScan(scannedCode);
+                }
+              }
+              // Silently ignore NotFoundException as it's expected during scanning
+              if (error && error.name !== 'NotFoundException') {
+                console.warn("ZXing scanning error:", error);
+              }
+            }
+          );
+        } catch (err) {
+          console.error("Failed to start ZXing decoder:", err);
+          setCameraError("Failed to initialize barcode scanner");
+        }
+      }
 
     } catch (error) {
       console.error("Camera error:", error);
@@ -139,6 +266,13 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
   const stopCamera = useCallback(() => {
     try {
+      // Stop native barcode detection animation frame
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+
+      // Stop ZXing code reader
       if (codeReaderRef.current) {
         codeReaderRef.current.reset();
       }

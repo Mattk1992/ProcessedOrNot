@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import FunFacts from "./fun-facts";
 import SocialShare from "./social-share";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSearchTracking } from "@/hooks/useSearchTracking";
+import { useAuth } from "@/hooks/useAuth";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -34,11 +35,17 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
   const isBarcode = /^\d+$/.test(barcode?.trim() || '');
   const searchType = isBarcode ? 'barcode' : 'text';
 
-  // Track search when product data loads or fails
+  // Track search when product data loads or fails (only for authenticated users)
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const trackedSearches = useRef(new Set<string>());
+  
   useEffect(() => {
-    if (!barcode) return;
+    // Only track for authenticated users to prevent spam
+    if (!isAuthenticated || authLoading || !barcode || trackedSearches.current.has(barcode)) return;
+    
+    // Wait for query to complete before tracking
+    if (isLoadingProduct) return;
 
-    // Track successful search
     if (product) {
       trackSearch({
         searchInput: barcode,
@@ -50,16 +57,16 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
         processingScore: product.processingScore || undefined,
         dataSource: product.lookupSource || product.dataSource || undefined,
       });
-    }
-    // Track failed search
-    else if (productError && !isLoadingProduct) {
+      trackedSearches.current.add(barcode);
+    } else if (productError) {
       trackSearch({
         searchInput: barcode,
         searchType,
         foundResult: false,
       });
+      trackedSearches.current.add(barcode);
     }
-  }, [product, productError, isLoadingProduct, barcode, searchType, trackSearch]);
+  }, [product, productError, isLoadingProduct, barcode, searchType, trackSearch, isAuthenticated, authLoading]);
 
   const { data: analysis, isLoading: isLoadingAnalysis } = useQuery<ProcessingAnalysis>({
     queryKey: ["/api/products", barcode, "analysis", language],
@@ -260,7 +267,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       {(() => {
                         const nutrients = product.nutriments as Record<string, any>;
                         return nutrients?.energy_100g ? String(nutrients.energy_100g) : "N/A";
-                      })()}
+                      })() as React.ReactNode}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.energy')}</div>
                   </div>
@@ -269,7 +276,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       {(() => {
                         const nutrients = product.nutriments as any;
                         return nutrients?.sugars_100g ? `${nutrients.sugars_100g}g` : "N/A";
-                      })()}
+                      })() as React.ReactNode}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.sugars')}</div>
                   </div>
@@ -278,7 +285,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       {(() => {
                         const nutrients = product.nutriments as any;
                         return nutrients?.fat_100g ? `${nutrients.fat_100g}g` : "N/A";
-                      })()}
+                      })() as React.ReactNode}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.fat')}</div>
                   </div>
@@ -287,7 +294,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                       {(() => {
                         const nutrients = product.nutriments as any;
                         return nutrients?.proteins_100g ? `${nutrients.proteins_100g}g` : "N/A";
-                      })()}
+                      })() as React.ReactNode}
                     </div>
                     <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.protein')}</div>
                   </div>
