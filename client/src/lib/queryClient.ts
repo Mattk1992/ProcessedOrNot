@@ -33,7 +33,16 @@ export async function apiRequest(
     throw new Error(`${res.status}: ${text}`);
   }
   
-  // Parse response as JSON
+  // Check content type before parsing
+  const contentType = res.headers.get('content-type');
+  if (!contentType || !contentType.includes('application/json')) {
+    const text = await res.text();
+    console.error('Expected JSON but got:', contentType);
+    console.error('URL:', url);
+    console.error('Response preview:', text.substring(0, 200));
+    throw new Error(`Expected JSON response from ${url} but got ${contentType}`);
+  }
+  
   return await res.json();
 }
 
@@ -43,7 +52,14 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    const url = queryKey[0] as string;
+    
+    // Validate URL format
+    if (!url || !url.startsWith('/')) {
+      throw new Error(`Invalid query key: ${url}. Expected URL starting with '/'`);
+    }
+    
+    const res = await fetch(url, {
       credentials: "include",
     });
 
@@ -56,7 +72,6 @@ export const getQueryFn: <T>(options: {
       throw new Error(`${res.status}: ${text}`);
     }
     
-    // Parse response as JSON
     return await res.json();
   };
 
