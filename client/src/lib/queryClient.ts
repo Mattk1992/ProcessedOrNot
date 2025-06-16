@@ -4,13 +4,14 @@ async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     let text: string;
     try {
-      // Try to get JSON error message first
+      // Clone the response to avoid consuming the body
+      const clonedRes = res.clone();
       const contentType = res.headers.get("content-type");
       if (contentType && contentType.includes("application/json")) {
-        const errorJson = await res.json();
+        const errorJson = await clonedRes.json();
         text = errorJson.message || JSON.stringify(errorJson);
       } else {
-        text = await res.text();
+        text = await clonedRes.text();
       }
     } catch {
       // If we can't parse the response, fall back to status text
@@ -62,7 +63,9 @@ export const getQueryFn: <T>(options: {
       return null;
     }
 
-    await throwIfResNotOk(res);
+    if (!res.ok) {
+      await throwIfResNotOk(res);
+    }
     
     // Check if response is JSON before parsing
     const contentType = res.headers.get("content-type");
