@@ -70,14 +70,19 @@ export const getQueryFn: <T>(options: {
       throw new Error(`${res.status}: ${text}`);
     }
     
-    // Check response content type to avoid JSON parsing errors
-    const contentType = res.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      console.warn(`Non-JSON response from ${url}:`, contentType);
-      return null;
+    // Parse JSON response with proper error handling
+    try {
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return await res.json();
+      }
+      // If not JSON, return empty object to prevent null errors
+      console.warn(`Non-JSON response from ${url}, returning empty object`);
+      return {};
+    } catch (error) {
+      console.warn(`Failed to parse response from ${url}:`, error);
+      return {};
     }
-    
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -34,11 +34,15 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
   const isBarcode = /^\d+$/.test(barcode?.trim() || '');
   const searchType = isBarcode ? 'barcode' : 'text';
 
-  // Track search when product data loads or fails
+  // Track search when product data loads or fails (using ref to prevent duplicates)
+  const trackedSearches = useRef(new Set<string>());
+  
   useEffect(() => {
-    if (!barcode) return;
+    if (!barcode || trackedSearches.current.has(barcode)) return;
 
-    // Track successful search
+    // Wait for query to complete before tracking
+    if (isLoadingProduct) return;
+
     if (product) {
       trackSearch({
         searchInput: barcode,
@@ -50,14 +54,14 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
         processingScore: product.processingScore || undefined,
         dataSource: product.lookupSource || product.dataSource || undefined,
       });
-    }
-    // Track failed search
-    else if (productError && !isLoadingProduct) {
+      trackedSearches.current.add(barcode);
+    } else if (productError) {
       trackSearch({
         searchInput: barcode,
         searchType,
         foundResult: false,
       });
+      trackedSearches.current.add(barcode);
     }
   }, [product, productError, isLoadingProduct, barcode, searchType, trackSearch]);
 
