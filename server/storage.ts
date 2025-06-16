@@ -6,10 +6,13 @@ import {
   type LoginUser,
   products, 
   type Product, 
-  type InsertProduct 
+  type InsertProduct,
+  searchHistory,
+  type SearchHistory,
+  type InsertSearchHistory
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, sql, or } from "drizzle-orm";
+import { eq, desc, sql, or, and, gte, count } from "drizzle-orm";
 import { hashPassword, verifyPassword, generateEmailVerificationToken, generatePasswordResetToken, sanitizeUser } from "./lib/auth";
 
 export interface IStorage {
@@ -47,6 +50,15 @@ export interface IStorage {
   getProductByBarcode(barcode: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(barcode: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
+  
+  // Search history methods
+  createSearchHistory(searchHistory: InsertSearchHistory): Promise<SearchHistory>;
+  getUserSearchHistory(userId: number, limit?: number): Promise<SearchHistory[]>;
+  getSearchHistoryStats(userId: number): Promise<{
+    totalSearches: number;
+    successfulSearches: number;
+    recentSearches: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -324,6 +336,54 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return product || undefined;
+  }
+
+  // Search history methods
+  async createSearchHistory(insertSearchHistory: InsertSearchHistory): Promise<SearchHistory> {
+    const [searchHistoryRecord] = await db
+      .insert(searchHistory)
+      .values(insertSearchHistory)
+      .returning();
+    return searchHistoryRecord;
+  }
+
+  async getUserSearchHistory(userId: number, limit: number = 50): Promise<SearchHistory[]> {
+    return await db
+      .select()
+      .from(searchHistory)
+      .where(eq(searchHistory.userId, userId))
+      .orderBy(desc(searchHistory.searchedAt))
+      .limit(limit);
+  }
+
+  async getSearchHistoryStats(userId: number): Promise<{
+    totalSearches: number;
+    successfulSearches: number;
+    recentSearches: number;
+  }> {
+    const totalResult = await db
+      .select({ count: count() })
+      .from(searchHistory)
+      .where(eq(searchHistory.userId, userId));
+
+    const successfulResult = await db
+      .select({ count: count() })
+      .from(searchHistory)
+      .where(and(eq(searchHistory.userId, userId), eq(searchHistory.foundResult, true)));
+
+    const recentResult = await db
+      .select({ count: count() })
+      .from(searchHistory)
+      .where(and(
+        eq(searchHistory.userId, userId),
+        gte(searchHistory.searchedAt, new Date(Date.now() - 7 * 24 * 60 * 60 * 1000))
+      ));
+
+    return {
+      totalSearches: totalResult[0]?.count || 0,
+      successfulSearches: successfulResult[0]?.count || 0,
+      recentSearches: recentResult[0]?.count || 0,
+    };
   }
 }
 

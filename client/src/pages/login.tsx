@@ -69,7 +69,7 @@ export default function Login() {
           <Link href="/">
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              {t("auth.backToHome")}
+              {t("Back to Home")}
             </Button>
           </Link>
         </div>
@@ -81,10 +81,10 @@ export default function Login() {
             </div>
             <div>
               <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                {t("auth.login.title")}
+                {t("Welcome Back")}
               </CardTitle>
               <CardDescription className="text-gray-600 dark:text-gray-400 mt-2">
-                {t("auth.login.subtitle")}
+                {t("Enter your credentials to access your account")}
               </CardDescription>
             </div>
           </CardHeader>
@@ -98,7 +98,7 @@ export default function Login() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 dark:text-gray-300">
-                        {t("auth.login.usernameOrEmail")}
+                        {t("Username or Email")}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -106,7 +106,7 @@ export default function Login() {
                           <Input
                             {...field}
                             type="text"
-                            placeholder={t("auth.login.usernamePlaceholder")}
+                            placeholder={t("Enter your username or email")}
                             className="pl-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="username"
                           />
@@ -123,7 +123,7 @@ export default function Login() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 dark:text-gray-300">
-                        {t("auth.login.password")}
+                        {t("Password")}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -131,7 +131,7 @@ export default function Login() {
                           <Input
                             {...field}
                             type={showPassword ? "text" : "password"}
-                            placeholder={t("auth.login.passwordPlaceholder")}
+                            placeholder={t("Enter your password")}
                             className="pl-10 pr-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="current-password"
                           />
@@ -152,7 +152,7 @@ export default function Login() {
                 <div className="flex items-center justify-between">
                   <Link href="/forgot-password">
                     <Button variant="link" size="sm" className="text-blue-600 dark:text-blue-400 p-0 h-auto">
-                      {t("auth.login.forgotPassword")}
+                      {t("Forgot your password?")}
                     </Button>
                   </Link>
                 </div>
@@ -162,17 +162,17 @@ export default function Login() {
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-medium py-2.5"
                   disabled={loginMutation.isPending}
                 >
-                  {loginMutation.isPending ? t("auth.login.loggingIn") : t("auth.login.signIn")}
+                  {loginMutation.isPending ? t("Signing in...") : t("Sign In")}
                 </Button>
               </form>
             </Form>
 
             <div className="text-center space-y-2">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {t("auth.login.noAccount")}{" "}
+                {t("Don't have an account?")}{" "}
                 <Link href="/register">
                   <Button variant="link" size="sm" className="text-blue-600 dark:text-blue-400 p-0 h-auto font-medium">
-                    {t("auth.login.signUp")}
+                    {t("Sign up")}
                   </Button>
                 </Link>
               </p>
@@ -183,7 +183,7 @@ export default function Login() {
         {/* Security Notice */}
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-            {t("auth.securityNotice")}
+            {t("Terms Notice")}
           </p>
         </div>
       </div>
