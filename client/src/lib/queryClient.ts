@@ -4,17 +4,8 @@ async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     let text: string;
     try {
-      // Clone the response to avoid consuming the body
-      const clonedRes = res.clone();
-      const contentType = res.headers.get("content-type");
-      if (contentType && contentType.includes("application/json")) {
-        const errorJson = await clonedRes.json();
-        text = errorJson.message || JSON.stringify(errorJson);
-      } else {
-        text = await clonedRes.text();
-      }
+      text = await res.text();
     } catch {
-      // If we can't parse the response, fall back to status text
       text = res.statusText;
     }
     throw new Error(`${res.status}: ${text}`);
@@ -37,16 +28,13 @@ export async function apiRequest(
     credentials: "include",
   });
 
-  await throwIfResNotOk(res);
-  
-  // Check if response is JSON before parsing
-  const contentType = res.headers.get("content-type");
-  if (contentType && contentType.includes("application/json")) {
-    return await res.json();
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`${res.status}: ${text}`);
   }
   
-  // If not JSON, return the text content
-  return await res.text();
+  // Parse response as JSON
+  return await res.json();
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -64,17 +52,12 @@ export const getQueryFn: <T>(options: {
     }
 
     if (!res.ok) {
-      await throwIfResNotOk(res);
+      const text = await res.text();
+      throw new Error(`${res.status}: ${text}`);
     }
     
-    // Check if response is JSON before parsing
-    const contentType = res.headers.get("content-type");
-    if (contentType && contentType.includes("application/json")) {
-      return await res.json();
-    }
-    
-    // If not JSON, return the text content
-    return await res.text();
+    // Parse response as JSON
+    return await res.json();
   };
 
 export const queryClient = new QueryClient({
