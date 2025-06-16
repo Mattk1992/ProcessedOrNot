@@ -225,7 +225,7 @@ export default function Register() {
                           <Input
                             {...field}
                             type={showPassword ? "text" : "password"}
-                            placeholder={t("Create a secure password")}
+                            placeholder={t("auth.register.passwordPlaceholder")}
                             className="pl-10 pr-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="new-password"
                           />
@@ -258,10 +258,10 @@ export default function Register() {
                           </div>
                           <p className="text-xs text-gray-600 dark:text-gray-400">
                             {passwordStrength <= 2
-                              ? t("Weak Password ")
+                              ? t("auth.register.passwordWeak")
                               : passwordStrength <= 3
-                              ? t("Medium Password")
-                              : t("Strong Password")}
+                              ? t("auth.register.passwordMedium")
+                              : t("auth.register.passwordStrong")}
                           </p>
                         </div>
                       )}
@@ -277,7 +277,7 @@ export default function Register() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 dark:text-gray-300">
-                        {t("Confirm Password ")}
+                        {t("auth.register.confirmPassword")}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -285,7 +285,7 @@ export default function Register() {
                           <Input
                             {...field}
                             type={showConfirmPassword ? "text" : "password"}
-                            placeholder={t("Confirm your password")}
+                            placeholder={t("auth.register.confirmPasswordPlaceholder")}
                             className="pl-10 pr-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="new-password"
                           />
@@ -308,17 +308,17 @@ export default function Register() {
                   className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-medium py-2.5"
                   disabled={registerMutation.isPending}
                 >
-                  {registerMutation.isPending ? t("Creating account...") : t("Create Account")}
+                  {registerMutation.isPending ? t("auth.register.creating") : t("auth.register.createAccount")}
                 </Button>
               </form>
             </Form>
 
             <div className="text-center space-y-2">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {t("Already have an account?")}{" "}
+                {t("auth.register.hasAccount")}{" "}
                 <Link href="/login">
                   <Button variant="link" size="sm" className="text-blue-600 dark:text-blue-400 p-0 h-auto font-medium">
-                    {t("Sign in")}
+                    {t("auth.register.signIn")}
                   </Button>
                 </Link>
               </p>
@@ -331,15 +331,15 @@ export default function Register() {
           <div className="flex items-center justify-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
             <div className="flex items-center space-x-1">
               <Check className="w-3 h-3 text-green-500" />
-              <span>{t("Secure Encryption")}</span>
+              <span>{t("auth.register.secureEncryption")}</span>
             </div>
             <div className="flex items-center space-x-1">
               <Check className="w-3 h-3 text-green-500" />
-              <span>{t("Email Verification")}</span>
+              <span>{t("auth.register.emailVerification")}</span>
             </div>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400 text-center max-w-md mx-auto">
-            {t("Terms Notice")}
+            {t("auth.register.termsNotice")}
           </p>
         </div>
       </div>
