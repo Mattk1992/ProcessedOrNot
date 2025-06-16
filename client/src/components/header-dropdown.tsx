@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { ChevronDown, User, Settings, Info, HelpCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useLocation } from 'wouter';
 
 export default function HeaderDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useLanguage();
+  const [, setLocation] = useLocation();
 
   const menuItems = [
     {
       label: t('dropdown.about') || 'About',
       icon: <Info className="w-4 h-4" />,
       action: () => {
-        console.log('About clicked');
+        setLocation('/about');
       }
     },
     {
