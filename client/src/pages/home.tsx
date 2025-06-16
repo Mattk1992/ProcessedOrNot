@@ -98,9 +98,7 @@ export default function Home() {
               <div className="mt-12 fade-in" style={{animationDelay: '0.5s'}}>
                 <div className="glass-card p-8 rounded-3xl max-w-2xl mx-auto glow-effect">
                   <div className="text-center">
-                    <h3 className="md:text-2xl text-foreground mb-4 gradient-text font-semibold text-[21px]">
-                      Register or log in now to unlock the scanner's full potential and discover all the amazing features and benefits waiting for you!
-                    </h3>
+                    <h3 className="md:text-2xl text-foreground mb-4 gradient-text font-semibold text-[21px]">Log in or register to explore all the exciting features and benefits that await you!</h3>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
                       <button
                         onClick={() => window.location.href = '/register'}
