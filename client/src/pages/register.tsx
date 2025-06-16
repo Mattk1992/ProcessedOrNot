@@ -89,7 +89,7 @@ export default function Register() {
           <Link href="/">
             <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              {t("Back to Home")}
+              {t("auth.backToHome")}
             </Button>
           </Link>
         </div>
@@ -101,10 +101,10 @@ export default function Register() {
             </div>
             <div>
               <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
-                {t("Create Account")}
+                {t("auth.register.title")}
               </CardTitle>
               <CardDescription className="text-gray-600 dark:text-gray-400 mt-2">
-                {t("Join us to access advanced nutritional analysis and personalized features")}
+                {t("auth.register.subtitle")}
               </CardDescription>
             </div>
           </CardHeader>
@@ -120,13 +120,13 @@ export default function Register() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-gray-700 dark:text-gray-300">
-                          {t("First Name")}
+                          {t("auth.register.firstName")}
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             type="text"
-                            placeholder={t("Your first name")}
+                            placeholder={t("auth.register.firstNamePlaceholder")}
                             className="bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="given-name"
                           />
@@ -142,13 +142,13 @@ export default function Register() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-gray-700 dark:text-gray-300">
-                          {t("Last Name")}
+                          {t("auth.register.lastName")}
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             type="text"
-                            placeholder={t("Your last name")}
+                            placeholder={t("auth.register.lastNamePlaceholder")}
                             className="bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="family-name"
                           />
@@ -166,7 +166,7 @@ export default function Register() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 dark:text-gray-300">
-                        {t("Username")}
+                        {t("auth.register.username")}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -174,7 +174,7 @@ export default function Register() {
                           <Input
                             {...field}
                             type="text"
-                            placeholder={t("Choose a username")}
+                            placeholder={t("auth.register.usernamePlaceholder")}
                             className="pl-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="username"
                           />
@@ -192,7 +192,7 @@ export default function Register() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 dark:text-gray-300">
-                        {t("Email")}
+                        {t("auth.register.email")}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -200,7 +200,7 @@ export default function Register() {
                           <Input
                             {...field}
                             type="email"
-                            placeholder={t("your@email.com")}
+                            placeholder={t("auth.register.emailPlaceholder")}
                             className="pl-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="email"
                           />
@@ -218,7 +218,7 @@ export default function Register() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-gray-700 dark:text-gray-300">
-                        {t("Password")}
+                        {t("auth.register.password")}
                       </FormLabel>
                       <FormControl>
                         <div className="relative">
@@ -226,7 +226,7 @@ export default function Register() {
                           <Input
                             {...field}
                             type={showPassword ? "text" : "password"}
-                            placeholder={t("Create a secure password")}
+                            placeholder={t("auth.register.passwordPlaceholder")}
                             className="pl-10 pr-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                             autoComplete="new-password"
                           />
@@ -259,10 +259,10 @@ export default function Register() {
                           </div>
                           <p className="text-xs text-gray-600 dark:text-gray-400">
                             {passwordStrength <= 2
-                              ? t("Weak Password ")
+                              ? t("auth.register.passwordWeak")
                               : passwordStrength <= 3
-                              ? t("Medium Password")
-                              : t("Strong Password")}
+                              ? t("auth.register.passwordMedium")
+                              : t("auth.register.passwordStrong")}
                           </p>
                         </div>
                       )}
