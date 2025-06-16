@@ -298,7 +298,8 @@ export const translations: Record<Language, Record<string, string>> = {
     'social.download.success': 'Card Downloaded',
     'social.download.description': 'Shareable nutrition card saved to downloads',
     'social.download.error': 'Download Failed',
-    'social.download.error_description': 'Could not generate shareable card',
+    
+
 
     // Help Page
     'help.title': 'Help & Support',
@@ -388,13 +389,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'help.contact.description': 'If you have questions not covered in this guide, feel free to reach out for personalized support and assistance.',
     'help.contact.button': 'Contact Support',
 
-    // Authentication
+    // Authentication - Login Page
     'auth.backToHome': 'Back to Home',
-    'auth.securityNotice': 'Your information is protected with enterprise-grade encryption and security best practices.',
-    
-    // Login
-    'auth.login.title': 'Sign In',
-    'auth.login.subtitle': 'Access your account for personalized nutritional analysis',
+    'auth.securityNotice': 'Your data is protected with end-to-end encryption and industry-standard security measures.',
+    'auth.login.title': 'Welcome Back',
+    'auth.login.subtitle': 'Enter your credentials to access your account',
     'auth.login.usernameOrEmail': 'Username or Email',
     'auth.login.usernamePlaceholder': 'Enter your username or email',
     'auth.login.password': 'Password',
@@ -402,11 +401,11 @@ export const translations: Record<Language, Record<string, string>> = {
     'auth.login.forgotPassword': 'Forgot your password?',
     'auth.login.signIn': 'Sign In',
     'auth.login.loggingIn': 'Signing in...',
-    'auth.login.noAccount': "Don't have an account?",
+    'auth.login.noAccount': 'Don\'t have an account?',
     'auth.login.signUp': 'Sign up',
-    'auth.login.success': 'Signed In',
-    'auth.login.welcomeBack': 'Welcome back',
-    'auth.login.error': 'Sign In Error',
+    'auth.login.success': 'Login successful',
+    'auth.login.welcomeBack': 'Welcome back!',
+    'auth.login.error': 'Login failed',
     'auth.login.invalidCredentials': 'Invalid username or password',
     
     // Register
@@ -758,6 +757,25 @@ export const translations: Record<Language, Record<string, string>> = {
     'social.download.description': 'Tarjeta nutricional compartible guardada en descargas',
     'social.download.error': 'Error en Descarga',
     'social.download.error_description': 'No se pudo generar la tarjeta compartible',
+    
+    // Authentication - Login Page
+    'auth.backToHome': 'Volver al Inicio',
+    'auth.securityNotice': 'Tus datos están protegidos con cifrado de extremo a extremo y medidas de seguridad estándar de la industria.',
+    'auth.login.title': 'Bienvenido de Vuelta',
+    'auth.login.subtitle': 'Ingresa tus credenciales para acceder a tu cuenta',
+    'auth.login.usernameOrEmail': 'Usuario o Email',
+    'auth.login.usernamePlaceholder': 'Ingresa tu usuario o email',
+    'auth.login.password': 'Contraseña',
+    'auth.login.passwordPlaceholder': 'Ingresa tu contraseña',
+    'auth.login.forgotPassword': '¿Olvidaste tu contraseña?',
+    'auth.login.signIn': 'Iniciar Sesión',
+    'auth.login.loggingIn': 'Iniciando sesión...',
+    'auth.login.noAccount': '¿No tienes una cuenta?',
+    'auth.login.signUp': 'Registrarse',
+    'auth.login.success': 'Inicio de sesión exitoso',
+    'auth.login.welcomeBack': '¡Bienvenido de vuelta!',
+    'auth.login.error': 'Error de inicio de sesión',
+    'auth.login.invalidCredentials': 'Usuario o contraseña inválidos',
 
     // Help Page
     'help.title': 'Ayuda y Soporte',
