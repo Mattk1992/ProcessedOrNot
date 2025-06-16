@@ -73,6 +73,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'language.select': 'Select Language',
     'language.current': 'Current language',
     
+    // Header Dropdown
+    'dropdown.menu': 'Menu',
+    'dropdown.about': 'About',
+    'dropdown.help': 'Help',
+    'dropdown.settings': 'Settings',
+    'dropdown.github': 'GitHub',
+    'dropdown.version': 'Version',
+    
     // Header and Branding
     'brand.title': 'ProcessedOrNot Scanner',
     'brand.subtitle': 'For fast, simple, and advanced product analysis and processing detection',
@@ -314,6 +322,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'language.select': 'Seleccionar Idioma',
     'language.current': 'Idioma actual',
     
+    // Header Dropdown
+    'dropdown.menu': 'Menú',
+    'dropdown.about': 'Acerca de',
+    'dropdown.help': 'Ayuda',
+    'dropdown.settings': 'Configuración',
+    'dropdown.github': 'GitHub',
+    'dropdown.version': 'Versión',
+    
     // Header and Branding
     'brand.title': 'Escáner ProcessedOrNot',
     'brand.subtitle': 'Para análisis rápido, simple y avanzado de productos y detección de procesamiento',
@@ -554,6 +570,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'language.select': 'Sélectionner la Langue',
     'language.current': 'Langue actuelle',
     
+    // Header Dropdown
+    'dropdown.menu': 'Menu',
+    'dropdown.about': 'À propos',
+    'dropdown.help': 'Aide',
+    'dropdown.settings': 'Paramètres',
+    'dropdown.github': 'GitHub',
+    'dropdown.version': 'Version',
+    
     // Header and Branding
     'brand.title': 'Scanner ProcessedOrNot',
     'brand.subtitle': 'Pour une analyse de produits rapide, simple et avancée et la détection de traitement',
@@ -791,6 +815,14 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': 'Sprache Auswählen',
     'language.current': 'Aktuelle Sprache',
+    
+    // Header Dropdown
+    'dropdown.menu': 'Menü',
+    'dropdown.about': 'Über uns',
+    'dropdown.help': 'Hilfe',
+    'dropdown.settings': 'Einstellungen',
+    'dropdown.github': 'GitHub',
+    'dropdown.version': 'Version',
     
     // Header and Branding
     'brand.title': 'ProcessedOrNot Scanner',
@@ -1032,6 +1064,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'language.select': '选择语言',
     'language.current': '当前语言',
     
+    // Header Dropdown
+    'dropdown.menu': '菜单',
+    'dropdown.about': '关于',
+    'dropdown.help': '帮助',
+    'dropdown.settings': '设置',
+    'dropdown.github': 'GitHub',
+    'dropdown.version': '版本',
+    
     // Header and Branding
     'brand.title': 'ProcessedOrNot 扫描器',
     'brand.subtitle': '快速、简单、先进的产品分析和加工检测',
@@ -1266,6 +1306,14 @@ export const translations: Record<Language, Record<string, string>> = {
     'language.select': '言語を選択',
     'language.current': '現在の言語',
     
+    // Header Dropdown
+    'dropdown.menu': 'メニュー',
+    'dropdown.about': '概要',
+    'dropdown.help': 'ヘルプ',
+    'dropdown.settings': '設定',
+    'dropdown.github': 'GitHub',
+    'dropdown.version': 'バージョン',
+    
     // Header and Branding
     'brand.title': 'ProcessedOrNot スキャナー',
     'brand.subtitle': '迅速で簡単で高度な製品分析と加工検出',
@@ -1475,6 +1523,14 @@ export const translations: Record<Language, Record<string, string>> = {
     // Language
     'language.select': 'Taal Selecteren',
     'language.current': 'Huidige taal',
+    
+    // Header Dropdown
+    'dropdown.menu': 'Menu',
+    'dropdown.about': 'Over',
+    'dropdown.help': 'Help',
+    'dropdown.settings': 'Instellingen',
+    'dropdown.github': 'GitHub',
+    'dropdown.version': 'Versie',
     
     // Header and Branding
     'brand.title': 'ProcessedOrNot Scanner',

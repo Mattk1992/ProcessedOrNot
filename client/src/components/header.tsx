@@ -1,5 +1,6 @@
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 import LanguageSwitcher from "./language-switcher";
+import HeaderDropdown from "./header-dropdown";
 
 export default function Header() {
   return (
