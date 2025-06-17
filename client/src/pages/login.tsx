@@ -31,7 +31,8 @@ export default function Login() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginUser) => {
-      return await apiRequest("/api/auth/login", { method: "POST", body: data });
+      const response = await apiRequest("POST", "/api/auth/login", data);
+      return await response.json();
     },
     onSuccess: (data) => {
       toast({
@@ -183,7 +184,7 @@ export default function Login() {
         {/* Security Notice */}
         <div className="mt-6 text-center">
           <p className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-            {t("Terms Notice")}
+            {t("Your data is protected with end-to-end encryption")}
           </p>
         </div>
       </div>

@@ -131,26 +131,3 @@ export type User = typeof users.$inferSelect;
 
 // User Role Types
 export type UserRole = 'Admin' | 'Regular';
-
-// Search History table for tracking user searches
-export const searchHistory = pgTable("search_history", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  searchInput: text("search_input").notNull(),
-  searchType: text("search_type").notNull(), // 'barcode' or 'text'
-  productBarcode: text("product_barcode"),
-  productName: text("product_name"),
-  productBrand: text("product_brand"),
-  foundResult: boolean("found_result").notNull().default(false),
-  processingScore: integer("processing_score"),
-  dataSource: text("data_source"),
-  searchedAt: timestamp("searched_at").defaultNow(),
-});
-
-export const insertSearchHistorySchema = createInsertSchema(searchHistory).omit({
-  id: true,
-  searchedAt: true,
-});
-
-export type InsertSearchHistory = z.infer<typeof insertSearchHistorySchema>;
-export type SearchHistory = typeof searchHistory.$inferSelect;

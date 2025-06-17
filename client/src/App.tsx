@@ -12,7 +12,6 @@ import Help from "@/pages/help";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import Settings from "@/pages/settings";
-import SearchHistory from "@/pages/search-history";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 
@@ -25,7 +24,6 @@ function Router() {
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/settings" component={Settings} />
-      <Route path="/search-history" component={SearchHistory} />
       <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
