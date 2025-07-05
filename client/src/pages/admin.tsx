@@ -19,7 +19,7 @@ interface User {
   id: number;
   username: string;
   email: string;
-  role: string;
+  accountType: string;
   firstName?: string;
   lastName?: string;
   isEmailVerified: boolean;
@@ -53,13 +53,13 @@ export default function AdminPanel() {
   }, [isAuthenticated, user, setLocation]);
 
   // Fetch admin statistics
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<AdminStats>({
     queryKey: ["/api/admin/stats"],
     enabled: user?.accountType === 'Admin',
   });
 
   // Fetch all users
-  const { data: usersData } = useQuery({
+  const { data: usersData } = useQuery<{ users: User[] }>({
     queryKey: ["/api/admin/users"],
     enabled: user?.accountType === 'Admin',
   });
@@ -67,10 +67,7 @@ export default function AdminPanel() {
   // Update user account type mutation
   const updateAccountTypeMutation = useMutation({
     mutationFn: async ({ userId, accountType }: { userId: number; accountType: string }) => {
-      return apiRequest(`/api/admin/users/${userId}/role`, {
-        method: "PUT",
-        body: { accountType },
-      });
+      return apiRequest("PUT", `/api/admin/users/${userId}/role`, { accountType });
     },
     onSuccess: () => {
       toast({
@@ -248,36 +245,36 @@ export default function AdminPanel() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {users.map((user: User) => (
+                  {users.map((listUser: User) => (
                     <div
-                      key={user.id}
+                      key={listUser.id}
                       className="flex items-center justify-between p-4 border rounded-lg bg-white/50 dark:bg-gray-700/50"
                     >
                       <div className="flex items-center gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <h3 className="font-medium">{user.username}</h3>
+                            <h3 className="font-medium">{listUser.username}</h3>
                             <Badge
-                              variant={user.accountType === 'Admin' ? 'default' : 'secondary'}
-                              className={user.accountType === 'Admin' ? 'bg-blue-600' : ''}
+                              variant={listUser.accountType === 'Admin' ? 'default' : 'secondary'}
+                              className={listUser.accountType === 'Admin' ? 'bg-blue-600' : ''}
                             >
-                              {user.accountType === 'Admin' && <Crown className="h-3 w-3 mr-1" />}
-                              {user.accountType}
+                              {listUser.accountType === 'Admin' && <Crown className="h-3 w-3 mr-1" />}
+                              {listUser.accountType}
                             </Badge>
-                            {user.isEmailVerified ? (
+                            {listUser.isEmailVerified ? (
                               <UserCheck className="h-4 w-4 text-green-600" />
                             ) : (
                               <UserX className="h-4 w-4 text-red-600" />
                             )}
                           </div>
                           <p className="text-sm text-gray-600 dark:text-gray-300">
-                            {user.email}
+                            {listUser.email}
                           </p>
                           <p className="text-xs text-gray-500">
-                            Joined: {new Date(user.createdAt).toLocaleDateString()}
-                            {user.lastLoginAt && (
+                            Joined: {new Date(listUser.createdAt).toLocaleDateString()}
+                            {listUser.lastLoginAt && (
                               <span className="ml-2">
-                                Last login: {new Date(user.lastLoginAt).toLocaleDateString()}
+                                Last login: {new Date(listUser.lastLoginAt).toLocaleDateString()}
                               </span>
                             )}
                           </p>
@@ -286,8 +283,8 @@ export default function AdminPanel() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setSelectedUser(user)}
-                        disabled={user.id === user.id} // Can't modify own role
+                        onClick={() => setSelectedUser(listUser)}
+                        disabled={listUser.id === user?.id} // Can't modify own role
                       >
                         Manage
                       </Button>
