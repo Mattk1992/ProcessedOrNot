@@ -181,6 +181,7 @@ export default function Home() {
             <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
           </div>
         </div>
+
         
         {currentBarcode && (
           <div className="mt-8 sm:mt-12 slide-up">
