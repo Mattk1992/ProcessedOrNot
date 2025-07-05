@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
-import BarcodeScanner, { BarcodeScannerRef } from "@/components/barcode-scanner";
+import CameraSection from "@/components/camera-section";
+import ManualInput from "@/components/manual-input";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
 import HeaderDropdown from "@/components/header-dropdown";
@@ -13,24 +14,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 
-interface CameraControls {
-  startCamera: () => void;
-  stopCamera: () => void;
-  resetZoom: () => void;
-  restartCamera: () => void;
-  isCameraActive: boolean;
-  isScanning: boolean;
-  zoomLevel: number;
-  cameraError: string;
-}
-
 export default function Home() {
   const [currentBarcode, setCurrentBarcode] = useState<string>("");
   const [currentFilters, setCurrentFilters] = useState<{ includeBrands?: string[], excludeBrands?: string[] } | undefined>();
   const [isScanning, setIsScanning] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
-  const [cameraControls, setCameraControls] = useState<CameraControls | null>(null);
-  const barcodeScannerRef = useRef<BarcodeScannerRef>(null);
 
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -71,22 +59,6 @@ export default function Home() {
   const handleStartTutorial = () => {
     setShowTutorial(true);
   };
-
-  // Update camera controls from scanner ref
-  useEffect(() => {
-    const updateCameraControls = () => {
-      if (barcodeScannerRef.current) {
-        const controls = barcodeScannerRef.current.getCameraControls();
-        setCameraControls(controls);
-      }
-    };
-
-    // Update controls periodically to keep them fresh
-    updateCameraControls();
-    const interval = setInterval(updateCameraControls, 1000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   const handleProductFound = (product: any) => {
     // Don't show nutrition popup during tutorial
@@ -205,53 +177,12 @@ export default function Home() {
       </section>
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 pb-8 sm:pb-12">
-        {/* External Camera Controls - Accessible from Upper Hierarchy */}
-        {cameraControls && (
-          <div className="mb-6 p-4 bg-card/50 backdrop-blur-sm border border-border/20 rounded-2xl">
-            <h3 className="text-lg font-semibold mb-3 text-foreground">External Camera Controls</h3>
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={cameraControls.startCamera}
-                disabled={cameraControls.isCameraActive}
-                className="px-4 py-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
-              >
-                Start Camera
-              </button>
-              <button
-                onClick={cameraControls.stopCamera}
-                disabled={!cameraControls.isCameraActive}
-                className="px-4 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
-              >
-                Stop Camera
-              </button>
-              <button
-                onClick={cameraControls.resetZoom}
-                disabled={cameraControls.zoomLevel === 1 || !cameraControls.isCameraActive}
-                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white rounded-lg transition-colors"
-              >
-                Reset Zoom (Level: {cameraControls.zoomLevel})
-              </button>
-              <button
-                onClick={cameraControls.restartCamera}
-                className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
-              >
-                Restart Camera
-              </button>
-            </div>
-            <div className="mt-2 text-sm text-muted-foreground">
-              Status: {cameraControls.isCameraActive ? 'Active' : 'Inactive'} 
-              {cameraControls.isScanning && ' (Starting...)'} 
-              {cameraControls.cameraError && ` - Error: ${cameraControls.cameraError}`}
-            </div>
-          </div>
-        )}
-
         <div className="slide-up">
-          <BarcodeScanner 
-            ref={barcodeScannerRef}
-            onScan={handleScan} 
-            isLoading={isScanning} 
-          />
+          <CameraSection onScan={handleScan} isLoading={isScanning} />
+        </div>
+        
+        <div className="slide-up">
+          <ManualInput onScan={handleScan} isLoading={isScanning} />
         </div>
 
         
