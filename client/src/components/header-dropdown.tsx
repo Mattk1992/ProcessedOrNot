@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield } from 'lucide-react';
+import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
+import LanguageSwitcher from './language-switcher';
 
 export default function HeaderDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -74,7 +75,7 @@ export default function HeaderDropdown() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`group flex items-center space-x-2 sm:space-x-3 px-3 sm:px-5 py-2 sm:py-3 bg-gradient-to-r from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 rounded-xl transition-all duration-300 backdrop-blur-md border border-white/20 shadow-lg hover:shadow-xl hover:scale-105 dropdown-button-glow ${isOpen ? 'from-white/25 to-white/15 scale-105' : ''}`}
+        className={`group flex items-center space-x-1 sm:space-x-3 px-2 sm:px-5 py-2 sm:py-3 bg-gradient-to-r from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 rounded-xl transition-all duration-300 backdrop-blur-md border border-white/20 shadow-lg hover:shadow-xl hover:scale-105 dropdown-button-glow touch-action-manipulation ${isOpen ? 'from-white/25 to-white/15 scale-105' : ''}`}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
@@ -84,8 +85,7 @@ export default function HeaderDropdown() {
             <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
           )}
         </div>
-        {/* Hide username text on mobile, show only on sm and up */}
-        <span className="hidden sm:inline text-white text-sm font-semibold tracking-wide">
+        <span className="text-white text-xs sm:text-sm font-semibold tracking-wide hidden xs:inline">
           {isAuthenticated ? (user as any)?.username || 'User' : t('dropdown.menu') || 'Menu'}
         </span>
         <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-white/80 transition-all duration-300 ${isOpen ? 'rotate-180 text-white' : 'group-hover:text-white'}`} />
@@ -103,7 +103,7 @@ export default function HeaderDropdown() {
           />
           
           {/* Enhanced Dropdown Menu */}
-          <div className="absolute right-0 mt-3 w-64 sm:w-72 bg-gradient-to-br from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-800/90 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/50 z-20 overflow-hidden backdrop-blur-xl dropdown-menu-enhanced">
+          <div className="absolute right-0 mt-3 w-72 max-w-[calc(100vw-2rem)] sm:max-w-[18rem] mobile-dropdown bg-gradient-to-br from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-800/90 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/50 z-20 overflow-hidden backdrop-blur-xl dropdown-menu-enhanced">
             
             {/* Header with user info */}
             {isAuthenticated && (
@@ -128,6 +128,24 @@ export default function HeaderDropdown() {
             
             {/* Menu Items */}
             <div className="py-3">
+              {/* Language Switcher for mobile */}
+              <div className="px-6 py-3 sm:hidden">
+                <div className="flex items-center space-x-4 relative z-10">
+                  <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                    <Globe className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
+                      Language
+                    </span>
+                    <LanguageSwitcher />
+                  </div>
+                </div>
+              </div>
+              
+              {/* Divider for mobile */}
+              <div className="sm:hidden border-t border-gray-200 dark:border-gray-700 mx-6 my-2"></div>
+              
               {menuItems.map((item, index) => (
                 <button
                   key={index}

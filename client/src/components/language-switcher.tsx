@@ -42,14 +42,13 @@ export default function LanguageSwitcher() {
         <Button 
           variant="outline" 
           size="sm" 
-          className="gap-1 sm:gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg group overflow-hidden relative language-selector-glow px-2 sm:px-3"
+          className="gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg group overflow-hidden relative language-selector-glow"
         >
-          <Globe className="h-3 w-3 sm:h-4 sm:w-4 transition-transform duration-300 group-hover:rotate-12" />
-          {/* Always show flag on mobile, name on larger screens */}
-          <span className={`text-lg sm:text-xl transition-transform duration-300 group-hover:scale-110 flag-transition language-flag-current ${justChanged ? 'language-flag-bounce' : ''}`}>
+          <Globe className="h-4 w-4 transition-transform duration-300 group-hover:rotate-12" />
+          <span className={`hidden sm:inline text-xl transition-transform duration-300 group-hover:scale-110 flag-transition language-flag-current ${justChanged ? 'language-flag-bounce' : ''}`}>
             {languages[language].flag}
           </span>
-          <span className="hidden lg:inline transition-all duration-300 group-hover:text-primary text-sm">
+          <span className="hidden md:inline transition-all duration-300 group-hover:text-primary">
             {languages[language].name}
           </span>
           {justChanged && (
