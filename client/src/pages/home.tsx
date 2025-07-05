@@ -47,6 +47,13 @@ export default function Home() {
     setShowTutorial(true);
   };
 
+  const handleProductFound = (product: any) => {
+    // Don't show nutrition popup during tutorial
+    if (showTutorial) return;
+    
+    console.log('Product found:', product.productName);
+  };
+
   const handleScan = async (input: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => {
     setIsScanning(true);
     setCurrentBarcode(input);
@@ -166,7 +173,11 @@ export default function Home() {
           <div className="mt-8 sm:mt-12 slide-up">
             <div className="gradient-card rounded-3xl p-1 glow-effect">
               <div className="bg-background rounded-3xl p-4 sm:p-6">
-                <ProductResults barcode={currentBarcode} filters={currentFilters} />
+                <ProductResults 
+                  barcode={currentBarcode} 
+                  filters={currentFilters} 
+                  onProductFound={handleProductFound}
+                />
               </div>
             </div>
           </div>

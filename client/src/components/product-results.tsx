@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,16 +10,19 @@ import ManualProductForm from "./manual-product-form";
 import NutritionSpotlight from "./nutrition-spotlight";
 import FunFacts from "./fun-facts";
 import SocialShare from "./social-share";
+import NutritionFactPopup from "./nutrition-fact-popup";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
   barcode: string;
   filters?: { includeBrands?: string[], excludeBrands?: string[] };
+  onProductFound?: (product: Product) => void;
 }
 
-export default function ProductResults({ barcode, filters }: ProductResultsProps) {
+export default function ProductResults({ barcode, filters, onProductFound }: ProductResultsProps) {
   const [showManualForm, setShowManualForm] = useState(false);
+  const [showNutritionPopup, setShowNutritionPopup] = useState(false);
   const { t, language } = useLanguage();
 
   // Determine if this is a text search with filters
@@ -74,6 +77,14 @@ export default function ProductResults({ barcode, filters }: ProductResultsProps
     },
     enabled: !!product,
   });
+
+  // Trigger nutrition popup when product is found
+  useEffect(() => {
+    if (product && !isLoadingProduct && !productError) {
+      setShowNutritionPopup(true);
+      onProductFound?.(product);
+    }
+  }, [product, isLoadingProduct, productError, onProductFound]);
 
   if (isLoadingProduct) {
     return (
@@ -251,12 +262,12 @@ export default function ProductResults({ barcode, filters }: ProductResultsProps
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 slide-up">
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-primary/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
-                      {(() => {
+{(() => {
                         const nutrients = product.nutriments as Record<string, any>;
                         return nutrients?.energy_100g ? String(nutrients.energy_100g) : "N/A";
                       })()}
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.energy'))}</div>
+                    <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.energy')}</div>
                   </div>
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
@@ -705,6 +716,16 @@ export default function ProductResults({ barcode, filters }: ProductResultsProps
           </CardContent>
         </Card>
       )}
+
+      {/* Nutrition Fact Popup */}
+      <NutritionFactPopup
+        productName={product?.productName || ''}
+        nutriments={product?.nutriments as Record<string, any> || null}
+        processingScore={analysis?.score || 0}
+        isVisible={showNutritionPopup}
+        onClose={() => setShowNutritionPopup(false)}
+        onComplete={() => setShowNutritionPopup(false)}
+      />
     </div>
   );
 }

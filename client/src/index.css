@@ -848,6 +848,41 @@
     animation: tutorialFadeIn 0.3s ease-out forwards;
   }
 
+  /* Nutrition Fact Popup Animations */
+  .nutrition-fact-popup {
+    animation: popupSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+
+  .fact-icon-bounce {
+    animation: iconBounce 0.6s ease-out forwards;
+  }
+
+  @keyframes popupSlideIn {
+    0% {
+      opacity: 0;
+      transform: translateY(30px) scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes iconBounce {
+    0% {
+      opacity: 0;
+      transform: scale(0) rotate(-180deg);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.2) rotate(-90deg);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+  }
+
   .tutorial-card {
     animation: tutorialSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
