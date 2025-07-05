@@ -382,9 +382,8 @@ export default function ProductResults({ barcode, filters }: ProductResultsProps
         </Card>
       )}
 
-      {/* Glycemic Index Card */}
-      {(product.glycemicIndex !== null && product.glycemicIndex !== undefined) && (
-        <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
+      {/* Glycemic Index Card - Always show */}
+      <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center space-x-3 mb-8">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
@@ -400,48 +399,51 @@ export default function ProductResults({ barcode, filters }: ProductResultsProps
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 text-center border border-border/20">
                   <div className="text-3xl font-bold text-foreground mb-2">
-                    {product.glycemicIndex}
+                    {product.glycemicIndex !== null && product.glycemicIndex !== undefined ? product.glycemicIndex : '?'}
                   </div>
                   <div className="text-sm text-muted-foreground font-medium">{String(t('glycemic.index.gi'))}</div>
                   <div className={`text-xs font-semibold mt-2 px-2 py-1 rounded-full ${
-                    product.glycemicIndex <= 55 ? 'bg-emerald-100 text-emerald-800' : 
-                    product.glycemicIndex <= 70 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                    product.glycemicIndex !== null && product.glycemicIndex !== undefined ? (
+                      product.glycemicIndex <= 55 ? 'bg-emerald-100 text-emerald-800' : 
+                      product.glycemicIndex <= 70 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                    ) : 'bg-gray-100 text-gray-800'
                   }`}>
-                    {product.glycemicIndex <= 55 ? String(t('glycemic.index.low')) : 
-                     product.glycemicIndex <= 70 ? String(t('glycemic.index.medium')) : String(t('glycemic.index.high'))}
+                    {product.glycemicIndex !== null && product.glycemicIndex !== undefined ? (
+                      product.glycemicIndex <= 55 ? String(t('glycemic.index.low')) : 
+                      product.glycemicIndex <= 70 ? String(t('glycemic.index.medium')) : String(t('glycemic.index.high'))
+                    ) : 'Analyzing...'}
                   </div>
                 </div>
                 
-                {(product.glycemicLoad !== null && product.glycemicLoad !== undefined) && (
-                  <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 text-center border border-border/20">
-                    <div className="text-3xl font-bold text-foreground mb-2">
-                      {product.glycemicLoad}
-                    </div>
-                    <div className="text-sm text-muted-foreground font-medium">{String(t('glycemic.index.gl'))}</div>
-                    <div className={`text-xs font-semibold mt-2 px-2 py-1 rounded-full ${
+                <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 text-center border border-border/20">
+                  <div className="text-3xl font-bold text-foreground mb-2">
+                    {product.glycemicLoad !== null && product.glycemicLoad !== undefined ? product.glycemicLoad : '?'}
+                  </div>
+                  <div className="text-sm text-muted-foreground font-medium">{String(t('glycemic.index.gl'))}</div>
+                  <div className={`text-xs font-semibold mt-2 px-2 py-1 rounded-full ${
+                    product.glycemicLoad !== null && product.glycemicLoad !== undefined ? (
                       product.glycemicLoad <= 10 ? 'bg-emerald-100 text-emerald-800' : 
                       product.glycemicLoad <= 20 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {product.glycemicLoad <= 10 ? String(t('glycemic.index.low')) : 
-                       product.glycemicLoad <= 20 ? String(t('glycemic.index.medium')) : String(t('glycemic.index.high'))}
-                    </div>
+                    ) : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {product.glycemicLoad !== null && product.glycemicLoad !== undefined ? (
+                      product.glycemicLoad <= 10 ? String(t('glycemic.index.low')) : 
+                      product.glycemicLoad <= 20 ? String(t('glycemic.index.medium')) : String(t('glycemic.index.high'))
+                    ) : 'Analyzing...'}
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Explanation */}
-              {product.glycemicExplanation && (
-                <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
-                  <h4 className="text-lg font-semibold text-foreground mb-4">{String(t('glycemic.index.explanation'))}</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    {product.glycemicExplanation}
-                  </p>
-                </div>
-              )}
+              <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+                <h4 className="text-lg font-semibold text-foreground mb-4">{String(t('glycemic.index.explanation'))}</h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {product.glycemicExplanation || 'Glycemic index analysis is being calculated. This shows how the food affects blood sugar levels.'}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
-      )}
 
       {/* NutriBot Insights Card */}
       {nutriBotInsight && typeof nutriBotInsight === 'string' && (

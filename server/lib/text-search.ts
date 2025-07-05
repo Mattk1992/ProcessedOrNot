@@ -183,22 +183,22 @@ Provide realistic nutritional values based on typical products of this type. Thi
         console.error("Failed to analyze text search ingredients:", error);
         processingExplanation = "Unable to analyze ingredients at this time";
       }
+    }
 
-      // Analyze glycemic index if we have nutrition data (ingredients not required)
-      if (searchResult.nutriments) {
-        try {
-          const glycemicAnalysis = await analyzeGlycemicIndex(
-            searchResult.ingredientsText || "",
-            searchResult.productName || productName,
-            searchResult.nutriments
-          );
-          glycemicIndex = glycemicAnalysis.glycemicIndex;
-          glycemicLoad = glycemicAnalysis.glycemicLoad;
-          glycemicExplanation = glycemicAnalysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze glycemic index:", error);
-          glycemicExplanation = "Unable to analyze glycemic impact at this time";
-        }
+    // ALWAYS analyze glycemic index if we have nutrition data (ingredients not required)
+    if (searchResult.nutriments) {
+      try {
+        const glycemicAnalysis = await analyzeGlycemicIndex(
+          searchResult.ingredientsText || "",
+          searchResult.productName || productName,
+          searchResult.nutriments
+        );
+        glycemicIndex = glycemicAnalysis.glycemicIndex;
+        glycemicLoad = glycemicAnalysis.glycemicLoad;
+        glycemicExplanation = glycemicAnalysis.explanation;
+      } catch (error) {
+        console.error("Failed to analyze glycemic index:", error);
+        glycemicExplanation = "Unable to analyze glycemic impact at this time";
       }
     } else {
       // If no ingredients found, try to get them separately
