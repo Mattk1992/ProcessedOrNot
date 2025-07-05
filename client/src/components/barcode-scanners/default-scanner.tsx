@@ -17,23 +17,33 @@ export function DefaultScanner({ onScan, onClose, isActive }: DefaultScannerProp
   const [zoomLevel, setZoomLevel] = useState(1);
   const [maxZoom, setMaxZoom] = useState(3);
   const [minZoom, setMinZoom] = useState(1);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
     if (isActive) {
-      // Add a small delay to ensure the video element is rendered
-      const timer = setTimeout(() => {
+      // Use multiple checks to ensure video element is ready
+      let attempts = 0;
+      const maxAttempts = 10;
+      
+      const checkAndStart = () => {
+        attempts++;
+        
         if (videoRef.current) {
           startScanning();
+        } else if (attempts < maxAttempts) {
+          setTimeout(checkAndStart, 100 * attempts); // Increasing delay
         } else {
           setError("Camera interface failed to load. Please try again.");
         }
-      }, 100);
+      };
+      
+      // Start checking after initial render
+      setTimeout(checkAndStart, 50);
       
       return () => {
-        clearTimeout(timer);
         cleanup();
       };
     }
@@ -172,6 +182,7 @@ export function DefaultScanner({ onScan, onClose, isActive }: DefaultScannerProp
           autoPlay
           playsInline
           muted
+          onLoadedMetadata={() => setIsVideoReady(true)}
         />
         {isScanning && (
           <div className="absolute inset-0 flex items-center justify-center">
