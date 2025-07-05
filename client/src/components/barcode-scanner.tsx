@@ -71,45 +71,68 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   };
 
   const handleZoomIn = useCallback(async () => {
-    if (zoomLevel < maxZoom && streamRef.current) {
+    if (zoomLevel < maxZoom) {
       const newZoom = Math.min(zoomLevel + 0.5, maxZoom);
       setZoomLevel(newZoom);
       
-      const videoTrack = streamRef.current.getVideoTracks()[0];
-      if (videoTrack && 'applyConstraints' in videoTrack) {
-        try {
-          await videoTrack.applyConstraints({
-            advanced: [{ zoom: newZoom } as any]
-          });
-        } catch (error) {
-          console.warn('Zoom not supported:', error);
+      // Apply CSS transform for zoom since camera constraints have limited support
+      if (videoRef.current) {
+        videoRef.current.style.transform = `scale(${newZoom})`;
+      }
+      
+      // Try to apply camera zoom constraint as fallback
+      if (streamRef.current) {
+        const videoTrack = streamRef.current.getVideoTracks()[0];
+        if (videoTrack && 'applyConstraints' in videoTrack) {
+          try {
+            await videoTrack.applyConstraints({
+              advanced: [{ zoom: newZoom } as any]
+            });
+          } catch (error) {
+            // CSS zoom will handle it if camera zoom is not supported
+            console.log('Using CSS zoom as camera zoom is not supported');
+          }
         }
       }
     }
   }, [zoomLevel, maxZoom]);
 
   const handleZoomOut = useCallback(async () => {
-    if (zoomLevel > minZoom && streamRef.current) {
+    if (zoomLevel > minZoom) {
       const newZoom = Math.max(zoomLevel - 0.5, minZoom);
       setZoomLevel(newZoom);
       
-      const videoTrack = streamRef.current.getVideoTracks()[0];
-      if (videoTrack && 'applyConstraints' in videoTrack) {
-        try {
-          await videoTrack.applyConstraints({
-            advanced: [{ zoom: newZoom } as any]
-          });
-        } catch (error) {
-          console.warn('Zoom not supported:', error);
+      // Apply CSS transform for zoom
+      if (videoRef.current) {
+        videoRef.current.style.transform = `scale(${newZoom})`;
+      }
+      
+      // Try to apply camera zoom constraint as fallback
+      if (streamRef.current) {
+        const videoTrack = streamRef.current.getVideoTracks()[0];
+        if (videoTrack && 'applyConstraints' in videoTrack) {
+          try {
+            await videoTrack.applyConstraints({
+              advanced: [{ zoom: newZoom } as any]
+            });
+          } catch (error) {
+            console.log('Using CSS zoom as camera zoom is not supported');
+          }
         }
       }
     }
   }, [zoomLevel, minZoom]);
 
   const resetZoom = useCallback(async () => {
+    setZoomLevel(1);
+    
+    // Reset CSS transform
+    if (videoRef.current) {
+      videoRef.current.style.transform = 'scale(1)';
+    }
+    
+    // Try to reset camera zoom constraint
     if (streamRef.current) {
-      setZoomLevel(1);
-      
       const videoTrack = streamRef.current.getVideoTracks()[0];
       if (videoTrack && 'applyConstraints' in videoTrack) {
         try {
@@ -117,7 +140,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
             advanced: [{ zoom: 1 } as any]
           });
         } catch (error) {
-          console.warn('Zoom reset not supported:', error);
+          console.log('Using CSS zoom reset as camera zoom is not supported');
         }
       }
     }
@@ -291,7 +314,8 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
               <div className="relative bg-black rounded-3xl overflow-hidden shadow-2xl glow-effect">
                 <video
                   ref={videoRef}
-                  className="w-full h-80 sm:h-80 mobile-camera-height object-cover"
+                  className="w-full h-80 sm:h-80 mobile-camera-height object-cover transition-transform duration-300 ease-in-out"
+                  style={{ transformOrigin: 'center center' }}
                   autoPlay
                   playsInline
                   muted
