@@ -1020,6 +1020,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Debug endpoint for glycemic index testing
+  app.post("/api/debug/glycemic", async (req, res) => {
+    try {
+      const { ingredientsText, productName, nutriments } = req.body;
+      
+      if (!ingredientsText && !productName && !nutriments) {
+        return res.status(400).json({ error: "Need at least one of: ingredientsText, productName, or nutriments" });
+      }
+
+      const glycemicAnalysis = await analyzeGlycemicIndex(
+        ingredientsText || "",
+        productName || "Test Product",
+        nutriments || {}
+      );
+
+      res.json({
+        success: true,
+        analysis: glycemicAnalysis,
+        input: { ingredientsText, productName, nutriments }
+      });
+    } catch (error) {
+      console.error("Glycemic index debug error:", error);
+      res.status(500).json({ 
+        error: "Failed to analyze glycemic index", 
+        details: error.message 
+      });
+    }
+  });
+
   // User settings routes (requires authentication)
   app.get("/api/user/settings", async (req, res) => {
     try {
