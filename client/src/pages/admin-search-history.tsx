@@ -195,7 +195,7 @@ export default function AdminSearchHistory() {
     refetchStats();
   };
 
-  if (!isAuthenticated || (user as any)?.role !== 'Admin') {
+  if (!isAuthenticated || (user as any)?.accountType !== 'Admin') {
     return null;
   }
 

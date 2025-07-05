@@ -11,6 +11,8 @@ import About from "@/pages/about";
 import Help from "@/pages/help";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
+import ForgotPassword from "@/pages/forgot-password";
+import ResetPassword from "@/pages/reset-password";
 import Settings from "@/pages/settings";
 import Admin from "@/pages/admin";
 import AdminSearchHistory from "@/pages/admin-search-history";
@@ -24,6 +26,8 @@ function Router() {
       <Route path="/help" component={Help} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/forgot-password" component={ForgotPassword} />
+      <Route path="/reset-password" component={ResetPassword} />
       <Route path="/settings" component={Settings} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin-search-history" component={AdminSearchHistory} />
