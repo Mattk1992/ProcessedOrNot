@@ -201,7 +201,7 @@ export default function Home() {
       )}
       
       {/* Footer */}
-      <footer className="border-t border-border/50 mt-8 sm:mt-16 bg-gradient-to-r from-background/80 to-background/90 backdrop-blur-sm">
+      <footer className="hidden md:block border-t border-border/50 mt-8 sm:mt-16 bg-gradient-to-r from-background/80 to-background/90 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
             {/* About Section */}
