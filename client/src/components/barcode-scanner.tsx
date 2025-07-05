@@ -237,13 +237,15 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
       setIsScanning(false);
 
-      // Configure camera constraints for better autofocus and quality
+      // Configure camera constraints for better short-range autofocus and quality
       const constraints: MediaStreamConstraints = {
         video: {
           deviceId: { exact: selectedDeviceId },
-          width: { ideal: 1920, min: 640 },
-          height: { ideal: 1080, min: 480 },
+          width: { ideal: 1920, min: 1280 },
+          height: { ideal: 1080, min: 720 },
           facingMode: { ideal: 'environment' },
+          frameRate: { ideal: 30, min: 15 },
+          aspectRatio: { ideal: 16/9 },
         }
       };
 
@@ -257,14 +259,20 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         const videoTrack = stream.getVideoTracks()[0];
         if (videoTrack && 'applyConstraints' in videoTrack) {
           try {
-            // Apply enhanced camera settings for better autofocus (short-range optimized)
+            // Apply enhanced camera settings for better short-range autofocus and quality
             const advancedConstraints: any = {
               advanced: [{
                 focusMode: 'continuous',
-                focusDistance: 0.1, // Optimized for short-range barcode scanning
+                focusDistance: 0.05, // Very close focus for short-range barcode scanning
                 whiteBalanceMode: 'auto',
                 exposureMode: 'auto',
+                exposureCompensation: 0.2, // Slightly brighter exposure for better barcode contrast
+                iso: { ideal: 100, max: 200 }, // Lower ISO for sharper images
+                sharpness: { ideal: 100 }, // Maximum sharpness for barcode details
+                contrast: { ideal: 120 }, // Increased contrast for better barcode edge detection
+                saturation: { ideal: 80 }, // Reduced saturation to focus on luminance
                 autoFocus: true,
+                torch: false, // Disable flash initially
               }]
             };
             await videoTrack.applyConstraints(advancedConstraints);
@@ -311,13 +319,15 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           codeReaderRef.current.timeBetweenDecodingAttempts = 300;
         }
         
-        // Fallback to basic ZXing camera initialization with short-range focus
+        // Fallback camera initialization with enhanced short-range focus and quality
         const fallbackStream = await navigator.mediaDevices.getUserMedia({
           video: {
             deviceId: { exact: selectedDeviceId },
-            width: { ideal: 1920, min: 640 },
-            height: { ideal: 1080, min: 480 },
+            width: { ideal: 1920, min: 1280 },
+            height: { ideal: 1080, min: 720 },
             facingMode: { ideal: 'environment' },
+            frameRate: { ideal: 30, min: 15 },
+            aspectRatio: { ideal: 16/9 },
           }
         });
         
@@ -331,7 +341,15 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
             await fallbackVideoTrack.applyConstraints({
               advanced: [{
                 focusMode: 'continuous',
-                focusDistance: 0.1, // Short-range focus for fallback
+                focusDistance: 0.05, // Very close focus for short-range barcode scanning
+                whiteBalanceMode: 'auto',
+                exposureMode: 'auto',
+                exposureCompensation: 0.2, // Slightly brighter exposure
+                iso: { ideal: 100, max: 200 }, // Lower ISO for sharper images
+                sharpness: { ideal: 100 }, // Maximum sharpness
+                contrast: { ideal: 120 }, // Increased contrast
+                saturation: { ideal: 80 }, // Reduced saturation
+                autoFocus: true,
               } as any]
             });
           } catch (fallbackConstraintError) {
