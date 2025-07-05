@@ -66,6 +66,7 @@ export interface IStorage {
   getRecentSearchHistory(limit?: number): Promise<SearchHistory[]>;
   createSearchHistoryWithResult(searchInput: string, searchInputType: string, product?: Product | null, error?: string, lookupSource?: string): Promise<SearchHistory>;
   clearAllSearchHistory(): Promise<void>;
+  removeDuplicateSearchHistory(): Promise<{ removedCount: number; message: string }>;
 
   // Admin settings methods
   getAdminSetting(settingKey: string): Promise<AdminSetting | undefined>;
@@ -716,6 +717,53 @@ export class DatabaseStorage implements IStorage {
 
   async clearAllSearchHistory(): Promise<void> {
     await db.delete(searchHistory);
+  }
+
+  async removeDuplicateSearchHistory(): Promise<{ removedCount: number; message: string }> {
+    try {
+      // First, get all unique search inputs with their earliest entries
+      const uniqueEntries = await db
+        .select({
+          searchInput: searchHistory.searchInput,
+          minId: sql<number>`MIN(${searchHistory.id})`.as('minId')
+        })
+        .from(searchHistory)
+        .groupBy(searchHistory.searchInput);
+
+      // Get all IDs of entries to keep (the earliest entry for each unique search input)
+      const idsToKeep = uniqueEntries.map(entry => entry.minId);
+
+      // Count how many duplicates we'll remove
+      const duplicateCountResult = await db
+        .select({ count: sql<number>`count(*)`.as('count') })
+        .from(searchHistory)
+        .where(sql`${searchHistory.id} NOT IN (${sql.join(idsToKeep.map(id => sql`${id}`), sql`, `)})`);
+
+      const duplicateCount = duplicateCountResult[0]?.count || 0;
+
+      if (duplicateCount === 0) {
+        return {
+          removedCount: 0,
+          message: "No duplicate entries found in search history"
+        };
+      }
+
+      // Delete all entries except the ones we want to keep
+      const deleteResult = await db
+        .delete(searchHistory)
+        .where(sql`${searchHistory.id} NOT IN (${sql.join(idsToKeep.map(id => sql`${id}`), sql`, `)})`);
+
+      const removedCount = deleteResult.rowCount ?? 0;
+
+      return {
+        removedCount,
+        message: `Successfully removed ${removedCount} duplicate entries from search history. Kept ${uniqueEntries.length} unique entries.`
+      };
+
+    } catch (error) {
+      console.error("Error removing duplicate search history entries:", error);
+      throw new Error("Failed to remove duplicate search history entries");
+    }
   }
 }
 

@@ -1008,6 +1008,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Remove duplicate search history entries
+  app.post("/api/admin/search-history/remove-duplicates", requireAuth, async (req: any, res) => {
+    try {
+      const currentUser = await storage.getUserById(req.session.userId!);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const result = await storage.removeDuplicateSearchHistory();
+      res.json(result);
+    } catch (error) {
+      console.error("Error removing duplicate search history entries:", error);
+      res.status(500).json({ message: "Failed to remove duplicate entries" });
+    }
+  });
+
   app.get("/api/admin/search-history/export", requireAuth, async (req: any, res) => {
     try {
       const currentUser = await storage.getUserById(req.session.userId!);

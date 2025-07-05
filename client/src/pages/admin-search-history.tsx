@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Search, Calendar, TrendingUp, BarChart3, Filter, Download, RefreshCw } from "lucide-react";
+import { Search, Calendar, TrendingUp, BarChart3, Filter, Download, RefreshCw, Copy } from "lucide-react";
 
 type SearchHistoryItem = {
   id: number;
@@ -106,6 +106,37 @@ export default function AdminSearchHistory() {
     },
   });
 
+  // Remove duplicate search history mutation
+  const removeDuplicatesMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch("/api/admin/search-history/remove-duplicates", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error("Failed to remove duplicates");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/search-history"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/search-history/stats"] });
+      toast({
+        title: "Success",
+        description: data.message || "Duplicate entries removed successfully",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: "Failed to remove duplicate entries: " + error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Export search history mutation
   const exportHistoryMutation = useMutation({
     mutationFn: async () => {
@@ -186,6 +217,15 @@ export default function AdminSearchHistory() {
           >
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
+          </Button>
+          <Button
+            onClick={() => removeDuplicatesMutation.mutate()}
+            disabled={removeDuplicatesMutation.isPending}
+            variant="outline"
+            size="sm"
+          >
+            <Copy className="w-4 h-4 mr-2" />
+            Remove Duplicates
           </Button>
           <Button
             onClick={() => exportHistoryMutation.mutate()}
@@ -409,6 +449,15 @@ export default function AdminSearchHistory() {
                     <SelectItem value="failed">Failed</SelectItem>
                   </SelectContent>
                 </Select>
+                <Button
+                  onClick={() => removeDuplicatesMutation.mutate()}
+                  disabled={removeDuplicatesMutation.isPending}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Copy className="w-4 h-4 mr-2" />
+                  Remove Duplicates
+                </Button>
                 <Button
                   onClick={() => clearHistoryMutation.mutate()}
                   disabled={clearHistoryMutation.isPending}
