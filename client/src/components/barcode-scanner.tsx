@@ -192,7 +192,6 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   autoPlay
                   playsInline
                   muted
-                  style={{ transform: 'scaleX(-1)' }}
                 />
                 {isScanning && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
