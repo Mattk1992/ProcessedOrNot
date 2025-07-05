@@ -10,6 +10,11 @@ interface ProductSearchResult {
   error?: string;
 }
 
+interface SearchFilter {
+  includeBrands?: string[];
+  excludeBrands?: string[];
+}
+
 export function isBarcode(input: string): boolean {
   // Remove any spaces and check if it's purely numeric
   const cleaned = input.replace(/\s/g, '');
@@ -26,12 +31,21 @@ export function isBarcode(input: string): boolean {
   return barcodePatterns.some(pattern => pattern.test(cleaned));
 }
 
-export async function searchProductByText(productName: string): Promise<ProductSearchResult> {
+export async function searchProductByText(productName: string, filters?: SearchFilter): Promise<ProductSearchResult> {
   try {
-    console.log(`Starting text search for product: ${productName}`);
+    console.log(`Starting text search for product: ${productName}`, filters ? `with filters: ${JSON.stringify(filters)}` : '');
+
+    // Build filter instructions
+    let filterInstructions = '';
+    if (filters?.includeBrands && filters.includeBrands.length > 0) {
+      filterInstructions += `\n\nIMPORTANT: Only include products from these brands: ${filters.includeBrands.join(', ')}`;
+    }
+    if (filters?.excludeBrands && filters.excludeBrands.length > 0) {
+      filterInstructions += `\n\nIMPORTANT: Exclude products from these brands: ${filters.excludeBrands.join(', ')}`;
+    }
 
     // Use OpenAI to search for comprehensive product information
-    const searchPrompt = `Search for detailed information about the product: "${productName}"
+    const searchPrompt = `Search for detailed information about the product: "${productName}"${filterInstructions}
 
 Please provide comprehensive information in JSON format:
 {
@@ -76,6 +90,39 @@ Focus on finding real, accurate product information including ingredients and nu
         source: 'text-search',
         error: `Could not find detailed information for "${productName}". Try scanning a barcode or being more specific.`
       };
+    }
+
+    // Apply brand filtering if specified
+    if (filters && searchResult.brands) {
+      const productBrand = searchResult.brands.toLowerCase();
+      
+      // Check exclude filters
+      if (filters.excludeBrands && filters.excludeBrands.length > 0) {
+        const isExcluded = filters.excludeBrands.some(brand => 
+          productBrand.includes(brand.toLowerCase()) || brand.toLowerCase().includes(productBrand)
+        );
+        if (isExcluded) {
+          return {
+            product: null,
+            source: 'text-search',
+            error: `Product from brand "${searchResult.brands}" is excluded by filter settings.`
+          };
+        }
+      }
+      
+      // Check include filters
+      if (filters.includeBrands && filters.includeBrands.length > 0) {
+        const isIncluded = filters.includeBrands.some(brand => 
+          productBrand.includes(brand.toLowerCase()) || brand.toLowerCase().includes(productBrand)
+        );
+        if (!isIncluded) {
+          return {
+            product: null,
+            source: 'text-search',
+            error: `Product from brand "${searchResult.brands}" is not included in filter settings.`
+          };
+        }
+      }
     }
 
     // Generate a unique identifier for text-based searches

@@ -22,7 +22,7 @@ interface ProductLookupResult {
   error?: string;
 }
 
-export async function smartProductLookup(input: string): Promise<ProductLookupResult> {
+export async function smartProductLookup(input: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }): Promise<ProductLookupResult> {
   console.log(`Starting smart lookup for input: ${input}`);
 
   // Check if input is a barcode or text
@@ -31,7 +31,7 @@ export async function smartProductLookup(input: string): Promise<ProductLookupRe
     return cascadingProductLookup(input);
   } else {
     console.log('Input detected as text, using text search');
-    return searchProductByText(input);
+    return searchProductByText(input, filters);
   }
 }
 

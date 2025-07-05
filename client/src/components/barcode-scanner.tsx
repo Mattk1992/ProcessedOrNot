@@ -6,10 +6,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Search, Loader2, Camera, X, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
+import SearchFilter from "./search-filter";
 
 interface BarcodeScannerProps {
-  onScan: (barcode: string) => void;
+  onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
   isLoading?: boolean;
+}
+
+interface SearchFilters {
+  includeBrands: string[];
+  excludeBrands: string[];
 }
 
 const sampleProducts = [
@@ -30,20 +36,38 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   const [zoomLevel, setZoomLevel] = useState(1);
   const [maxZoom, setMaxZoom] = useState(3);
   const [minZoom, setMinZoom] = useState(1);
+  const [filters, setFilters] = useState<SearchFilters>({
+    includeBrands: [],
+    excludeBrands: []
+  });
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
+  // Check if the input is likely a text search (contains non-numeric characters)
+  const isTextSearch = barcode.trim().length > 0 && !/^[0-9\s]*$/.test(barcode.trim());
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (barcode.trim()) {
-      onScan(barcode.trim());
+      if (isTextSearch) {
+        // For text searches, include filters
+        onScan(barcode.trim(), filters);
+      } else {
+        // For barcode searches, no filters needed
+        onScan(barcode.trim());
+      }
     }
   };
 
   const handleSampleClick = (sampleBarcode: string) => {
     setBarcode(sampleBarcode);
-    onScan(sampleBarcode);
+    const isTextSample = !/^[0-9\s]*$/.test(sampleBarcode);
+    if (isTextSample) {
+      onScan(sampleBarcode, filters);
+    } else {
+      onScan(sampleBarcode);
+    }
   };
 
   const handleZoomIn = useCallback(async () => {
@@ -431,6 +455,13 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           )}
         </CardContent>
       </Card>
+
+      {/* Search Filter - only visible for text searches */}
+      <SearchFilter
+        filters={filters}
+        onFiltersChange={setFilters}
+        isVisible={isTextSearch}
+      />
 
       {/* Sample Products Section */}
       <Card className="bg-gradient-to-br from-card to-muted/30 border-2 border-border/20 shadow-lg">

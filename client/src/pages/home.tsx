@@ -12,15 +12,17 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function Home() {
   const [currentBarcode, setCurrentBarcode] = useState<string>("");
+  const [currentFilters, setCurrentFilters] = useState<{ includeBrands?: string[], excludeBrands?: string[] } | undefined>();
   const [isScanning, setIsScanning] = useState(false);
 
   const { toast } = useToast();
   const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
 
-  const handleScan = async (input: string) => {
+  const handleScan = async (input: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => {
     setIsScanning(true);
     setCurrentBarcode(input);
+    setCurrentFilters(filters);
     
     // Determine if input is barcode or text for appropriate messaging
     const isNumeric = /^[0-9\s-]+$/.test(input.replace(/\s/g, ''));
@@ -31,9 +33,12 @@ export default function Home() {
         description: "Searching product databases...",
       });
     } else {
+      const filterMsg = filters && (filters.includeBrands?.length || filters.excludeBrands?.length) 
+        ? " with brand filters applied" 
+        : "";
       toast({
         title: "Searching Product",
-        description: "Finding product information and analyzing ingredients...",
+        description: `Finding product information and analyzing ingredients${filterMsg}...`,
       });
     }
 
@@ -133,7 +138,7 @@ export default function Home() {
           <div className="mt-8 sm:mt-12 slide-up">
             <div className="gradient-card rounded-3xl p-1 glow-effect">
               <div className="bg-background rounded-3xl p-4 sm:p-6">
-                <ProductResults barcode={currentBarcode} />
+                <ProductResults barcode={currentBarcode} filters={currentFilters} />
               </div>
             </div>
           </div>

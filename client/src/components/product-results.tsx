@@ -15,15 +15,42 @@ import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
   barcode: string;
+  filters?: { includeBrands?: string[], excludeBrands?: string[] };
 }
 
-export default function ProductResults({ barcode }: ProductResultsProps) {
+export default function ProductResults({ barcode, filters }: ProductResultsProps) {
   const [showManualForm, setShowManualForm] = useState(false);
   const { t, language } = useLanguage();
 
+  // Determine if this is a text search with filters
+  const isTextSearch = !/^[0-9\s]*$/.test(barcode.trim());
+  const hasFilters = filters && (filters.includeBrands?.length || filters.excludeBrands?.length);
+
   const { data: product, isLoading: isLoadingProduct, error: productError, refetch } = useQuery<Product & { lookupSource?: string }>({
-    queryKey: ["/api/products", barcode],
-    queryFn: () => api.getProduct(barcode),
+    queryKey: ["/api/products", barcode, filters],
+    queryFn: async () => {
+      if (isTextSearch && hasFilters) {
+        // Use the new filtered search endpoint for text searches with filters
+        const response = await fetch('/api/products/search', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: barcode,
+            filters: filters
+          })
+        });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to search product');
+        }
+        return response.json();
+      } else {
+        // Use the regular barcode lookup for barcodes or text searches without filters
+        return api.getProduct(barcode);
+      }
+    },
     enabled: !!barcode,
     retry: false, // Don't retry on 404s for manual entry option
   });

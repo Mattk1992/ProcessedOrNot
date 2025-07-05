@@ -339,6 +339,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Search products with filters (for text searches)
+  app.post("/api/products/search", async (req, res) => {
+    try {
+      const { query, filters } = req.body;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ message: "Query is required" });
+      }
+
+      // Track search history
+      const searchId = generateSearchId();
+      const isBarcode = /^[0-9]{8,14}$/.test(query.trim());
+      const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
+      
+      try {
+        await storage.createSearchHistory({
+          searchId,
+          searchInput: query,
+          searchInputType
+        });
+      } catch (historyError) {
+        console.warn("Failed to track search history:", historyError);
+        // Continue with the search even if history tracking fails
+      }
+
+      // Check if we have cached product data
+      const cachedProduct = await storage.getProductByBarcode(query);
+      if (cachedProduct) {
+        return res.json(cachedProduct);
+      }
+
+      // Use smart lookup system with filters
+      const lookupResult = await smartProductLookup(query, filters);
+      
+      if (!lookupResult.product) {
+        return res.status(404).json({ 
+          message: lookupResult.error || "Product not found",
+          source: lookupResult.source,
+          allowManualEntry: true
+        });
+      }
+
+      // Store in our database with current timestamp
+      const productData = {
+        ...lookupResult.product,
+        lastUpdated: new Date().toISOString(),
+      };
+
+      const savedProduct = await storage.createProduct(productData);
+      
+      // Include source information in response
+      res.json({
+        ...savedProduct,
+        lookupSource: lookupResult.source
+      });
+
+    } catch (error) {
+      console.error("Search product error:", error);
+      res.status(500).json({ 
+        message: "Failed to search for product" 
+      });
+    }
+  });
+
   // Get product by barcode
   app.get("/api/products/:barcode", async (req, res) => {
     try {
