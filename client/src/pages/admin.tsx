@@ -43,11 +43,11 @@ export default function AdminPanel() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [newRole, setNewRole] = useState<string>("");
+  const [newAccountType, setNewAccountType] = useState<string>("");
 
   // Redirect if not admin
   useEffect(() => {
-    if (!isAuthenticated || user?.role !== 'Admin') {
+    if (!isAuthenticated || user?.accountType !== 'Admin') {
       setLocation('/');
     }
   }, [isAuthenticated, user, setLocation]);
@@ -55,21 +55,21 @@ export default function AdminPanel() {
   // Fetch admin statistics
   const { data: stats } = useQuery({
     queryKey: ["/api/admin/stats"],
-    enabled: user?.role === 'Admin',
+    enabled: user?.accountType === 'Admin',
   });
 
   // Fetch all users
   const { data: usersData } = useQuery({
     queryKey: ["/api/admin/users"],
-    enabled: user?.role === 'Admin',
+    enabled: user?.accountType === 'Admin',
   });
 
-  // Update user role mutation
-  const updateRoleMutation = useMutation({
-    mutationFn: async ({ userId, role }: { userId: number; role: string }) => {
+  // Update user account type mutation
+  const updateAccountTypeMutation = useMutation({
+    mutationFn: async ({ userId, accountType }: { userId: number; accountType: string }) => {
       return apiRequest(`/api/admin/users/${userId}/role`, {
         method: "PUT",
-        body: { role },
+        body: { accountType },
       });
     },
     onSuccess: () => {
@@ -80,31 +80,31 @@ export default function AdminPanel() {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
       setSelectedUser(null);
-      setNewRole("");
+      setNewAccountType("");
     },
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error.message || "Failed to update user role",
+        description: error.message || "Failed to update user account type",
         variant: "destructive",
       });
     },
   });
 
-  const handleRoleUpdate = (user: User) => {
-    if (!newRole) {
+  const handleAccountTypeUpdate = (user: User) => {
+    if (!newAccountType) {
       toast({
         title: "Error",
-        description: "Please select a role",
+        description: "Please select an account type",
         variant: "destructive",
       });
       return;
     }
 
-    updateRoleMutation.mutate({ userId: user.id, role: newRole });
+    updateAccountTypeMutation.mutate({ userId: user.id, accountType: newAccountType });
   };
 
-  if (!isAuthenticated || user?.role !== 'Admin') {
+  if (!isAuthenticated || user?.accountType !== 'Admin') {
     return null;
   }
 
@@ -258,11 +258,11 @@ export default function AdminPanel() {
                           <div className="flex items-center gap-2">
                             <h3 className="font-medium">{user.username}</h3>
                             <Badge
-                              variant={user.role === 'Admin' ? 'default' : 'secondary'}
-                              className={user.role === 'Admin' ? 'bg-blue-600' : ''}
+                              variant={user.accountType === 'Admin' ? 'default' : 'secondary'}
+                              className={user.accountType === 'Admin' ? 'bg-blue-600' : ''}
                             >
-                              {user.role === 'Admin' && <Crown className="h-3 w-3 mr-1" />}
-                              {user.role}
+                              {user.accountType === 'Admin' && <Crown className="h-3 w-3 mr-1" />}
+                              {user.accountType}
                             </Badge>
                             {user.isEmailVerified ? (
                               <UserCheck className="h-4 w-4 text-green-600" />
@@ -318,7 +318,7 @@ export default function AdminPanel() {
                       <div className="mt-1 p-3 border rounded-lg bg-gray-50 dark:bg-gray-700">
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{selectedUser.username}</span>
-                          <Badge variant="outline">{selectedUser.role}</Badge>
+                          <Badge variant="outline">{selectedUser.accountType}</Badge>
                         </div>
                         <p className="text-sm text-gray-600 dark:text-gray-300">
                           {selectedUser.email}
@@ -329,12 +329,12 @@ export default function AdminPanel() {
                     <Separator />
 
                     <div>
-                      <Label htmlFor="role-select" className="text-sm font-medium">
-                        New Role
+                      <Label htmlFor="account-type-select" className="text-sm font-medium">
+                        New Account Type
                       </Label>
-                      <Select value={newRole} onValueChange={setNewRole}>
+                      <Select value={newAccountType} onValueChange={setNewAccountType}>
                         <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select new role" />
+                          <SelectValue placeholder="Select new account type" />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="Regular">Regular User</SelectItem>
@@ -345,17 +345,17 @@ export default function AdminPanel() {
 
                     <div className="flex gap-2">
                       <Button
-                        onClick={() => handleRoleUpdate(selectedUser)}
-                        disabled={updateRoleMutation.isPending || !newRole}
+                        onClick={() => handleAccountTypeUpdate(selectedUser)}
+                        disabled={updateAccountTypeMutation.isPending || !newAccountType}
                         className="flex-1"
                       >
-                        {updateRoleMutation.isPending ? "Updating..." : "Update Role"}
+                        {updateAccountTypeMutation.isPending ? "Updating..." : "Update Account Type"}
                       </Button>
                       <Button
                         variant="outline"
                         onClick={() => {
                           setSelectedUser(null);
-                          setNewRole("");
+                          setNewAccountType("");
                         }}
                       >
                         Cancel
@@ -366,7 +366,7 @@ export default function AdminPanel() {
                   <div className="text-center py-8">
                     <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-600 dark:text-gray-300">
-                      Select a user to manage their role
+                      Select a user to manage their account type
                     </p>
                   </div>
                 )}

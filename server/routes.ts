@@ -258,24 +258,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Check if current user is admin
       const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.role !== 'Admin') {
+      if (!currentUser || currentUser.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
       const userId = parseInt(req.params.id);
-      const { role } = req.body;
+      const { accountType } = req.body;
 
-      if (!role || !['Admin', 'Regular'].includes(role)) {
-        return res.status(400).json({ message: "Valid role required (Admin or Regular)" });
+      if (!accountType || !['Admin', 'Regular'].includes(accountType)) {
+        return res.status(400).json({ message: "Valid account type required (Admin or Regular)" });
       }
 
-      const updatedUser = await storage.updateUserRole(userId, role);
+      const updatedUser = await storage.updateUserAccountType(userId, accountType);
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
 
       res.json({
-        message: "User role updated successfully",
+        message: "User account type updated successfully",
         user: updatedUser
       });
     } catch (error) {
@@ -284,23 +284,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/users/role/:role", requireAuth, async (req: any, res) => {
+  app.get("/api/admin/users/account-type/:accountType", requireAuth, async (req: any, res) => {
     try {
       // Check if current user is admin
       const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.role !== 'Admin') {
+      if (!currentUser || currentUser.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      const role = req.params.role;
-      if (!['Admin', 'Regular'].includes(role)) {
-        return res.status(400).json({ message: "Valid role required (Admin or Regular)" });
+      const accountType = req.params.accountType;
+      if (!['Admin', 'Regular'].includes(accountType)) {
+        return res.status(400).json({ message: "Valid account type required (Admin or Regular)" });
       }
 
-      const users = await storage.getUsersByRole(role);
+      const users = await storage.getUsersByAccountType(accountType);
       res.json({ users });
     } catch (error) {
-      console.error("Get users by role error:", error);
+      console.error("Get users by account type error:", error);
       res.status(500).json({ message: "Failed to fetch users" });
     }
   });
@@ -310,7 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Check if current user is admin
       const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.role !== 'Admin') {
+      if (!currentUser || currentUser.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -327,7 +327,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Check if current user is admin
       const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.role !== 'Admin') {
+      if (!currentUser || currentUser.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -826,7 +826,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
       const user = await storage.getUserById(req.session.userId);
-      if (!user || user.role !== 'Admin') {
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 

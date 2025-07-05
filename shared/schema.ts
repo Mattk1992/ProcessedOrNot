@@ -113,7 +113,7 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   firstName: varchar("first_name", { length: 100 }),
   lastName: varchar("last_name", { length: 100 }),
-  role: varchar("role", { length: 20 }).notNull().default("Regular"),
+  accountType: varchar("account_type", { length: 20 }).notNull().default("Regular"),
   isEmailVerified: boolean("is_email_verified").default(false),
   emailVerificationToken: text("email_verification_token"),
   passwordResetToken: text("password_reset_token"),
@@ -178,8 +178,8 @@ export type ResetPassword = z.infer<typeof resetPasswordSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
-// User Role Types
-export type UserRole = 'Admin' | 'Regular';
+// User Account Types
+export type UserAccountType = 'Admin' | 'Regular';
 
 // Admin Settings schema
 export const adminSettings = pgTable("admin_settings", {

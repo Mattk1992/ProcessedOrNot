@@ -39,9 +39,9 @@ export interface IStorage {
   // Email verification methods
   verifyEmail(token: string): Promise<boolean>;
   
-  // Role management methods
-  updateUserRole(userId: number, role: string): Promise<User | undefined>;
-  getUsersByRole(role: string): Promise<User[]>;
+  // Account type management methods
+  updateUserAccountType(userId: number, accountType: string): Promise<User | undefined>;
+  getUsersByAccountType(accountType: string): Promise<User[]>;
   getAllUsers(): Promise<User[]>;
   getAdminStats(): Promise<{
     totalUsers: number;
@@ -218,33 +218,33 @@ export class DatabaseStorage implements IStorage {
     return this.getUserById(id);
   }
 
-  // Role management methods
-  async updateUserRole(userId: number, role: string): Promise<User | undefined> {
+  // Account type management methods
+  async updateUserAccountType(userId: number, accountType: string): Promise<User | undefined> {
     try {
       const [updatedUser] = await db
         .update(users)
-        .set({ role, updatedAt: new Date() })
+        .set({ accountType, updatedAt: new Date() })
         .where(eq(users.id, userId))
         .returning();
       
       return updatedUser ? sanitizeUser(updatedUser) : undefined;
     } catch (error) {
-      console.error("Error updating user role:", error);
+      console.error("Error updating user account type:", error);
       return undefined;
     }
   }
 
-  async getUsersByRole(role: string): Promise<User[]> {
+  async getUsersByAccountType(accountType: string): Promise<User[]> {
     try {
       const userList = await db
         .select()
         .from(users)
-        .where(eq(users.role, role))
+        .where(eq(users.accountType, accountType))
         .orderBy(users.createdAt);
       
       return userList.map(sanitizeUser);
     } catch (error) {
-      console.error("Error fetching users by role:", error);
+      console.error("Error fetching users by account type:", error);
       return [];
     }
   }
@@ -276,10 +276,10 @@ export class DatabaseStorage implements IStorage {
       const totalUsersResult = await db.select({ count: sql`count(*)` }).from(users);
       const totalUsers = Number(totalUsersResult[0]?.count) || 0;
 
-      const adminUsersResult = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.role, 'Admin'));
+      const adminUsersResult = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.accountType, 'Admin'));
       const adminUsers = Number(adminUsersResult[0]?.count) || 0;
 
-      const regularUsersResult = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.role, 'Regular'));
+      const regularUsersResult = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.accountType, 'Regular'));
       const regularUsers = Number(regularUsersResult[0]?.count) || 0;
 
       const verifiedUsersResult = await db.select({ count: sql`count(*)` }).from(users).where(eq(users.isEmailVerified, true));
