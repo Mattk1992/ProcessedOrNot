@@ -125,6 +125,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.session.userId = user.id;
       req.session.user = sanitizeUser(user);
 
+      // Set session duration based on "Keep logged in" checkbox
+      if (validatedData.keepLoggedIn) {
+        // Keep logged in for 30 days
+        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+      } else {
+        // Standard session duration (24 hours)
+        req.session.cookie.maxAge = 24 * 60 * 60 * 1000;
+      }
+
       res.json({
         message: "Login successful",
         user: sanitizeUser(user)

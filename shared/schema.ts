@@ -147,6 +147,7 @@ export const registerUserSchema = z.object({
 export const loginUserSchema = z.object({
   username: z.string().min(1, "Username is required"),
   password: z.string().min(1, "Password is required"),
+  keepLoggedIn: z.boolean().optional().default(false),
 });
 
 export const forgotPasswordSchema = z.object({

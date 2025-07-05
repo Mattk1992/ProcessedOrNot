@@ -6,6 +6,7 @@ import { Link, useLocation } from "wouter";
 import { Eye, EyeOff, Mail, Lock, User, ArrowLeft, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +27,7 @@ export default function Login() {
     defaultValues: {
       username: "",
       password: "",
+      keepLoggedIn: false,
     },
   });
 
@@ -146,6 +148,24 @@ export default function Login() {
                         </div>
                       </FormControl>
                       <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="keepLoggedIn"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="text-sm font-normal text-gray-700 dark:text-gray-300">
+                        {t("Keep me logged in for 30 days")}
+                      </FormLabel>
                     </FormItem>
                   )}
                 />
