@@ -569,21 +569,22 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   }, [location, isCameraActive, stopCamera]);
 
   return (
-    <div className="space-y-10">
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center mb-4">
-          <img 
-            src={logoPath} 
-            alt="ProcessedOrNot Logo" 
-            className="w-20 h-20 rounded-2xl shadow-lg glow-effect floating-animation"
-          />
+    <div className="glass-card p-4 sm:p-8 rounded-3xl morphing-border glow-effect">
+      <div className="space-y-10">
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <img 
+              src={logoPath} 
+              alt="ProcessedOrNot Logo" 
+              className="w-20 h-20 rounded-2xl shadow-lg glow-effect floating-animation"
+            />
+          </div>
+          <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">{t('scanner.header.title')}</h2>
+          <p className="text-muted-foreground">{t('scanner.header.description')}</p>
         </div>
-        <h2 className="text-3xl font-bold gradient-text text-shadow mb-2">{t('scanner.header.title')}</h2>
-        <p className="text-muted-foreground">{t('scanner.header.description')}</p>
-      </div>
-      
-      <Card className="border-0 shadow-none bg-transparent">
-        <CardContent className="p-0">
+        
+        <Card className="border-0 shadow-none bg-transparent">
+          <CardContent className="p-0">
           
           {/* Camera Scanner Section - Optimized for Short-Range Barcode Scanning */}
           {isCameraActive ? (
@@ -861,32 +862,32 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
               </Button>
             </form>
           )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
 
-      {/* Search Filter - only visible for text searches */}
-      <SearchFilter
-        filters={filters}
-        onFiltersChange={setFilters}
-        isVisible={isTextSearch}
-      />
+        {/* Search Filter - only visible for text searches */}
+        <SearchFilter
+          filters={filters}
+          onFiltersChange={setFilters}
+          isVisible={isTextSearch}
+        />
 
-      {/* Sample Products Section */}
-      <Card className="bg-gradient-to-br from-card to-muted/30 border-2 border-border/20 shadow-lg">
-        <CardContent className="pt-6 sm:pt-8 pb-6 sm:pb-8 mobile-card-padding">
-          <div className="text-center mb-6 sm:mb-8">
-            <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">{t('scanner.samples.title')}</h3>
-            <p className="text-sm sm:text-base text-muted-foreground mobile-text-scale">{t('scanner.samples.description')}</p>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mobile-product-grid">
-            {sampleProducts.map((product, index) => (
-              <button
-                key={product.barcode}
-                onClick={() => handleSampleClick(product.barcode)}
-                className="group text-left p-4 sm:p-6 bg-card border-2 border-border/20 rounded-2xl hover:border-primary/30 hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mobile-touch-friendly touch-action-manipulation"
-                disabled={isLoading}
-                style={{ animationDelay: `${index * 100}ms` }}
+        {/* Sample Products Section */}
+        <Card className="bg-gradient-to-br from-card to-muted/30 border-2 border-border/20 shadow-lg">
+          <CardContent className="pt-6 sm:pt-8 pb-6 sm:pb-8 mobile-card-padding">
+            <div className="text-center mb-6 sm:mb-8">
+              <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">{t('scanner.samples.title')}</h3>
+              <p className="text-sm sm:text-base text-muted-foreground mobile-text-scale">{t('scanner.samples.description')}</p>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mobile-product-grid">
+              {sampleProducts.map((product, index) => (
+                <button
+                  key={product.barcode}
+                  onClick={() => handleSampleClick(product.barcode)}
+                  className="group text-left p-4 sm:p-6 bg-card border-2 border-border/20 rounded-2xl hover:border-primary/30 hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mobile-touch-friendly touch-action-manipulation"
+                  disabled={isLoading}
+                  style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className={`font-mono text-sm px-3 py-1 rounded-lg transition-colors ${
@@ -916,11 +917,12 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path>
                   </svg>
                 </div>
-              </button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

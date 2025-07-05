@@ -177,9 +177,7 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 pb-8 sm:pb-12">
         <div className="slide-up">
-          <div className="glass-card p-4 sm:p-8 rounded-3xl morphing-border glow-effect">
-            <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
-          </div>
+          <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
         </div>
 
         
