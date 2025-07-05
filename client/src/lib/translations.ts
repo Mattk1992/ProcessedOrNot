@@ -481,6 +481,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'quickSettings.funFacts': 'Fun Facts',
     'quickSettings.funFactsDesc': 'Include interesting product trivia',
 
+    // Settings
+    'settings.ai_provider': 'AI Provider',
+    'settings.select_ai_provider': 'Select AI Provider',
+    'settings.barcode_scanner': 'Barcode Scanner',
+    'settings.select_scanner': 'Select Scanner Type',
+    'settings.updated': 'Settings Updated',
+    'settings.changes_saved': 'Your changes have been saved',
+    'settings.error': 'Settings Error',
+
   },
   
   es: {

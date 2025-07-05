@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Settings, Sparkles, Brain, ChartLine, Lightbulb, Share2, Utensils, BarChart3, Zap } from 'lucide-react';
+import { Settings, Sparkles, Brain, ChartLine, Lightbulb, Share2, Utensils, BarChart3, Zap, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface QuickSettingsMenuProps {
@@ -62,6 +62,7 @@ export function QuickSettingsMenu({ className }: QuickSettingsMenuProps) {
   // Default settings
   const defaultSettings = {
     ai_provider: 'openai',
+    barcode_scanner_type: 'zxing',
     show_processing_analysis: 'true',
     show_glycemic_index: 'true',
     show_nutrition_spotlight: 'true',
@@ -170,6 +171,30 @@ export function QuickSettingsMenu({ className }: QuickSettingsMenuProps) {
                 <SelectItem value="openai">OpenAI GPT-4</SelectItem>
                 <SelectItem value="anthropic">Anthropic Claude</SelectItem>
                 <SelectItem value="google">Google Gemini</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Barcode Scanner Setting */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-2">
+              <Camera className="h-4 w-4" />
+              {t('settings.barcode_scanner')}
+            </label>
+            <Select
+              value={getSetting('barcode_scanner_type')}
+              onValueChange={(value) => updateSetting('barcode_scanner_type', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={t('settings.select_scanner')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="zxing">ZXing Scanner (Recommended)</SelectItem>
+                <SelectItem value="quagga">QuaggaJS Scanner</SelectItem>
+                <SelectItem value="html5-qrcode">HTML5 QR Code Scanner</SelectItem>
+                <SelectItem value="web-workers">Web Workers Scanner</SelectItem>
+                <SelectItem value="enhanced-zxing">Enhanced ZXing Alternative</SelectItem>
+                <SelectItem value="file-upload">File Upload Scanner</SelectItem>
               </SelectContent>
             </Select>
           </div>
