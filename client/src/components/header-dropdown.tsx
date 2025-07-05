@@ -54,7 +54,7 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
 
   // Menu items for authenticated users
   const userMenuItems = [
-    ...((user as any)?.accountType === 'Admin' ? [{
+    ...((user as any)?.role === 'Admin' ? [{
       label: 'Admin Panel',
       icon: <Shield className="w-4 h-4" />,
       action: () => setLocation('/admin')
