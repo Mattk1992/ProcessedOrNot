@@ -90,7 +90,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     }
   };
 
-  const handleZoomIn = useCallback(async () => {
+  const handleZoomIn = useCallback(() => {
     console.log('Zoom in clicked, current zoom:', zoomLevel);
     if (zoomLevel < maxZoom && isCameraActive) {
       const newZoom = Math.min(zoomLevel + 0.5, maxZoom);
@@ -108,15 +108,14 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       if (streamRef.current) {
         const videoTrack = streamRef.current.getVideoTracks()[0];
         if (videoTrack && 'applyConstraints' in videoTrack) {
-          try {
-            await videoTrack.applyConstraints({
-              advanced: [{ zoom: newZoom } as any]
-            });
+          videoTrack.applyConstraints({
+            advanced: [{ zoom: newZoom } as any]
+          }).then(() => {
             console.log('Applied camera zoom constraint:', newZoom);
-          } catch (error) {
+          }).catch(() => {
             // CSS zoom will handle it if camera zoom is not supported
             console.log('Using CSS zoom as camera zoom is not supported');
-          }
+          });
         }
       }
     } else {
@@ -124,7 +123,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     }
   }, [zoomLevel, maxZoom, isCameraActive]);
 
-  const handleZoomOut = useCallback(async () => {
+  const handleZoomOut = useCallback(() => {
     console.log('Zoom out clicked, current zoom:', zoomLevel);
     if (zoomLevel > minZoom && isCameraActive) {
       const newZoom = Math.max(zoomLevel - 0.5, minZoom);
@@ -142,14 +141,13 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       if (streamRef.current) {
         const videoTrack = streamRef.current.getVideoTracks()[0];
         if (videoTrack && 'applyConstraints' in videoTrack) {
-          try {
-            await videoTrack.applyConstraints({
-              advanced: [{ zoom: newZoom } as any]
-            });
+          videoTrack.applyConstraints({
+            advanced: [{ zoom: newZoom } as any]
+          }).then(() => {
             console.log('Applied camera zoom constraint:', newZoom);
-          } catch (error) {
+          }).catch(() => {
             console.log('Using CSS zoom as camera zoom is not supported');
-          }
+          });
         }
       }
     } else {
@@ -157,7 +155,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     }
   }, [zoomLevel, minZoom, isCameraActive]);
 
-  const resetZoom = useCallback(async () => {
+  const resetZoom = useCallback(() => {
     console.log('Reset zoom clicked, current zoom:', zoomLevel);
     if (isCameraActive) {
       setZoomLevel(1);
@@ -173,14 +171,13 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       if (streamRef.current) {
         const videoTrack = streamRef.current.getVideoTracks()[0];
         if (videoTrack && 'applyConstraints' in videoTrack) {
-          try {
-            await videoTrack.applyConstraints({
-              advanced: [{ zoom: 1 } as any]
-            });
+          videoTrack.applyConstraints({
+            advanced: [{ zoom: 1 } as any]
+          }).then(() => {
             console.log('Reset camera zoom constraint to 1');
-          } catch (error) {
+          }).catch(() => {
             console.log('Using CSS zoom reset as camera zoom is not supported');
-          }
+          });
         }
       }
     } else {
@@ -682,6 +679,19 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                         if (videoRef.current) {
                           videoRef.current.style.transform = 'scale(1.5)';
                           videoRef.current.style.transformOrigin = 'center center';
+                        }
+                        // Apply camera zoom constraint (non-blocking)
+                        if (streamRef.current) {
+                          const videoTrack = streamRef.current.getVideoTracks()[0];
+                          if (videoTrack && 'applyConstraints' in videoTrack) {
+                            videoTrack.applyConstraints({
+                              advanced: [{ zoom: 1.5 } as any]
+                            }).then(() => {
+                              console.log('Applied optimal camera zoom constraint: 1.5x');
+                            }).catch(() => {
+                              console.log('Using CSS zoom for optimal preset');
+                            });
+                          }
                         }
                       }}
                       disabled={!isCameraActive}
