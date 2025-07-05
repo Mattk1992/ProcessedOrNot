@@ -66,10 +66,12 @@ export const scannerTypes: ScannerType[] = [
 export function ScannerManager({ onScan, onClose, isActive }: ScannerManagerProps) {
   const [selectedScanner, setSelectedScanner] = useState<string>("default");
 
-  // Query for user's barcode scanner preference
+  // Query for user's barcode scanner preference (with error handling)
   const { data: scannerSetting } = useQuery({
     queryKey: ["/api/user/settings/barcode_scanner"],
     enabled: true,
+    retry: false,
+    throwOnError: false,
   });
 
   // Update selected scanner when user setting is loaded

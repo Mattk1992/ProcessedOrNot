@@ -30,6 +30,10 @@ export function QuagaJSScanner({ onScan, onClose, isActive }: QuagaJSScannerProp
       setError("");
       setIsScanning(true);
 
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Camera access is not supported in this browser");
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: { ideal: "environment" },
@@ -52,8 +56,23 @@ export function QuagaJSScanner({ onScan, onClose, isActive }: QuagaJSScannerProp
         onScan(randomBarcode);
       }, 3000);
 
-    } catch (err) {
-      setError(t('scanner.error.camera_access'));
+    } catch (err: any) {
+      console.error("QuaggaJS scanner error:", err);
+      let errorMessage = "Failed to access camera";
+      
+      if (err.name === 'NotAllowedError') {
+        errorMessage = "Camera permission denied. Please allow camera access and try again.";
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = "No camera found on this device.";
+      } else if (err.name === 'NotSupportedError') {
+        errorMessage = "Camera is not supported in this browser.";
+      } else if (err.name === 'NotReadableError') {
+        errorMessage = "Camera is already in use by another application.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
       setIsScanning(false);
     }
   };

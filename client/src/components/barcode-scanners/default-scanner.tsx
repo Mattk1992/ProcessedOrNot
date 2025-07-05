@@ -35,6 +35,11 @@ export function DefaultScanner({ onScan, onClose, isActive }: DefaultScannerProp
       setError("");
       setIsScanning(true);
 
+      // Check if camera is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Camera access is not supported in this browser");
+      }
+
       // Initialize ZXing reader
       if (!codeReaderRef.current) {
         codeReaderRef.current = new BrowserMultiFormatReader();
@@ -81,8 +86,23 @@ export function DefaultScanner({ onScan, onClose, isActive }: DefaultScannerProp
         });
       }
 
-    } catch (err) {
-      setError(t('scanner.error.camera_access'));
+    } catch (err: any) {
+      console.error("Camera error:", err);
+      let errorMessage = "Failed to access camera";
+      
+      if (err.name === 'NotAllowedError') {
+        errorMessage = "Camera permission denied. Please allow camera access and try again.";
+      } else if (err.name === 'NotFoundError') {
+        errorMessage = "No camera found on this device.";
+      } else if (err.name === 'NotSupportedError') {
+        errorMessage = "Camera is not supported in this browser.";
+      } else if (err.name === 'NotReadableError') {
+        errorMessage = "Camera is already in use by another application.";
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
       setIsScanning(false);
     }
   };
