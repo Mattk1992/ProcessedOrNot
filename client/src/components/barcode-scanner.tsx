@@ -9,6 +9,7 @@ import { Search, Loader2, Camera, X, RotateCcw, ZoomIn, ZoomOut } from "lucide-r
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SearchFilter from "./search-filter";
+import { QuickSettingsMenu } from "./quick-settings-menu";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
@@ -851,24 +852,28 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
               </div>
               
-              <Button 
-                type="submit"
-                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
-                disabled={isLoading || barcode.trim().length < 1}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-                    <span className="text-sm sm:text-base">{t('scanner.input.analyzing')}</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl shimmer"></div>
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="text-sm sm:text-base">{t('scanner.input.button')}</span>
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-3">
+                <Button 
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
+                  disabled={isLoading || barcode.trim().length < 1}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                      <span className="text-sm sm:text-base">{t('scanner.input.analyzing')}</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl shimmer"></div>
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="text-sm sm:text-base">{t('scanner.input.button')}</span>
+                    </>
+                  )}
+                </Button>
+                
+                <QuickSettingsMenu className="shrink-0" />
+              </div>
             </form>
           )}
         </CardContent>

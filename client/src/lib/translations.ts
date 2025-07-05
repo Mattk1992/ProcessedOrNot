@@ -460,6 +460,26 @@ export const translations: Record<Language, Record<string, string>> = {
     'home.cta.title': 'Log in or register to explore all the exciting features and benefits that await you!',
     'home.cta.createAccount': 'Create Account',
     'home.cta.signIn': 'Sign In',
+    
+    // Quick Settings
+    'quickSettings.title': 'Quick Settings',
+    'quickSettings.description': 'Customize your product analysis experience',
+    'quickSettings.outputControls': 'Output Controls',
+    'quickSettings.autoSave': 'Changes are saved automatically',
+    'quickSettings.processingAnalysis': 'Processing Analysis',
+    'quickSettings.processingAnalysisDesc': 'Show AI-powered ingredient processing analysis',
+    'quickSettings.glycemicIndex': 'Glycemic Index',
+    'quickSettings.glycemicIndexDesc': 'Display glycemic index and blood sugar impact',
+    'quickSettings.nutritionSpotlight': 'Nutrition Spotlight',
+    'quickSettings.nutritionSpotlightDesc': 'Highlight key nutritional insights',
+    'quickSettings.shareAnalysis': 'Share Your Analysis',
+    'quickSettings.shareAnalysisDesc': 'Enable social sharing options',
+    'quickSettings.ingredientsAnalysis': 'Ingredients Analysis',
+    'quickSettings.ingredientsAnalysisDesc': 'Show detailed ingredient breakdown',
+    'quickSettings.nutritionFacts': 'Nutrition Facts',
+    'quickSettings.nutritionFactsDesc': 'Display complete nutrition information',
+    'quickSettings.funFacts': 'Fun Facts',
+    'quickSettings.funFactsDesc': 'Include interesting product trivia',
 
   },
   

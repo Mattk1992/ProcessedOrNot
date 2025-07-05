@@ -25,6 +25,27 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
   const [showNutritionPopup, setShowNutritionPopup] = useState(false);
   const { t, language } = useLanguage();
 
+  // Query for user settings to control output display
+  const { data: userSettings = [] } = useQuery({
+    queryKey: ['/api/user/settings'],
+    enabled: true,
+  });
+
+  // Helper function to get setting value
+  const getSetting = (key: string, defaultValue: string = 'true') => {
+    const setting = Array.isArray(userSettings) ? userSettings.find((s: any) => s.settingKey === key) : null;
+    return setting?.settingValue || defaultValue;
+  };
+
+  // Check if sections should be displayed
+  const showProcessingAnalysis = getSetting('show_processing_analysis') === 'true';
+  const showGlycemicIndex = getSetting('show_glycemic_index') === 'true';
+  const showNutritionSpotlight = getSetting('show_nutrition_spotlight') === 'true';
+  const showShareAnalysis = getSetting('show_share_analysis') === 'true';
+  const showIngredientsAnalysis = getSetting('show_ingredients_analysis') === 'true';
+  const showNutritionFacts = getSetting('show_nutrition_facts') === 'true';
+  const showFunFacts = getSetting('show_fun_facts') === 'true';
+
   // Determine if this is a text search with filters
   const isTextSearch = !/^[0-9\s]*$/.test(barcode.trim());
   const hasFilters = filters && (filters.includeBrands?.length || filters.excludeBrands?.length);
@@ -304,7 +325,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       </Card>
 
       {/* Processing Score Card */}
-      {product.processingScore !== null && (
+      {product.processingScore !== null && showProcessingAnalysis && (
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center justify-between mb-8">
@@ -393,8 +414,9 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
         </Card>
       )}
 
-      {/* Glycemic Index Card - Always show */}
-      <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
+      {/* Glycemic Index Card */}
+      {showGlycemicIndex && (
+        <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center space-x-3 mb-8">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
@@ -455,9 +477,10 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
             </div>
           </CardContent>
         </Card>
+      )}
 
       {/* NutriBot Insights Card */}
-      {nutriBotInsight && typeof nutriBotInsight === 'string' && (
+      {nutriBotInsight && typeof nutriBotInsight === 'string' && showIngredientsAnalysis && (
         <Card className="glass-card border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up glow-effect">
           <CardHeader className="bg-gradient-to-r from-primary to-accent text-white rounded-t-lg">
             <CardTitle className="flex items-center space-x-3">
@@ -506,7 +529,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       )}
 
       {/* Nutrition Spotlight */}
-      {product.nutriments && typeof product.nutriments === 'object' && (
+      {product.nutriments && typeof product.nutriments === 'object' && showNutritionSpotlight && (
         <div className="slide-up">
           <NutritionSpotlight 
             productName={product.productName || "Unknown Product"}
@@ -518,30 +541,34 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       )}
 
       {/* Fun Facts */}
-      <div className="slide-up">
-        <FunFacts 
-          productName={product.productName || "Unknown Product"}
-          ingredients={product.ingredientsText || ""}
-          nutriments={product.nutriments as Record<string, any> | null}
-          processingScore={product.processingScore || 0}
-          barcode={barcode}
-        />
-      </div>
+      {showFunFacts && (
+        <div className="slide-up">
+          <FunFacts 
+            productName={product.productName || "Unknown Product"}
+            ingredients={product.ingredientsText || ""}
+            nutriments={product.nutriments as Record<string, any> | null}
+            processingScore={product.processingScore || 0}
+            barcode={barcode}
+          />
+        </div>
+      )}
 
       {/* Social Sharing */}
-      <div className="slide-up">
-        <SocialShare 
-          productName={product.productName || "Unknown Product"}
-          processingScore={product.processingScore || 0}
-          processingExplanation={product.processingExplanation || ""}
-          barcode={barcode}
-          nutriments={product.nutriments as Record<string, any> | null}
-          dataSource={product.dataSource || product.lookupSource || "Database"}
-        />
-      </div>
+      {showShareAnalysis && (
+        <div className="slide-up">
+          <SocialShare 
+            productName={product.productName || "Unknown Product"}
+            processingScore={product.processingScore || 0}
+            processingExplanation={product.processingExplanation || ""}
+            barcode={barcode}
+            nutriments={product.nutriments as Record<string, any> | null}
+            dataSource={product.dataSource || product.lookupSource || "Database"}
+          />
+        </div>
+      )}
 
       {/* Ingredients Card */}
-      {product.ingredientsText && (
+      {product.ingredientsText && showIngredientsAnalysis && (
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center space-x-3 mb-8">
@@ -718,14 +745,16 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       )}
 
       {/* Nutrition Fact Popup */}
-      <NutritionFactPopup
-        productName={product?.productName || ''}
-        nutriments={product?.nutriments as Record<string, any> || null}
-        processingScore={analysis?.score || 0}
-        isVisible={showNutritionPopup}
-        onClose={() => setShowNutritionPopup(false)}
-        onComplete={() => setShowNutritionPopup(false)}
-      />
+      {showNutritionFacts && (
+        <NutritionFactPopup
+          productName={product?.productName || ''}
+          nutriments={product?.nutriments as Record<string, any> || null}
+          processingScore={analysis?.score || 0}
+          isVisible={showNutritionPopup}
+          onClose={() => setShowNutritionPopup(false)}
+          onComplete={() => setShowNutritionPopup(false)}
+        />
+      )}
     </div>
   );
 }
