@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +37,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   const [zoomLevel, setZoomLevel] = useState(1);
   const [maxZoom, setMaxZoom] = useState(3);
   const [minZoom, setMinZoom] = useState(1);
+  const [timeoutCountdown, setTimeoutCountdown] = useState<number | null>(null);
   const [filters, setFilters] = useState<SearchFilters>({
     includeBrands: [],
     excludeBrands: []
@@ -43,6 +45,21 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const countdownRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch camera timeout setting from public endpoint
+  const { data: timeoutData } = useQuery({
+    queryKey: ["/api/settings/camera-timeout"],
+    retry: false,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+  });
+
+  // Get timeout value from setting or use default
+  const getCameraTimeout = () => {
+    const timeoutSeconds = timeoutData?.timeout || 40;
+    return timeoutSeconds * 1000; // Convert to milliseconds
+  };
 
   // Check if the input is likely a text search (contains non-numeric characters)
   const isTextSearch = barcode.trim().length > 0 && !/^[0-9\s]*$/.test(barcode.trim());
@@ -151,6 +168,16 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       setCameraError("");
       setIsScanning(true);
       
+      // Clear any existing timeouts
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+      
       // Check if browser supports getUserMedia
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error("Camera access is not supported in this browser. Please try entering the barcode manually.");
@@ -236,6 +263,33 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         }
       }
 
+      // Set up camera timeout with countdown
+      const timeoutMs = getCameraTimeout();
+      const timeoutSeconds = Math.floor(timeoutMs / 1000);
+      setTimeoutCountdown(timeoutSeconds);
+
+      // Start countdown
+      countdownRef.current = setInterval(() => {
+        setTimeoutCountdown(prev => {
+          if (prev && prev > 1) {
+            return prev - 1;
+          } else {
+            // Timeout reached
+            if (countdownRef.current) {
+              clearInterval(countdownRef.current);
+              countdownRef.current = null;
+            }
+            return null;
+          }
+        });
+      }, 1000);
+
+      // Set main timeout to stop camera
+      timeoutRef.current = setTimeout(() => {
+        stopCamera();
+        setCameraError(`Camera timed out after ${timeoutSeconds} seconds. Please try again or enter the barcode manually.`);
+      }, timeoutMs);
+
     } catch (error) {
       console.error("Camera error:", error);
       setIsScanning(false);
@@ -261,6 +315,16 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
   const stopCamera = useCallback(() => {
     try {
+      // Clear timeouts first
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      if (countdownRef.current) {
+        clearInterval(countdownRef.current);
+        countdownRef.current = null;
+      }
+      
       if (codeReaderRef.current) {
         codeReaderRef.current.reset();
       }
@@ -281,6 +345,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       setIsCameraActive(false);
       setIsScanning(false);
       setCameraError("");
+      setTimeoutCountdown(null);
     }
   }, []);
 
@@ -366,6 +431,18 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   </div>
                 </div>
               </div>
+              
+              {/* Timeout Countdown Display */}
+              {timeoutCountdown !== null && timeoutCountdown > 0 && (
+                <div className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
+                      Camera timeout: {timeoutCountdown}s
+                    </span>
+                  </div>
+                </div>
+              )}
               
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <Button

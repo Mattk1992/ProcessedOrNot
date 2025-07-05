@@ -180,3 +180,24 @@ export type User = typeof users.$inferSelect;
 
 // User Role Types
 export type UserRole = 'Admin' | 'Regular';
+
+// Admin Settings schema
+export const adminSettings = pgTable("admin_settings", {
+  id: serial("id").primaryKey(),
+  settingKey: varchar("setting_key").unique().notNull(),
+  settingValue: text("setting_value").notNull(),
+  settingType: varchar("setting_type").notNull(), // 'integer', 'string', 'boolean'
+  description: text("description"),
+  category: varchar("category").notNull(), // 'search_engine', 'general', etc.
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertAdminSettingSchema = createInsertSchema(adminSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAdminSetting = z.infer<typeof insertAdminSettingSchema>;
+export type AdminSetting = typeof adminSettings.$inferSelect;

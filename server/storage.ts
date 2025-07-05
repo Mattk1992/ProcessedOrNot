@@ -9,7 +9,10 @@ import {
   type InsertProduct,
   searchHistory,
   type SearchHistory,
-  type InsertSearchHistory
+  type InsertSearchHistory,
+  adminSettings,
+  type AdminSetting,
+  type InsertAdminSetting
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -59,6 +62,15 @@ export interface IStorage {
   getAllSearchHistory(): Promise<SearchHistory[]>;
   getRecentSearchHistory(limit?: number): Promise<SearchHistory[]>;
   createSearchHistoryWithResult(searchInput: string, searchInputType: string, product?: Product | null, error?: string, lookupSource?: string): Promise<SearchHistory>;
+
+  // Admin settings methods
+  getAdminSetting(settingKey: string): Promise<AdminSetting | undefined>;
+  getAllAdminSettings(): Promise<AdminSetting[]>;
+  getAdminSettingsByCategory(category: string): Promise<AdminSetting[]>;
+  createAdminSetting(setting: InsertAdminSetting): Promise<AdminSetting>;
+  updateAdminSetting(settingKey: string, settingValue: string): Promise<AdminSetting | undefined>;
+  deleteAdminSetting(settingKey: string): Promise<boolean>;
+  initializeDefaultSettings(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -439,6 +451,66 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`Created search history record for: "${searchInput}" with result: ${!!product}`);
     return searchRecord;
+  }
+
+  // Admin settings methods
+  async getAdminSetting(settingKey: string): Promise<AdminSetting | undefined> {
+    const [setting] = await db.select().from(adminSettings).where(eq(adminSettings.settingKey, settingKey));
+    return setting || undefined;
+  }
+
+  async getAllAdminSettings(): Promise<AdminSetting[]> {
+    return await db.select().from(adminSettings).orderBy(adminSettings.category, adminSettings.settingKey);
+  }
+
+  async getAdminSettingsByCategory(category: string): Promise<AdminSetting[]> {
+    return await db.select().from(adminSettings)
+      .where(eq(adminSettings.category, category))
+      .orderBy(adminSettings.settingKey);
+  }
+
+  async createAdminSetting(setting: InsertAdminSetting): Promise<AdminSetting> {
+    const [newSetting] = await db
+      .insert(adminSettings)
+      .values(setting)
+      .returning();
+    return newSetting;
+  }
+
+  async updateAdminSetting(settingKey: string, settingValue: string): Promise<AdminSetting | undefined> {
+    const [updatedSetting] = await db
+      .update(adminSettings)
+      .set({ 
+        settingValue,
+        updatedAt: new Date()
+      })
+      .where(eq(adminSettings.settingKey, settingKey))
+      .returning();
+    return updatedSetting || undefined;
+  }
+
+  async deleteAdminSetting(settingKey: string): Promise<boolean> {
+    const result = await db.delete(adminSettings).where(eq(adminSettings.settingKey, settingKey));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async initializeDefaultSettings(): Promise<void> {
+    const defaultSettings: InsertAdminSetting[] = [
+      {
+        settingKey: 'camera_timeout',
+        settingValue: '40',
+        settingType: 'integer',
+        description: 'Number of seconds before the barcode camera times out',
+        category: 'search_engine'
+      }
+    ];
+
+    for (const setting of defaultSettings) {
+      const existingSetting = await this.getAdminSetting(setting.settingKey);
+      if (!existingSetting) {
+        await this.createAdminSetting(setting);
+      }
+    }
   }
 }
 

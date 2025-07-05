@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import AdminSettings from "@/components/admin-settings";
 
 interface User {
   id: number;
@@ -193,6 +194,24 @@ export default function AdminPanel() {
             </Card>
           </div>
         )}
+
+        {/* Admin Settings Section */}
+        <div className="mb-8">
+          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5" />
+                System Settings
+              </CardTitle>
+              <CardDescription>
+                Configure application settings and preferences
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AdminSettings />
+            </CardContent>
+          </Card>
+        </div>
 
         {/* User Management */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

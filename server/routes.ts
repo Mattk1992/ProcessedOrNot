@@ -869,6 +869,139 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin settings routes
+  app.get("/api/admin/settings", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const settings = await storage.getAllAdminSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching admin settings:", error);
+      res.status(500).json({ message: "Failed to fetch admin settings" });
+    }
+  });
+
+  app.get("/api/admin/settings/:key", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const setting = await storage.getAdminSetting(req.params.key);
+      if (!setting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+
+      res.json(setting);
+    } catch (error) {
+      console.error("Error fetching admin setting:", error);
+      res.status(500).json({ message: "Failed to fetch admin setting" });
+    }
+  });
+
+  app.post("/api/admin/settings", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { settingKey, settingValue, settingType, description, category } = req.body;
+
+      const newSetting = await storage.createAdminSetting({
+        settingKey,
+        settingValue,
+        settingType,
+        description,
+        category
+      });
+
+      res.json(newSetting);
+    } catch (error) {
+      console.error("Error creating admin setting:", error);
+      res.status(500).json({ message: "Failed to create admin setting" });
+    }
+  });
+
+  app.put("/api/admin/settings/:key", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { settingValue } = req.body;
+      const updatedSetting = await storage.updateAdminSetting(req.params.key, settingValue);
+
+      if (!updatedSetting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+
+      res.json(updatedSetting);
+    } catch (error) {
+      console.error("Error updating admin setting:", error);
+      res.status(500).json({ message: "Failed to update admin setting" });
+    }
+  });
+
+  app.delete("/api/admin/settings/:key", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const success = await storage.deleteAdminSetting(req.params.key);
+      if (!success) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+
+      res.json({ message: "Setting deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting admin setting:", error);
+      res.status(500).json({ message: "Failed to delete admin setting" });
+    }
+  });
+
+  // Initialize default settings
+  app.post("/api/admin/settings/initialize", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      await storage.initializeDefaultSettings();
+      res.json({ message: "Default settings initialized successfully" });
+    } catch (error) {
+      console.error("Error initializing default settings:", error);
+      res.status(500).json({ message: "Failed to initialize default settings" });
+    }
+  });
+
+  // Public endpoint for camera timeout setting (no auth required)
+  app.get("/api/settings/camera-timeout", async (req, res) => {
+    try {
+      const setting = await storage.getAdminSetting('camera_timeout');
+      const timeoutValue = setting?.settingValue || '40'; // Default 40 seconds
+      res.json({ 
+        timeout: parseInt(timeoutValue),
+        source: setting ? 'database' : 'default'
+      });
+    } catch (error) {
+      console.error("Error fetching camera timeout:", error);
+      res.json({ 
+        timeout: 40,
+        source: 'fallback'
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
