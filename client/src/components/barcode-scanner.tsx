@@ -403,6 +403,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
               <Button
                 onClick={startCamera}
                 disabled={isLoading || isScanning}
+                data-tutorial="camera-button"
                 className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mb-6 mobile-touch-friendly touch-action-manipulation"
               >
                 {isScanning ? (
@@ -444,6 +445,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
                   placeholder={t('scanner.input.placeholder')}
+                  data-tutorial="manual-input"
                   className="w-full px-4 sm:px-5 py-3 sm:py-4 text-base sm:text-lg font-mono tracking-wider pr-12 sm:pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30 mobile-touch-friendly"
                   disabled={isLoading}
                 />

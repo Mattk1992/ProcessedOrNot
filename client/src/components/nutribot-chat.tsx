@@ -113,6 +113,7 @@ export default function NutriBotChat() {
       {!isOpen && (
         <Button
           onClick={openChat}
+          data-tutorial="nutribot"
           className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 shadow-lg hover:shadow-xl transition-all duration-300 z-50 glow-effect floating-animation"
           size="icon"
         >

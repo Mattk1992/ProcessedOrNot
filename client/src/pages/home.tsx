@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
 import HeaderDropdown from "@/components/header-dropdown";
 import NutriBotChat from "@/components/nutribot-chat";
+import TutorialOverlay from "@/components/tutorial-overlay";
 
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -14,10 +15,36 @@ export default function Home() {
   const [currentBarcode, setCurrentBarcode] = useState<string>("");
   const [currentFilters, setCurrentFilters] = useState<{ includeBrands?: string[], excludeBrands?: string[] } | undefined>();
   const [isScanning, setIsScanning] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
 
   const { toast } = useToast();
   const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
+
+  // Check if this is a first-time user
+  useEffect(() => {
+    const hasSeenTutorial = localStorage.getItem('processedornot-tutorial-completed');
+    if (!hasSeenTutorial) {
+      // Show tutorial after a short delay to let the page load
+      const timer = setTimeout(() => {
+        setShowTutorial(true);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  const handleTutorialComplete = () => {
+    localStorage.setItem('processedornot-tutorial-completed', 'true');
+    setShowTutorial(false);
+  };
+
+  const handleTutorialClose = () => {
+    setShowTutorial(false);
+  };
+
+  const handleStartTutorial = () => {
+    setShowTutorial(true);
+  };
 
   const handleScan = async (input: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => {
     setIsScanning(true);
@@ -69,8 +96,8 @@ export default function Home() {
               <div className="scale-on-hover hidden md:block">
                 <LanguageSwitcher />
               </div>
-              <div className="scale-on-hover">
-                <HeaderDropdown />
+              <div className="scale-on-hover" data-tutorial="menu-dropdown">
+                <HeaderDropdown onStartTutorial={handleStartTutorial} />
               </div>
             </div>
           </div>
@@ -163,6 +190,14 @@ export default function Home() {
       </footer>
       {/* NutriBot Chat */}
       <NutriBotChat />
+
+      {/* Tutorial Overlay */}
+      <TutorialOverlay 
+        isOpen={showTutorial}
+        onClose={handleTutorialClose}
+        onComplete={handleTutorialComplete}
+      />
+
       {/* Background decoration */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-20 -right-40 w-80 h-80 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full blur-3xl"></div>

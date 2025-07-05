@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe } from 'lucide-react';
+import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
 import LanguageSwitcher from './language-switcher';
 
-export default function HeaderDropdown() {
+interface HeaderDropdownProps {
+  onStartTutorial?: () => void;
+}
+
+export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const { t } = useLanguage();
   const { isAuthenticated, user } = useAuth();
@@ -37,7 +41,15 @@ export default function HeaderDropdown() {
       label: t('dropdown.help') || 'Help',
       icon: <HelpCircle className="w-4 h-4" />,
       action: () => setLocation('/help')
-    }
+    },
+    ...(onStartTutorial ? [{
+      label: 'Take Tour',
+      icon: <PlayCircle className="w-4 h-4" />,
+      action: () => {
+        onStartTutorial();
+        setIsOpen(false);
+      }
+    }] : [])
   ];
 
   // Menu items for authenticated users
@@ -62,6 +74,14 @@ export default function HeaderDropdown() {
       icon: <HelpCircle className="w-4 h-4" />,
       action: () => setLocation('/help')
     },
+    ...(onStartTutorial ? [{
+      label: 'Take Tour',
+      icon: <PlayCircle className="w-4 h-4" />,
+      action: () => {
+        onStartTutorial();
+        setIsOpen(false);
+      }
+    }] : []),
     {
       label: 'Sign Out',
       icon: <LogOut className="w-4 h-4" />,

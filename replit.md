@@ -155,6 +155,8 @@ Changelog:
 - July 5, 2025. Implemented search history database system with automatic tracking of all product searches, search ID generation, search input type detection (BarcodeInput vs TextInput), and comprehensive API endpoints for search history management and statistics
 - July 5, 2025. Fixed and enhanced text search functionality with two-step OpenAI process: keyword optimization and realistic nutritional data generation. Added multi-language support for Dutch terms like "Gehakt" and "Gehaktbal". Improved error handling and fallback mechanisms for robust text-based product searches.
 - July 5, 2025. Enhanced search history database system with comprehensive search result tracking. Added automatic capture of complete product data, processing scores, nutritional information, lookup sources, and error details. Implemented duplicate prevention based on search input to avoid redundant database entries. System now tracks successful searches, failed searches, and cached results with full context.
+- July 5, 2025. Implemented mobile header improvements: hidden subtitle text on mobile screens for cleaner layout, improved menu button visibility and touch targets, added language switcher to mobile dropdown menu, and enhanced responsive design.
+- July 5, 2025. Implemented interactive tutorial overlay system for first-time users. Features 7-step guided tour highlighting key features (camera scanning, manual entry, AI analysis, NutriBot chat, menu features), CSS-based zoom camera functionality as fallback, tutorial data attributes on key UI elements, localStorage-based completion tracking, and "Take Tour" option in header dropdown menu for restarting the tutorial.
 
 ## User Preferences
 
