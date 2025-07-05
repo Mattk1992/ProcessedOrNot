@@ -201,19 +201,79 @@ export default function Home() {
       )}
       
       {/* Footer */}
-      <footer className="border-t border-border/50 mt-8 sm:mt-16">
-        <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6">
-          <div className="text-center text-xs sm:text-sm text-muted-foreground">
-            {t('footer.createdBy')}{" "}
-            <a
-              href="https://www.linkedin.com/in/matthias-kuchenbecker/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-foreground hover:text-primary transition-colors underline decoration-primary/30 hover:decoration-primary touch-action-manipulation"
-              aria-label={t('footer.linkedin')}
-            >
-              Matthias Kuchenbecker
-            </a>
+      <footer className="border-t border-border/50 mt-8 sm:mt-16 bg-gradient-to-r from-background/80 to-background/90 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto px-4 py-8 sm:py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            {/* About Section */}
+            <div className="text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start mb-4">
+                <img 
+                  src={logoPath} 
+                  alt="ProcessedOrNot Logo" 
+                  className="w-8 h-8 rounded-lg mr-2"
+                />
+                <h3 className="text-lg font-semibold gradient-text">ProcessedOrNot</h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {t('footer.description')}
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div className="text-center">
+              <h4 className="text-sm font-semibold text-foreground mb-4">{t('footer.quickLinks')}</h4>
+              <div className="space-y-2">
+                <a href="/register" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                  {t('footer.createAccount')}
+                </a>
+                <a href="/login" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                  {t('footer.signIn')}
+                </a>
+                <a href="/admin" className="block text-sm text-muted-foreground hover:text-primary transition-colors">
+                  {t('footer.admin')}
+                </a>
+              </div>
+            </div>
+
+            {/* Technology */}
+            <div className="text-center md:text-right">
+              <h4 className="text-sm font-semibold text-foreground mb-4">{t('footer.poweredBy')}</h4>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <div className="flex items-center justify-center md:justify-end">
+                  <span className="mr-2">🤖</span>
+                  <span>OpenAI GPT-4</span>
+                </div>
+                <div className="flex items-center justify-center md:justify-end">
+                  <span className="mr-2">🍎</span>
+                  <span>OpenFoodFacts</span>
+                </div>
+                <div className="flex items-center justify-center md:justify-end">
+                  <span className="mr-2">🔍</span>
+                  <span>14+ Food Databases</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Bar */}
+          <div className="border-t border-border/30 pt-6">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
+                © 2025 ProcessedOrNot. {t('footer.rightsReserved')}
+              </div>
+              <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-right">
+                {t('footer.createdBy')}{" "}
+                <a
+                  href="https://www.linkedin.com/in/matthias-kuchenbecker/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-medium text-foreground hover:text-primary transition-colors underline decoration-primary/30 hover:decoration-primary touch-action-manipulation"
+                  aria-label={t('footer.linkedin')}
+                >
+                  Matthias Kuchenbecker
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </footer>

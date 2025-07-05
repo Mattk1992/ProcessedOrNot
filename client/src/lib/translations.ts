@@ -243,6 +243,13 @@ export const translations: Record<Language, Record<string, string>> = {
     // Footer
     'footer.createdBy': 'Created by',
     'footer.linkedin': 'LinkedIn Profile',
+    'footer.description': 'Advanced AI-powered food analysis for healthier choices. Scan any product to discover its processing level and nutritional insights.',
+    'footer.quickLinks': 'Quick Links',
+    'footer.createAccount': 'Create Account',
+    'footer.signIn': 'Sign In',
+    'footer.admin': 'Admin Panel',
+    'footer.poweredBy': 'Powered By',
+    'footer.rightsReserved': 'All rights reserved.',
     
     // Status Messages
     'status.scanning': 'Scanning Barcode',
@@ -677,6 +684,13 @@ export const translations: Record<Language, Record<string, string>> = {
     // Footer
     'footer.createdBy': 'Creado por',
     'footer.linkedin': 'Perfil de LinkedIn',
+    'footer.description': 'Análisis avanzado de alimentos con IA para opciones más saludables. Escanea cualquier producto para descubrir su nivel de procesamiento e información nutricional.',
+    'footer.quickLinks': 'Enlaces Rápidos',
+    'footer.createAccount': 'Crear Cuenta',
+    'footer.signIn': 'Iniciar Sesión',
+    'footer.admin': 'Panel de Administración',
+    'footer.poweredBy': 'Impulsado Por',
+    'footer.rightsReserved': 'Todos los derechos reservados.',
     
     // Status Messages
     'status.scanning': 'Escaneando Código de Barras',
@@ -1143,6 +1157,13 @@ export const translations: Record<Language, Record<string, string>> = {
     // Footer
     'footer.createdBy': 'Créé par',
     'footer.linkedin': 'Profil LinkedIn',
+    'footer.description': 'Analyse avancée d\'aliments alimentée par IA pour des choix plus sains. Scannez n\'importe quel produit pour découvrir son niveau de transformation et ses informations nutritionnelles.',
+    'footer.quickLinks': 'Liens Rapides',
+    'footer.createAccount': 'Créer un Compte',
+    'footer.signIn': 'Se Connecter',
+    'footer.admin': 'Panneau d\'Administration',
+    'footer.poweredBy': 'Alimenté Par',
+    'footer.rightsReserved': 'Tous droits réservés.',
     
     // Status Messages
     'status.scanning': 'Scan du Code-Barres',
@@ -1504,6 +1525,13 @@ export const translations: Record<Language, Record<string, string>> = {
     // Footer
     'footer.createdBy': 'Erstellt von',
     'footer.linkedin': 'LinkedIn-Profil',
+    'footer.description': 'Fortschrittliche KI-gestützte Lebensmittelanalyse für gesündere Entscheidungen. Scannen Sie jedes Produkt, um dessen Verarbeitungsgrad und Nährwertinformationen zu entdecken.',
+    'footer.quickLinks': 'Schnelle Links',
+    'footer.createAccount': 'Konto Erstellen',
+    'footer.signIn': 'Anmelden',
+    'footer.admin': 'Admin-Panel',
+    'footer.poweredBy': 'Angetrieben Von',
+    'footer.rightsReserved': 'Alle Rechte vorbehalten.',
     
     // Status Messages
     'status.scanning': 'Barcode Wird Gescannt',
@@ -1760,6 +1788,13 @@ export const translations: Record<Language, Record<string, string>> = {
     // Footer
     'footer.createdBy': '创建者',
     'footer.linkedin': 'LinkedIn档案',
+    'footer.description': '先进的AI驱动食品分析，助您做出更健康的选择。扫描任何产品以发现其加工程度和营养信息。',
+    'footer.quickLinks': '快速链接',
+    'footer.createAccount': '创建账户',
+    'footer.signIn': '登录',
+    'footer.admin': '管理面板',
+    'footer.poweredBy': '技术支持',
+    'footer.rightsReserved': '版权所有。',
     
     // Status Messages
     'status.scanning': '扫描条形码',
@@ -2071,6 +2106,13 @@ export const translations: Record<Language, Record<string, string>> = {
     // Footer
     'footer.createdBy': '作成者',
     'footer.linkedin': 'LinkedInプロフィール',
+    'footer.description': 'より健康的な選択のための先進的なAI駆動食品分析。任意の製品をスキャンして、その加工レベルと栄養情報を発見してください。',
+    'footer.quickLinks': 'クイックリンク',
+    'footer.createAccount': 'アカウント作成',
+    'footer.signIn': 'サインイン',
+    'footer.admin': '管理パネル',
+    'footer.poweredBy': '提供元',
+    'footer.rightsReserved': '全著作権所有。',
     
     // Status Messages
     'status.scanning': 'バーコードスキャン中',
@@ -2401,6 +2443,13 @@ export const translations: Record<Language, Record<string, string>> = {
     // Footer
     'footer.createdBy': 'Gemaakt door',
     'footer.linkedin': 'LinkedIn Profiel',
+    'footer.description': 'Geavanceerde AI-gestuurde voedselanalyse voor gezondere keuzes. Scan elk product om het verwerkingsniveau en voedingsinformatie te ontdekken.',
+    'footer.quickLinks': 'Snelle Links',
+    'footer.createAccount': 'Account Aanmaken',
+    'footer.signIn': 'Inloggen',
+    'footer.admin': 'Beheerpaneel',
+    'footer.poweredBy': 'Mogelijk Gemaakt Door',
+    'footer.rightsReserved': 'Alle rechten voorbehouden.',
     
     // Status Messages
     'status.scanning': 'Barcode Scannen',
