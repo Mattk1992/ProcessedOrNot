@@ -5,10 +5,10 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Camera, Search, Loader2, X, RotateCcw, ZoomIn, ZoomOut, Eye } from 'lucide-react';
 import { BrowserMultiFormatReader } from '@zxing/library';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/contexts/LanguageContext';
 import { useLocation } from 'wouter';
 import SearchFilter from '@/components/search-filter';
-import logoPath from '@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png';
+import logoPath from '@assets/ProcessedOrNot_logo.png';
 
 interface BarcodeScannerProps {
   onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
@@ -54,7 +54,7 @@ const sampleProducts = [
 ];
 
 export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const [location] = useLocation();
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [barcode, setBarcode] = useState('');
@@ -149,11 +149,11 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     setIsScanning(true);
     setScanningStatusText(t('scanner.camera.scanning'));
     
-    const scan = async () => {
+    const scan = () => {
       if (!videoRef.current || !isCameraActive) return;
       
       try {
-        const result = await reader.decodeFromVideoElement(videoRef.current);
+        const result = reader.decodeFromVideoElement(videoRef.current);
         if (result && result.getText()) {
           const scannedCode = result.getText();
           
