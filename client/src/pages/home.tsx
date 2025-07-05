@@ -25,7 +25,9 @@ export default function Home() {
   // Check if this is a first-time user
   useEffect(() => {
     const hasSeenTutorial = localStorage.getItem('processedornot-tutorial-completed');
-    if (!hasSeenTutorial) {
+    const tutorialDisabled = localStorage.getItem('processedornot-tutorial-disabled');
+    
+    if (!hasSeenTutorial && !tutorialDisabled) {
       // Show tutorial after a short delay to let the page load
       const timer = setTimeout(() => {
         setShowTutorial(true);

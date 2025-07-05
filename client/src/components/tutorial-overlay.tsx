@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, ChevronRight, ChevronLeft, Camera, Search, MessageCircle, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface TutorialStep {
@@ -23,6 +24,7 @@ interface TutorialOverlayProps {
 export default function TutorialOverlay({ isOpen, onClose, onComplete }: TutorialOverlayProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const { t } = useLanguage();
 
   const tutorialSteps: TutorialStep[] = [
@@ -122,14 +124,22 @@ export default function TutorialOverlay({ isOpen, onClose, onComplete }: Tutoria
   };
 
   const handleComplete = () => {
+    if (dontShowAgain) {
+      localStorage.setItem('processedornot-tutorial-disabled', 'true');
+    }
     onComplete();
     onClose();
     setCurrentStep(0);
+    setDontShowAgain(false);
   };
 
   const handleSkip = () => {
+    if (dontShowAgain) {
+      localStorage.setItem('processedornot-tutorial-disabled', 'true');
+    }
     onClose();
     setCurrentStep(0);
+    setDontShowAgain(false);
   };
 
   const getStepPosition = () => {
@@ -232,7 +242,7 @@ export default function TutorialOverlay({ isOpen, onClose, onComplete }: Tutoria
     }
   };
 
-  if (!isVisible) return null;
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-[1000] tutorial-overlay">
@@ -282,6 +292,22 @@ export default function TutorialOverlay({ isOpen, onClose, onComplete }: Tutoria
                 style={{ width: `${((currentStep + 1) / tutorialSteps.length) * 100}%` }}
               />
             </div>
+          </div>
+
+          {/* Don't show again checkbox */}
+          <div className="flex items-center space-x-2 mb-4 p-3 bg-muted/30 rounded-lg border border-border/50">
+            <Checkbox 
+              id="dont-show-again"
+              checked={dontShowAgain}
+              onCheckedChange={(checked) => setDontShowAgain(checked as boolean)}
+              className="h-4 w-4"
+            />
+            <label 
+              htmlFor="dont-show-again" 
+              className="text-sm text-muted-foreground cursor-pointer select-none"
+            >
+              Don't show this tutorial again
+            </label>
           </div>
 
           {/* Navigation */}
