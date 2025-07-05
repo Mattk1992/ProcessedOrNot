@@ -45,7 +45,7 @@ export default function LanguageSwitcher() {
           className="gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg group overflow-hidden relative language-selector-glow"
         >
           <Globe className="h-4 w-4 transition-transform duration-300 group-hover:rotate-12" />
-          <span className={`hidden sm:inline text-xl transition-transform duration-300 group-hover:scale-110 flag-transition language-flag-current ${justChanged ? 'language-flag-bounce' : ''}`}>
+          <span className={`sm:inline md:hidden text-xl transition-transform duration-300 group-hover:scale-110 flag-transition language-flag-current ${justChanged ? 'language-flag-bounce' : ''}`}>
             {languages[language].flag}
           </span>
           <span className="hidden md:inline transition-all duration-300 group-hover:text-primary font-medium">
