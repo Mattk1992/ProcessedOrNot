@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { smartProductLookup, cascadingProductLookup } from "./lib/product-lookup";
-import { analyzeIngredients } from "./lib/openai";
+import { analyzeIngredients, analyzeGlycemicIndex } from "./lib/openai";
 import { getNutriBotResponse, generateProductNutritionInsight, generateFunFacts, generateNutritionSpotlightInsights } from "./lib/nutribot";
 import { 
   insertProductSchema,
@@ -416,6 +416,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("Failed to analyze ingredients:", error);
           productData.processingExplanation = "Unable to analyze ingredients at this time";
         }
+
+        // Analyze glycemic index if we have nutrition data
+        if (productData.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              productData.ingredientsText,
+              productData.productName || "Unknown Product",
+              productData.nutriments,
+              language || 'en'
+            );
+            productData.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            productData.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            productData.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze glycemic index:", error);
+            productData.glycemicExplanation = "Unable to analyze glycemic impact at this time";
+          }
+        }
       }
 
       // Set data source and timestamp
@@ -467,6 +485,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error analyzing ingredients:", error);
       res.status(500).json({ 
         message: "Failed to analyze ingredients" 
+      });
+    }
+  });
+
+  // Get detailed glycemic index analysis
+  app.get("/api/products/:barcode/glycemic", async (req, res) => {
+    try {
+      const barcode = decodeURIComponent(req.params.barcode);
+      const { language } = req.query;
+
+      const product = await storage.getProductByBarcode(barcode);
+      if (!product || !product.ingredientsText) {
+        return res.status(404).json({ 
+          message: "Product or ingredients not found" 
+        });
+      }
+
+      const glycemicAnalysis = await analyzeGlycemicIndex(
+        product.ingredientsText,
+        product.productName || "Unknown Product",
+        product.nutriments,
+        (language as string) || 'en'
+      );
+
+      res.json(glycemicAnalysis);
+
+    } catch (error) {
+      console.error("Error analyzing glycemic index:", error);
+      res.status(500).json({ 
+        message: "Failed to analyze glycemic index" 
       });
     }
   });

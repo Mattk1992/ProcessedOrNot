@@ -12,6 +12,9 @@ export const products = pgTable("products", {
   nutriments: jsonb("nutriments"),
   processingScore: integer("processing_score"),
   processingExplanation: text("processing_explanation"),
+  glycemicIndex: integer("glycemic_index"),
+  glycemicLoad: integer("glycemic_load"),
+  glycemicExplanation: text("glycemic_explanation"),
   dataSource: text("data_source").default("OpenFoodFacts"),
   lastUpdated: text("last_updated"),
 });
@@ -54,6 +57,15 @@ export type ProcessingAnalysis = {
     processed: string[];
     minimallyProcessed: string[];
   };
+};
+
+// Glycemic analysis response type
+export type GlycemicAnalysis = {
+  glycemicIndex: number;
+  glycemicLoad: number;
+  explanation: string;
+  category: 'Low' | 'Medium' | 'High';
+  impactDescription: string;
 };
 
 // User Account System

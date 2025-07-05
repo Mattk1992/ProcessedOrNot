@@ -217,6 +217,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.quick.fat': 'Fat',
     'nutrition.quick.protein': 'Protein',
     
+    // Glycemic Index
+    'glycemic.index.title': 'Glycemic Index',
+    'glycemic.index.gi': 'Glycemic Index',
+    'glycemic.index.gl': 'Glycemic Load',
+    'glycemic.index.explanation': 'Blood Sugar Impact',
+    'glycemic.index.low': 'Low',
+    'glycemic.index.medium': 'Medium',
+    'glycemic.index.high': 'High',
+    
     // Product Information
     'product.image.alt': 'Product image',
     'product.barcode': 'Barcode',
@@ -641,6 +650,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.quick.sugars': 'Azúcares',
     'nutrition.quick.fat': 'Grasa',
     'nutrition.quick.protein': 'Proteína',
+    
+    // Glycemic Index
+    'glycemic.index.title': 'Índice Glucémico',
+    'glycemic.index.gi': 'Índice Glucémico',
+    'glycemic.index.gl': 'Carga Glucémica',
+    'glycemic.index.explanation': 'Impacto en el Azúcar en Sangre',
+    'glycemic.index.low': 'Bajo',
+    'glycemic.index.medium': 'Medio',
+    'glycemic.index.high': 'Alto',
     
     // Product Information
     'product.image.alt': 'Imagen del producto',
@@ -1099,6 +1117,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.quick.fat': 'Graisse',
     'nutrition.quick.protein': 'Protéine',
     
+    // Glycemic Index
+    'glycemic.index.title': 'Index Glycémique',
+    'glycemic.index.gi': 'Index Glycémique',
+    'glycemic.index.gl': 'Charge Glycémique',
+    'glycemic.index.explanation': 'Impact sur la Glycémie',
+    'glycemic.index.low': 'Faible',
+    'glycemic.index.medium': 'Moyen',
+    'glycemic.index.high': 'Élevé',
+    
     // Product Information
     'product.image.alt': 'Image du produit',
     'product.barcode': 'Code-barres',
@@ -1451,6 +1478,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.quick.fat': 'Fett',
     'nutrition.quick.protein': 'Protein',
     
+    // Glycemic Index
+    'glycemic.index.title': 'Glykämischer Index',
+    'glycemic.index.gi': 'Glykämischer Index',
+    'glycemic.index.gl': 'Glykämische Last',
+    'glycemic.index.explanation': 'Blutzucker-Auswirkung',
+    'glycemic.index.low': 'Niedrig',
+    'glycemic.index.medium': 'Mittel',
+    'glycemic.index.high': 'Hoch',
+    
     // Product Information
     'product.image.alt': 'Produktbild',
     'product.barcode': 'Barcode',
@@ -1697,6 +1733,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.quick.sugars': '糖',
     'nutrition.quick.fat': '脂肪',
     'nutrition.quick.protein': '蛋白质',
+    
+    // Glycemic Index
+    'glycemic.index.title': '血糖指数',
+    'glycemic.index.gi': '血糖指数',
+    'glycemic.index.gl': '血糖负荷',
+    'glycemic.index.explanation': '血糖影响',
+    'glycemic.index.low': '低',
+    'glycemic.index.medium': '中',
+    'glycemic.index.high': '高',
     
     // Product Information
     'product.image.alt': '产品图片',
@@ -1999,6 +2044,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.quick.sugars': '糖分',
     'nutrition.quick.fat': '脂肪',
     'nutrition.quick.protein': 'タンパク質',
+    
+    // Glycemic Index
+    'glycemic.index.title': '血糖指数',
+    'glycemic.index.gi': '血糖指数',
+    'glycemic.index.gl': '血糖負荷',
+    'glycemic.index.explanation': '血糖への影響',
+    'glycemic.index.low': '低い',
+    'glycemic.index.medium': '中程度',
+    'glycemic.index.high': '高い',
     
     // Product Information
     'product.image.alt': '製品画像',
@@ -2320,6 +2374,15 @@ export const translations: Record<Language, Record<string, string>> = {
     'nutrition.quick.sugars': 'Suikers',
     'nutrition.quick.fat': 'Vet',
     'nutrition.quick.protein': 'Eiwit',
+    
+    // Glycemic Index
+    'glycemic.index.title': 'Glycemische Index',
+    'glycemic.index.gi': 'Glycemische Index',
+    'glycemic.index.gl': 'Glycemische Belasting',
+    'glycemic.index.explanation': 'Bloedsuikerimpact',
+    'glycemic.index.low': 'Laag',
+    'glycemic.index.medium': 'Gemiddeld',
+    'glycemic.index.high': 'Hoog',
     
     // Product Information
     'product.image.alt': 'Product afbeelding',

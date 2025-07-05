@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { InsertProduct } from "@shared/schema";
-import { analyzeIngredients } from "./openai";
+import { analyzeIngredients, analyzeGlycemicIndex } from "./openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -84,6 +84,9 @@ Focus on finding real, accurate product information including ingredients and nu
     // Analyze ingredients if available
     let processingScore = 0;
     let processingExplanation = "No ingredients available for analysis";
+    let glycemicIndex = null;
+    let glycemicLoad = null;
+    let glycemicExplanation = "No data available for glycemic analysis";
 
     if (searchResult.ingredientsText) {
       try {
@@ -96,6 +99,23 @@ Focus on finding real, accurate product information including ingredients and nu
       } catch (error) {
         console.error("Failed to analyze text search ingredients:", error);
         processingExplanation = "Unable to analyze ingredients at this time";
+      }
+
+      // Analyze glycemic index if we have both ingredients and nutrition data
+      if (searchResult.nutriments) {
+        try {
+          const glycemicAnalysis = await analyzeGlycemicIndex(
+            searchResult.ingredientsText,
+            searchResult.productName || productName,
+            searchResult.nutriments
+          );
+          glycemicIndex = glycemicAnalysis.glycemicIndex;
+          glycemicLoad = glycemicAnalysis.glycemicLoad;
+          glycemicExplanation = glycemicAnalysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze glycemic index:", error);
+          glycemicExplanation = "Unable to analyze glycemic impact at this time";
+        }
       }
     } else {
       // If no ingredients found, try to get them separately
@@ -130,6 +150,23 @@ Provide only the ingredients list in this format:
           );
           processingScore = analysis.score;
           processingExplanation = analysis.explanation;
+
+          // Analyze glycemic index if we have nutrition data
+          if (searchResult.nutriments) {
+            try {
+              const glycemicAnalysis = await analyzeGlycemicIndex(
+                ingredientsResult.ingredientsText,
+                searchResult.productName || productName,
+                searchResult.nutriments
+              );
+              glycemicIndex = glycemicAnalysis.glycemicIndex;
+              glycemicLoad = glycemicAnalysis.glycemicLoad;
+              glycemicExplanation = glycemicAnalysis.explanation;
+            } catch (error) {
+              console.error("Failed to analyze glycemic index:", error);
+              glycemicExplanation = "Unable to analyze glycemic impact at this time";
+            }
+          }
         }
       } catch (error) {
         console.error("Failed to get ingredients for text search:", error);
@@ -145,6 +182,9 @@ Provide only the ingredients list in this format:
       nutriments: searchResult.nutriments || null,
       processingScore,
       processingExplanation,
+      glycemicIndex,
+      glycemicLoad,
+      glycemicExplanation,
       dataSource: 'Text Search'
     };
 

@@ -229,7 +229,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                         return nutrients?.energy_100g ? String(nutrients.energy_100g) : "N/A";
                       })()}
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.energy')}</div>
+                    <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.energy'))}</div>
                   </div>
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
@@ -238,7 +238,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                         return nutrients?.sugars_100g ? `${nutrients.sugars_100g}g` : "N/A";
                       })()}
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.sugars')}</div>
+                    <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.sugars'))}</div>
                   </div>
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-primary/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
@@ -247,7 +247,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                         return nutrients?.fat_100g ? `${nutrients.fat_100g}g` : "N/A";
                       })()}
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.fat')}</div>
+                    <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.fat'))}</div>
                   </div>
                   <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
                     <div className="text-2xl font-bold text-foreground mb-1">
@@ -256,7 +256,7 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                         return nutrients?.proteins_100g ? `${nutrients.proteins_100g}g` : "N/A";
                       })()}
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.protein')}</div>
+                    <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.protein'))}</div>
                   </div>
                 </div>
               )}
@@ -350,6 +350,67 @@ export default function ProductResults({ barcode }: ProductResultsProps) {
                   </div>
                 </div>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Glycemic Index Card */}
+      {(product.glycemicIndex !== null && product.glycemicIndex !== undefined) && (
+        <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
+          <CardContent className="pt-8 pb-8">
+            <div className="flex items-center space-x-3 mb-8">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{String(t('glycemic.index.title'))}</h3>
+            </div>
+            
+            <div className="space-y-8">
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 text-center border border-border/20">
+                  <div className="text-3xl font-bold text-foreground mb-2">
+                    {product.glycemicIndex}
+                  </div>
+                  <div className="text-sm text-muted-foreground font-medium">{String(t('glycemic.index.gi'))}</div>
+                  <div className={`text-xs font-semibold mt-2 px-2 py-1 rounded-full ${
+                    product.glycemicIndex <= 55 ? 'bg-emerald-100 text-emerald-800' : 
+                    product.glycemicIndex <= 70 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                  }`}>
+                    {product.glycemicIndex <= 55 ? String(t('glycemic.index.low')) : 
+                     product.glycemicIndex <= 70 ? String(t('glycemic.index.medium')) : String(t('glycemic.index.high'))}
+                  </div>
+                </div>
+                
+                {(product.glycemicLoad !== null && product.glycemicLoad !== undefined) && (
+                  <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 text-center border border-border/20">
+                    <div className="text-3xl font-bold text-foreground mb-2">
+                      {product.glycemicLoad}
+                    </div>
+                    <div className="text-sm text-muted-foreground font-medium">{String(t('glycemic.index.gl'))}</div>
+                    <div className={`text-xs font-semibold mt-2 px-2 py-1 rounded-full ${
+                      product.glycemicLoad <= 10 ? 'bg-emerald-100 text-emerald-800' : 
+                      product.glycemicLoad <= 20 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'
+                    }`}>
+                      {product.glycemicLoad <= 10 ? String(t('glycemic.index.low')) : 
+                       product.glycemicLoad <= 20 ? String(t('glycemic.index.medium')) : String(t('glycemic.index.high'))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Explanation */}
+              {product.glycemicExplanation && (
+                <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+                  <h4 className="text-lg font-semibold text-foreground mb-4">{String(t('glycemic.index.explanation'))}</h4>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {product.glycemicExplanation}
+                  </p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

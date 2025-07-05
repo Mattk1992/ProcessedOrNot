@@ -13,7 +13,7 @@ import { fetchProductFromNEVO } from "./nevo";
 import { fetchProductFromVoedingscentrum } from "./voedingscentrum";
 import { fetchProductFromFoodDataCentral } from "./fooddata-central";
 import { fetchProductFromKenniscentrum } from "./kenniscentrum";
-import { analyzeIngredients } from "./openai";
+import { analyzeIngredients, analyzeGlycemicIndex } from "./openai";
 import { isBarcode, searchProductByText } from "./text-search";
 
 interface ProductLookupResult {
@@ -49,6 +49,9 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
       // Analyze ingredients if available
       let processingScore = 0;
       let processingExplanation = "No ingredients available for analysis";
+      let glycemicIndex = null;
+      let glycemicLoad = null;
+      let glycemicExplanation = "No data available for glycemic analysis";
       
       if (product.ingredients_text) {
         try {
@@ -62,6 +65,23 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
           console.error("Failed to analyze ingredients:", error);
           processingExplanation = "Unable to analyze ingredients at this time";
         }
+
+        // Analyze glycemic index if we have both ingredients and nutrition data
+        if (product.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              product.ingredients_text,
+              product.product_name || "Unknown Product",
+              product.nutriments
+            );
+            glycemicIndex = glycemicAnalysis.glycemicIndex;
+            glycemicLoad = glycemicAnalysis.glycemicLoad;
+            glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze glycemic index:", error);
+            glycemicExplanation = "Unable to analyze glycemic impact at this time";
+          }
+        }
       }
 
       const productData: InsertProduct = {
@@ -73,6 +93,9 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
         nutriments: product.nutriments || null,
         processingScore,
         processingExplanation,
+        glycemicIndex,
+        glycemicLoad,
+        glycemicExplanation,
         dataSource: 'OpenFoodFacts'
       };
 
