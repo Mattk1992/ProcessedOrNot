@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
-import BarcodeScanner from "@/components/barcode-scanner";
+import BarcodeScanner, { BarcodeScannerRef } from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
 import HeaderDropdown from "@/components/header-dropdown";
@@ -30,6 +30,7 @@ export default function Home() {
   const [isScanning, setIsScanning] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
   const [cameraControls, setCameraControls] = useState<CameraControls | null>(null);
+  const barcodeScannerRef = useRef<BarcodeScannerRef>(null);
 
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -71,9 +72,21 @@ export default function Home() {
     setShowTutorial(true);
   };
 
-  const handleCameraControlsReady = (controls: CameraControls) => {
-    setCameraControls(controls);
-  };
+  // Update camera controls from scanner ref
+  useEffect(() => {
+    const updateCameraControls = () => {
+      if (barcodeScannerRef.current) {
+        const controls = barcodeScannerRef.current.getCameraControls();
+        setCameraControls(controls);
+      }
+    };
+
+    // Update controls periodically to keep them fresh
+    updateCameraControls();
+    const interval = setInterval(updateCameraControls, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleProductFound = (product: any) => {
     // Don't show nutrition popup during tutorial
@@ -235,9 +248,9 @@ export default function Home() {
 
         <div className="slide-up">
           <BarcodeScanner 
+            ref={barcodeScannerRef}
             onScan={handleScan} 
             isLoading={isScanning} 
-            onCameraControlsReady={handleCameraControlsReady}
           />
         </div>
 

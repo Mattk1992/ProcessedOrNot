@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useImperativeHandle, forwardRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
@@ -24,7 +24,10 @@ interface CameraControls {
 interface BarcodeScannerProps {
   onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
   isLoading?: boolean;
-  onCameraControlsReady?: (controls: CameraControls) => void;
+}
+
+export interface BarcodeScannerRef {
+  getCameraControls: () => CameraControls;
 }
 
 interface SearchFilters {
@@ -41,7 +44,7 @@ const sampleProducts = [
   { barcode: "Dark Chocolate", name: "Dark Chocolate", description: "Text search" },
 ];
 
-export default function BarcodeScanner({ onScan, isLoading = false, onCameraControlsReady }: BarcodeScannerProps) {
+const BarcodeScanner = forwardRef<BarcodeScannerRef, BarcodeScannerProps>(({ onScan, isLoading = false }, ref) => {
   const { t } = useLanguage();
   const [location] = useLocation();
   const [barcode, setBarcode] = useState("");
@@ -62,6 +65,7 @@ export default function BarcodeScanner({ onScan, isLoading = false, onCameraCont
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
   const currentLocationRef = useRef(location);
+  const controlsRef = useRef<CameraControls | null>(null);
 
   // Fetch camera timeout setting from public endpoint
   const { data: timeoutData } = useQuery({
@@ -597,22 +601,19 @@ export default function BarcodeScanner({ onScan, isLoading = false, onCameraCont
     }
   }, [isCameraActive, stopCamera, startCamera]);
 
-  // Expose camera controls to parent component
-  useEffect(() => {
-    if (onCameraControlsReady) {
-      const controls: CameraControls = {
-        startCamera,
-        stopCamera,
-        resetZoom,
-        restartCamera,
-        isCameraActive,
-        isScanning,
-        zoomLevel,
-        cameraError
-      };
-      onCameraControlsReady(controls);
-    }
-  }, [onCameraControlsReady, startCamera, stopCamera, resetZoom, restartCamera, isCameraActive, isScanning, zoomLevel, cameraError]);
+  // Expose camera controls via ref
+  useImperativeHandle(ref, () => ({
+    getCameraControls: () => ({
+      startCamera,
+      stopCamera,
+      resetZoom,
+      restartCamera,
+      isCameraActive,
+      isScanning,
+      zoomLevel,
+      cameraError
+    })
+  }), [startCamera, stopCamera, resetZoom, restartCamera, isCameraActive, isScanning, zoomLevel, cameraError]);
 
   return (
     <div className="space-y-10">
@@ -955,4 +956,6 @@ export default function BarcodeScanner({ onScan, isLoading = false, onCameraCont
       </Card>
     </div>
   );
-}
+});
+
+export default BarcodeScanner;
