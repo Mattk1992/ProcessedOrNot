@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Settings, Bot, ArrowLeft, Save, Sparkles, Brain, Zap, Cpu } from "lucide-react";
+import { Settings, Bot, ArrowLeft, Save, Sparkles, Brain, Zap, Cpu, Camera } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 interface UserSetting {
@@ -61,6 +61,24 @@ const aiProviders: AIProvider[] = [
   }
 ];
 
+interface BarcodeScannerSystem {
+  value: string;
+  label: string;
+  description: string;
+  icon: any;
+  color: string;
+}
+
+const barcodeScannerSystems: BarcodeScannerSystem[] = [
+  {
+    value: "Main Barcode Scanner",
+    label: "Main Barcode Scanner",
+    description: "Advanced ZXing-based scanner with optimized camera settings",
+    icon: Camera,
+    color: "text-blue-600 dark:text-blue-400"
+  }
+];
+
 export default function SettingsPage() {
   const [, setLocation] = useLocation();
   const { user, isAuthenticated } = useAuth();
@@ -68,6 +86,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedAIProvider, setSelectedAIProvider] = useState<string>("");
+  const [selectedBarcodeScannerSystem, setSelectedBarcodeScannerSystem] = useState<string>("");
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -82,12 +101,28 @@ export default function SettingsPage() {
     enabled: !!user,
   });
 
+  // Fetch user's barcode scanner system setting
+  const { data: barcodeScannerSetting, isLoading: isBarcodeScannerLoading } = useQuery({
+    queryKey: ["/api/user/settings/barcode_scanner_system"],
+    enabled: !!user,
+  });
+
   // Set selected AI provider when data loads
   useEffect(() => {
     if (aiProviderSetting) {
       setSelectedAIProvider(aiProviderSetting.settingValue || "ChatGPT");
     }
   }, [aiProviderSetting]);
+
+  // Set selected barcode scanner system when data loads
+  useEffect(() => {
+    if (barcodeScannerSetting) {
+      setSelectedBarcodeScannerSystem(barcodeScannerSetting.settingValue || "Main Barcode Scanner");
+    } else {
+      // Set default to Main Barcode Scanner if no setting exists
+      setSelectedBarcodeScannerSystem("Main Barcode Scanner");
+    }
+  }, [barcodeScannerSetting]);
 
   // Update AI provider mutation
   const updateAIProviderMutation = useMutation({
@@ -111,9 +146,37 @@ export default function SettingsPage() {
     },
   });
 
+  // Update barcode scanner system mutation
+  const updateBarcodeScannerSystemMutation = useMutation({
+    mutationFn: async (system: string) => {
+      return apiRequest("/api/user/settings/barcode_scanner_system", "PUT", { settingValue: system });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/user/settings"] });
+      toast({
+        title: "Settings Updated",
+        description: `Barcode scanner system has been changed to ${selectedBarcodeScannerSystem}`,
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update barcode scanner system setting. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSaveAIProvider = () => {
     if (selectedAIProvider && selectedAIProvider !== aiProviderSetting?.settingValue) {
       updateAIProviderMutation.mutate(selectedAIProvider);
+    }
+  };
+
+  const handleSaveBarcodeScannerSystem = () => {
+    if (selectedBarcodeScannerSystem && selectedBarcodeScannerSystem !== barcodeScannerSetting?.settingValue) {
+      updateBarcodeScannerSystemMutation.mutate(selectedBarcodeScannerSystem);
     }
   };
 
@@ -293,22 +356,101 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Additional Settings Card Placeholder */}
+          {/* Barcode Scanner System Settings Card */}
           <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg mt-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                More Settings
+                <Camera className="h-5 w-5" />
+                Barcode Scan System
               </CardTitle>
               <CardDescription>
-                Additional customization options coming soon
+                Choose your preferred barcode scanner for product searches
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>More personalization options will be available here in future updates.</p>
-              </div>
+              {isBarcodeScannerLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-gray-500 dark:text-gray-400">Loading scanner settings...</p>
+                </div>
+              ) : (
+                <>
+                  <div className="space-y-6">
+                    <div className="space-y-4">
+                      <Label htmlFor="barcode-scanner-system" className="text-sm font-medium">
+                        Scanner System
+                      </Label>
+                      <Select
+                        value={selectedBarcodeScannerSystem}
+                        onValueChange={setSelectedBarcodeScannerSystem}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a barcode scanner system">
+                            {selectedBarcodeScannerSystem && (
+                              <div className="flex items-center gap-2">
+                                <Camera className="h-4 w-4 text-blue-600" />
+                                <span>{selectedBarcodeScannerSystem}</span>
+                              </div>
+                            )}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {barcodeScannerSystems.map((system) => (
+                            <SelectItem key={system.value} value={system.value} className="h-16">
+                              <div className="flex items-center gap-3 py-2">
+                                <div className={`p-1.5 rounded-md bg-gray-100 dark:bg-gray-700`}>
+                                  <system.icon className={`h-4 w-4 ${system.color}`} />
+                                </div>
+                                <div className="flex-1">
+                                  <div className="font-medium">{system.label}</div>
+                                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    {system.description}
+                                  </div>
+                                </div>
+                              </div>
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      {/* Scanner System Description */}
+                      <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-800">
+                            <Camera className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="font-medium text-gray-900 dark:text-white">
+                              {selectedBarcodeScannerSystem}
+                            </h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                              {barcodeScannerSystems.find(s => s.value === selectedBarcodeScannerSystem)?.description}
+                            </p>
+                            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                              <Badge variant="secondary" className="text-xs">
+                                Default System
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Save Button */}
+                    <div className="flex justify-end">
+                      <Button
+                        onClick={handleSaveBarcodeScannerSystem}
+                        disabled={updateBarcodeScannerSystemMutation.isPending || 
+                                selectedBarcodeScannerSystem === barcodeScannerSetting?.settingValue}
+                        className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        {updateBarcodeScannerSystemMutation.isPending ? "Saving..." : "Save Changes"}
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
