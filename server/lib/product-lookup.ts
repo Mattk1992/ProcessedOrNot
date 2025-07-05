@@ -66,11 +66,11 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
           processingExplanation = "Unable to analyze ingredients at this time";
         }
 
-        // Analyze glycemic index if we have both ingredients and nutrition data
+        // Analyze glycemic index if we have nutrition data (ingredients not required)
         if (product.nutriments) {
           try {
             const glycemicAnalysis = await analyzeGlycemicIndex(
-              product.ingredients_text,
+              product.ingredients_text || "",
               product.product_name || "Unknown Product",
               product.nutriments
             );

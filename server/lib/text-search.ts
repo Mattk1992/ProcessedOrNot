@@ -184,11 +184,11 @@ Provide realistic nutritional values based on typical products of this type. Thi
         processingExplanation = "Unable to analyze ingredients at this time";
       }
 
-      // Analyze glycemic index if we have both ingredients and nutrition data
+      // Analyze glycemic index if we have nutrition data (ingredients not required)
       if (searchResult.nutriments) {
         try {
           const glycemicAnalysis = await analyzeGlycemicIndex(
-            searchResult.ingredientsText,
+            searchResult.ingredientsText || "",
             searchResult.productName || productName,
             searchResult.nutriments
           );

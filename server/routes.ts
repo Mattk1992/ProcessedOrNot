@@ -818,6 +818,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Re-analyze products missing glycemic index data
+  app.post("/api/admin/reanalyze-products", requireAuth, async (req, res) => {
+    try {
+      // Check if user is admin
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      const user = await storage.getUserById(req.session.userId);
+      if (!user || user.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Get products without glycemic index data but with nutrition data
+      const products = await storage.getProductsWithoutGlycemicIndex();
+      let analyzed = 0;
+      let failed = 0;
+
+      for (const product of products) {
+        try {
+          if (product.nutriments) {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              product.ingredientsText || "",
+              product.productName || "Unknown Product", 
+              product.nutriments
+            );
+            
+            await storage.updateProduct(product.barcode, {
+              glycemicIndex: glycemicAnalysis.glycemicIndex,
+              glycemicLoad: glycemicAnalysis.glycemicLoad,
+              glycemicExplanation: glycemicAnalysis.explanation
+            });
+            analyzed++;
+          }
+        } catch (error) {
+          console.error(`Failed to analyze glycemic index for ${product.barcode}:`, error);
+          failed++;
+        }
+      }
+
+      res.json({
+        message: `Re-analysis complete: ${analyzed} products analyzed, ${failed} failed`,
+        analyzed,
+        failed,
+        total: products.length
+      });
+    } catch (error) {
+      console.error("Error re-analyzing products:", error);
+      res.status(500).json({ message: "Failed to re-analyze products" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

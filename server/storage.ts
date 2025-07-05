@@ -12,7 +12,7 @@ import {
   type InsertSearchHistory
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, sql, or } from "drizzle-orm";
+import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
 import { hashPassword, verifyPassword, generateEmailVerificationToken, generatePasswordResetToken, sanitizeUser, generateSearchId } from "./lib/auth";
 
 export interface IStorage {
@@ -50,6 +50,7 @@ export interface IStorage {
   getProductByBarcode(barcode: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(barcode: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
+  getProductsWithoutGlycemicIndex(): Promise<Product[]>;
   
   // Search history methods
   createSearchHistory(searchHistory: InsertSearchHistory): Promise<SearchHistory>;
@@ -335,6 +336,19 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return product || undefined;
+  }
+
+  async getProductsWithoutGlycemicIndex(): Promise<Product[]> {
+    return await db
+      .select()
+      .from(products)
+      .where(
+        and(
+          isNull(products.glycemicIndex),
+          isNotNull(products.nutriments)
+        )
+      )
+      .limit(50); // Limit to 50 products to avoid overwhelming the API
   }
 
   // Search history methods
