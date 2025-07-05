@@ -882,7 +882,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/settings", async (req, res) => {
     try {
       const user = (req.session as any).user;
-      if (!user || user.role !== 'Admin') {
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
