@@ -249,10 +249,11 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         const videoTrack = stream.getVideoTracks()[0];
         if (videoTrack && 'applyConstraints' in videoTrack) {
           try {
-            // Apply enhanced camera settings for better autofocus
+            // Apply enhanced camera settings for better autofocus (short-range optimized)
             const advancedConstraints: any = {
               advanced: [{
                 focusMode: 'continuous',
+                focusDistance: 0.1, // Optimized for short-range barcode scanning
                 whiteBalanceMode: 'auto',
                 exposureMode: 'auto',
                 autoFocus: true,
@@ -302,7 +303,34 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           codeReaderRef.current.timeBetweenDecodingAttempts = 300;
         }
         
-        // Fallback to basic ZXing camera initialization
+        // Fallback to basic ZXing camera initialization with short-range focus
+        const fallbackStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            deviceId: { exact: selectedDeviceId },
+            width: { ideal: 1920, min: 640 },
+            height: { ideal: 1080, min: 480 },
+            facingMode: { ideal: 'environment' },
+          }
+        });
+        
+        finalVideoElement.srcObject = fallbackStream;
+        streamRef.current = fallbackStream;
+        
+        // Try to apply short-range focus for fallback
+        const fallbackVideoTrack = fallbackStream.getVideoTracks()[0];
+        if (fallbackVideoTrack && 'applyConstraints' in fallbackVideoTrack) {
+          try {
+            await fallbackVideoTrack.applyConstraints({
+              advanced: [{
+                focusMode: 'continuous',
+                focusDistance: 0.1, // Short-range focus for fallback
+              } as any]
+            });
+          } catch (fallbackConstraintError) {
+            console.warn('Fallback focus constraints not supported:', fallbackConstraintError);
+          }
+        }
+        
         await codeReaderRef.current.decodeFromVideoDevice(
           selectedDeviceId,
           finalVideoElement,
