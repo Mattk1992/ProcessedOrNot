@@ -122,12 +122,12 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
           {console.log('Dropdown menu is rendering, isOpen:', isOpen)}
           {/* Enhanced Backdrop with blur */}
           <div 
-            className="fixed inset-0 z-10 bg-black/20 backdrop-blur-sm" 
+            className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm" 
             onClick={() => setIsOpen(false)}
           />
           
           {/* Enhanced Dropdown Menu */}
-          <div className="absolute right-0 mt-3 w-72 max-w-[calc(100vw-2rem)] sm:max-w-[18rem] mobile-dropdown bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-20 overflow-hidden">
+          <div className="absolute right-0 mt-3 w-72 max-w-[calc(100vw-2rem)] sm:max-w-[18rem] mobile-dropdown bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 z-50 overflow-hidden" style={{ position: 'absolute', top: '100%', right: '0', visibility: 'visible', display: 'block' }}>
             
             {/* Header with user info */}
             {isAuthenticated && (
@@ -177,8 +177,7 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
                     item.action();
                     setIsOpen(false);
                   }}
-                  className="group flex items-center w-full px-6 py-3 text-left transition-all duration-200 hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:scale-[1.02] relative overflow-hidden dropdown-item-hover-effect dropdown-item-stagger"
-                  style={{ animationDelay: `${index * 100}ms` }}
+                  className="group flex items-center w-full px-6 py-3 text-left transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 relative overflow-hidden"
                 >
                   {/* Hover indicator */}
                   <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-accent scale-y-0 group-hover:scale-y-100 transition-transform duration-200 origin-center"></div>
