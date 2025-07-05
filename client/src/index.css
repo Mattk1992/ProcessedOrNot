@@ -785,4 +785,61 @@
       transform: translateY(0) rotateX(0deg);
     }
   }
+
+  /* Mobile Header Improvements */
+  @media (max-width: 640px) {
+    .mobile-header-compact {
+      padding: 0.75rem 1rem;
+    }
+    
+    .mobile-menu-button {
+      min-width: 2.5rem;
+      min-height: 2.5rem;
+      padding: 0.375rem 0.5rem;
+    }
+    
+    .mobile-logo {
+      width: 2rem;
+      height: 2rem;
+    }
+    
+    .mobile-title {
+      font-size: 1.125rem;
+      line-height: 1.75rem;
+    }
+    
+    .mobile-dropdown {
+      right: 0.5rem;
+      left: 0.5rem;
+      width: auto;
+      max-width: none;
+    }
+    
+    .mobile-touch-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    .mobile-menu-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      z-index: 10;
+    }
+  }
+
+  /* Extra small screens */
+  @media (max-width: 375px) {
+    .xs-hidden {
+      display: none;
+    }
+    
+    .xs-compact-padding {
+      padding: 0.5rem;
+    }
+  }
 }
