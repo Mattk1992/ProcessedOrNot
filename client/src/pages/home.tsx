@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
-import CameraSection from "@/components/camera-section";
-import ManualInput from "@/components/manual-input";
+import BarcodeScanner from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
 import LanguageSwitcher from "@/components/language-switcher";
 import HeaderDropdown from "@/components/header-dropdown";
@@ -178,11 +177,7 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 pb-8 sm:pb-12">
         <div className="slide-up">
-          <CameraSection onScan={handleScan} isLoading={isScanning} />
-        </div>
-        
-        <div className="slide-up">
-          <ManualInput onScan={handleScan} isLoading={isScanning} />
+          <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
         </div>
 
         
