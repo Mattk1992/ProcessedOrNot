@@ -650,13 +650,6 @@ export class DatabaseStorage implements IStorage {
         settingType: 'integer',
         description: 'Maximum number of concurrent AI analysis requests',
         category: 'performance'
-      },
-      {
-        settingKey: 'barcode_scanner_type',
-        settingValue: 'zxing',
-        settingType: 'select',
-        description: 'Default barcode scanner system for product scanning',
-        category: 'scanner'
       }
     ];
 
