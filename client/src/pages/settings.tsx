@@ -10,8 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Settings, Bot, ArrowLeft, Save, Sparkles, Brain, Zap, Cpu } from "lucide-react";
+import { Settings, Bot, ArrowLeft, Save, Sparkles, Brain, Zap, Cpu, Camera } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import { scannerTypes } from "@/components/barcode-scanners/scanner-manager";
 
 interface UserSetting {
   id: number;
@@ -293,21 +294,74 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
-          {/* Additional Settings Card Placeholder */}
+          {/* Barcode Scanner Settings */}
           <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                More Settings
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Camera className="h-6 w-6 text-blue-500" />
+                Barcode Scanners
               </CardTitle>
-              <CardDescription>
-                Additional customization options coming soon
+              <CardDescription className="text-base">
+                Choose your preferred barcode scanning method for optimal performance
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>More personalization options will be available here in future updates.</p>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <Label htmlFor="barcode-scanner" className="text-lg font-medium">
+                  Select Barcode Scanner
+                </Label>
+                
+                <Select value="default" onValueChange={() => {}}>
+                  <SelectTrigger id="barcode-scanner" className="w-full h-14">
+                    <SelectValue placeholder="Choose a barcode scanner">
+                      <div className="flex items-center gap-3">
+                        <Camera className="h-5 w-5 text-blue-500" />
+                        <span className="font-medium">Default Barcode Scanner</span>
+                      </div>
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {scannerTypes.map((scanner) => (
+                      <SelectItem key={scanner.key} value={scanner.key} className="h-16">
+                        <div className="flex items-center gap-3 py-2">
+                          <div className="p-1.5 rounded-md bg-gray-100 dark:bg-gray-700">
+                            <Camera className="h-4 w-4 text-blue-500" />
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium">{scanner.name}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
+                              {scanner.description}
+                            </div>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Scanner Descriptions */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                  {scannerTypes.map((scanner) => (
+                    <div
+                      key={scanner.key}
+                      className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-gray-300 dark:hover:border-gray-600 transition-all cursor-pointer"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                          <Camera className="h-5 w-5 text-blue-500" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-gray-900 dark:text-white">
+                            {scanner.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                            {scanner.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

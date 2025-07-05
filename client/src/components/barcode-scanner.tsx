@@ -10,6 +10,7 @@ import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SearchFilter from "./search-filter";
 import { QuickSettingsMenu } from "./quick-settings-menu";
+import { ScannerManager } from "./barcode-scanners/scanner-manager";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
@@ -583,8 +584,17 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       <Card className="border-0 shadow-none bg-transparent">
         <CardContent className="p-0">
           
-          {/* Camera Scanner Section - Optimized for Short-Range Barcode Scanning */}
+          {/* Camera Scanner Section */}
           {isCameraActive ? (
+            <ScannerManager
+              onScan={(barcode) => onScan(barcode)}
+              onClose={stopCamera}
+              isActive={isCameraActive}
+            />
+          ) : null}
+          
+          {/* Legacy Camera Section (keeping for reference) */}
+          {false && isCameraActive ? (
             <div className="space-y-6 mb-8">
               <div className="relative bg-black rounded-3xl overflow-hidden shadow-2xl glow-effect short-range-scanner">
                 <video

@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { Settings, Sparkles, Brain, ChartLine, Lightbulb, Share2, Utensils, BarChart3, Zap } from 'lucide-react';
+import { Settings, Sparkles, Brain, ChartLine, Lightbulb, Share2, Utensils, BarChart3, Zap, Camera } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { scannerTypes } from '@/components/barcode-scanners/scanner-manager';
 
 interface QuickSettingsMenuProps {
   className?: string;
@@ -62,6 +63,7 @@ export function QuickSettingsMenu({ className }: QuickSettingsMenuProps) {
   // Default settings
   const defaultSettings = {
     ai_provider: 'openai',
+    barcode_scanner: 'default',
     show_processing_analysis: 'true',
     show_glycemic_index: 'true',
     show_nutrition_spotlight: 'true',
@@ -172,6 +174,32 @@ export function QuickSettingsMenu({ className }: QuickSettingsMenuProps) {
                 <SelectItem value="google">Google Gemini</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Barcode Scanner Setting */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium flex items-center gap-2">
+              <Camera className="h-4 w-4" />
+              Barcode Scanner
+            </label>
+            <Select
+              value={getSetting('barcode_scanner')}
+              onValueChange={(value) => updateSetting('barcode_scanner', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select barcode scanner" />
+              </SelectTrigger>
+              <SelectContent>
+                {scannerTypes.map((scanner) => (
+                  <SelectItem key={scanner.key} value={scanner.key}>
+                    {scanner.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Choose your preferred barcode scanning method
+            </p>
           </div>
 
           {/* Output Control Settings */}

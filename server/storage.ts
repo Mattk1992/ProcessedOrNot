@@ -538,6 +538,13 @@ export class DatabaseStorage implements IStorage {
         description: 'Enable fallback to secondary food databases when primary lookup fails',
         category: 'search_engine'
       },
+      {
+        settingKey: 'default_barcode_scanner',
+        settingValue: 'default',
+        settingType: 'select',
+        description: 'Default barcode scanner system for all users',
+        category: 'search_engine'
+      },
       
       // AI Settings
       {
