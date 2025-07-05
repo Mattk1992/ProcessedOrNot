@@ -10,9 +10,21 @@ import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SearchFilter from "./search-filter";
 
+interface CameraControls {
+  startCamera: () => void;
+  stopCamera: () => void;
+  resetZoom: () => void;
+  restartCamera: () => void;
+  isCameraActive: boolean;
+  isScanning: boolean;
+  zoomLevel: number;
+  cameraError: string;
+}
+
 interface BarcodeScannerProps {
   onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
   isLoading?: boolean;
+  onCameraControlsReady?: (controls: CameraControls) => void;
 }
 
 interface SearchFilters {
@@ -29,7 +41,7 @@ const sampleProducts = [
   { barcode: "Dark Chocolate", name: "Dark Chocolate", description: "Text search" },
 ];
 
-export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
+export default function BarcodeScanner({ onScan, isLoading = false, onCameraControlsReady }: BarcodeScannerProps) {
   const { t } = useLanguage();
   const [location] = useLocation();
   const [barcode, setBarcode] = useState("");
@@ -568,6 +580,40 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     currentLocationRef.current = location;
   }, [location, isCameraActive, stopCamera]);
 
+  // Create restart camera function
+  const restartCamera = useCallback(async () => {
+    console.log('Restart camera clicked');
+    if (isCameraActive) {
+      // Stop the camera first
+      stopCamera();
+      // Wait for cleanup to complete
+      await new Promise(resolve => setTimeout(resolve, 800));
+      // Restart the camera
+      console.log('Restarting camera after cleanup');
+      startCamera();
+    } else {
+      console.log('Camera not active, starting camera');
+      startCamera();
+    }
+  }, [isCameraActive, stopCamera, startCamera]);
+
+  // Expose camera controls to parent component
+  useEffect(() => {
+    if (onCameraControlsReady) {
+      const controls: CameraControls = {
+        startCamera,
+        stopCamera,
+        resetZoom,
+        restartCamera,
+        isCameraActive,
+        isScanning,
+        zoomLevel,
+        cameraError
+      };
+      onCameraControlsReady(controls);
+    }
+  }, [onCameraControlsReady, startCamera, stopCamera, resetZoom, restartCamera, isCameraActive, isScanning, zoomLevel, cameraError]);
+
   return (
     <div className="space-y-10">
       <div className="text-center mb-8">
@@ -756,21 +802,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   <span className="sm:hidden">Reset</span>
                 </Button>
                 <Button
-                  onClick={async () => {
-                    console.log('Restart camera clicked');
-                    if (isCameraActive) {
-                      // Stop the camera first
-                      stopCamera();
-                      // Wait for cleanup to complete
-                      await new Promise(resolve => setTimeout(resolve, 800));
-                      // Restart the camera
-                      console.log('Restarting camera after cleanup');
-                      startCamera();
-                    } else {
-                      console.log('Camera not active, starting camera');
-                      startCamera();
-                    }
-                  }}
+                  onClick={restartCamera}
                   variant="outline"
                   className="flex-1 border-2 border-primary/20 text-primary hover:bg-primary/10 mobile-button-full touch-action-manipulation"
                 >
