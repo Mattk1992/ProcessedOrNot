@@ -26,6 +26,23 @@ export const insertProductSchema = createInsertSchema(products).omit({
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof products.$inferSelect;
 
+// Search History table
+export const searchHistory = pgTable("search_history", {
+  id: serial("id").primaryKey(),
+  searchId: varchar("search_id", { length: 255 }).notNull().unique(),
+  searchInput: text("search_input").notNull(),
+  searchInputType: varchar("search_input_type", { length: 50 }).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertSearchHistorySchema = createInsertSchema(searchHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertSearchHistory = z.infer<typeof insertSearchHistorySchema>;
+export type SearchHistory = typeof searchHistory.$inferSelect;
+
 // OpenFoodFacts API response types
 export type OpenFoodFactsProduct = {
   product: {

@@ -6,7 +6,10 @@ import {
   type LoginUser,
   products, 
   type Product, 
-  type InsertProduct 
+  type InsertProduct,
+  searchHistory,
+  type SearchHistory,
+  type InsertSearchHistory
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or } from "drizzle-orm";
@@ -47,6 +50,12 @@ export interface IStorage {
   getProductByBarcode(barcode: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(barcode: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
+  
+  // Search history methods
+  createSearchHistory(searchHistory: InsertSearchHistory): Promise<SearchHistory>;
+  getSearchHistoryBySearchId(searchId: string): Promise<SearchHistory | undefined>;
+  getAllSearchHistory(): Promise<SearchHistory[]>;
+  getRecentSearchHistory(limit?: number): Promise<SearchHistory[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -324,6 +333,38 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return product || undefined;
+  }
+
+  // Search history methods
+  async createSearchHistory(insertSearchHistory: InsertSearchHistory): Promise<SearchHistory> {
+    const [searchRecord] = await db
+      .insert(searchHistory)
+      .values(insertSearchHistory)
+      .returning();
+    return searchRecord;
+  }
+
+  async getSearchHistoryBySearchId(searchId: string): Promise<SearchHistory | undefined> {
+    const [searchRecord] = await db
+      .select()
+      .from(searchHistory)
+      .where(eq(searchHistory.searchId, searchId));
+    return searchRecord || undefined;
+  }
+
+  async getAllSearchHistory(): Promise<SearchHistory[]> {
+    return await db
+      .select()
+      .from(searchHistory)
+      .orderBy(desc(searchHistory.createdAt));
+  }
+
+  async getRecentSearchHistory(limit: number = 50): Promise<SearchHistory[]> {
+    return await db
+      .select()
+      .from(searchHistory)
+      .orderBy(desc(searchHistory.createdAt))
+      .limit(limit);
   }
 }
 

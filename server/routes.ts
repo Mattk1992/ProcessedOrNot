@@ -13,9 +13,10 @@ import {
   type RegisterUser,
   type LoginUser,
   type ForgotPassword,
-  type ResetPassword
+  type ResetPassword,
+  type InsertSearchHistory
 } from "@shared/schema";
-import { generatePasswordResetToken, sendPasswordResetEmail, sendEmailVerification, sanitizeUser } from "./lib/auth";
+import { generatePasswordResetToken, sendPasswordResetEmail, sendEmailVerification, sanitizeUser, generateSearchId } from "./lib/auth";
 import session from "express-session";
 import { z } from "zod";
 
@@ -343,6 +344,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
 
+      // Track search history
+      const searchId = generateSearchId();
+      const isBarcode = /^[0-9]{8,14}$/.test(barcode.trim());
+      const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
+      
+      try {
+        await storage.createSearchHistory({
+          searchId,
+          searchInput: barcode,
+          searchInputType
+        });
+      } catch (historyError) {
+        console.warn("Failed to track search history:", historyError);
+        // Continue with the search even if history tracking fails
+      }
+
       // Check if we have cached product data
       const cachedProduct = await storage.getProductByBarcode(barcode);
       if (cachedProduct) {
@@ -629,6 +646,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error generating nutrition spotlight:", error);
       res.status(500).json({ 
         message: "Failed to generate nutrition insights" 
+      });
+    }
+  });
+
+  // Search History API Routes
+  
+  // Get all search history
+  app.get("/api/search-history", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
+      const searchHistory = await storage.getRecentSearchHistory(limit);
+      res.json(searchHistory);
+    } catch (error) {
+      console.error("Error fetching search history:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch search history" 
+      });
+    }
+  });
+
+  // Get search history statistics (must come before the :searchId route)
+  app.get("/api/search-history/stats", async (req, res) => {
+    try {
+      const allHistory = await storage.getAllSearchHistory();
+      const barcodeSearches = allHistory.filter(record => record.searchInputType === 'BarcodeInput');
+      const textSearches = allHistory.filter(record => record.searchInputType === 'TextInput');
+      
+      const stats = {
+        totalSearches: allHistory.length,
+        barcodeSearches: barcodeSearches.length,
+        textSearches: textSearches.length,
+        recentSearches: allHistory.slice(0, 10) // Last 10 searches
+      };
+      
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching search history stats:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch search history statistics" 
+      });
+    }
+  });
+
+  // Get search history by search ID
+  app.get("/api/search-history/:searchId", async (req, res) => {
+    try {
+      const { searchId } = req.params;
+      const searchRecord = await storage.getSearchHistoryBySearchId(searchId);
+      
+      if (!searchRecord) {
+        return res.status(404).json({ 
+          message: "Search record not found" 
+        });
+      }
+      
+      res.json(searchRecord);
+    } catch (error) {
+      console.error("Error fetching search record:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch search record" 
       });
     }
   });

@@ -25,6 +25,10 @@ export function generateEmailVerificationToken(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
+export function generateSearchId(): string {
+  return crypto.randomBytes(16).toString('hex');
+}
+
 // Email utilities (placeholder - configure with real SMTP settings)
 export async function sendEmail(to: string, subject: string, html: string): Promise<void> {
   // Configure with real SMTP settings in production
