@@ -136,7 +136,7 @@ export default function Home() {
               {t('hero.title.part1')}
               <span className="gradient-text block mt-1 sm:mt-2">{t('hero.title.part2')}</span>
             </h2>
-            <p className="text-base sm:text-xl md:text-2xl mobile-hero-subtitle text-muted-foreground max-w-3xl mx-auto fade-in leading-relaxed px-2 hidden md:block">
+            <p className="text-base sm:text-xl md:text-2xl mobile-hero-subtitle text-muted-foreground max-w-3xl mx-auto fade-in leading-relaxed px-2">
               {t('hero.description')}
             </p>
             <div className="mt-4 sm:mt-8 flex justify-center">
