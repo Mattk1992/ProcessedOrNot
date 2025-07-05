@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ const sampleProducts = [
 
 export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
   const { t } = useLanguage();
+  const [location] = useLocation();
   const [barcode, setBarcode] = useState("");
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string>("");
@@ -47,6 +49,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   const streamRef = useRef<MediaStream | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
   const countdownRef = useRef<NodeJS.Timeout | null>(null);
+  const currentLocationRef = useRef(location);
 
   // Fetch camera timeout setting from public endpoint
   const { data: timeoutData } = useQuery({
@@ -355,6 +358,47 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       stopCamera();
     };
   }, [stopCamera]);
+
+  // Cleanup camera when leaving the website or tab becomes hidden
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden && isCameraActive) {
+        stopCamera();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      if (isCameraActive) {
+        stopCamera();
+      }
+    };
+
+    const handlePageHide = () => {
+      if (isCameraActive) {
+        stopCamera();
+      }
+    };
+
+    // Add event listeners
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('pagehide', handlePageHide);
+
+    // Cleanup event listeners
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('pagehide', handlePageHide);
+    };
+  }, [isCameraActive, stopCamera]);
+
+  // Cleanup camera when navigating to a different route
+  useEffect(() => {
+    if (currentLocationRef.current !== location && isCameraActive) {
+      stopCamera();
+    }
+    currentLocationRef.current = location;
+  }, [location, isCameraActive, stopCamera]);
 
   return (
     <div className="space-y-10">
