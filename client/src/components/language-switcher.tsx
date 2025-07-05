@@ -75,8 +75,8 @@ export default function LanguageSwitcher() {
             className="flex items-center gap-4 cursor-pointer p-4 rounded-xl transition-all duration-300 hover:bg-primary/10 hover:scale-[1.02] hover:shadow-lg group relative overflow-hidden language-item-hover"
             style={{ animationDelay: `${index * 50}ms` }}
           >
-            {/* Flag with enhanced animations */}
-            <div className="relative">
+            {/* Flag with enhanced animations - hidden on desktop */}
+            <div className="relative md:hidden">
               <span 
                 className={`text-3xl transition-all duration-400 flag-transition ${
                   hoveredLanguage === code ? 'scale-125 rotate-6' : 'scale-100'
@@ -146,7 +146,7 @@ export default function LanguageSwitcher() {
           <div className="flex items-center justify-center gap-3 px-3 py-2 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg">
             <span className="text-xs font-medium text-muted-foreground">{t('language.current')}:</span>
             <div className="flex items-center gap-2">
-              <span className="text-xl language-flag-pulse">{languages[language].flag}</span>
+              <span className="text-xl language-flag-pulse md:hidden">{languages[language].flag}</span>
               <span className="font-bold text-primary text-sm">{languages[language].code}</span>
               <span className="font-medium text-muted-foreground text-xs">{languages[language].name}</span>
             </div>
