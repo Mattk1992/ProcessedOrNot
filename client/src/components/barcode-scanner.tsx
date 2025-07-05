@@ -3,7 +3,7 @@ import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_174962362
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Loader2, Camera, X, RotateCcw } from "lucide-react";
+import { Search, Loader2, Camera, X, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -27,8 +27,12 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string>("");
   const [isScanning, setIsScanning] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [maxZoom, setMaxZoom] = useState(3);
+  const [minZoom, setMinZoom] = useState(1);
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +45,59 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     setBarcode(sampleBarcode);
     onScan(sampleBarcode);
   };
+
+  const handleZoomIn = useCallback(async () => {
+    if (zoomLevel < maxZoom && streamRef.current) {
+      const newZoom = Math.min(zoomLevel + 0.5, maxZoom);
+      setZoomLevel(newZoom);
+      
+      const videoTrack = streamRef.current.getVideoTracks()[0];
+      if (videoTrack && 'applyConstraints' in videoTrack) {
+        try {
+          await videoTrack.applyConstraints({
+            advanced: [{ zoom: newZoom } as any]
+          });
+        } catch (error) {
+          console.warn('Zoom not supported:', error);
+        }
+      }
+    }
+  }, [zoomLevel, maxZoom]);
+
+  const handleZoomOut = useCallback(async () => {
+    if (zoomLevel > minZoom && streamRef.current) {
+      const newZoom = Math.max(zoomLevel - 0.5, minZoom);
+      setZoomLevel(newZoom);
+      
+      const videoTrack = streamRef.current.getVideoTracks()[0];
+      if (videoTrack && 'applyConstraints' in videoTrack) {
+        try {
+          await videoTrack.applyConstraints({
+            advanced: [{ zoom: newZoom } as any]
+          });
+        } catch (error) {
+          console.warn('Zoom not supported:', error);
+        }
+      }
+    }
+  }, [zoomLevel, minZoom]);
+
+  const resetZoom = useCallback(async () => {
+    if (streamRef.current) {
+      setZoomLevel(1);
+      
+      const videoTrack = streamRef.current.getVideoTracks()[0];
+      if (videoTrack && 'applyConstraints' in videoTrack) {
+        try {
+          await videoTrack.applyConstraints({
+            advanced: [{ zoom: 1 } as any]
+          });
+        } catch (error) {
+          console.warn('Zoom reset not supported:', error);
+        }
+      }
+    }
+  }, []);
 
   const startCamera = useCallback(async () => {
     try {
@@ -114,6 +171,24 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         }
       );
 
+      // Store stream reference and detect zoom capabilities
+      const stream = finalVideoElement.srcObject as MediaStream;
+      streamRef.current = stream;
+      
+      // Check zoom capabilities
+      const videoTrack = stream.getVideoTracks()[0];
+      if (videoTrack && 'getCapabilities' in videoTrack) {
+        try {
+          const capabilities = videoTrack.getCapabilities() as any;
+          if (capabilities.zoom) {
+            setMinZoom(capabilities.zoom.min || 1);
+            setMaxZoom(capabilities.zoom.max || 3);
+          }
+        } catch (error) {
+          console.warn('Cannot get camera capabilities:', error);
+        }
+      }
+
     } catch (error) {
       console.error("Camera error:", error);
       setIsScanning(false);
@@ -149,6 +224,10 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         stream.getTracks().forEach(track => track.stop());
         videoRef.current.srcObject = null;
       }
+      
+      // Clear stream reference and reset zoom
+      streamRef.current = null;
+      setZoomLevel(1);
     } catch (error) {
       console.error("Error stopping camera:", error);
     } finally {
@@ -212,6 +291,31 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
                     {isScanning ? "Starting camera..." : "Position barcode within the frame"}
                   </div>
+                  
+                  {/* Zoom Controls */}
+                  <div className="absolute bottom-4 right-4 flex flex-col gap-2">
+                    <Button
+                      onClick={handleZoomIn}
+                      disabled={zoomLevel >= maxZoom}
+                      variant="outline"
+                      size="sm"
+                      className="bg-black/70 text-white border-white/30 hover:bg-black/80 w-8 h-8 p-0"
+                    >
+                      <ZoomIn className="w-4 h-4" />
+                    </Button>
+                    <div className="bg-black/70 text-white px-2 py-1 rounded text-xs text-center min-w-[2rem]">
+                      {zoomLevel.toFixed(1)}x
+                    </div>
+                    <Button
+                      onClick={handleZoomOut}
+                      disabled={zoomLevel <= minZoom}
+                      variant="outline"
+                      size="sm"
+                      className="bg-black/70 text-white border-white/30 hover:bg-black/80 w-8 h-8 p-0"
+                    >
+                      <ZoomOut className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
               
@@ -223,6 +327,15 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 >
                   <X className="w-4 h-4 mr-2" />
                   Stop Camera
+                </Button>
+                <Button
+                  onClick={resetZoom}
+                  variant="outline"
+                  className="flex-1 border-2 border-muted-foreground/20 text-muted-foreground hover:bg-muted/10"
+                  disabled={zoomLevel === 1}
+                >
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Reset Zoom
                 </Button>
                 <Button
                   onClick={startCamera}
