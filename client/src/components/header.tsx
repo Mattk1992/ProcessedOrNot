@@ -15,7 +15,7 @@ export default function Header() {
             />
             <div className="min-w-0 flex-1">
               <h1 className="text-lg sm:text-2xl font-bold text-white truncate">ProcessedOrNot</h1>
-              <p className="text-xs sm:text-sm text-white/80 hidden sm:block">Smart Food Scanner</p>
+              <p className="text-xs sm:text-sm text-white/80 hidden md:block">Smart Food Scanner</p>
             </div>
           </div>
           
