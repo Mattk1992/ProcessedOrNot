@@ -18,8 +18,20 @@ export function EnhancedZXingScanner({ onScan, onClose, isActive }: EnhancedZXin
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
-    if (isActive && videoRef.current) {
-      startScanning();
+    if (isActive) {
+      // Add a small delay to ensure the video element is rendered
+      const timer = setTimeout(() => {
+        if (videoRef.current) {
+          startScanning();
+        } else {
+          setError("Camera interface failed to load. Please try again.");
+        }
+      }, 100);
+      
+      return () => {
+        clearTimeout(timer);
+        cleanup();
+      };
     }
     return () => {
       cleanup();
