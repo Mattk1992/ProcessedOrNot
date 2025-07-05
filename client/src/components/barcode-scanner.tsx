@@ -91,13 +91,16 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   };
 
   const handleZoomIn = useCallback(async () => {
+    console.log('Zoom in clicked, current zoom:', zoomLevel);
     if (zoomLevel < maxZoom) {
       const newZoom = Math.min(zoomLevel + 0.5, maxZoom);
       setZoomLevel(newZoom);
+      console.log('Setting zoom to:', newZoom);
       
       // Apply CSS transform for zoom since camera constraints have limited support
       if (videoRef.current) {
         videoRef.current.style.transform = `scale(${newZoom})`;
+        videoRef.current.style.transformOrigin = 'center center';
       }
       
       // Try to apply camera zoom constraint as fallback
@@ -118,13 +121,16 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   }, [zoomLevel, maxZoom]);
 
   const handleZoomOut = useCallback(async () => {
+    console.log('Zoom out clicked, current zoom:', zoomLevel);
     if (zoomLevel > minZoom) {
       const newZoom = Math.max(zoomLevel - 0.5, minZoom);
       setZoomLevel(newZoom);
+      console.log('Setting zoom to:', newZoom);
       
       // Apply CSS transform for zoom
       if (videoRef.current) {
         videoRef.current.style.transform = `scale(${newZoom})`;
+        videoRef.current.style.transformOrigin = 'center center';
       }
       
       // Try to apply camera zoom constraint as fallback
@@ -144,11 +150,13 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   }, [zoomLevel, minZoom]);
 
   const resetZoom = useCallback(async () => {
+    console.log('Reset zoom clicked, current zoom:', zoomLevel);
     setZoomLevel(1);
     
     // Reset CSS transform
     if (videoRef.current) {
       videoRef.current.style.transform = 'scale(1)';
+      videoRef.current.style.transformOrigin = 'center center';
     }
     
     // Try to reset camera zoom constraint
@@ -164,7 +172,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         }
       }
     }
-  }, []);
+  }, [zoomLevel]);
 
   const startCamera = useCallback(async () => {
     try {
@@ -425,6 +433,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   }, [onScan]);
 
   const stopCamera = useCallback(() => {
+    console.log('Stop camera clicked');
     try {
       // Clear timeouts first
       if (timeoutRef.current) {
@@ -443,13 +452,22 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       // Stop all video tracks
       if (videoRef.current && videoRef.current.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
+        stream.getTracks().forEach(track => {
+          console.log('Stopping track:', track.kind);
+          track.stop();
+        });
         videoRef.current.srcObject = null;
       }
       
       // Clear stream reference and reset zoom
       streamRef.current = null;
       setZoomLevel(1);
+      
+      // Reset video transform
+      if (videoRef.current) {
+        videoRef.current.style.transform = 'scale(1)';
+        videoRef.current.style.transformOrigin = 'center center';
+      }
     } catch (error) {
       console.error("Error stopping camera:", error);
     } finally {
@@ -457,6 +475,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       setIsScanning(false);
       setCameraError("");
       setTimeoutCountdown(null);
+      console.log('Camera stopped successfully');
     }
   }, []);
 
@@ -622,7 +641,13 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   <span className="sm:hidden">Reset</span>
                 </Button>
                 <Button
-                  onClick={startCamera}
+                  onClick={async () => {
+                    console.log('Restart camera clicked');
+                    stopCamera();
+                    // Wait a moment for cleanup to complete
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    startCamera();
+                  }}
                   variant="outline"
                   className="flex-1 border-2 border-primary/20 text-primary hover:bg-primary/10 mobile-button-full touch-action-manipulation"
                 >
