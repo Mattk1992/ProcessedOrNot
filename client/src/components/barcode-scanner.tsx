@@ -585,72 +585,134 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       <Card className="border-0 shadow-none bg-transparent">
         <CardContent className="p-0">
           
-          {/* Camera Scanner Section */}
+          {/* Camera Scanner Section - Optimized for Short-Range Barcode Scanning */}
           {isCameraActive ? (
             <div className="space-y-6 mb-8">
-              <div className="relative bg-black rounded-3xl overflow-hidden shadow-2xl glow-effect">
+              <div className="relative bg-black rounded-3xl overflow-hidden shadow-2xl glow-effect short-range-scanner">
                 <video
                   ref={videoRef}
-                  className="w-full h-80 sm:h-80 mobile-camera-height object-cover transition-transform duration-300 ease-in-out"
-                  style={{ transformOrigin: 'center center' }}
+                  className="w-full h-96 sm:h-96 mobile-camera-height object-cover transition-transform duration-200 ease-in-out short-range-video"
+                  style={{ 
+                    transformOrigin: 'center center',
+                    filter: 'contrast(1.2) brightness(1.1) saturate(0.8)',
+                    imageRendering: 'crisp-edges'
+                  }}
                   autoPlay
                   playsInline
                   muted
                 />
                 {isScanning && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
                     <div className="text-white text-center">
-                      <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-primary" />
-                      <p className="text-lg font-medium">Initializing camera...</p>
+                      <Loader2 className="w-10 h-10 animate-spin mx-auto mb-3 text-primary" />
+                      <p className="text-lg font-medium">Optimizing camera for close-range scanning...</p>
+                      <p className="text-sm text-white/70 mt-1">Hold barcode 2-8cm from camera</p>
                     </div>
                   </div>
                 )}
                 <div className="absolute inset-0 pointer-events-none">
-                  {/* Enhanced scanning overlay */}
-                  <div className="absolute inset-6 border-2 border-primary/60 rounded-2xl scan-line">
-                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-xl glow-effect"></div>
-                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-xl glow-effect"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-xl glow-effect"></div>
-                    <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
+                  {/* Enhanced Close-Range Scanning Overlay */}
+                  <div className="absolute inset-4 border-2 border-primary/70 rounded-xl short-range-overlay">
+                    {/* Close-range focus zone */}
+                    <div className="absolute inset-8 border border-primary/40 rounded-lg">
+                      {/* Optimal scanning area indicator */}
+                      <div className="absolute inset-4 border border-green-400/60 rounded-md bg-green-400/10">
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-xs text-green-400 font-medium bg-black/60 px-2 py-1 rounded">
+                          2-8cm
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Enhanced corner guides for precise alignment */}
+                    <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-primary rounded-tl-2xl glow-effect animate-pulse"></div>
+                    <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-primary rounded-tr-2xl glow-effect animate-pulse"></div>
+                    <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-primary rounded-bl-2xl glow-effect animate-pulse"></div>
+                    <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-primary rounded-br-2xl glow-effect animate-pulse"></div>
+                    
+                    {/* Center crosshair for precise positioning */}
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+                      <div className="w-6 h-0.5 bg-primary/60 rounded-full"></div>
+                      <div className="w-0.5 h-6 bg-primary/60 rounded-full absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
+                    </div>
                   </div>
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
-                    {isScanning ? "Starting camera..." : (
+                  
+                  {/* Dynamic scanning feedback */}
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-xl text-sm backdrop-blur-sm">
+                    {isScanning ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                        <span>Initializing close-range scanner...</span>
+                      </div>
+                    ) : (
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                        Scanning for barcodes...
+                        <span className="font-medium">Hold barcode close (2-8cm) for best results</span>
                       </div>
                     )}
                   </div>
                   
-                  {/* Zoom Controls */}
-                  <div className="absolute bottom-4 right-4 mobile-zoom-controls flex flex-col gap-2">
+                  {/* Enhanced Zoom Controls - Optimized for Short-Range Barcode Scanning */}
+                  <div className="absolute bottom-4 right-4 mobile-zoom-controls flex flex-col gap-2 short-range-zoom-panel">
+                    {/* Zoom indicator with range guidance */}
+                    <div className="bg-black/80 text-white px-2 py-1 rounded-lg text-xs text-center backdrop-blur-sm border border-white/20">
+                      <div className="font-medium text-primary">Close-Range</div>
+                      <div className="text-white/80">{zoomLevel.toFixed(1)}x</div>
+                    </div>
+                    
+                    {/* Zoom In - Enhanced for barcode detail */}
                     <Button
                       onClick={() => {
-                        console.log('Zoom in button clicked');
+                        console.log('Short-range zoom in clicked');
                         handleZoomIn();
                       }}
                       disabled={zoomLevel >= maxZoom || !isCameraActive}
                       variant="outline"
                       size="sm"
-                      className="bg-black/70 text-white border-white/30 hover:bg-black/80 w-8 h-8 sm:w-8 sm:h-8 p-0 mobile-touch-friendly touch-action-manipulation"
+                      className="bg-black/80 text-white border-primary/40 hover:bg-primary/20 hover:border-primary/60 w-10 h-10 p-0 mobile-touch-friendly touch-action-manipulation transition-all duration-200 glow-effect"
+                      title="Zoom in for better barcode detail (2-8cm range)"
                     >
-                      <ZoomIn className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <ZoomIn className="w-4 h-4" />
                     </Button>
-                    <div className="bg-black/70 text-white px-1 sm:px-2 py-1 rounded text-xs text-center min-w-[1.5rem] sm:min-w-[2rem]">
-                      {zoomLevel.toFixed(1)}x
-                    </div>
+                    
+                    {/* Quick Focus Preset for Optimal Range */}
                     <Button
                       onClick={() => {
-                        console.log('Zoom out button clicked');
+                        console.log('Optimal zoom preset clicked');
+                        setZoomLevel(1.5); // Optimal zoom for close-range scanning
+                        if (videoRef.current) {
+                          videoRef.current.style.transform = 'scale(1.5)';
+                          videoRef.current.style.transformOrigin = 'center center';
+                        }
+                      }}
+                      disabled={!isCameraActive}
+                      variant="outline"
+                      size="sm"
+                      className="bg-green-900/60 text-green-200 border-green-400/40 hover:bg-green-800/60 hover:border-green-400/60 w-10 h-10 p-0 mobile-touch-friendly touch-action-manipulation transition-all duration-200"
+                      title="Optimal zoom for 2-8cm barcode scanning"
+                    >
+                      <div className="text-xs font-bold">1.5x</div>
+                    </Button>
+                    
+                    {/* Zoom Out */}
+                    <Button
+                      onClick={() => {
+                        console.log('Short-range zoom out clicked');
                         handleZoomOut();
                       }}
                       disabled={zoomLevel <= minZoom || !isCameraActive}
                       variant="outline"
                       size="sm"
-                      className="bg-black/70 text-white border-white/30 hover:bg-black/80 w-8 h-8 sm:w-8 sm:h-8 p-0 mobile-touch-friendly touch-action-manipulation"
+                      className="bg-black/80 text-white border-primary/40 hover:bg-primary/20 hover:border-primary/60 w-10 h-10 p-0 mobile-touch-friendly touch-action-manipulation transition-all duration-200 glow-effect"
+                      title="Zoom out for wider view"
                     >
-                      <ZoomOut className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <ZoomOut className="w-4 h-4" />
                     </Button>
+                    
+                    {/* Distance Guide */}
+                    <div className="bg-black/80 text-white px-2 py-1 rounded-lg text-xs text-center backdrop-blur-sm border border-green-400/20 mt-1">
+                      <div className="text-green-400 font-medium">📏 2-8cm</div>
+                      <div className="text-white/60">optimal</div>
+                    </div>
                   </div>
                 </div>
               </div>
