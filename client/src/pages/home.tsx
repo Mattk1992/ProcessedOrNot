@@ -62,11 +62,11 @@ export default function Home() {
                 <h1 className="text-lg sm:text-2xl font-bold gradient-text text-shadow truncate">
                   {t('brand.title')}
                 </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground truncate">{t('brand.subtitle')}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate hidden md:block">{t('brand.subtitle')}</p>
               </div>
             </div>
             <div className="flex items-center space-x-1 sm:space-x-3">
-              <div className="scale-on-hover">
+              <div className="scale-on-hover hidden md:block">
                 <LanguageSwitcher />
               </div>
               <div className="scale-on-hover">
@@ -87,7 +87,7 @@ export default function Home() {
               {t('hero.title.part1')}
               <span className="gradient-text block mt-1 sm:mt-2">{t('hero.title.part2')}</span>
             </h2>
-            <p className="text-base sm:text-xl md:text-2xl mobile-hero-subtitle text-muted-foreground max-w-3xl mx-auto fade-in leading-relaxed px-2">
+            <p className="text-base sm:text-xl md:text-2xl mobile-hero-subtitle text-muted-foreground max-w-3xl mx-auto fade-in leading-relaxed px-2 hidden md:block">
               {t('hero.description')}
             </p>
             <div className="mt-4 sm:mt-8 flex justify-center">
