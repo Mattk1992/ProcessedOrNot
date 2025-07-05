@@ -1,286 +1,317 @@
-import { useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useTheme } from "@/contexts/ThemeContext";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, User, Globe, Palette, Bell, Shield, Download, Trash2 } from "lucide-react";
-import { languages, Language } from "@/lib/translations";
-import LanguageSwitcher from "@/components/language-switcher";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest } from "@/lib/queryClient";
+import { Settings, Bot, ArrowLeft, Save, Sparkles, Brain, Zap, Cpu } from "lucide-react";
+import { Link, useLocation } from "wouter";
 
-export default function Settings() {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  const { language, setLanguage, t } = useLanguage();
-  const { theme, setTheme } = useTheme();
+interface UserSetting {
+  id: number;
+  userId: number;
+  settingKey: string;
+  settingValue: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface AIProvider {
+  value: string;
+  label: string;
+  description: string;
+  icon: React.ComponentType<any>;
+  color: string;
+}
+
+const aiProviders: AIProvider[] = [
+  {
+    value: "ChatGPT",
+    label: "ChatGPT",
+    description: "OpenAI's advanced language model for comprehensive analysis",
+    icon: Bot,
+    color: "text-green-600 dark:text-green-400"
+  },
+  {
+    value: "Perplexity", 
+    label: "Perplexity",
+    description: "Real-time web search powered AI for up-to-date information",
+    icon: Sparkles,
+    color: "text-purple-600 dark:text-purple-400"
+  },
+  {
+    value: "Mistral",
+    label: "Mistral",
+    description: "European AI model focused on efficiency and accuracy",
+    icon: Brain,
+    color: "text-blue-600 dark:text-blue-400"
+  },
+  {
+    value: "Deepseek R1",
+    label: "Deepseek R1",
+    description: "Advanced reasoning model for complex analysis",
+    icon: Cpu,
+    color: "text-orange-600 dark:text-orange-400"
+  }
+];
+
+export default function SettingsPage() {
+  const [, setLocation] = useLocation();
+  const { user, isAuthenticated } = useAuth();
+  const { t } = useLanguage();
   const { toast } = useToast();
-  
-  const [notifications, setNotifications] = useState(true);
-  const [emailUpdates, setEmailUpdates] = useState(false);
-  const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
+  const queryClient = useQueryClient();
+  const [selectedAIProvider, setSelectedAIProvider] = useState<string>("");
 
-  // Redirect to home if not authenticated
+  // Redirect if not authenticated
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isAuthenticated) {
+      setLocation('/');
+    }
+  }, [isAuthenticated, setLocation]);
+
+  // Fetch user's AI provider setting
+  const { data: aiProviderSetting, isLoading } = useQuery({
+    queryKey: ["/api/user/settings/ai_provider"],
+    enabled: !!user,
+  });
+
+  // Set selected AI provider when data loads
+  useEffect(() => {
+    if (aiProviderSetting) {
+      setSelectedAIProvider(aiProviderSetting.settingValue || "ChatGPT");
+    }
+  }, [aiProviderSetting]);
+
+  // Update AI provider mutation
+  const updateAIProviderMutation = useMutation({
+    mutationFn: async (provider: string) => {
+      return apiRequest("/api/user/settings/ai_provider", "PUT", { settingValue: provider });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/user/settings"] });
       toast({
-        title: "Unauthorized",
-        description: "You need to be logged in to access settings.",
+        title: "Settings Updated",
+        description: `AI provider has been changed to ${selectedAIProvider}`,
+        variant: "default",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update AI provider setting. Please try again.",
         variant: "destructive",
       });
-      setTimeout(() => {
-        window.location.href = "/";
-      }, 1000);
-      return;
+    },
+  });
+
+  const handleSaveAIProvider = () => {
+    if (selectedAIProvider && selectedAIProvider !== aiProviderSetting?.settingValue) {
+      updateAIProviderMutation.mutate(selectedAIProvider);
     }
-  }, [isAuthenticated, isLoading, toast]);
-
-  const handleSaveSettings = () => {
-    toast({
-      title: "Settings Saved",
-      description: "Your preferences have been updated successfully.",
-    });
   };
 
-  const handleExportData = () => {
-    toast({
-      title: "Data Export",
-      description: "Your data export will be sent to your email address.",
-    });
+  const getProviderInfo = (value: string) => {
+    return aiProviders.find(provider => provider.value === value) || aiProviders[0];
   };
 
-  const handleDeleteAccount = () => {
-    toast({
-      title: "Account Deletion",
-      description: "Please contact support to delete your account.",
-      variant: "destructive",
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading settings...</p>
-        </div>
-      </div>
-    );
-  }
+  const selectedProviderInfo = getProviderInfo(selectedAIProvider);
+  const hasUnsavedChanges = selectedAIProvider !== aiProviderSetting?.settingValue;
 
   if (!isAuthenticated) {
-    return null; // Will redirect via useEffect
+    return null;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/5">
-      {/* Header */}
-      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.location.href = "/"}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Home
-            </Button>
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-              <p className="text-sm text-muted-foreground">Manage your account preferences and privacy settings</p>
+            <Link href="/">
+              <Button variant="outline" size="sm">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Home
+              </Button>
+            </Link>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Settings className="h-8 w-8 text-blue-600" />
+                Settings
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300">
+                Customize your experience and preferences
+              </p>
             </div>
-            <LanguageSwitcher />
           </div>
+          <Badge variant="secondary" className="text-sm">
+            <Bot className="h-4 w-4 mr-1" />
+            Personal Settings
+          </Badge>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="grid gap-6">
-          
-          {/* Account Information */}
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Account Information
+        {/* AI Provider Settings */}
+        <div className="max-w-4xl">
+          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-xl">
+                <Zap className="h-6 w-6 text-yellow-500" />
+                NutriAnalysisAI Provider
               </CardTitle>
-              <CardDescription>
-                Your account details and profile information
+              <CardDescription className="text-base">
+                Choose the AI model that powers your product analysis and nutrition insights
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">First Name</Label>
-                  <p className="text-foreground mt-1">{(user as any)?.firstName || "Not provided"}</p>
+            <CardContent className="space-y-6">
+              {isLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
-                <div>
-                  <Label className="text-sm font-medium">Last Name</Label>
-                  <p className="text-foreground mt-1">{(user as any)?.lastName || "Not provided"}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Username</Label>
-                  <p className="text-foreground mt-1 font-mono">{(user as any)?.username}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Email</Label>
-                  <p className="text-foreground mt-1">{(user as any)?.email}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
-                  <Shield className="h-3 w-3 mr-1" />
-                  Account Verified
-                </Badge>
-                <Badge variant="outline">
-                  Member since {new Date((user as any)?.createdAt || Date.now()).getFullYear()}
-                </Badge>
-              </div>
+              ) : (
+                <>
+                  {/* Current Selection Display */}
+                  {selectedProviderInfo && (
+                    <div className="flex items-center gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                      <div className={`p-2 rounded-lg bg-white dark:bg-gray-700 shadow-sm`}>
+                        <selectedProviderInfo.icon className={`h-6 w-6 ${selectedProviderInfo.color}`} />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                          Current: {selectedProviderInfo.label}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          {selectedProviderInfo.description}
+                        </p>
+                      </div>
+                      {aiProviderSetting?.isDefault && (
+                        <Badge variant="outline" className="text-xs">
+                          Default
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
+                  <Separator />
+
+                  {/* AI Provider Selection */}
+                  <div className="space-y-4">
+                    <Label htmlFor="ai-provider" className="text-lg font-medium">
+                      Select AI Provider
+                    </Label>
+                    
+                    <Select value={selectedAIProvider} onValueChange={setSelectedAIProvider}>
+                      <SelectTrigger id="ai-provider" className="w-full h-14">
+                        <SelectValue placeholder="Choose an AI provider">
+                          {selectedProviderInfo && (
+                            <div className="flex items-center gap-3">
+                              <selectedProviderInfo.icon className={`h-5 w-5 ${selectedProviderInfo.color}`} />
+                              <span className="font-medium">{selectedProviderInfo.label}</span>
+                            </div>
+                          )}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {aiProviders.map((provider) => (
+                          <SelectItem key={provider.value} value={provider.value} className="h-16">
+                            <div className="flex items-center gap-3 py-2">
+                              <div className={`p-1.5 rounded-md bg-gray-100 dark:bg-gray-700`}>
+                                <provider.icon className={`h-4 w-4 ${provider.color}`} />
+                              </div>
+                              <div className="flex-1">
+                                <div className="font-medium">{provider.label}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                  {provider.description}
+                                </div>
+                              </div>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    {/* Provider Descriptions */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                      {aiProviders.map((provider) => (
+                        <div
+                          key={provider.value}
+                          className={`p-4 border rounded-lg transition-all cursor-pointer ${
+                            selectedAIProvider === provider.value
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                          }`}
+                          onClick={() => setSelectedAIProvider(provider.value)}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div className={`p-2 rounded-lg ${
+                              selectedAIProvider === provider.value 
+                                ? 'bg-blue-100 dark:bg-blue-800' 
+                                : 'bg-gray-100 dark:bg-gray-700'
+                            }`}>
+                              <provider.icon className={`h-5 w-5 ${provider.color}`} />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="font-semibold text-gray-900 dark:text-white">
+                                {provider.label}
+                              </h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                {provider.description}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Save Button */}
+                  {hasUnsavedChanges && (
+                    <div className="flex items-center justify-between p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+                        <span className="text-sm font-medium text-amber-700 dark:text-amber-300">
+                          You have unsaved changes
+                        </span>
+                      </div>
+                      <Button
+                        onClick={handleSaveAIProvider}
+                        disabled={updateAIProviderMutation.isPending}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        <Save className="h-4 w-4 mr-2" />
+                        {updateAIProviderMutation.isPending ? "Saving..." : "Save Changes"}
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
 
-          {/* Language & Regional Settings */}
-          <Card className="glass-card">
+          {/* Additional Settings Card Placeholder */}
+          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg mt-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Globe className="h-5 w-5" />
-                Language & Regional Settings
+                <Settings className="h-5 w-5" />
+                More Settings
               </CardTitle>
               <CardDescription>
-                Choose your preferred language and regional settings
+                Additional customization options coming soon
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium">Current Language</Label>
-                  <p className="text-sm text-muted-foreground">
-                    {languages[language].flag} {languages[language].name}
-                  </p>
-                </div>
-                <LanguageSwitcher />
-              </div>
-              <Separator />
-              <div className="text-sm text-muted-foreground">
-                Language changes apply immediately across the entire application including navigation, content, and user interface elements.
+            <CardContent>
+              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                <Settings className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>More personalization options will be available here in future updates.</p>
               </div>
             </CardContent>
           </Card>
-
-          {/* Appearance Settings */}
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Palette className="h-5 w-5" />
-                Appearance
-              </CardTitle>
-              <CardDescription>
-                Customize the visual appearance of the application
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium">Theme</Label>
-                  <p className="text-sm text-muted-foreground">Choose between light and dark mode</p>
-                </div>
-                <Select value={theme} onValueChange={setTheme}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="system">System</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Notification Settings */}
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
-                Notifications
-              </CardTitle>
-              <CardDescription>
-                Manage your notification preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium">Push Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive notifications in your browser</p>
-                </div>
-                <Switch checked={notifications} onCheckedChange={setNotifications} />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium">Email Updates</Label>
-                  <p className="text-sm text-muted-foreground">Receive product updates via email</p>
-                </div>
-                <Switch checked={emailUpdates} onCheckedChange={setEmailUpdates} />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Privacy Settings */}
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
-                Privacy & Data
-              </CardTitle>
-              <CardDescription>
-                Control your privacy and data sharing preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-sm font-medium">Analytics</Label>
-                  <p className="text-sm text-muted-foreground">Help improve the app by sharing usage data</p>
-                </div>
-                <Switch checked={analyticsEnabled} onCheckedChange={setAnalyticsEnabled} />
-              </div>
-              <Separator />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button variant="outline" onClick={handleExportData} className="gap-2">
-                  <Download className="h-4 w-4" />
-                  Export My Data
-                </Button>
-                <Button variant="destructive" onClick={handleDeleteAccount} className="gap-2">
-                  <Trash2 className="h-4 w-4" />
-                  Delete Account
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Save Settings */}
-          <div className="flex justify-end">
-            <Button onClick={handleSaveSettings} className="gap-2">
-              Save All Settings
-            </Button>
-          </div>
         </div>
-      </main>
-
-      {/* Background decoration */}
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 -right-40 w-80 h-80 bg-gradient-to-br from-primary/10 to-accent/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 -left-40 w-80 h-80 bg-gradient-to-br from-accent/10 to-primary/10 rounded-full blur-3xl"></div>
       </div>
     </div>
   );

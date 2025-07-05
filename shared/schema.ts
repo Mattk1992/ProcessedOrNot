@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, real, jsonb, timestamp, varchar, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, real, jsonb, timestamp, varchar, boolean, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -201,3 +201,22 @@ export const insertAdminSettingSchema = createInsertSchema(adminSettings).omit({
 
 export type InsertAdminSetting = z.infer<typeof insertAdminSettingSchema>;
 export type AdminSetting = typeof adminSettings.$inferSelect;
+
+// User settings table for personal preferences
+export const userSettings = pgTable("user_settings", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  settingKey: varchar("setting_key").notNull(),
+  settingValue: text("setting_value").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertUserSettingSchema = createInsertSchema(userSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUserSetting = z.infer<typeof insertUserSettingSchema>;
+export type UserSetting = typeof userSettings.$inferSelect;

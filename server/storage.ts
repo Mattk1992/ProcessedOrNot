@@ -12,7 +12,10 @@ import {
   type InsertSearchHistory,
   adminSettings,
   type AdminSetting,
-  type InsertAdminSetting
+  type InsertAdminSetting,
+  userSettings,
+  type UserSetting,
+  type InsertUserSetting
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -71,6 +74,14 @@ export interface IStorage {
   updateAdminSetting(settingKey: string, settingValue: string): Promise<AdminSetting | undefined>;
   deleteAdminSetting(settingKey: string): Promise<boolean>;
   initializeDefaultSettings(): Promise<void>;
+
+  // User settings methods
+  getUserSetting(userId: number, settingKey: string): Promise<UserSetting | undefined>;
+  getUserSettings(userId: number): Promise<UserSetting[]>;
+  createUserSetting(setting: InsertUserSetting): Promise<UserSetting>;
+  updateUserSetting(userId: number, settingKey: string, settingValue: string): Promise<UserSetting | undefined>;
+  deleteUserSetting(userId: number, settingKey: string): Promise<boolean>;
+  upsertUserSetting(userId: number, settingKey: string, settingValue: string): Promise<UserSetting>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -502,6 +513,13 @@ export class DatabaseStorage implements IStorage {
         settingType: 'integer',
         description: 'Number of seconds before the barcode camera times out',
         category: 'search_engine'
+      },
+      {
+        settingKey: 'default_ai_provider',
+        settingValue: 'ChatGPT',
+        settingType: 'select',
+        description: 'Default AI provider for product analysis and nutrition insights',
+        category: 'ai_settings'
       }
     ];
 
@@ -511,6 +529,60 @@ export class DatabaseStorage implements IStorage {
         await this.createAdminSetting(setting);
       }
     }
+  }
+
+  // User settings methods
+  async getUserSetting(userId: number, settingKey: string): Promise<UserSetting | undefined> {
+    const [setting] = await db.select().from(userSettings)
+      .where(and(eq(userSettings.userId, userId), eq(userSettings.settingKey, settingKey)));
+    return setting || undefined;
+  }
+
+  async getUserSettings(userId: number): Promise<UserSetting[]> {
+    return await db.select().from(userSettings)
+      .where(eq(userSettings.userId, userId))
+      .orderBy(userSettings.settingKey);
+  }
+
+  async createUserSetting(setting: InsertUserSetting): Promise<UserSetting> {
+    const [newSetting] = await db
+      .insert(userSettings)
+      .values(setting)
+      .returning();
+    return newSetting;
+  }
+
+  async updateUserSetting(userId: number, settingKey: string, settingValue: string): Promise<UserSetting | undefined> {
+    const [updatedSetting] = await db
+      .update(userSettings)
+      .set({ 
+        settingValue,
+        updatedAt: new Date()
+      })
+      .where(and(eq(userSettings.userId, userId), eq(userSettings.settingKey, settingKey)))
+      .returning();
+    return updatedSetting || undefined;
+  }
+
+  async deleteUserSetting(userId: number, settingKey: string): Promise<boolean> {
+    const result = await db.delete(userSettings)
+      .where(and(eq(userSettings.userId, userId), eq(userSettings.settingKey, settingKey)));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async upsertUserSetting(userId: number, settingKey: string, settingValue: string): Promise<UserSetting> {
+    // Try to update first
+    const updated = await this.updateUserSetting(userId, settingKey, settingValue);
+    if (updated) {
+      return updated;
+    }
+    
+    // If no update, create new
+    return await this.createUserSetting({
+      userId,
+      settingKey,
+      settingValue
+    });
   }
 }
 

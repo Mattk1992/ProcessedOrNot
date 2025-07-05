@@ -1002,6 +1002,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User settings routes (requires authentication)
+  app.get("/api/user/settings", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const settings = await storage.getUserSettings(user.id);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching user settings:", error);
+      res.status(500).json({ message: "Failed to fetch user settings" });
+    }
+  });
+
+  app.get("/api/user/settings/:key", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const setting = await storage.getUserSetting(user.id, req.params.key);
+      if (!setting) {
+        // Return default value based on setting key
+        let defaultValue = '';
+        if (req.params.key === 'ai_provider') {
+          const adminSetting = await storage.getAdminSetting('default_ai_provider');
+          defaultValue = adminSetting?.settingValue || 'ChatGPT';
+        }
+        
+        return res.json({ 
+          settingKey: req.params.key,
+          settingValue: defaultValue,
+          isDefault: true
+        });
+      }
+
+      res.json(setting);
+    } catch (error) {
+      console.error("Error fetching user setting:", error);
+      res.status(500).json({ message: "Failed to fetch user setting" });
+    }
+  });
+
+  app.post("/api/user/settings", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { settingKey, settingValue } = req.body;
+      
+      if (!settingKey || !settingValue) {
+        return res.status(400).json({ message: "Setting key and value are required" });
+      }
+
+      const newSetting = await storage.upsertUserSetting(user.id, settingKey, settingValue);
+      res.json(newSetting);
+    } catch (error) {
+      console.error("Error creating/updating user setting:", error);
+      res.status(500).json({ message: "Failed to save user setting" });
+    }
+  });
+
+  app.put("/api/user/settings/:key", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { settingValue } = req.body;
+      const updatedSetting = await storage.upsertUserSetting(user.id, req.params.key, settingValue);
+
+      res.json(updatedSetting);
+    } catch (error) {
+      console.error("Error updating user setting:", error);
+      res.status(500).json({ message: "Failed to update user setting" });
+    }
+  });
+
+  app.delete("/api/user/settings/:key", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const success = await storage.deleteUserSetting(user.id, req.params.key);
+      if (!success) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+
+      res.json({ message: "Setting deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting user setting:", error);
+      res.status(500).json({ message: "Failed to delete user setting" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
