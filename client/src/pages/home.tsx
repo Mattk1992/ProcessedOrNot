@@ -175,12 +175,16 @@ export default function Home() {
           </div>
         </div>
       </section>
-      {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 pb-8 sm:pb-12">
+      
+      {/* Camera Section */}
+      <section className="max-w-6xl mx-auto px-4 py-8">
         <div className="slide-up">
           <CameraSection onScan={handleScan} isLoading={isScanning} />
         </div>
-        
+      </section>
+      
+      {/* Main Content */}
+      <main className="max-w-6xl mx-auto px-4 pb-8 sm:pb-12">
         <div className="slide-up">
           <ManualInput onScan={handleScan} isLoading={isScanning} />
         </div>
