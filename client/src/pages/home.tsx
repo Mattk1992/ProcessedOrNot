@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
@@ -22,19 +23,28 @@ export default function Home() {
   const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
 
-  // Check if this is a first-time user
+  // Fetch tutorial overlay setting from admin
+  const { data: tutorialSetting } = useQuery<{ enabled: boolean; source: string }>({
+    queryKey: ["/api/settings/tutorial-overlay"],
+  });
+
+  // Check if this is a first-time user and tutorial is enabled by admin
   useEffect(() => {
+    if (tutorialSetting && tutorialSetting.enabled === false) {
+      return; // Tutorial disabled by admin
+    }
+
     const hasSeenTutorial = localStorage.getItem('processedornot-tutorial-completed');
     const tutorialDisabled = localStorage.getItem('processedornot-tutorial-disabled');
     
-    if (!hasSeenTutorial && !tutorialDisabled) {
+    if (!hasSeenTutorial && !tutorialDisabled && tutorialSetting && tutorialSetting.enabled) {
       // Show tutorial after a short delay to let the page load
       const timer = setTimeout(() => {
         setShowTutorial(true);
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, []);
+  }, [tutorialSetting]);
 
   const handleTutorialComplete = () => {
     localStorage.setItem('processedornot-tutorial-completed', 'true');
@@ -91,7 +101,9 @@ export default function Home() {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1 sm:space-x-3">
               <div className="scale-on-hover" data-tutorial="menu-dropdown">
-                <HeaderDropdown onStartTutorial={handleStartTutorial} />
+                <HeaderDropdown 
+                  onStartTutorial={tutorialSetting && tutorialSetting.enabled ? handleStartTutorial : undefined} 
+                />
               </div>
               <div className="scale-on-hover hidden md:block">
                 <LanguageSwitcher />

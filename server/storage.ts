@@ -520,6 +520,13 @@ export class DatabaseStorage implements IStorage {
         settingType: 'select',
         description: 'Default AI provider for product analysis and nutrition insights',
         category: 'ai_settings'
+      },
+      {
+        settingKey: 'tutorial_overlay_enabled',
+        settingValue: 'false',
+        settingType: 'boolean',
+        description: 'Enable or disable the tutorial overlay for new users',
+        category: 'user_interface'
       }
     ];
 

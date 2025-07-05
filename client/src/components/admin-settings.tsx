@@ -7,9 +7,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Settings, Save, RefreshCw, Camera, Timer } from 'lucide-react';
+import { Settings, Save, RefreshCw, Camera, Timer, Monitor, Eye } from 'lucide-react';
 
 interface AdminSetting {
   id: number;
@@ -109,6 +110,10 @@ export default function AdminSettings() {
     switch (category) {
       case 'search_engine':
         return <Camera className="h-4 w-4" />;
+      case 'user_interface':
+        return <Monitor className="h-4 w-4" />;
+      case 'ai_settings':
+        return <Settings className="h-4 w-4" />;
       default:
         return <Settings className="h-4 w-4" />;
     }
@@ -118,6 +123,8 @@ export default function AdminSettings() {
     switch (settingKey) {
       case 'camera_timeout':
         return <Timer className="h-4 w-4" />;
+      case 'tutorial_overlay_enabled':
+        return <Eye className="h-4 w-4" />;
       default:
         return <Settings className="h-4 w-4" />;
     }
@@ -200,7 +207,11 @@ export default function AdminSettings() {
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2">
-                      {isEditing ? (
+                      {setting.settingType === 'boolean' ? (
+                        <Badge variant="outline" className="text-xs">
+                          Auto-save
+                        </Badge>
+                      ) : isEditing ? (
                         <>
                           <Button
                             onClick={() => handleSaveSetting(setting.settingKey)}
@@ -238,21 +249,46 @@ export default function AdminSettings() {
                   )}
                   
                   <div className="flex items-center gap-2">
-                    <Label htmlFor={setting.settingKey} className="text-sm font-medium">
-                      Value:
-                    </Label>
-                    {isEditing ? (
-                      <Input
-                        id={setting.settingKey}
-                        value={currentValue}
-                        onChange={(e) => handleInputChange(setting.settingKey, e.target.value)}
-                        className="flex-1"
-                        type={setting.settingType === 'integer' ? 'number' : 'text'}
-                      />
+                    {setting.settingType === 'boolean' ? (
+                      <div className="flex items-center gap-3">
+                        <Label htmlFor={setting.settingKey} className="text-sm font-medium">
+                          Enabled:
+                        </Label>
+                        <Checkbox
+                          id={setting.settingKey}
+                          checked={currentValue === 'true'}
+                          onCheckedChange={(checked) => {
+                            const newValue = checked ? 'true' : 'false';
+                            handleInputChange(setting.settingKey, newValue);
+                            if (!isEditing) {
+                              handleSaveSetting(setting.settingKey);
+                            }
+                          }}
+                          disabled={updateSettingMutation.isPending}
+                        />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                          {currentValue === 'true' ? 'On' : 'Off'}
+                        </span>
+                      </div>
                     ) : (
-                      <span className="px-2 py-1 bg-white dark:bg-gray-700 border rounded text-sm">
-                        {currentValue}
-                      </span>
+                      <>
+                        <Label htmlFor={setting.settingKey} className="text-sm font-medium">
+                          Value:
+                        </Label>
+                        {isEditing ? (
+                          <Input
+                            id={setting.settingKey}
+                            value={currentValue}
+                            onChange={(e) => handleInputChange(setting.settingKey, e.target.value)}
+                            className="flex-1"
+                            type={setting.settingType === 'integer' ? 'number' : 'text'}
+                          />
+                        ) : (
+                          <span className="px-2 py-1 bg-white dark:bg-gray-700 border rounded text-sm">
+                            {currentValue}
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                   

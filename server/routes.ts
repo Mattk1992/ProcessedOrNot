@@ -1002,6 +1002,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint for tutorial overlay setting (no auth required)
+  app.get("/api/settings/tutorial-overlay", async (req, res) => {
+    try {
+      const setting = await storage.getAdminSetting('tutorial_overlay_enabled');
+      const enabled = setting?.settingValue === 'true';
+      res.json({ 
+        enabled,
+        source: setting ? 'database' : 'default'
+      });
+    } catch (error) {
+      console.error("Error fetching tutorial overlay setting:", error);
+      res.json({ 
+        enabled: false, // Default disabled
+        source: 'fallback'
+      });
+    }
+  });
+
   // User settings routes (requires authentication)
   app.get("/api/user/settings", async (req, res) => {
     try {
