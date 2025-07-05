@@ -229,40 +229,120 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
       setIsScanning(false);
 
-      // Start decoding from the camera
-      await codeReaderRef.current.decodeFromVideoDevice(
-        selectedDeviceId,
-        finalVideoElement,
-        (result, error) => {
-          if (result) {
-            const scannedCode = result.getText();
-            console.log("Scanned barcode:", scannedCode);
-            if (scannedCode) {
-              stopCamera();
-              onScan(scannedCode);
-            }
-          }
-          if (error && !(error instanceof NotFoundException)) {
-            console.warn("Barcode scanning error:", error);
+      // Configure camera constraints for better autofocus and quality
+      const constraints: MediaStreamConstraints = {
+        video: {
+          deviceId: { exact: selectedDeviceId },
+          width: { ideal: 1920, min: 640 },
+          height: { ideal: 1080, min: 480 },
+          facingMode: { ideal: 'environment' },
+        }
+      };
+
+      // Get the video stream with enhanced constraints
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        finalVideoElement.srcObject = stream;
+        streamRef.current = stream;
+
+        // Apply additional autofocus settings if supported
+        const videoTrack = stream.getVideoTracks()[0];
+        if (videoTrack && 'applyConstraints' in videoTrack) {
+          try {
+            // Apply enhanced camera settings for better autofocus
+            const advancedConstraints: any = {
+              advanced: [{
+                focusMode: 'continuous',
+                whiteBalanceMode: 'auto',
+                exposureMode: 'auto',
+                autoFocus: true,
+              }]
+            };
+            await videoTrack.applyConstraints(advancedConstraints);
+            console.log('Enhanced camera settings applied successfully');
+          } catch (constraintError) {
+            console.warn('Advanced camera constraints not supported:', constraintError);
           }
         }
-      );
+
+        // Configure ZXing reader for better performance
+        if (codeReaderRef.current) {
+          // Set scanning delay for better performance
+          codeReaderRef.current.timeBetweenDecodingAttempts = 300;
+        }
+
+        // Start decoding from the camera with enhanced scanning
+        await codeReaderRef.current.decodeFromVideoDevice(
+          selectedDeviceId,
+          finalVideoElement,
+          (result, error) => {
+            if (result) {
+              const scannedCode = result.getText();
+              console.log("Scanned barcode:", scannedCode);
+              
+              // Validate barcode format before processing
+              if (scannedCode && /^[0-9]{8,14}$/.test(scannedCode)) {
+                stopCamera();
+                onScan(scannedCode);
+              } else if (scannedCode) {
+                // Log invalid format but continue scanning
+                console.warn("Invalid barcode format:", scannedCode);
+              }
+            }
+            if (error && !(error instanceof NotFoundException)) {
+              console.warn("Barcode scanning error:", error);
+            }
+          }
+        );
+      } catch (streamError) {
+        console.warn('Enhanced camera constraints failed, using fallback:', streamError);
+        
+        // Configure ZXing reader for better performance (fallback)
+        if (codeReaderRef.current) {
+          codeReaderRef.current.timeBetweenDecodingAttempts = 300;
+        }
+        
+        // Fallback to basic ZXing camera initialization
+        await codeReaderRef.current.decodeFromVideoDevice(
+          selectedDeviceId,
+          finalVideoElement,
+          (result, error) => {
+            if (result) {
+              const scannedCode = result.getText();
+              console.log("Scanned barcode (fallback):", scannedCode);
+              
+              // Validate barcode format before processing
+              if (scannedCode && /^[0-9]{8,14}$/.test(scannedCode)) {
+                stopCamera();
+                onScan(scannedCode);
+              } else if (scannedCode) {
+                console.warn("Invalid barcode format (fallback):", scannedCode);
+              }
+            }
+            if (error && !(error instanceof NotFoundException)) {
+              console.warn("Barcode scanning error:", error);
+            }
+          }
+        );
+      }
 
       // Store stream reference and detect zoom capabilities
       const stream = finalVideoElement.srcObject as MediaStream;
-      streamRef.current = stream;
-      
-      // Check zoom capabilities
-      const videoTrack = stream.getVideoTracks()[0];
-      if (videoTrack && 'getCapabilities' in videoTrack) {
-        try {
-          const capabilities = videoTrack.getCapabilities() as any;
-          if (capabilities.zoom) {
-            setMinZoom(capabilities.zoom.min || 1);
-            setMaxZoom(capabilities.zoom.max || 3);
+      if (stream) {
+        streamRef.current = stream;
+        
+        // Check zoom capabilities
+        const videoTrack = stream.getVideoTracks()[0];
+        if (videoTrack && 'getCapabilities' in videoTrack) {
+          try {
+            const capabilities = videoTrack.getCapabilities() as any;
+            if (capabilities.zoom) {
+              setMinZoom(capabilities.zoom.min || 1);
+              setMaxZoom(capabilities.zoom.max || 3);
+            }
+          } catch (error) {
+            console.warn('Cannot get camera capabilities:', error);
           }
-        } catch (error) {
-          console.warn('Cannot get camera capabilities:', error);
         }
       }
 
@@ -446,7 +526,12 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                     <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
                   </div>
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-lg text-sm">
-                    {isScanning ? "Starting camera..." : "Position barcode within the frame"}
+                    {isScanning ? "Starting camera..." : (
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                        Scanning for barcodes...
+                      </div>
+                    )}
                   </div>
                   
                   {/* Zoom Controls */}
