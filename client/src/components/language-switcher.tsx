@@ -45,11 +45,11 @@ export default function LanguageSwitcher() {
           className="gap-2 transition-all duration-300 hover:scale-105 hover:shadow-lg group overflow-hidden relative language-selector-glow"
         >
           <Globe className="h-4 w-4 transition-transform duration-300 group-hover:rotate-12" />
-          <span className={`sm:inline md:hidden text-xl transition-transform duration-300 group-hover:scale-110 flag-transition language-flag-current ${justChanged ? 'language-flag-bounce' : ''}`}>
+          <span className={`hidden sm:inline text-xl transition-transform duration-300 group-hover:scale-110 flag-transition language-flag-current ${justChanged ? 'language-flag-bounce' : ''}`}>
             {languages[language].flag}
           </span>
-          <span className="hidden md:inline transition-all duration-300 group-hover:text-primary font-medium">
-            {languages[language].code}
+          <span className="hidden md:inline transition-all duration-300 group-hover:text-primary">
+            {languages[language].name}
           </span>
           {justChanged && (
             <Sparkles className="h-3 w-3 text-yellow-500 animate-spin absolute -top-1 -right-1" />
@@ -66,7 +66,7 @@ export default function LanguageSwitcher() {
           <Sparkles className="h-3 w-3 animate-pulse" />
           {t('language.select')}
         </div>
-        {Object.entries(languages).map(([code, { name, code: countryCode, flag }], index) => (
+        {Object.entries(languages).map(([code, { name, flag }], index) => (
           <DropdownMenuItem
             key={code}
             onClick={() => handleLanguageChange(code as Language)}
@@ -75,8 +75,8 @@ export default function LanguageSwitcher() {
             className="flex items-center gap-4 cursor-pointer p-4 rounded-xl transition-all duration-300 hover:bg-primary/10 hover:scale-[1.02] hover:shadow-lg group relative overflow-hidden language-item-hover"
             style={{ animationDelay: `${index * 50}ms` }}
           >
-            {/* Flag with enhanced animations - hidden on desktop */}
-            <div className="relative md:hidden">
+            {/* Flag with enhanced animations */}
+            <div className="relative">
               <span 
                 className={`text-3xl transition-all duration-400 flag-transition ${
                   hoveredLanguage === code ? 'scale-125 rotate-6' : 'scale-100'
@@ -91,22 +91,13 @@ export default function LanguageSwitcher() {
             
             {/* Language name with enhanced slide animation */}
             <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span 
-                  className={`font-bold text-sm text-primary transition-all duration-300 ${
-                    hoveredLanguage === code ? 'translate-x-1' : 'translate-x-0'
-                  }`}
-                >
-                  {countryCode}
-                </span>
-                <span 
-                  className={`font-medium text-sm transition-all duration-300 ${
-                    hoveredLanguage === code ? 'translate-x-1 text-primary' : 'translate-x-0'
-                  }`}
-                >
-                  {name}
-                </span>
-              </div>
+              <span 
+                className={`font-semibold text-base transition-all duration-300 block ${
+                  hoveredLanguage === code ? 'translate-x-2 text-primary' : 'translate-x-0'
+                }`}
+              >
+                {name}
+              </span>
               {hoveredLanguage === code && (
                 <span className="text-xs text-muted-foreground opacity-0 animate-in slide-in-from-left-2 duration-300 opacity-100">
                   Click to switch
@@ -146,9 +137,8 @@ export default function LanguageSwitcher() {
           <div className="flex items-center justify-center gap-3 px-3 py-2 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg">
             <span className="text-xs font-medium text-muted-foreground">{t('language.current')}:</span>
             <div className="flex items-center gap-2">
-              <span className="text-xl language-flag-pulse md:hidden">{languages[language].flag}</span>
-              <span className="font-bold text-primary text-sm">{languages[language].code}</span>
-              <span className="font-medium text-muted-foreground text-xs">{languages[language].name}</span>
+              <span className="text-xl language-flag-pulse">{languages[language].flag}</span>
+              <span className="font-bold text-primary text-sm">{languages[language].name}</span>
             </div>
             {justChanged && (
               <div className="flex items-center gap-1 text-green-500 animate-in slide-in-from-right-2 duration-300">

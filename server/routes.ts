@@ -879,11 +879,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin settings routes
-  app.get("/api/admin/settings", requireAuth, async (req: any, res) => {
+  app.get("/api/admin/settings", async (req, res) => {
     try {
-      // Check if current user is admin using database lookup (consistent with other admin endpoints)
-      const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.accountType !== 'Admin') {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -896,10 +895,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin search history routes
-  app.get("/api/admin/search-history", requireAuth, async (req: any, res) => {
+  app.get("/api/admin/search-history", async (req, res) => {
     try {
-      const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.accountType !== 'Admin') {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -911,10 +910,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/search-history/stats", requireAuth, async (req: any, res) => {
+  app.get("/api/admin/search-history/stats", async (req, res) => {
     try {
-      const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.accountType !== 'Admin') {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -993,10 +992,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/search-history/clear", requireAuth, async (req: any, res) => {
+  app.delete("/api/admin/search-history/clear", async (req, res) => {
     try {
-      const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.accountType !== 'Admin') {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1008,26 +1007,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Remove duplicate search history entries
-  app.post("/api/admin/search-history/remove-duplicates", requireAuth, async (req: any, res) => {
+  app.get("/api/admin/search-history/export", async (req, res) => {
     try {
-      const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.accountType !== 'Admin') {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
-      const result = await storage.removeDuplicateSearchHistory();
-      res.json(result);
-    } catch (error) {
-      console.error("Error removing duplicate search history entries:", error);
-      res.status(500).json({ message: "Failed to remove duplicate entries" });
-    }
-  });
-
-  app.get("/api/admin/search-history/export", requireAuth, async (req: any, res) => {
-    try {
-      const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.accountType !== 'Admin') {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1069,10 +1052,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/settings/:key", requireAuth, async (req: any, res) => {
+  app.get("/api/admin/settings/:key", async (req, res) => {
     try {
-      const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.accountType !== 'Admin') {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1088,10 +1071,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/settings", requireAuth, async (req: any, res) => {
+  app.post("/api/admin/settings", async (req, res) => {
     try {
-      const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.accountType !== 'Admin') {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1112,10 +1095,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/settings/:key", requireAuth, async (req: any, res) => {
+  app.put("/api/admin/settings/:key", async (req, res) => {
     try {
-      const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.accountType !== 'Admin') {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1133,10 +1116,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/admin/settings/:key", requireAuth, async (req: any, res) => {
+  app.delete("/api/admin/settings/:key", async (req, res) => {
     try {
-      const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.accountType !== 'Admin') {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1153,10 +1136,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Initialize default settings
-  app.post("/api/admin/settings/initialize", requireAuth, async (req: any, res) => {
+  app.post("/api/admin/settings/initialize", async (req, res) => {
     try {
-      const currentUser = await storage.getUserById(req.session.userId!);
-      if (!currentUser || currentUser.accountType !== 'Admin') {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 

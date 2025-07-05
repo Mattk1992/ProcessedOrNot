@@ -9,8 +9,6 @@ import { Search, Loader2, Camera, X, RotateCcw, ZoomIn, ZoomOut } from "lucide-r
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SearchFilter from "./search-filter";
-import { QuickSettingsMenu } from "./quick-settings-menu";
-import { ScannerManager } from "./barcode-scanners/scanner-manager";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
@@ -92,7 +90,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     }
   };
 
-  const handleZoomIn = useCallback(() => {
+  const handleZoomIn = useCallback(async () => {
     console.log('Zoom in clicked, current zoom:', zoomLevel);
     if (zoomLevel < maxZoom && isCameraActive) {
       const newZoom = Math.min(zoomLevel + 0.5, maxZoom);
@@ -110,14 +108,15 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       if (streamRef.current) {
         const videoTrack = streamRef.current.getVideoTracks()[0];
         if (videoTrack && 'applyConstraints' in videoTrack) {
-          videoTrack.applyConstraints({
-            advanced: [{ zoom: newZoom } as any]
-          }).then(() => {
+          try {
+            await videoTrack.applyConstraints({
+              advanced: [{ zoom: newZoom } as any]
+            });
             console.log('Applied camera zoom constraint:', newZoom);
-          }).catch(() => {
+          } catch (error) {
             // CSS zoom will handle it if camera zoom is not supported
             console.log('Using CSS zoom as camera zoom is not supported');
-          });
+          }
         }
       }
     } else {
@@ -125,7 +124,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     }
   }, [zoomLevel, maxZoom, isCameraActive]);
 
-  const handleZoomOut = useCallback(() => {
+  const handleZoomOut = useCallback(async () => {
     console.log('Zoom out clicked, current zoom:', zoomLevel);
     if (zoomLevel > minZoom && isCameraActive) {
       const newZoom = Math.max(zoomLevel - 0.5, minZoom);
@@ -143,13 +142,14 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       if (streamRef.current) {
         const videoTrack = streamRef.current.getVideoTracks()[0];
         if (videoTrack && 'applyConstraints' in videoTrack) {
-          videoTrack.applyConstraints({
-            advanced: [{ zoom: newZoom } as any]
-          }).then(() => {
+          try {
+            await videoTrack.applyConstraints({
+              advanced: [{ zoom: newZoom } as any]
+            });
             console.log('Applied camera zoom constraint:', newZoom);
-          }).catch(() => {
+          } catch (error) {
             console.log('Using CSS zoom as camera zoom is not supported');
-          });
+          }
         }
       }
     } else {
@@ -157,7 +157,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     }
   }, [zoomLevel, minZoom, isCameraActive]);
 
-  const resetZoom = useCallback(() => {
+  const resetZoom = useCallback(async () => {
     console.log('Reset zoom clicked, current zoom:', zoomLevel);
     if (isCameraActive) {
       setZoomLevel(1);
@@ -173,13 +173,14 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       if (streamRef.current) {
         const videoTrack = streamRef.current.getVideoTracks()[0];
         if (videoTrack && 'applyConstraints' in videoTrack) {
-          videoTrack.applyConstraints({
-            advanced: [{ zoom: 1 } as any]
-          }).then(() => {
+          try {
+            await videoTrack.applyConstraints({
+              advanced: [{ zoom: 1 } as any]
+            });
             console.log('Reset camera zoom constraint to 1');
-          }).catch(() => {
+          } catch (error) {
             console.log('Using CSS zoom reset as camera zoom is not supported');
-          });
+          }
         }
       }
     } else {
@@ -584,17 +585,8 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       <Card className="border-0 shadow-none bg-transparent">
         <CardContent className="p-0">
           
-          {/* Camera Scanner Section */}
+          {/* Camera Scanner Section - Optimized for Short-Range Barcode Scanning */}
           {isCameraActive ? (
-            <ScannerManager
-              onScan={(barcode) => onScan(barcode)}
-              onClose={stopCamera}
-              isActive={isCameraActive}
-            />
-          ) : null}
-          
-          {/* Legacy Camera Section (keeping for reference) */}
-          {false && isCameraActive ? (
             <div className="space-y-6 mb-8">
               <div className="relative bg-black rounded-3xl overflow-hidden shadow-2xl glow-effect short-range-scanner">
                 <video
@@ -690,19 +682,6 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                         if (videoRef.current) {
                           videoRef.current.style.transform = 'scale(1.5)';
                           videoRef.current.style.transformOrigin = 'center center';
-                        }
-                        // Apply camera zoom constraint (non-blocking)
-                        if (streamRef.current) {
-                          const videoTrack = streamRef.current.getVideoTracks()[0];
-                          if (videoTrack && 'applyConstraints' in videoTrack) {
-                            videoTrack.applyConstraints({
-                              advanced: [{ zoom: 1.5 } as any]
-                            }).then(() => {
-                              console.log('Applied optimal camera zoom constraint: 1.5x');
-                            }).catch(() => {
-                              console.log('Using CSS zoom for optimal preset');
-                            });
-                          }
                         }
                       }}
                       disabled={!isCameraActive}
@@ -862,28 +841,24 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
               </div>
               
-              <div className="flex gap-3">
-                <Button 
-                  type="submit"
-                  className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
-                  disabled={isLoading || barcode.trim().length < 1}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-                      <span className="text-sm sm:text-base">{t('scanner.input.analyzing')}</span>
-                      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl shimmer"></div>
-                    </>
-                  ) : (
-                    <>
-                      <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="text-sm sm:text-base">{t('scanner.input.button')}</span>
-                    </>
-                  )}
-                </Button>
-                
-                <QuickSettingsMenu className="shrink-0" />
-              </div>
+              <Button 
+                type="submit"
+                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
+                disabled={isLoading || barcode.trim().length < 1}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                    <span className="text-sm sm:text-base">{t('scanner.input.analyzing')}</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl shimmer"></div>
+                  </>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-sm sm:text-base">{t('scanner.input.button')}</span>
+                  </>
+                )}
+              </Button>
             </form>
           )}
         </CardContent>
