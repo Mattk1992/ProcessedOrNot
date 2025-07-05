@@ -898,7 +898,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/search-history", async (req, res) => {
     try {
       const user = (req.session as any).user;
-      if (!user || user.role !== 'Admin') {
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -913,7 +913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/search-history/stats", async (req, res) => {
     try {
       const user = (req.session as any).user;
-      if (!user || user.role !== 'Admin') {
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -995,7 +995,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/search-history/clear", async (req, res) => {
     try {
       const user = (req.session as any).user;
-      if (!user || user.role !== 'Admin') {
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1010,7 +1010,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/search-history/export", async (req, res) => {
     try {
       const user = (req.session as any).user;
-      if (!user || user.role !== 'Admin') {
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 

@@ -62,7 +62,7 @@ export default function AdminSearchHistory() {
 
   // Redirect non-admin users
   useEffect(() => {
-    if (!isAuthenticated || (user && (user as any).role !== 'Admin')) {
+    if (!isAuthenticated || (user && (user as any).accountType !== 'Admin')) {
       toast({
         title: "Access Denied",
         description: "You need admin privileges to access this page.",
@@ -75,13 +75,13 @@ export default function AdminSearchHistory() {
   // Fetch search history data
   const { data: searchHistory, isLoading: historyLoading, refetch: refetchHistory } = useQuery<SearchHistoryItem[]>({
     queryKey: ["/api/admin/search-history"],
-    enabled: isAuthenticated && (user as any)?.role === 'Admin',
+    enabled: isAuthenticated && (user as any)?.accountType === 'Admin',
   });
 
   // Fetch search statistics
   const { data: searchStats, isLoading: statsLoading, refetch: refetchStats } = useQuery<SearchStats>({
     queryKey: ["/api/admin/search-history/stats"],
-    enabled: isAuthenticated && (user as any)?.role === 'Admin',
+    enabled: isAuthenticated && (user as any)?.accountType === 'Admin',
   });
 
   // Clear search history mutation
@@ -164,7 +164,7 @@ export default function AdminSearchHistory() {
     refetchStats();
   };
 
-  if (!isAuthenticated || (user as any)?.role !== 'Admin') {
+  if (!isAuthenticated || (user as any)?.accountType !== 'Admin') {
     return null;
   }
 
