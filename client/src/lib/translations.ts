@@ -1,13 +1,13 @@
 export type Language = 'en' | 'es' | 'fr' | 'de' | 'zh' | 'ja' | 'nl';
 
-export const languages: Record<Language, { name: string; flag: string }> = {
-  en: { name: 'English', flag: '🇺🇸' },
-  es: { name: 'Español', flag: '🇪🇸' },
-  fr: { name: 'Français', flag: '🇫🇷' },
-  de: { name: 'Deutsch', flag: '🇩🇪' },
-  zh: { name: '中文', flag: '🇨🇳' },
-  ja: { name: '日本語', flag: '🇯🇵' },
-  nl: { name: 'Nederlands', flag: '🇳🇱' },
+export const languages: Record<Language, { name: string; code: string; flag: string }> = {
+  en: { name: 'English', code: 'US', flag: '🇺🇸' },
+  es: { name: 'Español', code: 'ES', flag: '🇪🇸' },
+  fr: { name: 'Français', code: 'FR', flag: '🇫🇷' },
+  de: { name: 'Deutsch', code: 'DE', flag: '🇩🇪' },
+  zh: { name: '中文', code: 'CN', flag: '🇨🇳' },
+  ja: { name: '日本語', code: 'JP', flag: '🇯🇵' },
+  nl: { name: 'Nederlands', code: 'NL', flag: '🇳🇱' },
 };
 
 export function getTranslation(key: string, language: string): string {
