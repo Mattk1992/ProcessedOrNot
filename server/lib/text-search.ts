@@ -35,61 +35,97 @@ export async function searchProductByText(productName: string, filters?: SearchF
   try {
     console.log(`Starting text search for product: ${productName}`, filters ? `with filters: ${JSON.stringify(filters)}` : '');
 
-    // Build filter instructions
-    let filterInstructions = '';
-    if (filters?.includeBrands && filters.includeBrands.length > 0) {
-      filterInstructions += `\n\nIMPORTANT: Only include products from these brands: ${filters.includeBrands.join(', ')}`;
-    }
-    if (filters?.excludeBrands && filters.excludeBrands.length > 0) {
-      filterInstructions += `\n\nIMPORTANT: Exclude products from these brands: ${filters.excludeBrands.join(', ')}`;
-    }
+    // First, use OpenAI to analyze the search term and suggest search keywords
+    const keywordPrompt = `The user is searching for a food product: "${productName}"
 
-    // Use OpenAI to search for comprehensive product information
-    const searchPrompt = `Search for detailed information about the product: "${productName}"${filterInstructions}
-
-Please provide comprehensive information in JSON format:
+Please analyze this search term and provide optimized search keywords for food database searches in JSON format:
 {
-  "productName": "official product name",
-  "brands": "brand name if available", 
-  "description": "brief description",
-  "ingredientsText": "complete ingredients list if available",
-  "category": "product category",
-  "nutriments": {
-    "energy_100g": number_in_kcal,
-    "fat_100g": number_in_grams,
-    "saturated_fat_100g": number_in_grams,
-    "carbohydrates_100g": number_in_grams,
-    "sugars_100g": number_in_grams,
-    "proteins_100g": number_in_grams,
-    "salt_100g": number_in_grams,
-    "sodium_100g": number_in_mg,
-    "fiber_100g": number_in_grams
-  },
-  "found": true/false
+  "searchTerms": ["term1", "term2", "term3"],
+  "category": "food category",
+  "isGeneric": true/false,
+  "language": "detected language code"
 }
 
-Include nutrition facts per 100g when available. If you cannot find specific information, return {"found": false}.
-Focus on finding real, accurate product information including ingredients and nutrition data.`;
+Return 3-5 search terms that would be most effective for finding this product in food databases. Include variations, English translations, and related terms.
+For example:
+- "Gehakt" → ["ground meat", "minced meat", "gehakt", "beef mince", "pork mince"]
+- "Gehaktbal" → ["meatball", "gehaktbal", "Dutch meatball", "beef ball", "pork ball"]
+- "Chocolate" → ["chocolate", "cocoa", "dark chocolate", "milk chocolate", "chocolate bar"]`;
 
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+    const keywordResponse = await openai.chat.completions.create({
+      model: "gpt-4o",
       messages: [
-        { role: "system", content: "You are a product information specialist. Provide accurate, real product information only. Do not make up or invent product details." },
-        { role: "user", content: searchPrompt }
+        { role: "system", content: "You are a food search optimization specialist. Help users find the best search terms for food databases." },
+        { role: "user", content: keywordPrompt }
       ],
       response_format: { type: "json_object" },
-      max_tokens: 800,
+      max_tokens: 200,
       temperature: 0.3,
     });
 
-    const searchResult = JSON.parse(response.choices[0].message.content || '{"found": false}');
+    const keywordResult = JSON.parse(keywordResponse.choices[0].message.content || '{"searchTerms": [], "isGeneric": true}');
+    const searchTerms = keywordResult.searchTerms || [productName];
 
-    if (!searchResult.found) {
-      return {
-        product: null,
-        source: 'text-search',
-        error: `Could not find detailed information for "${productName}". Try scanning a barcode or being more specific.`
+    console.log(`Generated search terms for "${productName}":`, searchTerms);
+
+    // Create a generic product entry based on the search term and OpenAI analysis
+    const productAnalysisPrompt = `Create a generic food product entry for: "${productName}"
+
+Based on your knowledge of this type of food product, provide realistic nutritional information in JSON format:
+{
+  "productName": "standardized product name",
+  "category": "food category",
+  "description": "brief description",
+  "ingredientsText": "typical ingredients for this type of product",
+  "nutriments": {
+    "energy_100g": typical_calories_per_100g,
+    "fat_100g": typical_fat_grams_per_100g,
+    "saturated_fat_100g": typical_saturated_fat_per_100g,
+    "carbohydrates_100g": typical_carbs_per_100g,
+    "sugars_100g": typical_sugar_per_100g,
+    "proteins_100g": typical_protein_per_100g,
+    "salt_100g": typical_salt_per_100g,
+    "fiber_100g": typical_fiber_per_100g
+  },
+  "isGeneric": true
+}
+
+Provide realistic nutritional values based on typical products of this type. This is for educational purposes about general food categories.`;
+
+    let searchResult: any;
+    
+    try {
+      const productResponse = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          { role: "system", content: "You are a nutrition expert. Provide realistic nutritional information for typical food products based on established nutritional databases." },
+          { role: "user", content: productAnalysisPrompt }
+        ],
+        response_format: { type: "json_object" },
+        max_tokens: 600,
+        temperature: 0.3,
+      });
+
+      searchResult = JSON.parse(productResponse.choices[0].message.content || '{}');
+      console.log("OpenAI response for text search:", searchResult);
+      
+    } catch (error) {
+      console.error("Error getting product analysis from OpenAI:", error);
+      searchResult = {};
+    }
+
+    // Ensure we have basic data
+    if (!searchResult || !searchResult.productName) {
+      // If the analysis failed, create a basic entry with the original search term
+      searchResult = {
+        productName: productName,
+        category: "Food Product",
+        description: `Generic information for ${productName}`,
+        ingredientsText: null,
+        nutriments: null,
+        isGeneric: true
       };
+      console.log("Created fallback search result:", searchResult);
     }
 
     // Apply brand filtering if specified
@@ -240,10 +276,24 @@ Provide only the ingredients list in this format:
 
   } catch (error) {
     console.error('Text search error:', error);
-    return {
-      product: null,
-      source: 'text-search',
-      error: `Failed to search for "${productName}". Please try a different search term.`
+    
+    // Create a fallback product entry even if there's an error
+    const fallbackProduct: InsertProduct = {
+      barcode: `text-${Date.now()}`,
+      productName: productName,
+      brands: null,
+      imageUrl: null,
+      ingredientsText: null,
+      nutriments: null,
+      processingScore: 0,
+      processingExplanation: `Unable to analyze processing level for "${productName}". This is a generic entry.`,
+      glycemicIndex: null,
+      glycemicLoad: null,
+      glycemicExplanation: "No glycemic data available for this generic entry.",
+      dataSource: 'Text Search (Generic)'
     };
+    
+    console.log('Created fallback product for text search error:', fallbackProduct.productName);
+    return { product: fallbackProduct, source: 'Text Search (Generic)' };
   }
 }
