@@ -1044,8 +1044,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Glycemic index debug error:", error);
       res.status(500).json({ 
         error: "Failed to analyze glycemic index", 
-        details: error.message 
+        details: (error as Error).message 
       });
+    }
+  });
+
+  // Debug endpoint to fix glycemic analysis for existing products (no auth required for debugging)
+  app.post("/api/debug/fix-glycemic", async (req, res) => {
+    try {
+      const products = await storage.getProductsWithoutGlycemicIndex();
+      
+      let analyzed = 0;
+      let failed = 0;
+
+      for (const product of products) {
+        try {
+          if (product.nutriments) {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              product.ingredientsText || "",
+              product.productName || "Unknown Product", 
+              product.nutriments
+            );
+            
+            await storage.updateProduct(product.barcode, {
+              glycemicIndex: glycemicAnalysis.glycemicIndex,
+              glycemicLoad: glycemicAnalysis.glycemicLoad,
+              glycemicExplanation: glycemicAnalysis.explanation
+            });
+            analyzed++;
+          }
+        } catch (error) {
+          console.error(`Failed to analyze glycemic index for ${product.barcode}:`, error);
+          failed++;
+        }
+      }
+
+      res.json({
+        message: `Glycemic analysis complete: ${analyzed} products analyzed, ${failed} failed`,
+        analyzed,
+        failed,
+        total: products.length
+      });
+    } catch (error) {
+      console.error("Error fixing glycemic analysis:", error);
+      res.status(500).json({ message: "Failed to fix glycemic analysis" });
     }
   });
 

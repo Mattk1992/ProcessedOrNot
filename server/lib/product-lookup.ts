@@ -65,22 +65,22 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
           console.error("Failed to analyze ingredients:", error);
           processingExplanation = "Unable to analyze ingredients at this time";
         }
+      }
 
-        // Analyze glycemic index if we have nutrition data (ingredients not required)
-        if (product.nutriments) {
-          try {
-            const glycemicAnalysis = await analyzeGlycemicIndex(
-              product.ingredients_text || "",
-              product.product_name || "Unknown Product",
-              product.nutriments
-            );
-            glycemicIndex = glycemicAnalysis.glycemicIndex;
-            glycemicLoad = glycemicAnalysis.glycemicLoad;
-            glycemicExplanation = glycemicAnalysis.explanation;
-          } catch (error) {
-            console.error("Failed to analyze glycemic index:", error);
-            glycemicExplanation = "Unable to analyze glycemic impact at this time";
-          }
+      // Analyze glycemic index if we have nutrition data (ingredients not required)
+      if (product.nutriments) {
+        try {
+          const glycemicAnalysis = await analyzeGlycemicIndex(
+            product.ingredients_text || "",
+            product.product_name || "Unknown Product",
+            product.nutriments
+          );
+          glycemicIndex = glycemicAnalysis.glycemicIndex;
+          glycemicLoad = glycemicAnalysis.glycemicLoad;
+          glycemicExplanation = glycemicAnalysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze glycemic index:", error);
+          glycemicExplanation = "Unable to analyze glycemic impact at this time";
         }
       }
 
