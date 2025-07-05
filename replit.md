@@ -52,11 +52,26 @@ products table:
 - dataSource (text)
 - lastUpdated (text)
 
-search_history table:
+search_history table (enhanced):
 - id (serial, primary key)
 - searchId (varchar, unique) - auto-generated random code
 - searchInput (text) - user's search input (barcode or text)
 - searchInputType (varchar) - 'BarcodeInput' or 'TextInput'
+- resultFound (boolean) - whether search returned a product
+- productBarcode (text) - barcode of found product
+- productName (text) - name of found product
+- productBrands (text) - brands of found product
+- productImageUrl (text) - image URL of found product
+- productIngredientsText (text) - ingredients of found product
+- productNutriments (jsonb) - nutritional data of found product
+- processingScore (integer) - AI-analyzed processing score
+- processingExplanation (text) - AI processing level explanation
+- glycemicIndex (integer) - calculated glycemic index
+- glycemicLoad (integer) - calculated glycemic load
+- glycemicExplanation (text) - glycemic impact explanation
+- dataSource (text) - original data source
+- lookupSource (text) - search method used
+- errorMessage (text) - error details if search failed
 - createdAt (timestamp) - automatically set
 ```
 
@@ -139,6 +154,7 @@ Changelog:
 - June 16, 2025. Implemented comprehensive admin panel with user management, role updates, system statistics, admin-only routes, and admin access controls integrated into the application navigation
 - July 5, 2025. Implemented search history database system with automatic tracking of all product searches, search ID generation, search input type detection (BarcodeInput vs TextInput), and comprehensive API endpoints for search history management and statistics
 - July 5, 2025. Fixed and enhanced text search functionality with two-step OpenAI process: keyword optimization and realistic nutritional data generation. Added multi-language support for Dutch terms like "Gehakt" and "Gehaktbal". Improved error handling and fallback mechanisms for robust text-based product searches.
+- July 5, 2025. Enhanced search history database system with comprehensive search result tracking. Added automatic capture of complete product data, processing scores, nutritional information, lookup sources, and error details. Implemented duplicate prevention based on search input to avoid redundant database entries. System now tracks successful searches, failed searches, and cached results with full context.
 
 ## User Preferences
 

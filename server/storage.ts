@@ -13,7 +13,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or } from "drizzle-orm";
-import { hashPassword, verifyPassword, generateEmailVerificationToken, generatePasswordResetToken, sanitizeUser } from "./lib/auth";
+import { hashPassword, verifyPassword, generateEmailVerificationToken, generatePasswordResetToken, sanitizeUser, generateSearchId } from "./lib/auth";
 
 export interface IStorage {
   // User authentication methods
@@ -54,8 +54,10 @@ export interface IStorage {
   // Search history methods
   createSearchHistory(searchHistory: InsertSearchHistory): Promise<SearchHistory>;
   getSearchHistoryBySearchId(searchId: string): Promise<SearchHistory | undefined>;
+  getSearchHistoryByInput(searchInput: string): Promise<SearchHistory | undefined>;
   getAllSearchHistory(): Promise<SearchHistory[]>;
   getRecentSearchHistory(limit?: number): Promise<SearchHistory[]>;
+  createSearchHistoryWithResult(searchInput: string, searchInputType: string, product?: Product | null, error?: string, lookupSource?: string): Promise<SearchHistory>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -352,6 +354,16 @@ export class DatabaseStorage implements IStorage {
     return searchRecord || undefined;
   }
 
+  async getSearchHistoryByInput(searchInput: string): Promise<SearchHistory | undefined> {
+    const [searchRecord] = await db
+      .select()
+      .from(searchHistory)
+      .where(eq(searchHistory.searchInput, searchInput))
+      .orderBy(desc(searchHistory.createdAt))
+      .limit(1);
+    return searchRecord || undefined;
+  }
+
   async getAllSearchHistory(): Promise<SearchHistory[]> {
     return await db
       .select()
@@ -365,6 +377,54 @@ export class DatabaseStorage implements IStorage {
       .from(searchHistory)
       .orderBy(desc(searchHistory.createdAt))
       .limit(limit);
+  }
+
+  async createSearchHistoryWithResult(
+    searchInput: string, 
+    searchInputType: string, 
+    product?: Product | null, 
+    error?: string,
+    lookupSource?: string
+  ): Promise<SearchHistory> {
+    // Check for duplicate search input first
+    const existingSearch = await this.getSearchHistoryByInput(searchInput);
+    if (existingSearch) {
+      console.log(`Duplicate search input detected: "${searchInput}". Skipping database save.`);
+      return existingSearch;
+    }
+
+    // Generate unique search ID
+    const searchId = generateSearchId();
+
+    // Prepare search history data
+    const searchHistoryData: InsertSearchHistory = {
+      searchId,
+      searchInput,
+      searchInputType,
+      resultFound: !!product,
+      productBarcode: product?.barcode || null,
+      productName: product?.productName || null,
+      productBrands: product?.brands || null,
+      productImageUrl: product?.imageUrl || null,
+      productIngredientsText: product?.ingredientsText || null,
+      productNutriments: product?.nutriments || null,
+      processingScore: product?.processingScore || null,
+      processingExplanation: product?.processingExplanation || null,
+      glycemicIndex: product?.glycemicIndex || null,
+      glycemicLoad: product?.glycemicLoad || null,
+      glycemicExplanation: product?.glycemicExplanation || null,
+      dataSource: product?.dataSource || null,
+      lookupSource: lookupSource || null,
+      errorMessage: error || null,
+    };
+
+    const [searchRecord] = await db
+      .insert(searchHistory)
+      .values(searchHistoryData)
+      .returning();
+    
+    console.log(`Created search history record for: "${searchInput}" with result: ${!!product}`);
+    return searchRecord;
   }
 }
 

@@ -26,12 +26,32 @@ export const insertProductSchema = createInsertSchema(products).omit({
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof products.$inferSelect;
 
-// Search History table
+// Search History table - enhanced to include search result data
 export const searchHistory = pgTable("search_history", {
   id: serial("id").primaryKey(),
   searchId: varchar("search_id", { length: 255 }).notNull().unique(),
   searchInput: text("search_input").notNull(),
   searchInputType: varchar("search_input_type", { length: 50 }).notNull(),
+  
+  // Search result data
+  resultFound: boolean("result_found").notNull().default(false),
+  productBarcode: text("product_barcode"),
+  productName: text("product_name"),
+  productBrands: text("product_brands"),
+  productImageUrl: text("product_image_url"),
+  productIngredientsText: text("product_ingredients_text"),
+  productNutriments: jsonb("product_nutriments"),
+  processingScore: integer("processing_score"),
+  processingExplanation: text("processing_explanation"),
+  glycemicIndex: integer("glycemic_index"),
+  glycemicLoad: integer("glycemic_load"),
+  glycemicExplanation: text("glycemic_explanation"),
+  dataSource: text("data_source"),
+  lookupSource: text("lookup_source"),
+  
+  // Error handling
+  errorMessage: text("error_message"),
+  
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

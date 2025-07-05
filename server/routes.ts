@@ -348,32 +348,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Query is required" });
       }
 
-      // Track search history
-      const searchId = generateSearchId();
-      const isBarcode = /^[0-9]{8,14}$/.test(query.trim());
-      const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
-      
-      try {
-        await storage.createSearchHistory({
-          searchId,
-          searchInput: query,
-          searchInputType
-        });
-      } catch (historyError) {
-        console.warn("Failed to track search history:", historyError);
-        // Continue with the search even if history tracking fails
-      }
-
       // Check if we have cached product data
       const cachedProduct = await storage.getProductByBarcode(query);
       if (cachedProduct) {
+        // Track search history for cached results
+        const isBarcode = /^[0-9]{8,14}$/.test(query.trim());
+        const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
+        try {
+          await storage.createSearchHistoryWithResult(query, searchInputType, cachedProduct, undefined, 'Cached');
+        } catch (historyError) {
+          console.warn("Failed to track search history for cached product:", historyError);
+        }
         return res.json(cachedProduct);
       }
 
       // Use smart lookup system with filters
       const lookupResult = await smartProductLookup(query, filters);
       
+      // Determine search input type
+      const isBarcode = /^[0-9]{8,14}$/.test(query.trim());
+      const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
+      
       if (!lookupResult.product) {
+        // Track failed search history
+        try {
+          await storage.createSearchHistoryWithResult(
+            query, 
+            searchInputType, 
+            null, 
+            lookupResult.error || "Product not found",
+            lookupResult.source
+          );
+        } catch (historyError) {
+          console.warn("Failed to track search history for failed lookup:", historyError);
+        }
+        
         return res.status(404).json({ 
           message: lookupResult.error || "Product not found",
           source: lookupResult.source,
@@ -388,6 +397,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const savedProduct = await storage.createProduct(productData);
+      
+      // Track successful search history with complete product data
+      try {
+        await storage.createSearchHistoryWithResult(
+          query, 
+          searchInputType, 
+          savedProduct, 
+          undefined,
+          lookupResult.source
+        );
+      } catch (historyError) {
+        console.warn("Failed to track search history for successful lookup:", historyError);
+      }
       
       // Include source information in response
       res.json({
@@ -408,32 +430,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
 
-      // Track search history
-      const searchId = generateSearchId();
-      const isBarcode = /^[0-9]{8,14}$/.test(barcode.trim());
-      const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
-      
-      try {
-        await storage.createSearchHistory({
-          searchId,
-          searchInput: barcode,
-          searchInputType
-        });
-      } catch (historyError) {
-        console.warn("Failed to track search history:", historyError);
-        // Continue with the search even if history tracking fails
-      }
-
       // Check if we have cached product data
       const cachedProduct = await storage.getProductByBarcode(barcode);
       if (cachedProduct) {
+        // Track search history for cached results
+        const isBarcode = /^[0-9]{8,14}$/.test(barcode.trim());
+        const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
+        try {
+          await storage.createSearchHistoryWithResult(barcode, searchInputType, cachedProduct, undefined, 'Cached');
+        } catch (historyError) {
+          console.warn("Failed to track search history for cached product:", historyError);
+        }
         return res.json(cachedProduct);
       }
 
       // Use smart lookup system (auto-detects barcode vs text)
       const lookupResult = await smartProductLookup(barcode);
       
+      // Determine search input type
+      const isBarcode = /^[0-9]{8,14}$/.test(barcode.trim());
+      const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
+      
       if (!lookupResult.product) {
+        // Track failed search history
+        try {
+          await storage.createSearchHistoryWithResult(
+            barcode, 
+            searchInputType, 
+            null, 
+            lookupResult.error || "Product not found in any database",
+            lookupResult.source
+          );
+        } catch (historyError) {
+          console.warn("Failed to track search history for failed lookup:", historyError);
+        }
+        
         return res.status(404).json({ 
           message: lookupResult.error || "Product not found in any database",
           source: lookupResult.source,
@@ -448,6 +479,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const savedProduct = await storage.createProduct(productData);
+      
+      // Track successful search history with complete product data
+      try {
+        await storage.createSearchHistoryWithResult(
+          barcode, 
+          searchInputType, 
+          savedProduct, 
+          undefined,
+          lookupResult.source
+        );
+      } catch (historyError) {
+        console.warn("Failed to track search history for successful lookup:", historyError);
+      }
       
       // Include source information in response
       res.json({
