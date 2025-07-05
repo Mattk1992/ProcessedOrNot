@@ -65,6 +65,7 @@ export interface IStorage {
   getAllSearchHistory(): Promise<SearchHistory[]>;
   getRecentSearchHistory(limit?: number): Promise<SearchHistory[]>;
   createSearchHistoryWithResult(searchInput: string, searchInputType: string, product?: Product | null, error?: string, lookupSource?: string): Promise<SearchHistory>;
+  clearAllSearchHistory(): Promise<void>;
 
   // Admin settings methods
   getAdminSetting(settingKey: string): Promise<AdminSetting | undefined>;
@@ -590,6 +591,10 @@ export class DatabaseStorage implements IStorage {
       settingKey,
       settingValue
     });
+  }
+
+  async clearAllSearchHistory(): Promise<void> {
+    await db.delete(searchHistory);
   }
 }
 

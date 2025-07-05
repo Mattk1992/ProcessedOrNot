@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft } from "lucide-react";
+import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, History } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import AdminSettings from "@/components/admin-settings";
 
@@ -136,6 +136,25 @@ export default function AdminPanel() {
             <Crown className="h-4 w-4 mr-1" />
             Admin Access
           </Badge>
+        </div>
+
+        {/* Quick Navigation */}
+        <div className="mb-8">
+          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4">
+                <h3 className="text-lg font-semibold text-foreground">Quick Actions</h3>
+                <div className="flex items-center gap-2">
+                  <Link href="/admin-search-history">
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <History className="h-4 w-4" />
+                      Search History Analytics
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Statistics Cards */}

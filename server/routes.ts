@@ -885,6 +885,164 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin search history routes
+  app.get("/api/admin/search-history", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const searchHistory = await storage.getAllSearchHistory();
+      res.json(searchHistory);
+    } catch (error) {
+      console.error("Error fetching search history:", error);
+      res.status(500).json({ message: "Failed to fetch search history" });
+    }
+  });
+
+  app.get("/api/admin/search-history/stats", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const searchHistory = await storage.getAllSearchHistory();
+      
+      // Calculate statistics
+      const totalSearches = searchHistory.length;
+      const successfulSearches = searchHistory.filter(s => s.resultFound).length;
+      const failedSearches = totalSearches - successfulSearches;
+      const barcodeSearches = searchHistory.filter(s => s.searchInputType === 'BarcodeInput').length;
+      const textSearches = searchHistory.filter(s => s.searchInputType === 'TextInput').length;
+      
+      // Calculate average processing score
+      const scoresWithValues = searchHistory.filter(s => s.processingScore !== null && s.processingScore !== undefined);
+      const averageProcessingScore = scoresWithValues.length > 0 
+        ? scoresWithValues.reduce((sum, s) => sum + (s.processingScore || 0), 0) / scoresWithValues.length 
+        : 0;
+
+      // Most searched products (group by search input)
+      const searchCounts: Record<string, number> = {};
+      searchHistory.forEach(s => {
+        const key = s.searchInput;
+        searchCounts[key] = (searchCounts[key] || 0) + 1;
+      });
+      
+      const mostSearchedProducts = Object.entries(searchCounts)
+        .map(([searchInput, count]) => ({ searchInput, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 20);
+
+      // Searches by date (last 30 days)
+      const dateCounts: Record<string, number> = {};
+      const last30Days = new Date();
+      last30Days.setDate(last30Days.getDate() - 30);
+      
+      searchHistory
+        .filter(s => new Date(s.createdAt) >= last30Days)
+        .forEach(s => {
+          const date = new Date(s.createdAt).toISOString().split('T')[0];
+          dateCounts[date] = (dateCounts[date] || 0) + 1;
+        });
+      
+      const searchesByDate = Object.entries(dateCounts)
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      // Searches by data source
+      const sourceCounts: Record<string, number> = {};
+      searchHistory
+        .filter(s => s.resultFound && s.dataSource)
+        .forEach(s => {
+          const source = s.dataSource || 'Unknown';
+          sourceCounts[source] = (sourceCounts[source] || 0) + 1;
+        });
+      
+      const searchesBySource = Object.entries(sourceCounts)
+        .map(([source, count]) => ({ source, count }))
+        .sort((a, b) => b.count - a.count);
+
+      const stats = {
+        totalSearches,
+        successfulSearches,
+        failedSearches,
+        barcodeSearches,
+        textSearches,
+        averageProcessingScore,
+        mostSearchedProducts,
+        searchesByDate,
+        searchesBySource,
+      };
+
+      res.json(stats);
+    } catch (error) {
+      console.error("Error calculating search history stats:", error);
+      res.status(500).json({ message: "Failed to calculate search statistics" });
+    }
+  });
+
+  app.delete("/api/admin/search-history/clear", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      await storage.clearAllSearchHistory();
+      res.json({ message: "Search history cleared successfully" });
+    } catch (error) {
+      console.error("Error clearing search history:", error);
+      res.status(500).json({ message: "Failed to clear search history" });
+    }
+  });
+
+  app.get("/api/admin/search-history/export", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.role !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const searchHistory = await storage.getAllSearchHistory();
+      
+      // Create CSV content
+      const headers = [
+        'Search ID', 'Search Input', 'Search Type', 'Result Found', 'Product Name', 
+        'Product Brands', 'Processing Score', 'Glycemic Index', 'Data Source', 
+        'Lookup Source', 'Error Message', 'Created At'
+      ];
+      
+      const csvRows = [
+        headers.join(','),
+        ...searchHistory.map(item => [
+          item.searchId,
+          `"${(item.searchInput || '').replace(/"/g, '""')}"`,
+          item.searchInputType,
+          item.resultFound,
+          `"${(item.productName || '').replace(/"/g, '""')}"`,
+          `"${(item.productBrands || '').replace(/"/g, '""')}"`,
+          item.processingScore || '',
+          item.glycemicIndex || '',
+          `"${(item.dataSource || '').replace(/"/g, '""')}"`,
+          `"${(item.lookupSource || '').replace(/"/g, '""')}"`,
+          `"${(item.errorMessage || '').replace(/"/g, '""')}"`,
+          item.createdAt
+        ].join(','))
+      ];
+      
+      const csvContent = csvRows.join('\n');
+      
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="search-history-${new Date().toISOString().split('T')[0]}.csv"`);
+      res.send(csvContent);
+    } catch (error) {
+      console.error("Error exporting search history:", error);
+      res.status(500).json({ message: "Failed to export search history" });
+    }
+  });
+
   app.get("/api/admin/settings/:key", async (req, res) => {
     try {
       const user = (req.session as any).user;
