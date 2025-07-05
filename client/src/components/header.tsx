@@ -1,6 +1,7 @@
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 import LanguageSwitcher from "./language-switcher";
 import HeaderDropdown from "./header-dropdown";
+import ThemeToggle from "./theme-toggle";
 
 export default function Header() {
   return (
@@ -22,6 +23,9 @@ export default function Header() {
           <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
             <div className="hidden sm:block">
               <LanguageSwitcher />
+            </div>
+            <div className="block sm:hidden">
+              <ThemeToggle mobile={true} />
             </div>
             <HeaderDropdown />
           </div>
