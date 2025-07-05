@@ -809,10 +809,10 @@
     }
     
     .mobile-dropdown {
-      right: 0.5rem;
       left: 0.5rem;
+      right: auto;
       width: auto;
-      max-width: none;
+      max-width: calc(100vw - 1rem);
     }
     
     .mobile-touch-target {

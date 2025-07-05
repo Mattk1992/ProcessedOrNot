@@ -123,7 +123,7 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
           />
           
           {/* Enhanced Dropdown Menu */}
-          <div className="absolute right-0 mt-3 w-72 max-w-[calc(100vw-2rem)] sm:max-w-[18rem] mobile-dropdown bg-gradient-to-br from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-800/90 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/50 z-50 overflow-hidden backdrop-blur-xl dropdown-menu-enhanced">
+          <div className="absolute left-0 mt-3 w-72 max-w-[calc(100vw-2rem)] sm:max-w-[18rem] mobile-dropdown bg-gradient-to-br from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-800/90 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/50 z-50 overflow-hidden backdrop-blur-xl dropdown-menu-enhanced">
             
             {/* Header with user info */}
             {isAuthenticated && (
