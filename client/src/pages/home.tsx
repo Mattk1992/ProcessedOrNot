@@ -147,30 +147,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Login/Register Call-to-Action - Only show when not authenticated */}
-            {!isAuthenticated && (
-              <div className="mt-12 fade-in" style={{animationDelay: '0.5s'}}>
-                <div className="glass-card p-8 rounded-3xl max-w-2xl mx-auto glow-effect">
-                  <div className="text-center">
-                    <h3 className="md:text-2xl text-foreground mb-4 gradient-text font-semibold text-[21px]">{t('home.cta.title')}</h3>
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center w-full sm:w-auto">
-                      <button
-                        onClick={() => window.location.href = '/register'}
-                        className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl mobile-touch-friendly touch-action-manipulation text-sm sm:text-base"
-                      >
-                        {t('home.cta.createAccount')}
-                      </button>
-                      <button
-                        onClick={() => window.location.href = '/login'}
-                        className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-foreground font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl mobile-touch-friendly touch-action-manipulation text-sm sm:text-base"
-                      >
-                        {t('home.cta.signIn')}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
       </section>
@@ -195,6 +172,34 @@ export default function Home() {
           </div>
         )}
       </main>
+      
+      {/* Login/Register Call-to-Action - Only show when not authenticated */}
+      {!isAuthenticated && (
+        <section className="max-w-6xl mx-auto px-4 pb-8 sm:pb-12">
+          <div className="mt-12 fade-in" style={{animationDelay: '0.5s'}}>
+            <div className="glass-card p-8 rounded-3xl max-w-2xl mx-auto glow-effect">
+              <div className="text-center">
+                <h3 className="md:text-2xl text-foreground mb-4 gradient-text font-semibold text-[21px]">{t('home.cta.title')}</h3>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center w-full sm:w-auto">
+                  <button
+                    onClick={() => window.location.href = '/register'}
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl mobile-touch-friendly touch-action-manipulation text-sm sm:text-base"
+                  >
+                    {t('home.cta.createAccount')}
+                  </button>
+                  <button
+                    onClick={() => window.location.href = '/login'}
+                    className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-foreground font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl mobile-touch-friendly touch-action-manipulation text-sm sm:text-base"
+                  >
+                    {t('home.cta.signIn')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+      
       {/* Footer */}
       <footer className="border-t border-border/50 mt-8 sm:mt-16">
         <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6">
