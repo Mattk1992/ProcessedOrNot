@@ -237,16 +237,21 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
       setIsScanning(false);
 
-      // Configure camera constraints for better short-range autofocus and quality
+      // Optimized camera constraints for short-range barcode scanning
       const constraints: MediaStreamConstraints = {
         video: {
           deviceId: { exact: selectedDeviceId },
-          width: { ideal: 1920, min: 1280 },
-          height: { ideal: 1080, min: 720 },
+          width: { ideal: 2560, min: 1920 }, // Higher resolution for better barcode detail capture
+          height: { ideal: 1440, min: 1080 }, // Increased height for better barcode scanning area
           facingMode: { ideal: 'environment' },
-          frameRate: { ideal: 30, min: 15 },
+          frameRate: { ideal: 60, min: 30 }, // Higher frame rate for smoother focus adjustments
           aspectRatio: { ideal: 16/9 },
-        }
+          // Advanced quality settings for short-range scanning
+          zoom: { ideal: 1.0, min: 1.0, max: 3.0 }, // Enable zoom capability
+          colorTemperature: { ideal: 5500 }, // Optimal color temperature for barcode scanning
+          pan: { ideal: 0 }, // Center positioning
+          tilt: { ideal: 0 }, // Level positioning
+        } as any
       };
 
       // Get the video stream with enhanced constraints
@@ -259,23 +264,40 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         const videoTrack = stream.getVideoTracks()[0];
         if (videoTrack && 'applyConstraints' in videoTrack) {
           try {
-            // Optimized camera settings for short-range barcode scanning
+            // Advanced constraints optimized for short-range barcode scanning excellence
             const advancedConstraints: any = {
               advanced: [{
+                // Ultra-precise short-range autofocus
                 focusMode: 'continuous',
-                focusDistance: 0.02, // Extremely close focus for handheld barcode scanning (2cm-10cm range)
-                whiteBalanceMode: 'auto',
-                exposureMode: 'manual',
-                exposureTime: 8000, // Fast shutter speed to reduce motion blur
-                exposureCompensation: 0.3, // Brighter exposure for high contrast barcodes
-                iso: { ideal: 80, max: 160 }, // Very low ISO for maximum sharpness
-                sharpness: { ideal: 100 }, // Maximum sharpness for crisp barcode lines
-                contrast: { ideal: 140 }, // High contrast for clear black/white distinction
-                saturation: { ideal: 60 }, // Low saturation to enhance edge detection
-                brightness: { ideal: 110 }, // Slightly brighter for better barcode visibility
+                focusDistance: 0.015, // Optimized for 1.5cm-8cm barcode scanning distance
                 autoFocus: true,
-                focusSearchRange: { min: 0.01, max: 0.15 }, // Limit focus range to close distances
+                focusSearchRange: { min: 0.005, max: 0.12 }, // Narrow focus range for close objects
+                
+                // Motion blur elimination for handheld scanning
+                exposureMode: 'manual',
+                exposureTime: 6000, // Ultra-fast shutter for motion-free barcode capture
+                exposureCompensation: 0.4, // Higher brightness for barcode contrast
+                
+                // Maximum image sharpness and clarity
+                iso: { ideal: 64, max: 125 }, // Minimal ISO for crystal-clear barcode lines
+                sharpness: { ideal: 100 }, // Maximum edge definition
+                contrast: { ideal: 160 }, // Extreme contrast for black/white barcode distinction
+                
+                // Color optimization for barcode detection
+                saturation: { ideal: 40 }, // Minimal color for enhanced luminance detection
+                brightness: { ideal: 125 }, // Increased brightness for barcode visibility
+                whiteBalanceMode: 'daylight', // Consistent color temperature for barcode scanning
+                colorTemperature: { ideal: 5500 }, // Optimal temperature for black/white contrast
+                
+                // Noise reduction and stability
+                noiseReduction: { ideal: 100 }, // Maximum noise reduction for clean barcode images
+                imageStabilization: true, // Hardware stabilization for handheld scanning
                 torch: false,
+                
+                // Barcode scanning specific optimizations
+                zoom: { ideal: 1.2 }, // Slight zoom for better barcode detail
+                pan: { ideal: 0 }, // Center camera positioning
+                tilt: { ideal: 0 }, // Level camera for optimal barcode angle
               }]
             };
             await videoTrack.applyConstraints(advancedConstraints);
@@ -322,16 +344,18 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           codeReaderRef.current.timeBetweenDecodingAttempts = 300;
         }
         
-        // Fallback camera initialization with enhanced short-range focus and quality
+        // Fallback camera initialization with optimized short-range barcode scanning
         const fallbackStream = await navigator.mediaDevices.getUserMedia({
           video: {
             deviceId: { exact: selectedDeviceId },
-            width: { ideal: 1920, min: 1280 },
-            height: { ideal: 1080, min: 720 },
+            width: { ideal: 2560, min: 1920 }, // Higher resolution for better barcode detail
+            height: { ideal: 1440, min: 1080 }, // Increased scanning area
             facingMode: { ideal: 'environment' },
-            frameRate: { ideal: 30, min: 15 },
+            frameRate: { ideal: 60, min: 30 }, // Higher frame rate for smooth focus
             aspectRatio: { ideal: 16/9 },
-          }
+            zoom: { ideal: 1.0, min: 1.0, max: 3.0 }, // Zoom capability
+            colorTemperature: { ideal: 5500 }, // Optimal barcode scanning temperature
+          } as any
         });
         
         finalVideoElement.srcObject = fallbackStream;
@@ -343,19 +367,36 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           try {
             await fallbackVideoTrack.applyConstraints({
               advanced: [{
+                // Ultra-precise short-range autofocus (fallback)
                 focusMode: 'continuous',
-                focusDistance: 0.02, // Extremely close focus for handheld barcode scanning
-                whiteBalanceMode: 'auto',
-                exposureMode: 'manual',
-                exposureTime: 8000, // Fast shutter speed to reduce motion blur
-                exposureCompensation: 0.3, // Brighter exposure for high contrast barcodes
-                iso: { ideal: 80, max: 160 }, // Very low ISO for maximum sharpness
-                sharpness: { ideal: 100 }, // Maximum sharpness for crisp barcode lines
-                contrast: { ideal: 140 }, // High contrast for clear black/white distinction
-                saturation: { ideal: 60 }, // Low saturation to enhance edge detection
-                brightness: { ideal: 110 }, // Slightly brighter for better barcode visibility
+                focusDistance: 0.015, // Optimized for 1.5cm-8cm barcode scanning distance
                 autoFocus: true,
-                focusSearchRange: { min: 0.01, max: 0.15 }, // Limit focus range to close distances
+                focusSearchRange: { min: 0.005, max: 0.12 }, // Narrow focus range for close objects
+                
+                // Motion blur elimination for handheld scanning
+                exposureMode: 'manual',
+                exposureTime: 6000, // Ultra-fast shutter for motion-free barcode capture
+                exposureCompensation: 0.4, // Higher brightness for barcode contrast
+                
+                // Maximum image sharpness and clarity
+                iso: { ideal: 64, max: 125 }, // Minimal ISO for crystal-clear barcode lines
+                sharpness: { ideal: 100 }, // Maximum edge definition
+                contrast: { ideal: 160 }, // Extreme contrast for black/white barcode distinction
+                
+                // Color optimization for barcode detection
+                saturation: { ideal: 40 }, // Minimal color for enhanced luminance detection
+                brightness: { ideal: 125 }, // Increased brightness for barcode visibility
+                whiteBalanceMode: 'daylight', // Consistent color temperature for barcode scanning
+                colorTemperature: { ideal: 5500 }, // Optimal temperature for black/white contrast
+                
+                // Noise reduction and stability
+                noiseReduction: { ideal: 100 }, // Maximum noise reduction for clean barcode images
+                imageStabilization: true, // Hardware stabilization for handheld scanning
+                
+                // Barcode scanning specific optimizations
+                zoom: { ideal: 1.2 }, // Slight zoom for better barcode detail
+                pan: { ideal: 0 }, // Center camera positioning
+                tilt: { ideal: 0 }, // Level camera for optimal barcode angle
               } as any]
             });
           } catch (fallbackConstraintError) {
