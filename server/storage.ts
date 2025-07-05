@@ -165,7 +165,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.email, email));
     
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getUserByPasswordResetToken(token: string): Promise<User | undefined> {
@@ -196,7 +196,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, user.id));
     
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Email verification methods
@@ -210,7 +210,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.emailVerificationToken, token));
     
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Legacy methods for backwards compatibility
@@ -503,11 +503,12 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAdminSetting(settingKey: string): Promise<boolean> {
     const result = await db.delete(adminSettings).where(eq(adminSettings.settingKey, settingKey));
-    return (result.rowCount || 0) > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async initializeDefaultSettings(): Promise<void> {
     const defaultSettings: InsertAdminSetting[] = [
+      // Search Engine Settings
       {
         settingKey: 'camera_timeout',
         settingValue: '40',
@@ -516,18 +517,138 @@ export class DatabaseStorage implements IStorage {
         category: 'search_engine'
       },
       {
+        settingKey: 'barcode_scan_interval',
+        settingValue: '300',
+        settingType: 'integer',
+        description: 'Interval in milliseconds between barcode scanning attempts',
+        category: 'search_engine'
+      },
+      {
+        settingKey: 'max_search_results',
+        settingValue: '50',
+        settingType: 'integer',
+        description: 'Maximum number of search results to return in admin panel',
+        category: 'search_engine'
+      },
+      {
+        settingKey: 'enable_fallback_databases',
+        settingValue: 'true',
+        settingType: 'boolean',
+        description: 'Enable fallback to secondary food databases when primary lookup fails',
+        category: 'search_engine'
+      },
+      
+      // AI Settings
+      {
         settingKey: 'default_ai_provider',
-        settingValue: 'ChatGPT',
+        settingValue: 'OpenAI',
         settingType: 'select',
         description: 'Default AI provider for product analysis and nutrition insights',
         category: 'ai_settings'
       },
+      {
+        settingKey: 'ai_analysis_timeout',
+        settingValue: '30000',
+        settingType: 'integer',
+        description: 'Timeout in milliseconds for AI analysis requests',
+        category: 'ai_settings'
+      },
+      {
+        settingKey: 'enable_nutribot_chat',
+        settingValue: 'true',
+        settingType: 'boolean',
+        description: 'Enable the NutriBot chat functionality for users',
+        category: 'ai_settings'
+      },
+      {
+        settingKey: 'default_analysis_language',
+        settingValue: 'en',
+        settingType: 'select',
+        description: 'Default language for AI analysis when user language is not detected',
+        category: 'ai_settings'
+      },
+      
+      // User Interface Settings
       {
         settingKey: 'tutorial_overlay_enabled',
         settingValue: 'false',
         settingType: 'boolean',
         description: 'Enable or disable the tutorial overlay for new users',
         category: 'user_interface'
+      },
+      {
+        settingKey: 'dark_mode_default',
+        settingValue: 'system',
+        settingType: 'select',
+        description: 'Default theme setting for new users (light, dark, system)',
+        category: 'user_interface'
+      },
+      {
+        settingKey: 'camera_auto_focus',
+        settingValue: 'true',
+        settingType: 'boolean',
+        description: 'Enable automatic focus for barcode scanning camera',
+        category: 'user_interface'
+      },
+      {
+        settingKey: 'search_history_retention_days',
+        settingValue: '90',
+        settingType: 'integer',
+        description: 'Number of days to retain search history data',
+        category: 'user_interface'
+      },
+      
+      // Security & Privacy Settings
+      {
+        settingKey: 'session_timeout_hours',
+        settingValue: '24',
+        settingType: 'integer',
+        description: 'User session timeout in hours',
+        category: 'security'
+      },
+      {
+        settingKey: 'max_login_attempts',
+        settingValue: '5',
+        settingType: 'integer',
+        description: 'Maximum login attempts before account lockout',
+        category: 'security'
+      },
+      {
+        settingKey: 'require_email_verification',
+        settingValue: 'true',
+        settingType: 'boolean',
+        description: 'Require email verification for new user accounts',
+        category: 'security'
+      },
+      {
+        settingKey: 'data_retention_policy_days',
+        settingValue: '365',
+        settingType: 'integer',
+        description: 'Number of days to retain user data and search history',
+        category: 'security'
+      },
+      
+      // Performance Settings
+      {
+        settingKey: 'cache_ttl_seconds',
+        settingValue: '3600',
+        settingType: 'integer',
+        description: 'Time-to-live for cached product data in seconds',
+        category: 'performance'
+      },
+      {
+        settingKey: 'enable_database_optimizations',
+        settingValue: 'true',
+        settingType: 'boolean',
+        description: 'Enable database query optimizations and indexing',
+        category: 'performance'
+      },
+      {
+        settingKey: 'max_concurrent_ai_requests',
+        settingValue: '10',
+        settingType: 'integer',
+        description: 'Maximum number of concurrent AI analysis requests',
+        category: 'performance'
       }
     ];
 
