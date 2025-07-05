@@ -45,22 +45,22 @@ export default function Home() {
     <div className="min-h-screen">
       {/* Header */}
       <header className="glass-effect border-b border-border/50 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-6">
+        <div className="max-w-6xl mx-auto px-4 py-6 mobile-compact-header">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <img 
                 src={logoPath} 
                 alt="ProcessedOrNot Logo" 
-                className="w-12 h-12 rounded-xl shadow-lg floating-animation"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl shadow-lg floating-animation"
               />
-              <div>
-                <h1 className="text-2xl font-bold gradient-text text-shadow">
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-2xl font-bold gradient-text text-shadow truncate">
                   {t('brand.title')}
                 </h1>
-                <p className="text-sm text-muted-foreground">{t('brand.subtitle')}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground truncate">{t('brand.subtitle')}</p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-1 sm:space-x-3">
               <div className="scale-on-hover">
                 <LanguageSwitcher />
               </div>
@@ -72,22 +72,22 @@ export default function Home() {
         </div>
       </header>
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-16">
+      <section className="relative overflow-hidden py-8 sm:py-16">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent"></div>
-        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-primary/10 rounded-full blur-3xl floating-animation"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-40 h-40 bg-accent/10 rounded-full blur-3xl floating-animation" style={{animationDelay: '1s'}}></div>
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-6xl font-bold text-foreground mb-6 fade-in text-shadow">
+        <div className="absolute top-1/4 left-1/4 w-16 sm:w-32 h-16 sm:h-32 bg-primary/10 rounded-full blur-3xl floating-animation"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-20 sm:w-40 h-20 sm:h-40 bg-accent/10 rounded-full blur-3xl floating-animation" style={{animationDelay: '1s'}}></div>
+        <div className="max-w-6xl mx-auto px-4 mobile-scanner-container">
+          <div className="text-center mb-8 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl md:text-6xl mobile-hero-text font-bold text-foreground mb-4 sm:mb-6 fade-in text-shadow">
               {t('hero.title.part1')}
-              <span className="gradient-text block mt-2">{t('hero.title.part2')}</span>
+              <span className="gradient-text block mt-1 sm:mt-2">{t('hero.title.part2')}</span>
             </h2>
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto fade-in leading-relaxed">
+            <p className="text-base sm:text-xl md:text-2xl mobile-hero-subtitle text-muted-foreground max-w-3xl mx-auto fade-in leading-relaxed px-2">
               {t('hero.description')}
             </p>
-            <div className="mt-8 flex justify-center">
-              <div className="glass-card px-6 py-3 rounded-full">
-                <p className="text-sm text-muted-foreground">
+            <div className="mt-4 sm:mt-8 flex justify-center">
+              <div className="glass-card px-3 sm:px-6 py-2 sm:py-3 rounded-full">
+                <p className="text-xs sm:text-sm mobile-text-scale text-muted-foreground">
                   {t('hero.databases')}
                 </p>
               </div>
@@ -99,16 +99,16 @@ export default function Home() {
                 <div className="glass-card p-8 rounded-3xl max-w-2xl mx-auto glow-effect">
                   <div className="text-center">
                     <h3 className="md:text-2xl text-foreground mb-4 gradient-text font-semibold text-[21px]">{t('home.cta.title')}</h3>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center w-full sm:w-auto">
                       <button
                         onClick={() => window.location.href = '/register'}
-                        className="px-8 py-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                        className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl mobile-touch-friendly touch-action-manipulation text-sm sm:text-base"
                       >
                         {t('home.cta.createAccount')}
                       </button>
                       <button
                         onClick={() => window.location.href = '/login'}
-                        className="px-8 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-foreground font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                        className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm border border-white/20 text-foreground font-semibold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl mobile-touch-friendly touch-action-manipulation text-sm sm:text-base"
                       >
                         {t('home.cta.signIn')}
                       </button>
@@ -121,18 +121,18 @@ export default function Home() {
         </div>
       </section>
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 pb-12">
+      <main className="max-w-6xl mx-auto px-4 pb-8 sm:pb-12">
         <div className="slide-up">
-          <div className="glass-card p-8 rounded-3xl morphing-border glow-effect">
+          <div className="glass-card p-4 sm:p-8 rounded-3xl morphing-border glow-effect">
             <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
           </div>
         </div>
 
         
         {currentBarcode && (
-          <div className="mt-12 slide-up">
+          <div className="mt-8 sm:mt-12 slide-up">
             <div className="gradient-card rounded-3xl p-1 glow-effect">
-              <div className="bg-background rounded-3xl p-6">
+              <div className="bg-background rounded-3xl p-4 sm:p-6">
                 <ProductResults barcode={currentBarcode} />
               </div>
             </div>
@@ -140,15 +140,15 @@ export default function Home() {
         )}
       </main>
       {/* Footer */}
-      <footer className="border-t border-border/50 mt-16">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="text-center text-sm text-muted-foreground">
+      <footer className="border-t border-border/50 mt-8 sm:mt-16">
+        <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6">
+          <div className="text-center text-xs sm:text-sm text-muted-foreground">
             {t('footer.createdBy')}{" "}
             <a
               href="https://www.linkedin.com/in/matthias-kuchenbecker/"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium text-foreground hover:text-primary transition-colors underline decoration-primary/30 hover:decoration-primary"
+              className="font-medium text-foreground hover:text-primary transition-colors underline decoration-primary/30 hover:decoration-primary touch-action-manipulation"
               aria-label={t('footer.linkedin')}
             >
               Matthias Kuchenbecker

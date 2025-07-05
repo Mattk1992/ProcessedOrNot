@@ -148,6 +148,100 @@
     box-shadow: var(--shadow-medium);
   }
 
+  /* Mobile Optimizations */
+  @media (max-width: 768px) {
+    .mobile-compact-header {
+      padding: 1rem;
+    }
+    
+    .mobile-hero-text {
+      font-size: 2rem;
+      line-height: 1.2;
+    }
+    
+    .mobile-hero-subtitle {
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+    
+    .mobile-scanner-container {
+      padding: 1rem;
+    }
+    
+    .mobile-product-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+    
+    .mobile-touch-friendly {
+      min-height: 44px;
+      min-width: 44px;
+    }
+    
+    .mobile-spacing {
+      margin: 0.5rem 0;
+    }
+    
+    .mobile-card-padding {
+      padding: 1.5rem;
+    }
+    
+    .mobile-text-scale {
+      font-size: 0.9rem;
+    }
+    
+    .mobile-button-full {
+      width: 100%;
+      padding: 0.875rem;
+    }
+    
+    .mobile-camera-height {
+      height: 240px;
+    }
+    
+    .mobile-zoom-controls {
+      bottom: 0.5rem;
+      right: 0.5rem;
+    }
+    
+    .mobile-zoom-controls button {
+      width: 32px;
+      height: 32px;
+    }
+    
+    .mobile-zoom-controls div {
+      font-size: 0.7rem;
+      min-width: 1.5rem;
+    }
+  }
+
+  /* Touch-friendly interactions */
+  @media (hover: none) and (pointer: coarse) {
+    .hover\:scale-105:hover {
+      transform: none;
+    }
+    
+    .hover\:shadow-lg:hover {
+      box-shadow: var(--shadow-medium);
+    }
+    
+    .touch-action-manipulation {
+      touch-action: manipulation;
+    }
+  }
+
+  /* Prevent zoom on input focus (iOS) */
+  @media screen and (-webkit-min-device-pixel-ratio: 0) {
+    select, textarea, input[type="text"], input[type="password"], 
+    input[type="datetime"], input[type="datetime-local"], 
+    input[type="date"], input[type="month"], input[type="time"], 
+    input[type="week"], input[type="number"], input[type="email"], 
+    input[type="url"], input[type="search"], input[type="tel"], 
+    input[type="color"] {
+      font-size: 16px;
+    }
+  }
+
   .glow-effect {
     box-shadow: 0 0 20px rgba(0, 102, 255, 0.15);
     transition: box-shadow 0.3s ease;

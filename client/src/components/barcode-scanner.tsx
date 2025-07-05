@@ -267,7 +267,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
               <div className="relative bg-black rounded-3xl overflow-hidden shadow-2xl glow-effect">
                 <video
                   ref={videoRef}
-                  className="w-full h-80 object-cover"
+                  className="w-full h-80 sm:h-80 mobile-camera-height object-cover"
                   autoPlay
                   playsInline
                   muted
@@ -293,17 +293,17 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   </div>
                   
                   {/* Zoom Controls */}
-                  <div className="absolute bottom-4 right-4 flex flex-col gap-2">
+                  <div className="absolute bottom-4 right-4 mobile-zoom-controls flex flex-col gap-2">
                     <Button
                       onClick={handleZoomIn}
                       disabled={zoomLevel >= maxZoom}
                       variant="outline"
                       size="sm"
-                      className="bg-black/70 text-white border-white/30 hover:bg-black/80 w-8 h-8 p-0"
+                      className="bg-black/70 text-white border-white/30 hover:bg-black/80 w-8 h-8 sm:w-8 sm:h-8 p-0 mobile-touch-friendly touch-action-manipulation"
                     >
-                      <ZoomIn className="w-4 h-4" />
+                      <ZoomIn className="w-3 h-3 sm:w-4 sm:h-4" />
                     </Button>
-                    <div className="bg-black/70 text-white px-2 py-1 rounded text-xs text-center min-w-[2rem]">
+                    <div className="bg-black/70 text-white px-1 sm:px-2 py-1 rounded text-xs text-center min-w-[1.5rem] sm:min-w-[2rem]">
                       {zoomLevel.toFixed(1)}x
                     </div>
                     <Button
@@ -311,39 +311,42 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                       disabled={zoomLevel <= minZoom}
                       variant="outline"
                       size="sm"
-                      className="bg-black/70 text-white border-white/30 hover:bg-black/80 w-8 h-8 p-0"
+                      className="bg-black/70 text-white border-white/30 hover:bg-black/80 w-8 h-8 sm:w-8 sm:h-8 p-0 mobile-touch-friendly touch-action-manipulation"
                     >
-                      <ZoomOut className="w-4 h-4" />
+                      <ZoomOut className="w-3 h-3 sm:w-4 sm:h-4" />
                     </Button>
                   </div>
                 </div>
               </div>
               
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <Button
                   onClick={stopCamera}
                   variant="outline"
-                  className="flex-1 border-2 border-destructive/20 text-destructive hover:bg-destructive/10"
+                  className="flex-1 border-2 border-destructive/20 text-destructive hover:bg-destructive/10 mobile-button-full touch-action-manipulation"
                 >
                   <X className="w-4 h-4 mr-2" />
-                  Stop Camera
+                  <span className="hidden sm:inline">Stop Camera</span>
+                  <span className="sm:hidden">Stop</span>
                 </Button>
                 <Button
                   onClick={resetZoom}
                   variant="outline"
-                  className="flex-1 border-2 border-muted-foreground/20 text-muted-foreground hover:bg-muted/10"
+                  className="flex-1 border-2 border-muted-foreground/20 text-muted-foreground hover:bg-muted/10 mobile-button-full touch-action-manipulation"
                   disabled={zoomLevel === 1}
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
-                  Reset Zoom
+                  <span className="hidden sm:inline">Reset Zoom</span>
+                  <span className="sm:hidden">Reset</span>
                 </Button>
                 <Button
                   onClick={startCamera}
                   variant="outline"
-                  className="flex-1 border-2 border-primary/20 text-primary hover:bg-primary/10"
+                  className="flex-1 border-2 border-primary/20 text-primary hover:bg-primary/10 mobile-button-full touch-action-manipulation"
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
-                  Restart
+                  <span className="hidden sm:inline">Restart</span>
+                  <span className="sm:hidden">Restart</span>
                 </Button>
               </div>
             </div>
@@ -352,17 +355,17 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
               <Button
                 onClick={startCamera}
                 disabled={isLoading || isScanning}
-                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mb-6"
+                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mb-6 mobile-touch-friendly touch-action-manipulation"
               >
                 {isScanning ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Starting Camera...</span>
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                    <span className="text-sm sm:text-base">Starting Camera...</span>
                   </>
                 ) : (
                   <>
-                    <Camera className="w-5 h-5" />
-                    <span>Scan with Camera</span>
+                    <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-sm sm:text-base">Scan with Camera</span>
                   </>
                 )}
               </Button>
@@ -386,14 +389,14 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           
           {/* Manual Input Form */}
           {!isCameraActive && (
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div className="relative group">
                 <Input
                   type="text"
                   value={barcode}
                   onChange={(e) => setBarcode(e.target.value)}
                   placeholder={t('scanner.input.placeholder')}
-                  className="w-full px-5 py-4 text-lg font-mono tracking-wider pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30"
+                  className="w-full px-4 sm:px-5 py-3 sm:py-4 text-base sm:text-lg font-mono tracking-wider pr-12 sm:pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30 mobile-touch-friendly"
                   disabled={isLoading}
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-4">
@@ -408,19 +411,19 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
               
               <Button 
                 type="submit"
-                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-4 px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
                 disabled={isLoading || barcode.trim().length < 1}
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>{t('scanner.input.analyzing')}</span>
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                    <span className="text-sm sm:text-base">{t('scanner.input.analyzing')}</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl shimmer"></div>
                   </>
                 ) : (
                   <>
-                    <Search className="w-5 h-5" />
-                    <span>{t('scanner.input.button')}</span>
+                    <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-sm sm:text-base">{t('scanner.input.button')}</span>
                   </>
                 )}
               </Button>
@@ -431,18 +434,18 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
       {/* Sample Products Section */}
       <Card className="bg-gradient-to-br from-card to-muted/30 border-2 border-border/20 shadow-lg">
-        <CardContent className="pt-8 pb-8">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-foreground mb-2">{t('scanner.samples.title')}</h3>
-            <p className="text-muted-foreground">{t('scanner.samples.description')}</p>
+        <CardContent className="pt-6 sm:pt-8 pb-6 sm:pb-8 mobile-card-padding">
+          <div className="text-center mb-6 sm:mb-8">
+            <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2">{t('scanner.samples.title')}</h3>
+            <p className="text-sm sm:text-base text-muted-foreground mobile-text-scale">{t('scanner.samples.description')}</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 mobile-product-grid">
             {sampleProducts.map((product, index) => (
               <button
                 key={product.barcode}
                 onClick={() => handleSampleClick(product.barcode)}
-                className="group text-left p-6 bg-card border-2 border-border/20 rounded-2xl hover:border-primary/30 hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group text-left p-4 sm:p-6 bg-card border-2 border-border/20 rounded-2xl hover:border-primary/30 hover:shadow-lg transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed mobile-touch-friendly touch-action-manipulation"
                 disabled={isLoading}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
