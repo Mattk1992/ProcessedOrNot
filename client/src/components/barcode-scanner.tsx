@@ -259,20 +259,23 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         const videoTrack = stream.getVideoTracks()[0];
         if (videoTrack && 'applyConstraints' in videoTrack) {
           try {
-            // Apply enhanced camera settings for better short-range autofocus and quality
+            // Optimized camera settings for short-range barcode scanning
             const advancedConstraints: any = {
               advanced: [{
                 focusMode: 'continuous',
-                focusDistance: 0.05, // Very close focus for short-range barcode scanning
+                focusDistance: 0.02, // Extremely close focus for handheld barcode scanning (2cm-10cm range)
                 whiteBalanceMode: 'auto',
-                exposureMode: 'auto',
-                exposureCompensation: 0.2, // Slightly brighter exposure for better barcode contrast
-                iso: { ideal: 100, max: 200 }, // Lower ISO for sharper images
-                sharpness: { ideal: 100 }, // Maximum sharpness for barcode details
-                contrast: { ideal: 120 }, // Increased contrast for better barcode edge detection
-                saturation: { ideal: 80 }, // Reduced saturation to focus on luminance
+                exposureMode: 'manual',
+                exposureTime: 8000, // Fast shutter speed to reduce motion blur
+                exposureCompensation: 0.3, // Brighter exposure for high contrast barcodes
+                iso: { ideal: 80, max: 160 }, // Very low ISO for maximum sharpness
+                sharpness: { ideal: 100 }, // Maximum sharpness for crisp barcode lines
+                contrast: { ideal: 140 }, // High contrast for clear black/white distinction
+                saturation: { ideal: 60 }, // Low saturation to enhance edge detection
+                brightness: { ideal: 110 }, // Slightly brighter for better barcode visibility
                 autoFocus: true,
-                torch: false, // Disable flash initially
+                focusSearchRange: { min: 0.01, max: 0.15 }, // Limit focus range to close distances
+                torch: false,
               }]
             };
             await videoTrack.applyConstraints(advancedConstraints);
@@ -341,15 +344,18 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
             await fallbackVideoTrack.applyConstraints({
               advanced: [{
                 focusMode: 'continuous',
-                focusDistance: 0.05, // Very close focus for short-range barcode scanning
+                focusDistance: 0.02, // Extremely close focus for handheld barcode scanning
                 whiteBalanceMode: 'auto',
-                exposureMode: 'auto',
-                exposureCompensation: 0.2, // Slightly brighter exposure
-                iso: { ideal: 100, max: 200 }, // Lower ISO for sharper images
-                sharpness: { ideal: 100 }, // Maximum sharpness
-                contrast: { ideal: 120 }, // Increased contrast
-                saturation: { ideal: 80 }, // Reduced saturation
+                exposureMode: 'manual',
+                exposureTime: 8000, // Fast shutter speed to reduce motion blur
+                exposureCompensation: 0.3, // Brighter exposure for high contrast barcodes
+                iso: { ideal: 80, max: 160 }, // Very low ISO for maximum sharpness
+                sharpness: { ideal: 100 }, // Maximum sharpness for crisp barcode lines
+                contrast: { ideal: 140 }, // High contrast for clear black/white distinction
+                saturation: { ideal: 60 }, // Low saturation to enhance edge detection
+                brightness: { ideal: 110 }, // Slightly brighter for better barcode visibility
                 autoFocus: true,
+                focusSearchRange: { min: 0.01, max: 0.15 }, // Limit focus range to close distances
               } as any]
             });
           } catch (fallbackConstraintError) {
