@@ -6,7 +6,7 @@ import LanguageSwitcher from "@/components/language-switcher";
 import HeaderDropdown from "@/components/header-dropdown";
 import NutriBotChat from "@/components/nutribot-chat";
 import TutorialOverlay from "@/components/tutorial-overlay";
-import DropdownTest from "@/components/dropdown-test";
+
 
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -96,9 +96,6 @@ export default function Home() {
             <div className="flex items-center space-x-1 sm:space-x-3">
               <div className="scale-on-hover hidden md:block">
                 <LanguageSwitcher />
-              </div>
-              <div className="scale-on-hover">
-                <DropdownTest />
               </div>
               <div className="scale-on-hover" data-tutorial="menu-dropdown">
                 <HeaderDropdown onStartTutorial={handleStartTutorial} />

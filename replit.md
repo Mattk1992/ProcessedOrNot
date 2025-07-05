@@ -157,6 +157,7 @@ Changelog:
 - July 5, 2025. Enhanced search history database system with comprehensive search result tracking. Added automatic capture of complete product data, processing scores, nutritional information, lookup sources, and error details. Implemented duplicate prevention based on search input to avoid redundant database entries. System now tracks successful searches, failed searches, and cached results with full context.
 - July 5, 2025. Implemented mobile header improvements: hidden subtitle text on mobile screens for cleaner layout, improved menu button visibility and touch targets, added language switcher to mobile dropdown menu, and enhanced responsive design.
 - July 5, 2025. Implemented interactive tutorial overlay system for first-time users. Features 7-step guided tour highlighting key features (camera scanning, manual entry, AI analysis, NutriBot chat, menu features), CSS-based zoom camera functionality as fallback, tutorial data attributes on key UI elements, localStorage-based completion tracking, and "Take Tour" option in header dropdown menu for restarting the tutorial.
+- July 5, 2025. Fixed dropdown menu visibility issue by increasing z-index values (backdrop z-40, dropdown z-50) to prevent layering conflicts with other UI elements. The header dropdown menu now displays properly with all menu items visible and functional.
 
 ## User Preferences
 
