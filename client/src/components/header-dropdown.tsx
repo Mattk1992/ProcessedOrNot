@@ -41,7 +41,7 @@ export default function HeaderDropdown() {
 
   // Menu items for authenticated users
   const userMenuItems = [
-    ...(user?.role === 'Admin' ? [{
+    ...((user as any)?.role === 'Admin' ? [{
       label: 'Admin Panel',
       icon: <Shield className="w-4 h-4" />,
       action: () => setLocation('/admin')
@@ -74,20 +74,21 @@ export default function HeaderDropdown() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`group flex items-center space-x-3 px-5 py-3 bg-gradient-to-r from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 rounded-xl transition-all duration-300 backdrop-blur-md border border-white/20 shadow-lg hover:shadow-xl hover:scale-105 dropdown-button-glow ${isOpen ? 'from-white/25 to-white/15 scale-105' : ''}`}
+        className={`group flex items-center space-x-2 sm:space-x-3 px-3 sm:px-5 py-2 sm:py-3 bg-gradient-to-r from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 rounded-xl transition-all duration-300 backdrop-blur-md border border-white/20 shadow-lg hover:shadow-xl hover:scale-105 dropdown-button-glow ${isOpen ? 'from-white/25 to-white/15 scale-105' : ''}`}
         aria-expanded={isOpen}
         aria-haspopup="true"
       >
         <div className="relative">
-          <User className="w-5 h-5 text-white transition-transform duration-300 group-hover:scale-110" />
+          <User className="w-4 h-4 sm:w-5 sm:h-5 text-white transition-transform duration-300 group-hover:scale-110" />
           {isAuthenticated && (
             <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
           )}
         </div>
-        <span className="text-white text-sm font-semibold tracking-wide">
+        {/* Hide username text on mobile, show only on sm and up */}
+        <span className="hidden sm:inline text-white text-sm font-semibold tracking-wide">
           {isAuthenticated ? (user as any)?.username || 'User' : t('dropdown.menu') || 'Menu'}
         </span>
-        <ChevronDown className={`w-4 h-4 text-white/80 transition-all duration-300 ${isOpen ? 'rotate-180 text-white' : 'group-hover:text-white'}`} />
+        <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-white/80 transition-all duration-300 ${isOpen ? 'rotate-180 text-white' : 'group-hover:text-white'}`} />
         
         {/* Glow effect */}
         <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-primary/20 to-accent/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10 blur-sm"></div>
@@ -102,7 +103,7 @@ export default function HeaderDropdown() {
           />
           
           {/* Enhanced Dropdown Menu */}
-          <div className="absolute right-0 mt-3 w-72 bg-gradient-to-br from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-800/90 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/50 z-20 overflow-hidden backdrop-blur-xl dropdown-menu-enhanced">
+          <div className="absolute right-0 mt-3 w-64 sm:w-72 bg-gradient-to-br from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-800/90 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/50 z-20 overflow-hidden backdrop-blur-xl dropdown-menu-enhanced">
             
             {/* Header with user info */}
             {isAuthenticated && (
