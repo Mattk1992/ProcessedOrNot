@@ -1406,6 +1406,191 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Blog API routes
+  app.get("/api/blog", async (req, res) => {
+    try {
+      const blogPosts = await storage.getPublishedBlogPosts();
+      res.json(blogPosts);
+    } catch (error) {
+      console.error("Error fetching blog posts:", error);
+      res.status(500).json({ message: "Failed to fetch blog posts" });
+    }
+  });
+
+  app.get("/api/blog/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const blogPost = await storage.getBlogPostById(id);
+      
+      if (!blogPost) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+
+      // Increment view count
+      await storage.incrementViewCount(id);
+      
+      res.json(blogPost);
+    } catch (error) {
+      console.error("Error fetching blog post:", error);
+      res.status(500).json({ message: "Failed to fetch blog post" });
+    }
+  });
+
+  app.get("/api/blog/slug/:slug", async (req, res) => {
+    try {
+      const blogPost = await storage.getBlogPostBySlug(req.params.slug);
+      
+      if (!blogPost) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+
+      // Increment view count
+      await storage.incrementViewCount(blogPost.id);
+      
+      res.json(blogPost);
+    } catch (error) {
+      console.error("Error fetching blog post:", error);
+      res.status(500).json({ message: "Failed to fetch blog post" });
+    }
+  });
+
+  app.post("/api/blog", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { title, content, author, tags, excerpt, slug, isPublished } = req.body;
+      
+      if (!title || !content || !author) {
+        return res.status(400).json({ message: "Title, content, and author are required" });
+      }
+
+      // Parse tags if provided as string
+      const parsedTags = typeof tags === 'string' ? 
+        tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) : 
+        (Array.isArray(tags) ? tags : []);
+
+      const blogPost = await storage.createBlogPost({
+        title,
+        content,
+        author,
+        tags: parsedTags,
+        excerpt,
+        slug,
+        isPublished: isPublished !== false, // Default to true
+        authorId: user.id,
+      });
+
+      res.status(201).json(blogPost);
+    } catch (error) {
+      console.error("Error creating blog post:", error);
+      res.status(500).json({ message: "Failed to create blog post" });
+    }
+  });
+
+  app.put("/api/blog/:id", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const id = parseInt(req.params.id);
+      const existingPost = await storage.getBlogPostById(id);
+      
+      if (!existingPost) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+
+      // Check if user is the author or admin
+      if (existingPost.authorId !== user.id && user.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const { title, content, author, tags, excerpt, slug, isPublished } = req.body;
+      
+      // Parse tags if provided as string
+      const parsedTags = typeof tags === 'string' ? 
+        tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) : 
+        (Array.isArray(tags) ? tags : undefined);
+
+      const updatedPost = await storage.updateBlogPost(id, {
+        title,
+        content,
+        author,
+        tags: parsedTags,
+        excerpt,
+        slug,
+        isPublished,
+      });
+
+      if (!updatedPost) {
+        return res.status(404).json({ message: "Failed to update blog post" });
+      }
+
+      res.json(updatedPost);
+    } catch (error) {
+      console.error("Error updating blog post:", error);
+      res.status(500).json({ message: "Failed to update blog post" });
+    }
+  });
+
+  app.delete("/api/blog/:id", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const id = parseInt(req.params.id);
+      const existingPost = await storage.getBlogPostById(id);
+      
+      if (!existingPost) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+
+      // Check if user is the author or admin
+      if (existingPost.authorId !== user.id && user.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const success = await storage.deleteBlogPost(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Failed to delete blog post" });
+      }
+
+      res.json({ message: "Blog post deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting blog post:", error);
+      res.status(500).json({ message: "Failed to delete blog post" });
+    }
+  });
+
+  app.get("/api/blog/search/:query", async (req, res) => {
+    try {
+      const query = req.params.query;
+      const blogPosts = await storage.searchBlogPosts(query);
+      res.json(blogPosts);
+    } catch (error) {
+      console.error("Error searching blog posts:", error);
+      res.status(500).json({ message: "Failed to search blog posts" });
+    }
+  });
+
+  app.get("/api/blog/tag/:tag", async (req, res) => {
+    try {
+      const tag = req.params.tag;
+      const blogPosts = await storage.getBlogPostsByTag(tag);
+      res.json(blogPosts);
+    } catch (error) {
+      console.error("Error fetching blog posts by tag:", error);
+      res.status(500).json({ message: "Failed to fetch blog posts by tag" });
+    }
+  });
+
   // User settings routes (requires authentication)
   app.get("/api/user/settings", async (req, res) => {
     try {

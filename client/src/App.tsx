@@ -15,6 +15,9 @@ import Register from "@/pages/register";
 import Settings from "@/pages/settings";
 import Admin from "@/pages/admin";
 import AdminSearchHistory from "@/pages/admin-search-history";
+import Blog from "@/pages/blog";
+import BlogNew from "@/pages/blog-new";
+import BlogPost from "@/pages/blog-post";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -29,6 +32,9 @@ function Router() {
       <Route path="/settings" component={Settings} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin-search-history" component={AdminSearchHistory} />
+      <Route path="/blog" component={Blog} />
+      <Route path="/blog/new" component={BlogNew} />
+      <Route path="/blog/:id" component={BlogPost} />
       <Route component={NotFound} />
     </Switch>
   );

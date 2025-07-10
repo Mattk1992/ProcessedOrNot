@@ -21,7 +21,10 @@ import {
   type InsertMedia,
   notifications,
   type Notification,
-  type InsertNotification
+  type InsertNotification,
+  blogPosts,
+  type BlogPost,
+  type InsertBlogPost
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -113,6 +116,19 @@ export interface IStorage {
   archiveNotification(id: number): Promise<Notification | undefined>;
   deleteNotification(id: number): Promise<boolean>;
   deleteAllNotifications(userId: number): Promise<void>;
+
+  // Blog post methods
+  getBlogPostById(id: number): Promise<BlogPost | undefined>;
+  getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
+  getAllBlogPosts(): Promise<BlogPost[]>;
+  getPublishedBlogPosts(): Promise<BlogPost[]>;
+  getBlogPostsByAuthor(authorId: number): Promise<BlogPost[]>;
+  getBlogPostsByTag(tag: string): Promise<BlogPost[]>;
+  createBlogPost(blogPost: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(id: number, updates: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
+  deleteBlogPost(id: number): Promise<boolean>;
+  incrementViewCount(id: number): Promise<void>;
+  searchBlogPosts(query: string): Promise<BlogPost[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -792,6 +808,140 @@ export class DatabaseStorage implements IStorage {
 
   async deleteAllNotifications(userId: number): Promise<void> {
     await db.delete(notifications).where(eq(notifications.userId, userId));
+  }
+
+  // Blog post methods
+  async getBlogPostById(id: number): Promise<BlogPost | undefined> {
+    const [blogPost] = await db.select().from(blogPosts).where(eq(blogPosts.id, id));
+    return blogPost || undefined;
+  }
+
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    const [blogPost] = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug));
+    return blogPost || undefined;
+  }
+
+  async getAllBlogPosts(): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts)
+      .orderBy(desc(blogPosts.publishedAt));
+  }
+
+  async getPublishedBlogPosts(): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts)
+      .where(eq(blogPosts.isPublished, true))
+      .orderBy(desc(blogPosts.publishedAt));
+  }
+
+  async getBlogPostsByAuthor(authorId: number): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts)
+      .where(eq(blogPosts.authorId, authorId))
+      .orderBy(desc(blogPosts.publishedAt));
+  }
+
+  async getBlogPostsByTag(tag: string): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts)
+      .where(and(
+        sql`tags && ${[tag]}`, // PostgreSQL array overlap operator
+        eq(blogPosts.isPublished, true)
+      ))
+      .orderBy(desc(blogPosts.publishedAt));
+  }
+
+  async createBlogPost(insertBlogPost: InsertBlogPost): Promise<BlogPost> {
+    // Generate slug from title if not provided
+    const slug = insertBlogPost.slug || this.generateSlug(insertBlogPost.title);
+    
+    // Calculate reading time (average 200 words per minute)
+    const wordCount = insertBlogPost.content.split(/\s+/).length;
+    const readTime = Math.ceil(wordCount / 200);
+    
+    // Generate excerpt if not provided
+    const excerpt = insertBlogPost.excerpt || this.generateExcerpt(insertBlogPost.content);
+
+    const [blogPost] = await db
+      .insert(blogPosts)
+      .values({
+        ...insertBlogPost,
+        slug,
+        readTime,
+        excerpt,
+        publishedAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    return blogPost;
+  }
+
+  async updateBlogPost(id: number, updates: Partial<InsertBlogPost>): Promise<BlogPost | undefined> {
+    // Update slug if title changed
+    if (updates.title && !updates.slug) {
+      updates.slug = this.generateSlug(updates.title);
+    }
+    
+    // Recalculate reading time if content changed
+    if (updates.content) {
+      const wordCount = updates.content.split(/\s+/).length;
+      updates.readTime = Math.ceil(wordCount / 200);
+      
+      // Update excerpt if not provided
+      if (!updates.excerpt) {
+        updates.excerpt = this.generateExcerpt(updates.content);
+      }
+    }
+
+    const [updatedBlogPost] = await db
+      .update(blogPosts)
+      .set({ 
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(blogPosts.id, id))
+      .returning();
+    return updatedBlogPost || undefined;
+  }
+
+  async deleteBlogPost(id: number): Promise<boolean> {
+    const result = await db.delete(blogPosts).where(eq(blogPosts.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async incrementViewCount(id: number): Promise<void> {
+    await db
+      .update(blogPosts)
+      .set({
+        viewCount: sql`${blogPosts.viewCount} + 1`
+      })
+      .where(eq(blogPosts.id, id));
+  }
+
+  async searchBlogPosts(query: string): Promise<BlogPost[]> {
+    const searchQuery = `%${query}%`;
+    return await db.select().from(blogPosts)
+      .where(and(
+        or(
+          sql`${blogPosts.title} ILIKE ${searchQuery}`,
+          sql`${blogPosts.content} ILIKE ${searchQuery}`,
+          sql`${blogPosts.author} ILIKE ${searchQuery}`,
+          sql`array_to_string(${blogPosts.tags}, ' ') ILIKE ${searchQuery}`
+        ),
+        eq(blogPosts.isPublished, true)
+      ))
+      .orderBy(desc(blogPosts.publishedAt));
+  }
+
+  private generateSlug(title: string): string {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+      .substring(0, 100);
+  }
+
+  private generateExcerpt(content: string): string {
+    const plainText = content.replace(/<[^>]*>/g, ''); // Remove HTML tags
+    return plainText.length > 200 ? plainText.substring(0, 200) + '...' : plainText;
   }
 }
 

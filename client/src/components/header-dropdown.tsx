@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap } from 'lucide-react';
+import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
@@ -43,6 +43,11 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       action: () => setLocation('/features')
     },
     {
+      label: 'Blog',
+      icon: <BookOpen className="w-4 h-4" />,
+      action: () => setLocation('/blog')
+    },
+    {
       label: t('dropdown.help') || 'Help',
       icon: <HelpCircle className="w-4 h-4" />,
       action: () => setLocation('/help')
@@ -78,6 +83,11 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       label: 'Features',
       icon: <Zap className="w-4 h-4" />,
       action: () => setLocation('/features')
+    },
+    {
+      label: 'Blog',
+      icon: <BookOpen className="w-4 h-4" />,
+      action: () => setLocation('/blog')
     },
     {
       label: t('dropdown.help') || 'Help',

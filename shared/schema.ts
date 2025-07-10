@@ -283,3 +283,29 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
 
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Notification = typeof notifications.$inferSelect;
+
+// Blog posts table
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 500 }).notNull(),
+  content: text("content").notNull(),
+  author: varchar("author", { length: 255 }).notNull(),
+  tags: text("tags").array(),
+  publishedAt: timestamp("published_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  isPublished: boolean("is_published").default(true).notNull(),
+  slug: varchar("slug", { length: 500 }).unique(),
+  excerpt: text("excerpt"),
+  readTime: integer("read_time"), // estimated reading time in minutes
+  viewCount: integer("view_count").default(0).notNull(),
+  authorId: integer("author_id").references(() => users.id),
+});
+
+export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
+  id: true,
+  publishedAt: true,
+  updatedAt: true,
+});
+
+export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
+export type BlogPost = typeof blogPosts.$inferSelect;
