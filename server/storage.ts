@@ -15,7 +15,10 @@ import {
   type InsertAdminSetting,
   userSettings,
   type UserSetting,
-  type InsertUserSetting
+  type InsertUserSetting,
+  media,
+  type Media,
+  type InsertMedia
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -83,6 +86,17 @@ export interface IStorage {
   updateUserSetting(userId: number, settingKey: string, settingValue: string): Promise<UserSetting | undefined>;
   deleteUserSetting(userId: number, settingKey: string): Promise<boolean>;
   upsertUserSetting(userId: number, settingKey: string, settingValue: string): Promise<UserSetting>;
+
+  // Media storage methods
+  getMediaById(id: number): Promise<Media | undefined>;
+  getMediaByFilename(filename: string): Promise<Media | undefined>;
+  createMedia(media: InsertMedia): Promise<Media>;
+  updateMedia(id: number, updates: Partial<InsertMedia>): Promise<Media | undefined>;
+  deleteMedia(id: number): Promise<boolean>;
+  getMediaByUser(userId: number): Promise<Media[]>;
+  getPublicMedia(): Promise<Media[]>;
+  getMediaByType(mediaType: string): Promise<Media[]>;
+  getMediaByTags(tags: string[]): Promise<Media[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -595,6 +609,73 @@ export class DatabaseStorage implements IStorage {
 
   async clearAllSearchHistory(): Promise<void> {
     await db.delete(searchHistory);
+  }
+
+  // Media storage methods
+  async getMediaById(id: number): Promise<Media | undefined> {
+    const [mediaFile] = await db.select().from(media).where(eq(media.id, id));
+    return mediaFile || undefined;
+  }
+
+  async getMediaByFilename(filename: string): Promise<Media | undefined> {
+    const [mediaFile] = await db.select().from(media).where(eq(media.filename, filename));
+    return mediaFile || undefined;
+  }
+
+  async createMedia(insertMedia: InsertMedia): Promise<Media> {
+    const [mediaFile] = await db
+      .insert(media)
+      .values({
+        ...insertMedia,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      })
+      .returning();
+    return mediaFile;
+  }
+
+  async updateMedia(id: number, updates: Partial<InsertMedia>): Promise<Media | undefined> {
+    const [updatedMedia] = await db
+      .update(media)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(media.id, id))
+      .returning();
+    return updatedMedia || undefined;
+  }
+
+  async deleteMedia(id: number): Promise<boolean> {
+    const result = await db.delete(media).where(eq(media.id, id));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getMediaByUser(userId: number): Promise<Media[]> {
+    return await db.select().from(media)
+      .where(eq(media.uploadedBy, userId))
+      .orderBy(desc(media.createdAt));
+  }
+
+  async getPublicMedia(): Promise<Media[]> {
+    return await db.select().from(media)
+      .where(and(eq(media.isPublic, true), eq(media.isActive, true)))
+      .orderBy(desc(media.createdAt));
+  }
+
+  async getMediaByType(mediaType: string): Promise<Media[]> {
+    return await db.select().from(media)
+      .where(and(eq(media.mediaType, mediaType), eq(media.isActive, true)))
+      .orderBy(desc(media.createdAt));
+  }
+
+  async getMediaByTags(tags: string[]): Promise<Media[]> {
+    return await db.select().from(media)
+      .where(and(
+        sql`tags && ${tags}`, // PostgreSQL array overlap operator
+        eq(media.isActive, true)
+      ))
+      .orderBy(desc(media.createdAt));
   }
 }
 

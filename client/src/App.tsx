@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import ThemeToggle from "@/components/theme-toggle";
 import Home from "@/pages/home";
 import About from "@/pages/about";
+import Features from "@/pages/features";
 import Help from "@/pages/help";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
@@ -21,6 +22,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/about" component={About} />
+      <Route path="/features" component={Features} />
       <Route path="/help" component={Help} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />

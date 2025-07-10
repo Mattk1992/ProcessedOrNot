@@ -17,6 +17,10 @@ export const products = pgTable("products", {
   glycemicExplanation: text("glycemic_explanation"),
   dataSource: text("data_source").default("OpenFoodFacts"),
   lastUpdated: text("last_updated"),
+  // Media fields for future image/video uploads
+  additionalImages: text("additional_images").array(), // URLs to additional product images
+  videoUrl: text("video_url"), // URL to product video
+  mediaGallery: jsonb("media_gallery"), // JSON array of media IDs for comprehensive media management
 });
 
 export const insertProductSchema = createInsertSchema(products).omit({
@@ -221,3 +225,36 @@ export const insertUserSettingSchema = createInsertSchema(userSettings).omit({
 
 export type InsertUserSetting = z.infer<typeof insertUserSettingSchema>;
 export type UserSetting = typeof userSettings.$inferSelect;
+
+// Media table for storing images and videos
+export const media = pgTable("media", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull(),
+  originalFilename: text("original_filename").notNull(),
+  mimeType: text("mime_type").notNull(),
+  fileSize: integer("file_size").notNull(),
+  filePath: text("file_path").notNull(),
+  fileUrl: text("file_url").notNull(),
+  mediaType: varchar("media_type", { length: 50 }).notNull(), // 'image' or 'video'
+  width: integer("width"),
+  height: integer("height"),
+  duration: integer("duration"), // for videos in seconds
+  thumbnailUrl: text("thumbnail_url"), // for videos
+  altText: text("alt_text"),
+  caption: text("caption"),
+  tags: text("tags").array(), // searchable tags
+  uploadedBy: integer("uploaded_by").references(() => users.id),
+  isPublic: boolean("is_public").default(false).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertMediaSchema = createInsertSchema(media).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertMedia = z.infer<typeof insertMediaSchema>;
+export type Media = typeof media.$inferSelect;
