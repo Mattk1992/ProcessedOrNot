@@ -84,143 +84,159 @@ export default function BlogPost() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Navigation */}
-      <div className="mb-8">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setLocation('/blog')}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Blog
-        </Button>
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setLocation('/blog')}
+            className="flex items-center gap-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Blog
+          </Button>
+        </div>
       </div>
 
-      {/* Blog Post */}
-      <article>
-        <Card>
-          <CardHeader className="pb-6">
-            <div className="space-y-4">
-              {/* Title */}
-              <CardTitle className="text-3xl font-bold leading-tight">
-                {post.title}
-              </CardTitle>
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Blog Post */}
+        <article>
+          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-0 shadow-2xl overflow-hidden">
+            {/* Header with Gradient */}
+            <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-1">
+              <div className="bg-white dark:bg-gray-800 rounded-t-lg">
+                <CardHeader className="pb-8 px-8 pt-8">
+                  <div className="space-y-6">
+                    {/* Title */}
+                    <CardTitle className="text-4xl font-bold leading-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      {post.title}
+                    </CardTitle>
 
-              {/* Meta Information */}
-              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                <div className="flex items-center gap-1">
-                  <User className="w-4 h-4" />
-                  {post.author}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  {formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true })}
-                </div>
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  {post.readTime} min read
-                </div>
-                <div className="flex items-center gap-1">
-                  <Eye className="w-4 h-4" />
-                  {post.viewCount} views
-                </div>
+                    {/* Meta Information */}
+                    <div className="flex flex-wrap items-center gap-6 text-sm">
+                      <div className="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+                        <User className="w-5 h-5" />
+                        <span className="font-semibold text-base">{post.author}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                        <Calendar className="w-5 h-5" />
+                        <span className="font-medium">{formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true })}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400">
+                        <Clock className="w-5 h-5" />
+                        <span className="font-medium">{post.readTime} min read</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400">
+                        <Eye className="w-5 h-5" />
+                        <span className="font-medium">{post.viewCount} views</span>
+                      </div>
+                    </div>
+
+                    {/* Tags */}
+                    {post.tags && post.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-3">
+                        {post.tags.map(tag => (
+                          <Badge key={tag} variant="secondary" className="px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 text-blue-700 dark:text-blue-300 border-0 text-sm">
+                            <Tag className="w-4 h-4 mr-2" />
+                            {tag.replace('-', ' ')}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Action Buttons */}
+                    {canEdit && (
+                      <div className="flex gap-3 pt-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setLocation(`/blog/${post.id}/edit`)}
+                          className="border-blue-300 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        >
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit Post
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // Add delete functionality here
+                            console.log('Delete post', post.id);
+                          }}
+                          className="border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardHeader>
               </div>
-
-              {/* Tags */}
-              {post.tags && post.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {post.tags.map(tag => (
-                    <Badge key={tag} variant="secondary">
-                      <Tag className="w-3 h-3 mr-1" />
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-
-              {/* Action Buttons */}
-              {canEdit && (
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setLocation(`/blog/${post.id}/edit`)}
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit Post
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      // Add delete functionality here
-                      console.log('Delete post', post.id);
-                    }}
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </Button>
-                </div>
-              )}
             </div>
-          </CardHeader>
 
-          <CardContent>
-            {/* Excerpt */}
-            {post.excerpt && (
-              <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md mb-6">
-                <p className="text-gray-700 dark:text-gray-300 italic">
-                  {post.excerpt}
-                </p>
+            <CardContent className="px-8 pb-8">
+              {/* Excerpt */}
+              {post.excerpt && (
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 p-6 rounded-xl mb-8 border-l-4 border-blue-500">
+                  <p className="text-gray-700 dark:text-gray-300 italic text-lg leading-relaxed">
+                    "{post.excerpt}"
+                  </p>
+                </div>
+              )}
+
+              <Separator className="mb-8 bg-gradient-to-r from-blue-200 to-purple-200 dark:from-blue-800 dark:to-purple-800" />
+
+              {/* Content */}
+              <div className="prose prose-lg max-w-none dark:prose-invert">
+                <div
+                  className="text-gray-900 dark:text-gray-100 leading-relaxed text-lg"
+                  dangerouslySetInnerHTML={{ 
+                    __html: post.content.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>').replace(/^/, '<p>').replace(/$/, '</p>')
+                  }}
+                />
               </div>
-            )}
+            </CardContent>
+          </Card>
 
-            <Separator className="mb-6" />
-
-            {/* Content */}
-            <div className="prose prose-lg max-w-none dark:prose-invert">
-              <div
-                className="text-gray-900 dark:text-gray-100 leading-relaxed"
-                dangerouslySetInnerHTML={{ 
-                  __html: post.content.replace(/\n/g, '<br>') 
-                }}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Footer */}
-        <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="text-sm text-gray-500 dark:text-gray-400">
-              {post.updatedAt !== post.publishedAt && (
-                <p>
-                  Last updated: {formatDistanceToNow(new Date(post.updatedAt), { addSuffix: true })}
-                </p>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setLocation('/blog')}
-              >
-                More Posts
-              </Button>
-              {isAuthenticated && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setLocation('/blog/new')}
-                >
-                  Write a Post
-                </Button>
-              )}
-            </div>
+          {/* Footer */}
+          <div className="mt-12">
+            <Card className="bg-gradient-to-r from-blue-600 to-purple-600 text-white border-0 shadow-lg">
+              <CardContent className="p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="text-sm text-blue-100">
+                    {post.updatedAt !== post.publishedAt && (
+                      <p>
+                        Last updated: {formatDistanceToNow(new Date(post.updatedAt), { addSuffix: true })}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setLocation('/blog')}
+                      className="bg-white text-blue-600 hover:bg-blue-50 border-0 font-medium"
+                    >
+                      More Posts
+                    </Button>
+                    {isAuthenticated && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setLocation('/blog/new')}
+                        className="bg-white text-purple-600 hover:bg-purple-50 border-0 font-medium"
+                      >
+                        Write a Post
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        </div>
       </article>
     </div>
   );

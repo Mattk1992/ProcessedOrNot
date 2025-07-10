@@ -126,196 +126,203 @@ export default function BlogNew() {
     .filter(tag => tag.length > 0);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      {/* Navigation */}
+      <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-sm sticky top-0 z-10">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setLocation('/blog')}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Blog
           </Button>
         </div>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Create New Blog Post
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Share your thoughts and insights with the community
-        </p>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Main Form */}
-        <div className="lg:col-span-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                {isPreview ? 'Preview' : 'Post Details'}
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <Button
-                  type="button"
-                  variant={isPreview ? 'outline' : 'default'}
-                  size="sm"
-                  onClick={() => setIsPreview(false)}
-                >
-                  Edit
-                </Button>
-                <Button
-                  type="button"
-                  variant={isPreview ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setIsPreview(true)}
-                >
-                  <Eye className="w-4 h-4 mr-2" />
-                  Preview
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {isPreview ? (
-                <div className="space-y-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                      {formData.title || 'Untitled Post'}
-                    </h2>
-                    <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                      <div className="flex items-center gap-1">
-                        <User className="w-4 h-4" />
-                        {formData.author || 'Unknown Author'}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        {new Date().toLocaleDateString()}
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Create New Blog Post
+          </h1>
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Share your thoughts and insights with the community
+          </p>
+        </div>
+
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Main Form */}
+          <div className="lg:col-span-2">
+            <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-0 shadow-2xl">
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-t-lg">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <FileText className="w-6 h-6" />
+                  {isPreview ? 'Preview' : 'Post Details'}
+                </CardTitle>
+                <div className="flex items-center gap-3 mt-4">
+                  <Button
+                    type="button"
+                    variant={isPreview ? 'outline' : 'default'}
+                    size="sm"
+                    onClick={() => setIsPreview(false)}
+                    className={`${isPreview ? 'bg-white/20 text-white border-white/30 hover:bg-white/30' : 'bg-white text-blue-600 hover:bg-blue-50'} font-medium`}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={isPreview ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setIsPreview(true)}
+                    className={`${isPreview ? 'bg-white text-blue-600 hover:bg-blue-50' : 'bg-white/20 text-white border-white/30 hover:bg-white/30'} font-medium`}
+                  >
+                    <Eye className="w-4 h-4 mr-2" />
+                    Preview
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {isPreview ? (
+                  <div className="space-y-4">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                        {formData.title || 'Untitled Post'}
+                      </h2>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        <div className="flex items-center gap-1">
+                          <User className="w-4 h-4" />
+                          {formData.author || 'Unknown Author'}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Calendar className="w-4 h-4" />
+                          {new Date().toLocaleDateString()}
+                        </div>
                       </div>
                     </div>
+                    {formData.excerpt && (
+                      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
+                        <p className="text-gray-700 dark:text-gray-300 italic">
+                          {formData.excerpt}
+                        </p>
+                      </div>
+                    )}
+                    <div>
+                      <div className="prose prose-sm max-w-none dark:prose-invert">
+                        <div dangerouslySetInnerHTML={{ __html: formData.content.replace(/\n/g, '<br>') }} />
+                      </div>
+                    </div>
+                    {parsedTags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-4">
+                        {parsedTags.map(tag => (
+                          <Badge key={tag} variant="secondary">
+                            <Tag className="w-3 h-3 mr-1" />
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  {formData.excerpt && (
-                    <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
-                      <p className="text-gray-700 dark:text-gray-300 italic">
-                        {formData.excerpt}
+                ) : (
+                  <form onSubmit={handleSubmit} className="space-y-6">
+                    {/* Title */}
+                    <div>
+                      <Label htmlFor="title">Title *</Label>
+                      <Input
+                        id="title"
+                        value={formData.title}
+                        onChange={(e) => handleInputChange('title', e.target.value)}
+                        placeholder="Enter your blog post title"
+                        required
+                      />
+                    </div>
+
+                    {/* Author */}
+                    <div>
+                      <Label htmlFor="author">Author *</Label>
+                      <Input
+                        id="author"
+                        value={formData.author}
+                        onChange={(e) => handleInputChange('author', e.target.value)}
+                        placeholder="Author name"
+                        required
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <div>
+                      <Label htmlFor="content">Content *</Label>
+                      <Textarea
+                        id="content"
+                        value={formData.content}
+                        onChange={(e) => handleInputChange('content', e.target.value)}
+                        placeholder="Write your blog post content here..."
+                        rows={12}
+                        required
+                      />
+                    </div>
+
+                    {/* Tags */}
+                    <div>
+                      <Label htmlFor="tags">Tags (optional)</Label>
+                      <Input
+                        id="tags"
+                        value={formData.tags}
+                        onChange={(e) => handleInputChange('tags', e.target.value)}
+                        placeholder="Enter tags separated by commas (e.g., technology, AI, health)"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">
+                        Separate multiple tags with commas
                       </p>
                     </div>
-                  )}
-                  <div>
-                    <div className="prose prose-sm max-w-none dark:prose-invert">
-                      <div dangerouslySetInnerHTML={{ __html: formData.content.replace(/\n/g, '<br>') }} />
+
+                    {/* Excerpt */}
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="excerpt">Excerpt (optional)</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={generateExcerpt}
+                          disabled={!formData.content}
+                        >
+                          Generate from content
+                        </Button>
+                      </div>
+                      <Textarea
+                        id="excerpt"
+                        value={formData.excerpt}
+                        onChange={(e) => handleInputChange('excerpt', e.target.value)}
+                        placeholder="Brief description of your post"
+                        rows={3}
+                      />
                     </div>
-                  </div>
-                  {parsedTags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 pt-4">
-                      {parsedTags.map(tag => (
-                        <Badge key={tag} variant="secondary">
-                          <Tag className="w-3 h-3 mr-1" />
-                          {tag}
-                        </Badge>
-                      ))}
+
+                    {/* Slug */}
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="slug">URL Slug (optional)</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={generateSlug}
+                          disabled={!formData.title}
+                        >
+                          Generate from title
+                        </Button>
+                      </div>
+                      <Input
+                        id="slug"
+                        value={formData.slug}
+                        onChange={(e) => handleInputChange('slug', e.target.value)}
+                        placeholder="url-friendly-slug"
+                      />
                     </div>
-                  )}
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Title */}
-                  <div>
-                    <Label htmlFor="title">Title *</Label>
-                    <Input
-                      id="title"
-                      value={formData.title}
-                      onChange={(e) => handleInputChange('title', e.target.value)}
-                      placeholder="Enter your blog post title"
-                      required
-                    />
-                  </div>
-
-                  {/* Author */}
-                  <div>
-                    <Label htmlFor="author">Author *</Label>
-                    <Input
-                      id="author"
-                      value={formData.author}
-                      onChange={(e) => handleInputChange('author', e.target.value)}
-                      placeholder="Author name"
-                      required
-                    />
-                  </div>
-
-                  {/* Content */}
-                  <div>
-                    <Label htmlFor="content">Content *</Label>
-                    <Textarea
-                      id="content"
-                      value={formData.content}
-                      onChange={(e) => handleInputChange('content', e.target.value)}
-                      placeholder="Write your blog post content here..."
-                      rows={12}
-                      required
-                    />
-                  </div>
-
-                  {/* Tags */}
-                  <div>
-                    <Label htmlFor="tags">Tags (optional)</Label>
-                    <Input
-                      id="tags"
-                      value={formData.tags}
-                      onChange={(e) => handleInputChange('tags', e.target.value)}
-                      placeholder="Enter tags separated by commas (e.g., technology, AI, health)"
-                    />
-                    <p className="text-sm text-gray-500 mt-1">
-                      Separate multiple tags with commas
-                    </p>
-                  </div>
-
-                  {/* Excerpt */}
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="excerpt">Excerpt (optional)</Label>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={generateExcerpt}
-                        disabled={!formData.content}
-                      >
-                        Generate from content
-                      </Button>
-                    </div>
-                    <Textarea
-                      id="excerpt"
-                      value={formData.excerpt}
-                      onChange={(e) => handleInputChange('excerpt', e.target.value)}
-                      placeholder="Brief description of your post"
-                      rows={3}
-                    />
-                  </div>
-
-                  {/* Slug */}
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="slug">URL Slug (optional)</Label>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={generateSlug}
-                        disabled={!formData.title}
-                      >
-                        Generate from title
-                      </Button>
-                    </div>
-                    <Input
-                      id="slug"
-                      value={formData.slug}
-                      onChange={(e) => handleInputChange('slug', e.target.value)}
-                      placeholder="url-friendly-slug"
-                    />
-                  </div>
-                </form>
+                  </form>
               )}
             </CardContent>
           </Card>
