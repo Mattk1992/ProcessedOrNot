@@ -882,7 +882,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/settings", async (req, res) => {
     try {
       const user = (req.session as any).user;
-      if (!user || user.role !== 'Admin') {
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1055,7 +1055,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/settings/:key", async (req, res) => {
     try {
       const user = (req.session as any).user;
-      if (!user || user.role !== 'Admin') {
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1074,7 +1074,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/settings", async (req, res) => {
     try {
       const user = (req.session as any).user;
-      if (!user || user.role !== 'Admin') {
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1098,7 +1098,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/admin/settings/:key", async (req, res) => {
     try {
       const user = (req.session as any).user;
-      if (!user || user.role !== 'Admin') {
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1119,7 +1119,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/admin/settings/:key", async (req, res) => {
     try {
       const user = (req.session as any).user;
-      if (!user || user.role !== 'Admin') {
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1139,7 +1139,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/settings/initialize", async (req, res) => {
     try {
       const user = (req.session as any).user;
-      if (!user || user.role !== 'Admin') {
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -1255,6 +1255,154 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fixing glycemic analysis:", error);
       res.status(500).json({ message: "Failed to fix glycemic analysis" });
+    }
+  });
+
+  // Notification API routes (requires authentication)
+  app.get("/api/notifications", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const notifications = await storage.getNotificationsByUser(user.id);
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  app.get("/api/notifications/unread-count", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const count = await storage.getUnreadNotificationCount(user.id);
+      res.json({ count });
+    } catch (error) {
+      console.error("Error fetching unread notification count:", error);
+      res.status(500).json({ message: "Failed to fetch unread notification count" });
+    }
+  });
+
+  app.post("/api/notifications", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { type, title, message, actionUrl, actionText, metadata } = req.body;
+      
+      if (!type || !title || !message) {
+        return res.status(400).json({ message: "Type, title, and message are required" });
+      }
+
+      const notification = await storage.createNotification({
+        userId: user.id,
+        type,
+        title,
+        message,
+        actionUrl,
+        actionText,
+        metadata,
+        isRead: false,
+        isArchived: false
+      });
+
+      res.json(notification);
+    } catch (error) {
+      console.error("Error creating notification:", error);
+      res.status(500).json({ message: "Failed to create notification" });
+    }
+  });
+
+  app.put("/api/notifications/:id/read", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const notificationId = parseInt(req.params.id);
+      const notification = await storage.getNotificationById(notificationId);
+
+      if (!notification || notification.userId !== user.id) {
+        return res.status(404).json({ message: "Notification not found" });
+      }
+
+      const updatedNotification = await storage.markNotificationAsRead(notificationId);
+      res.json(updatedNotification);
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  app.put("/api/notifications/mark-all-read", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      await storage.markAllNotificationsAsRead(user.id);
+      res.json({ message: "All notifications marked as read" });
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      res.status(500).json({ message: "Failed to mark all notifications as read" });
+    }
+  });
+
+  app.put("/api/notifications/:id/archive", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const notificationId = parseInt(req.params.id);
+      const notification = await storage.getNotificationById(notificationId);
+
+      if (!notification || notification.userId !== user.id) {
+        return res.status(404).json({ message: "Notification not found" });
+      }
+
+      const updatedNotification = await storage.archiveNotification(notificationId);
+      res.json(updatedNotification);
+    } catch (error) {
+      console.error("Error archiving notification:", error);
+      res.status(500).json({ message: "Failed to archive notification" });
+    }
+  });
+
+  app.delete("/api/notifications/:id", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const notificationId = parseInt(req.params.id);
+      const notification = await storage.getNotificationById(notificationId);
+
+      if (!notification || notification.userId !== user.id) {
+        return res.status(404).json({ message: "Notification not found" });
+      }
+
+      const success = await storage.deleteNotification(notificationId);
+      if (!success) {
+        return res.status(404).json({ message: "Failed to delete notification" });
+      }
+
+      res.json({ message: "Notification deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      res.status(500).json({ message: "Failed to delete notification" });
     }
   });
 

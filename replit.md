@@ -170,6 +170,7 @@ Changelog:
 - July 5, 2025. Fixed Admin Search History page accessibility by updating authentication checks from deprecated "role" field to "accountType" field across frontend components and backend API routes. Admin users can now properly access search history analytics, statistics, export functionality, and data management features.
 - July 10, 2025. Created comprehensive Features page showcasing all application capabilities including advanced barcode scanning, AI-powered analysis, multi-database integration, and multilingual support. Added page to navigation menu with detailed feature descriptions, technology stack information, and visual enhancements.
 - July 10, 2025. Implemented Media storage system with dedicated database table for future image/video uploads. Added media fields to products table (additional_images, video_url, media_gallery), complete storage interface with CRUD operations, and support for image/video metadata, tags, and access controls.
+- July 10, 2025. Implemented comprehensive notifications system with database table, API endpoints, and UI components. Added bell icon notification button in header visible only to authenticated users, with real-time unread count badges, notification management (read/unread/archive/delete), and automatic 30-second refresh intervals. Created complete notification storage interface with user-specific filtering and notification type support (info, warning, success, error).
 
 ## User Preferences
 

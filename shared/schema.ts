@@ -258,3 +258,28 @@ export const insertMediaSchema = createInsertSchema(media).omit({
 
 export type InsertMedia = z.infer<typeof insertMediaSchema>;
 export type Media = typeof media.$inferSelect;
+
+// Notifications table
+export const notifications = pgTable("notifications", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // 'info', 'warning', 'success', 'error'
+  title: text("title").notNull(),
+  message: text("message").notNull(),
+  actionUrl: text("action_url"), // Optional URL for action button
+  actionText: text("action_text"), // Optional text for action button
+  isRead: boolean("is_read").default(false).notNull(),
+  isArchived: boolean("is_archived").default(false).notNull(),
+  metadata: jsonb("metadata"), // Additional data for the notification
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  readAt: timestamp("read_at"),
+});
+
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+  readAt: true,
+});
+
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type Notification = typeof notifications.$inferSelect;

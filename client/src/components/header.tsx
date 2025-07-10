@@ -1,6 +1,7 @@
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 import LanguageSwitcher from "./language-switcher";
 import HeaderDropdown from "./header-dropdown";
+import NotificationButton from "./notifications";
 
 export default function Header() {
   return (
@@ -23,6 +24,7 @@ export default function Header() {
             <div className="hidden sm:block">
               <LanguageSwitcher />
             </div>
+            <NotificationButton />
             <HeaderDropdown />
           </div>
         </div>
