@@ -1,0 +1,75 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a8a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f172a;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="phoneGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f3f4f6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e5e7eb;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="screenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1f2937;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#111827;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with rounded corners -->
+  <rect width="512" height="512" rx="100" ry="100" fill="url(#bgGradient)"/>
+  
+  <!-- Phone device -->
+  <rect x="156" y="96" width="200" height="320" rx="25" ry="25" fill="url(#phoneGradient)" stroke="#d1d5db" stroke-width="2"/>
+  
+  <!-- Phone screen -->
+  <rect x="172" y="126" width="168" height="260" rx="12" ry="12" fill="url(#screenGradient)"/>
+  
+  <!-- Screen header -->
+  <rect x="182" y="136" width="148" height="30" rx="6" ry="6" fill="#f97316"/>
+  
+  <!-- Barcode on screen -->
+  <g transform="translate(196, 186)">
+    <!-- Barcode lines -->
+    <rect x="0" y="0" width="4" height="40" fill="#f97316"/>
+    <rect x="8" y="0" width="2" height="40" fill="#f97316"/>
+    <rect x="14" y="0" width="6" height="40" fill="#f97316"/>
+    <rect x="24" y="0" width="2" height="40" fill="#f97316"/>
+    <rect x="30" y="0" width="4" height="40" fill="#f97316"/>
+    <rect x="38" y="0" width="2" height="40" fill="#f97316"/>
+    <rect x="44" y="0" width="6" height="40" fill="#f97316"/>
+    <rect x="54" y="0" width="2" height="40" fill="#f97316"/>
+    <rect x="60" y="0" width="4" height="40" fill="#f97316"/>
+    <rect x="68" y="0" width="6" height="40" fill="#f97316"/>
+    <rect x="78" y="0" width="2" height="40" fill="#f97316"/>
+    <rect x="84" y="0" width="4" height="40" fill="#f97316"/>
+    <rect x="92" y="0" width="2" height="40" fill="#f97316"/>
+    <rect x="98" y="0" width="6" height="40" fill="#f97316"/>
+    <rect x="108" y="0" width="2" height="40" fill="#f97316"/>
+    <rect x="114" y="0" width="4" height="40" fill="#f97316"/>
+    
+    <!-- MRN text below barcode -->
+    <text x="60" y="55" text-anchor="middle" fill="#f97316" font-family="Arial, sans-serif" font-size="12" font-weight="bold">MRN</text>
+  </g>
+  
+  <!-- App name -->
+  <text x="256" y="456" text-anchor="middle" fill="#f3f4f6" font-family="Arial, sans-serif" font-size="28" font-weight="bold">ProcessedOrNot</text>
+  
+  <!-- Decorative elements around the phone -->
+  <circle cx="120" cy="150" r="12" fill="#f97316" opacity="0.7"/>
+  <circle cx="400" cy="180" r="8" fill="#10b981" opacity="0.6"/>
+  <circle cx="100" cy="250" r="6" fill="#3b82f6" opacity="0.5"/>
+  <circle cx="420" cy="280" r="10" fill="#f59e0b" opacity="0.6"/>
+  <circle cx="110" cy="350" r="8" fill="#ef4444" opacity="0.5"/>
+  <circle cx="410" cy="360" r="6" fill="#8b5cf6" opacity="0.6"/>
+  
+  <!-- Apple/food icon -->
+  <g transform="translate(380, 120)">
+    <path d="M20 5 C15 5, 10 10, 10 15 C10 25, 15 30, 20 30 C25 30, 30 25, 30 15 C30 10, 25 5, 20 5 Z" fill="#10b981" opacity="0.7"/>
+    <path d="M20 5 C18 3, 16 2, 14 3 C16 4, 18 5, 20 5 Z" fill="#065f46" opacity="0.8"/>
+  </g>
+  
+  <!-- Magnifying glass icon -->
+  <g transform="translate(80, 320)">
+    <circle cx="15" cy="15" r="10" fill="none" stroke="#3b82f6" stroke-width="3" opacity="0.7"/>
+    <line x1="22" y1="22" x2="28" y2="28" stroke="#3b82f6" stroke-width="3" opacity="0.7"/>
+  </g>
+</svg>
