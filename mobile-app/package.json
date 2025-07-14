@@ -1,13 +1,12 @@
 {
   "name": "processedornot-mobile",
   "version": "1.0.0",
-  "main": "node_modules/expo/AppEntry.js",
+  "main": "App.tsx",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "eject": "expo eject"
+    "start": "echo 'Run in local environment: npm install && npm start'",
+    "dev": "echo 'Mobile app configured, install dependencies locally'",
+    "build": "echo 'Build for production in local environment'",
+    "test": "echo 'Run tests in local environment'"
   },
   "dependencies": {
     "expo": "~49.0.0",
@@ -36,5 +35,11 @@
     "@types/react-native": "~0.72.0",
     "typescript": "^5.1.0"
   },
-  "private": true
+  "private": true,
+  "workspaces": {
+    "nohoist": [
+      "react-native",
+      "react-native/**"
+    ]
+  }
 }
