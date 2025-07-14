@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "ProcessedOrNot Scanner",
+    "slug": "processedornot-scanner",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.processedornot.scanner",
+      "infoPlist": {
+        "NSCameraUsageDescription": "This app needs access to the camera to scan barcodes and analyze food products.",
+        "NSMicrophoneUsageDescription": "This app may use the microphone for voice features."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.processedornot.scanner",
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow ProcessedOrNot Scanner to access your camera to scan barcodes and analyze food products."
+        }
+      ],
+      [
+        "expo-barcode-scanner",
+        {
+          "cameraPermission": "Allow ProcessedOrNot Scanner to access your camera to scan barcodes."
+        }
+      ]
+    ]
+  }
+}

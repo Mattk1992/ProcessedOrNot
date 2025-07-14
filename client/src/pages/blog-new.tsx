@@ -81,16 +81,14 @@ export default function BlogNew() {
       return;
     }
 
-    if (!formData.author.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Author is required.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Prepare data for submission
+    const submissionData = {
+      ...formData,
+      author: user?.username || 'Anonymous',
+      tags: formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0).join(','),
+    };
 
-    createBlogMutation.mutate(formData);
+    createBlogMutation.mutate(submissionData);
   };
 
   const handleInputChange = (field: string, value: string | boolean) => {
@@ -164,94 +162,98 @@ export default function BlogNew() {
                 </CardTitle>
                 <div className="flex items-center gap-3 mt-4">
                   <Button
-                    type="button"
-                    variant={isPreview ? 'outline' : 'default'}
+                    variant="outline"
                     size="sm"
-                    onClick={() => setIsPreview(false)}
-                    className={`${isPreview ? 'bg-white/20 text-white border-white/30 hover:bg-white/30' : 'bg-white text-blue-600 hover:bg-blue-50'} font-medium`}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={isPreview ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setIsPreview(true)}
-                    className={`${isPreview ? 'bg-white text-blue-600 hover:bg-blue-50' : 'bg-white/20 text-white border-white/30 hover:bg-white/30'} font-medium`}
+                    onClick={() => setIsPreview(!isPreview)}
+                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
                   >
                     <Eye className="w-4 h-4 mr-2" />
-                    Preview
+                    {isPreview ? 'Edit' : 'Preview'}
                   </Button>
                 </div>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-6">
                 {isPreview ? (
-                  <div className="space-y-4">
+                  <div className="space-y-6">
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                      <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
                         {formData.title || 'Untitled Post'}
                       </h2>
                       <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
-                        <div className="flex items-center gap-1">
+                        <span className="flex items-center gap-1">
                           <User className="w-4 h-4" />
-                          {formData.author || 'Unknown Author'}
-                        </div>
-                        <div className="flex items-center gap-1">
+                          {formData.author || 'Anonymous'}
+                        </span>
+                        <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
                           {new Date().toLocaleDateString()}
+                        </span>
+                      </div>
+                      {parsedTags.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {parsedTags.map(tag => (
+                            <Badge key={tag} variant="secondary">
+                              <Tag className="w-3 h-3 mr-1" />
+                              {tag}
+                            </Badge>
+                          ))}
                         </div>
+                      )}
+                      <div className="prose dark:prose-invert max-w-none">
+                        {formData.content ? (
+                          <div dangerouslySetInnerHTML={{ __html: formData.content.replace(/\n/g, '<br>') }} />
+                        ) : (
+                          <p className="text-gray-500 italic">No content yet...</p>
+                        )}
                       </div>
                     </div>
-                    {formData.excerpt && (
-                      <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-md">
-                        <p className="text-gray-700 dark:text-gray-300 italic">
-                          {formData.excerpt}
-                        </p>
-                      </div>
-                    )}
-                    <div>
-                      <div className="prose prose-sm max-w-none dark:prose-invert">
-                        <div dangerouslySetInnerHTML={{ __html: formData.content.replace(/\n/g, '<br>') }} />
-                      </div>
-                    </div>
-                    {parsedTags.length > 0 && (
-                      <div className="flex flex-wrap gap-2 pt-4">
-                        {parsedTags.map(tag => (
-                          <Badge key={tag} variant="secondary">
-                            <Tag className="w-3 h-3 mr-1" />
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
-                    {/* Title */}
                     <div>
                       <Label htmlFor="title">Title *</Label>
                       <Input
                         id="title"
                         value={formData.title}
                         onChange={(e) => handleInputChange('title', e.target.value)}
-                        placeholder="Enter your blog post title"
-                        required
+                        placeholder="Enter your blog post title..."
+                        className="mt-1"
+                      />
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={generateSlug}
+                          disabled={!formData.title}
+                        >
+                          Generate Slug
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="slug">URL Slug</Label>
+                      <Input
+                        id="slug"
+                        value={formData.slug}
+                        onChange={(e) => handleInputChange('slug', e.target.value)}
+                        placeholder="url-friendly-slug"
+                        className="mt-1"
                       />
                     </div>
 
-                    {/* Author */}
                     <div>
-                      <Label htmlFor="author">Author *</Label>
+                      <Label htmlFor="author">Author</Label>
                       <Input
                         id="author"
                         value={formData.author}
                         onChange={(e) => handleInputChange('author', e.target.value)}
-                        placeholder="Author name"
-                        required
+                        placeholder="Your name"
+                        className="mt-1"
                       />
                     </div>
 
-                    {/* Content */}
                     <div>
                       <Label htmlFor="content">Content *</Label>
                       <Textarea
@@ -260,163 +262,142 @@ export default function BlogNew() {
                         onChange={(e) => handleInputChange('content', e.target.value)}
                         placeholder="Write your blog post content here..."
                         rows={12}
-                        required
+                        className="mt-1"
                       />
                     </div>
 
-                    {/* Tags */}
                     <div>
-                      <Label htmlFor="tags">Tags (optional)</Label>
-                      <Input
-                        id="tags"
-                        value={formData.tags}
-                        onChange={(e) => handleInputChange('tags', e.target.value)}
-                        placeholder="Enter tags separated by commas (e.g., technology, AI, health)"
-                      />
-                      <p className="text-sm text-gray-500 mt-1">
-                        Separate multiple tags with commas
-                      </p>
-                    </div>
-
-                    {/* Excerpt */}
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="excerpt">Excerpt (optional)</Label>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={generateExcerpt}
-                          disabled={!formData.content}
-                        >
-                          Generate from content
-                        </Button>
-                      </div>
+                      <Label htmlFor="excerpt">Excerpt</Label>
                       <Textarea
                         id="excerpt"
                         value={formData.excerpt}
                         onChange={(e) => handleInputChange('excerpt', e.target.value)}
-                        placeholder="Brief description of your post"
+                        placeholder="Brief summary of your post..."
                         rows={3}
+                        className="mt-1"
                       />
-                    </div>
-
-                    {/* Slug */}
-                    <div>
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="slug">URL Slug (optional)</Label>
+                      <div className="flex gap-2 mt-2">
                         <Button
                           type="button"
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          onClick={generateSlug}
-                          disabled={!formData.title}
+                          onClick={generateExcerpt}
+                          disabled={!formData.content}
                         >
-                          Generate from title
+                          Generate Excerpt
                         </Button>
                       </div>
+                    </div>
+
+                    <div>
+                      <Label htmlFor="tags">Tags</Label>
                       <Input
-                        id="slug"
-                        value={formData.slug}
-                        onChange={(e) => handleInputChange('slug', e.target.value)}
-                        placeholder="url-friendly-slug"
+                        id="tags"
+                        value={formData.tags}
+                        onChange={(e) => handleInputChange('tags', e.target.value)}
+                        placeholder="tag1, tag2, tag3"
+                        className="mt-1"
                       />
+                      <p className="text-sm text-gray-500 mt-1">
+                        Separate tags with commas
+                      </p>
                     </div>
                   </form>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
-        {/* Sidebar */}
-        <div className="space-y-6">
-          {/* Publish Settings */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Publish Settings</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label htmlFor="published">Publish immediately</Label>
-                  <p className="text-sm text-gray-500">
-                    Make this post visible to everyone
-                  </p>
-                </div>
-                <Switch
-                  id="published"
-                  checked={formData.isPublished}
-                  onCheckedChange={(checked) => handleInputChange('isPublished', checked)}
-                />
-              </div>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <Button
-                  type="button"
-                  onClick={handleSubmit}
-                  disabled={createBlogMutation.isPending}
-                  className="w-full"
-                >
-                  {createBlogMutation.isPending ? (
-                    "Creating..."
-                  ) : (
-                    <>
-                      <Save className="w-4 h-4 mr-2" />
-                      {formData.isPublished ? 'Publish Post' : 'Save as Draft'}
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Post Preview */}
-          {parsedTags.length > 0 && (
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Publish Settings */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Tags Preview</CardTitle>
+                <CardTitle className="text-lg">Publish Settings</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {parsedTags.map(tag => (
-                    <Badge key={tag} variant="secondary">
-                      <Tag className="w-3 h-3 mr-1" />
-                      {tag}
-                    </Badge>
-                  ))}
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label htmlFor="published">Publish immediately</Label>
+                    <p className="text-sm text-gray-500">
+                      Make this post visible to everyone
+                    </p>
+                  </div>
+                  <Switch
+                    id="published"
+                    checked={formData.isPublished}
+                    onCheckedChange={(checked) => handleInputChange('isPublished', checked)}
+                  />
+                </div>
+
+                <Separator />
+
+                <div className="space-y-2">
+                  <Button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={createBlogMutation.isPending}
+                    className="w-full"
+                  >
+                    {createBlogMutation.isPending ? (
+                      "Creating..."
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        {formData.isPublished ? 'Publish Post' : 'Save as Draft'}
+                      </>
+                    )}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
-          )}
 
-          {/* Help */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Writing Tips</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div>
-                <h4 className="font-semibold">Title</h4>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Keep it concise and descriptive
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold">Content</h4>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Use clear paragraphs and engaging language
-                </p>
-              </div>
-              <div>
-                <h4 className="font-semibold">Tags</h4>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Help readers find your content
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+            {/* Tags Preview */}
+            {parsedTags.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Tags Preview</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {parsedTags.map(tag => (
+                      <Badge key={tag} variant="secondary">
+                        <Tag className="w-3 h-3 mr-1" />
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Writing Tips */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Writing Tips</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div>
+                  <h4 className="font-semibold">Title</h4>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Keep it concise and descriptive
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold">Content</h4>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Use clear paragraphs and engaging language
+                  </p>
+                </div>
+                <div>
+                  <h4 className="font-semibold">Tags</h4>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Help readers find your content
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
