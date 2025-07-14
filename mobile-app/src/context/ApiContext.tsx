@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState } from 'react';
 import axios from 'axios';
 
 // Use your existing backend API endpoint
-const API_BASE_URL = 'https://processedornot.replit.app'; // Replace with your actual domain
+// Replace with your actual Replit domain when deploying
+const API_BASE_URL = 'https://your-replit-domain.replit.app';
 
 interface ApiContextType {
   searchProduct: (query: string) => Promise<any>;
