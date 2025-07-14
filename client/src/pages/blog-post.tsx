@@ -237,7 +237,8 @@ export default function BlogPost() {
               </CardContent>
             </Card>
           </div>
-      </article>
+        </article>
+      </div>
     </div>
   );
 }
