@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1E40AF"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -24,8 +24,9 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/icon-foreground.png",
+        "backgroundImage": "./assets/icon-background.png",
+        "backgroundColor": "#3B82F6"
       },
       "package": "com.processedornot.scanner",
       "permissions": [
