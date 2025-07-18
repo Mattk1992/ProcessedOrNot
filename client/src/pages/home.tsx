@@ -225,35 +225,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Sample Products Section */}
-            <div className="glass-card p-4 sm:p-6 rounded-2xl">
-              <h4 className="font-semibold text-foreground mb-4 text-center">Try These Sample Products</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                <button
-                  onClick={() => handleScan("8720600618161")}
-                  className="p-3 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 hover:from-primary/10 hover:to-accent/10 border border-primary/20 hover:border-primary/30 transition-all text-left group"
-                >
-                  <div className="font-medium text-sm text-foreground group-hover:text-primary">Hak Chili sin carne</div>
-                  <div className="text-xs text-muted-foreground mt-1">Barcode: 8720600618161</div>
-                </button>
-                
-                <button
-                  onClick={() => handleScan("5449000000996")}
-                  className="p-3 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 hover:from-primary/10 hover:to-accent/10 border border-primary/20 hover:border-primary/30 transition-all text-left group"
-                >
-                  <div className="font-medium text-sm text-foreground group-hover:text-primary">Coca-Cola Classic</div>
-                  <div className="text-xs text-muted-foreground mt-1">Barcode: 5449000000996</div>
-                </button>
-                
-                <button
-                  onClick={() => handleScan("Greek Yogurt")}
-                  className="p-3 rounded-lg bg-gradient-to-r from-accent/5 to-green-500/5 hover:from-accent/10 hover:to-green-500/10 border border-accent/20 hover:border-accent/30 transition-all text-left group"
-                >
-                  <div className="font-medium text-sm text-foreground group-hover:text-accent">Greek Yogurt</div>
-                  <div className="text-xs text-muted-foreground mt-1">Text Search Example</div>
-                </button>
-              </div>
-            </div>
+
 
             {/* Quick Actions Section */}
             <div className="mt-8 slide-up">
