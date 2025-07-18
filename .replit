@@ -34,3 +34,15 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "eXPO"
+mode = "sequential"
+author = 39768813
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+
+[objectStorage]
+defaultBucketID = "replit-objstore-11d37491-e42b-4bce-b1fc-8b4fe67cd984"
