@@ -610,7 +610,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                     </div>
                   </div>
                 )}
-                <div className="absolute inset-0 pointer-events-none">
+                <div className="absolute inset-0 pointer-events-none z-[60]">
                   {/* Enhanced Close-Range Scanning Overlay */}
                   <div className="absolute inset-4 border-2 border-primary/70 rounded-xl short-range-overlay">
                     {/* Close-range focus zone */}
@@ -637,7 +637,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   </div>
                   
                   {/* Dynamic scanning feedback */}
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-xl text-sm backdrop-blur-sm">
+                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-xl text-sm backdrop-blur-sm z-[65] pointer-events-none">
                     {isScanning ? (
                       <div className="flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin text-primary" />
@@ -652,7 +652,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   </div>
                   
                   {/* Enhanced Zoom Controls - Optimized for Short-Range Barcode Scanning */}
-                  <div className="absolute bottom-4 right-4 mobile-zoom-controls flex flex-col gap-2 short-range-zoom-panel">
+                  <div className="absolute bottom-4 right-4 mobile-zoom-controls flex flex-col gap-2 short-range-zoom-panel z-[70] pointer-events-auto">
                     {/* Zoom indicator with range guidance */}
                     <div className="bg-black/80 text-white px-2 py-1 rounded-lg text-xs text-center backdrop-blur-sm border border-white/20">
                       <div className="font-medium text-primary">Close-Range</div>

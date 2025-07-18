@@ -1030,4 +1030,37 @@
       height: 2.25rem;
     }
   }
+
+  /* Camera controls z-index management */
+  .camera-controls-accessible {
+    z-index: 70;
+    pointer-events: auto;
+  }
+
+  .camera-overlay-non-blocking {
+    z-index: 60;
+    pointer-events: none;
+  }
+
+  .camera-feedback-visible {
+    z-index: 65;
+    pointer-events: none;
+  }
+
+  /* Tutorial overlay adjustments for camera mode */
+  .tutorial-overlay.camera-active {
+    z-index: 50;
+  }
+
+  .tutorial-overlay.camera-active .tutorial-background {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .tutorial-overlay.camera-active .tutorial-card {
+    z-index: 55;
+  }
+
+  .tutorial-overlay.camera-active .tutorial-highlight {
+    z-index: 45;
+  }
 }
