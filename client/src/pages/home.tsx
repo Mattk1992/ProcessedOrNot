@@ -7,7 +7,7 @@ import LanguageSwitcher from "@/components/language-switcher";
 import HeaderDropdown from "@/components/header-dropdown";
 import NutriBotChat from "@/components/nutribot-chat";
 import TutorialOverlay from "@/components/tutorial-overlay";
-
+import { Camera, Search, MessageCircle, BookOpen, Settings, TrendingUp } from "lucide-react";
 
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -95,6 +95,14 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      {/* Mobile Feature Banner */}
+      <div className="md:hidden bg-gradient-to-r from-primary/10 to-accent/10 border-b border-primary/20 p-3">
+        <div className="flex items-center justify-center space-x-2 text-center">
+          <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+          <span className="text-sm font-medium text-foreground">Enhanced mobile camera scanning</span>
+        </div>
+      </div>
+
       {/* Header */}
       <header className="glass-effect border-b border-border/50 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-6 mobile-compact-header">
@@ -147,6 +155,22 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Quick Stats Section */}
+            <div className="mt-8 sm:mt-12 grid grid-cols-3 gap-4 sm:gap-6 max-w-2xl mx-auto">
+              <div className="glass-card p-4 sm:p-6 rounded-2xl text-center hover:scale-105 transition-transform">
+                <div className="text-lg sm:text-2xl font-bold text-primary mb-1">14+</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Food Databases</div>
+              </div>
+              <div className="glass-card p-4 sm:p-6 rounded-2xl text-center hover:scale-105 transition-transform">
+                <div className="text-lg sm:text-2xl font-bold text-accent mb-1">AI</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Powered Analysis</div>
+              </div>
+              <div className="glass-card p-4 sm:p-6 rounded-2xl text-center hover:scale-105 transition-transform">
+                <div className="text-lg sm:text-2xl font-bold text-primary mb-1">24/7</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Available</div>
+              </div>
+            </div>
+
 
           </div>
         </div>
@@ -157,6 +181,119 @@ export default function Home() {
           <BarcodeScanner onScan={handleScan} isLoading={isScanning} />
         </div>
 
+        {/* Feature Highlights Section */}
+        {!currentBarcode && (
+          <div className="mt-8 sm:mt-12 slide-up">
+            <h3 className="text-xl sm:text-2xl font-bold text-center text-foreground mb-6">
+              Discover What's in Your Food
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+              <div className="glass-card p-4 sm:p-6 rounded-2xl hover:scale-105 transition-all duration-300 group">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+                    <span className="text-primary font-bold">🔍</span>
+                  </div>
+                  <h4 className="font-semibold text-foreground">Instant Analysis</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Scan any barcode or search product names to get detailed processing analysis in seconds.
+                </p>
+              </div>
+              
+              <div className="glass-card p-4 sm:p-6 rounded-2xl hover:scale-105 transition-all duration-300 group">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="p-2 bg-accent/10 rounded-lg group-hover:bg-accent/20 transition-colors">
+                    <span className="text-accent font-bold">🤖</span>
+                  </div>
+                  <h4 className="font-semibold text-foreground">AI Nutritionist</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Chat with NutriBot for personalized nutrition advice and healthier food recommendations.
+                </p>
+              </div>
+              
+              <div className="glass-card p-4 sm:p-6 rounded-2xl hover:scale-105 transition-all duration-300 group">
+                <div className="flex items-center space-x-3 mb-3">
+                  <div className="p-2 bg-green-500/10 rounded-lg group-hover:bg-green-500/20 transition-colors">
+                    <span className="text-green-500 font-bold">📊</span>
+                  </div>
+                  <h4 className="font-semibold text-foreground">Health Insights</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Get processing scores, ingredient breakdown, and health impact analysis powered by AI.
+                </p>
+              </div>
+            </div>
+
+            {/* Sample Products Section */}
+            <div className="glass-card p-4 sm:p-6 rounded-2xl">
+              <h4 className="font-semibold text-foreground mb-4 text-center">Try These Sample Products</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <button
+                  onClick={() => handleScan("8720600618161")}
+                  className="p-3 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 hover:from-primary/10 hover:to-accent/10 border border-primary/20 hover:border-primary/30 transition-all text-left group"
+                >
+                  <div className="font-medium text-sm text-foreground group-hover:text-primary">Hak Chili sin carne</div>
+                  <div className="text-xs text-muted-foreground mt-1">Barcode: 8720600618161</div>
+                </button>
+                
+                <button
+                  onClick={() => handleScan("5449000000996")}
+                  className="p-3 rounded-lg bg-gradient-to-r from-primary/5 to-accent/5 hover:from-primary/10 hover:to-accent/10 border border-primary/20 hover:border-primary/30 transition-all text-left group"
+                >
+                  <div className="font-medium text-sm text-foreground group-hover:text-primary">Coca-Cola Classic</div>
+                  <div className="text-xs text-muted-foreground mt-1">Barcode: 5449000000996</div>
+                </button>
+                
+                <button
+                  onClick={() => handleScan("Greek Yogurt")}
+                  className="p-3 rounded-lg bg-gradient-to-r from-accent/5 to-green-500/5 hover:from-accent/10 hover:to-green-500/10 border border-accent/20 hover:border-accent/30 transition-all text-left group"
+                >
+                  <div className="font-medium text-sm text-foreground group-hover:text-accent">Greek Yogurt</div>
+                  <div className="text-xs text-muted-foreground mt-1">Text Search Example</div>
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Actions Section */}
+            <div className="mt-8 slide-up">
+              <h4 className="font-semibold text-foreground mb-4 text-center">Quick Actions</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                <button
+                  onClick={() => document.querySelector('[data-tutorial="camera-button"]')?.click()}
+                  className="glass-card p-3 sm:p-4 rounded-xl hover:scale-105 transition-all duration-300 group text-center"
+                >
+                  <Camera className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2 text-primary group-hover:text-primary/80" />
+                  <div className="text-xs sm:text-sm font-medium text-foreground">Start Camera</div>
+                </button>
+                
+                <button
+                  onClick={() => document.querySelector('[data-tutorial="nutribot"]')?.click()}
+                  className="glass-card p-3 sm:p-4 rounded-xl hover:scale-105 transition-all duration-300 group text-center"
+                >
+                  <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2 text-accent group-hover:text-accent/80" />
+                  <div className="text-xs sm:text-sm font-medium text-foreground">Ask NutriBot</div>
+                </button>
+                
+                <button
+                  onClick={() => window.location.href = '/help'}
+                  className="glass-card p-3 sm:p-4 rounded-xl hover:scale-105 transition-all duration-300 group text-center"
+                >
+                  <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2 text-green-500 group-hover:text-green-500/80" />
+                  <div className="text-xs sm:text-sm font-medium text-foreground">Help Guide</div>
+                </button>
+                
+                <button
+                  onClick={handleStartTutorial}
+                  className="glass-card p-3 sm:p-4 rounded-xl hover:scale-105 transition-all duration-300 group text-center"
+                >
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 mx-auto mb-2 text-orange-500 group-hover:text-orange-500/80" />
+                  <div className="text-xs sm:text-sm font-medium text-foreground">Take Tour</div>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         
         {currentBarcode && (
           <div className="mt-8 sm:mt-12 slide-up">
@@ -173,6 +310,66 @@ export default function Home() {
         )}
       </main>
       
+      {/* Trending Products Section */}
+      <section className="max-w-6xl mx-auto px-4 pb-8 sm:pb-12">
+        <div className="slide-up">
+          <div className="glass-card p-6 sm:p-8 rounded-3xl">
+            <h3 className="text-xl sm:text-2xl font-bold text-center text-foreground mb-6">
+              Popular Product Categories
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              <button
+                onClick={() => handleScan("Organic Oatmeal")}
+                className="p-4 rounded-xl bg-gradient-to-br from-green-500/10 to-green-600/10 hover:from-green-500/20 hover:to-green-600/20 border border-green-500/20 hover:border-green-500/30 transition-all text-center group"
+              >
+                <div className="text-2xl mb-2">🥣</div>
+                <div className="text-sm font-medium text-foreground">Breakfast</div>
+              </button>
+              
+              <button
+                onClick={() => handleScan("Greek Yogurt")}
+                className="p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/10 hover:from-blue-500/20 hover:to-blue-600/20 border border-blue-500/20 hover:border-blue-500/30 transition-all text-center group"
+              >
+                <div className="text-2xl mb-2">🥛</div>
+                <div className="text-sm font-medium text-foreground">Dairy</div>
+              </button>
+              
+              <button
+                onClick={() => handleScan("Dark Chocolate")}
+                className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-600/10 hover:from-purple-500/20 hover:to-purple-600/20 border border-purple-500/20 hover:border-purple-500/30 transition-all text-center group"
+              >
+                <div className="text-2xl mb-2">🍫</div>
+                <div className="text-sm font-medium text-foreground">Snacks</div>
+              </button>
+              
+              <button
+                onClick={() => handleScan("Orange Juice")}
+                className="p-4 rounded-xl bg-gradient-to-br from-orange-500/10 to-orange-600/10 hover:from-orange-500/20 hover:to-orange-600/20 border border-orange-500/20 hover:border-orange-500/30 transition-all text-center group"
+              >
+                <div className="text-2xl mb-2">🧃</div>
+                <div className="text-sm font-medium text-foreground">Beverages</div>
+              </button>
+              
+              <button
+                onClick={() => handleScan("Whole Grain Bread")}
+                className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-amber-600/10 hover:from-amber-500/20 hover:to-amber-600/20 border border-amber-500/20 hover:border-amber-500/30 transition-all text-center group"
+              >
+                <div className="text-2xl mb-2">🍞</div>
+                <div className="text-sm font-medium text-foreground">Bakery</div>
+              </button>
+              
+              <button
+                onClick={() => handleScan("Frozen Pizza")}
+                className="p-4 rounded-xl bg-gradient-to-br from-red-500/10 to-red-600/10 hover:from-red-500/20 hover:to-red-600/20 border border-red-500/20 hover:border-red-500/30 transition-all text-center group"
+              >
+                <div className="text-2xl mb-2">🍕</div>
+                <div className="text-sm font-medium text-foreground">Frozen</div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Login/Register Call-to-Action - Only show when not authenticated */}
       {!isAuthenticated && (
         <section className="max-w-6xl mx-auto px-4 pb-8 sm:pb-12">
