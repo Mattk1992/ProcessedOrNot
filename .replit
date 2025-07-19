@@ -42,7 +42,15 @@ author = 39768813
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "cd mobile-app"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm install --legacy-peer-deps"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm start"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-11d37491-e42b-4bce-b1fc-8b4fe67cd984"
