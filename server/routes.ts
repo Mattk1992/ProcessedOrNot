@@ -19,7 +19,8 @@ import {
 import { generatePasswordResetToken, sendPasswordResetEmail, sendEmailVerification, sanitizeUser, generateSearchId } from "./lib/auth";
 import session from "express-session";
 import { z } from "zod";
-import MemoryStore from "memorystore";
+
+
 
 const inputSchema = z.object({
   input: z.string().min(1, "Input cannot be empty"),
@@ -38,17 +39,11 @@ declare module 'express-session' {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configure session store
-  const sessionStore = MemoryStore(session);
-  
   // Configure session middleware
   app.use(session({
     secret: process.env.SESSION_SECRET || 'default-secret-change-in-production',
     resave: false,
     saveUninitialized: false,
-    store: new sessionStore({
-      checkPeriod: 86400000, // prune expired entries every 24h
-    }),
     cookie: {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,

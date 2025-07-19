@@ -25,7 +25,6 @@ export default function TutorialOverlay({ isOpen, onClose, onComplete }: Tutoria
   const [currentStep, setCurrentStep] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
-  const [isCameraActive, setIsCameraActive] = useState(false);
   const { t } = useLanguage();
 
   const tutorialSteps: TutorialStep[] = [
@@ -108,24 +107,6 @@ export default function TutorialOverlay({ isOpen, onClose, onComplete }: Tutoria
     };
   }, [isOpen]);
 
-  // Monitor camera state
-  useEffect(() => {
-    const checkCameraState = () => {
-      const videoElement = document.querySelector('video');
-      setIsCameraActive(videoElement !== null);
-    };
-
-    // Check immediately
-    checkCameraState();
-
-    // Set up observer for DOM changes
-    const observer = new MutationObserver(checkCameraState);
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // Cleanup
-    return () => observer.disconnect();
-  }, []);
-
   const currentStepData = tutorialSteps[currentStep];
 
   const handleNext = () => {
@@ -201,7 +182,7 @@ export default function TutorialOverlay({ isOpen, onClose, onComplete }: Tutoria
           left: rect.left - 8,
           width: rect.width + 16,
           height: rect.height + 16,
-          zIndex: isCameraActive ? 45 : 1001,
+          zIndex: 1001,
         }}
       />
     );
@@ -263,43 +244,18 @@ export default function TutorialOverlay({ isOpen, onClose, onComplete }: Tutoria
 
   if (!isOpen) return null;
 
-  const renderHighlightWithCameraCheck = () => {
-    if (!currentStepData.highlight || !currentStepData.targetSelector) return null;
-    
-    const targetElement = document.querySelector(currentStepData.targetSelector);
-    if (!targetElement) return null;
-
-    const rect = targetElement.getBoundingClientRect();
-    
-    return (
-      <div
-        className="absolute bg-white/10 border-2 border-primary rounded-lg pointer-events-none tutorial-highlight"
-        style={{
-          top: rect.top - 8,
-          left: rect.left - 8,
-          width: rect.width + 16,
-          height: rect.height + 16,
-          zIndex: isCameraActive ? 45 : 1001,
-        }}
-      />
-    );
-  };
-  
   return (
-    <div className={`fixed inset-0 tutorial-overlay ${isCameraActive ? 'z-[50]' : 'z-[1000]'}`}>
-      {/* Background overlay - reduced opacity when camera is active */}
-      <div className={`absolute inset-0 backdrop-blur-sm tutorial-background ${isCameraActive ? 'bg-black/30' : 'bg-black/70'}`} />
+    <div className="fixed inset-0 z-[1000] tutorial-overlay">
+      {/* Background overlay */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
       
       {/* Highlight for current target */}
-      {renderHighlightWithCameraCheck()}
+      {renderHighlight()}
       
       {/* Tutorial card */}
       <Card 
-        className={`absolute w-80 max-w-[calc(100vw-2rem)] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-2 border-primary/20 shadow-2xl tutorial-card ${isCameraActive ? 'pointer-events-auto' : ''}`}
-        style={{
-          ...getTutorialCardPosition(),
-          zIndex: isCameraActive ? 55 : 1002,
-        }}
+        className="absolute w-80 max-w-[calc(100vw-2rem)] bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-2 border-primary/20 shadow-2xl tutorial-card"
+        style={getTutorialCardPosition()}
       >
         <CardContent className="p-6">
           {/* Header */}
