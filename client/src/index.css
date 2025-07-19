@@ -304,6 +304,42 @@
     100% { left: 100%; }
   }
 
+  /* Tutorial overlay camera-safe styles */
+  .tutorial-overlay {
+    /* Allow camera controls to remain interactive */
+    pointer-events: none;
+  }
+
+  .tutorial-overlay .tutorial-card {
+    /* Re-enable interactions for the tutorial card itself */
+    pointer-events: auto;
+  }
+
+  .tutorial-overlay .tutorial-backdrop {
+    /* Camera controls should be accessible */
+    pointer-events: none;
+  }
+
+  .tutorial-overlay .tutorial-highlight {
+    /* Highlights should not block interactions */
+    pointer-events: none;
+  }
+
+  /* Ensure camera controls remain accessible during tutorial */
+  .short-range-scanner,
+  .mobile-zoom-controls,
+  .mobile-zoom-controls button,
+  .short-range-zoom-panel,
+  .short-range-zoom-panel button {
+    z-index: 1002 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Camera video element should remain interactive */
+  .short-range-video {
+    pointer-events: auto !important;
+  }
+
   .morphing-border {
     position: relative;
     border-radius: var(--radius);

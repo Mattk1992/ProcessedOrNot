@@ -245,9 +245,9 @@ export default function TutorialOverlay({ isOpen, onClose, onComplete }: Tutoria
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] tutorial-overlay">
-      {/* Background overlay */}
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+    <div className="fixed inset-0 z-[999] tutorial-overlay">
+      {/* Background overlay with camera-safe zones */}
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm tutorial-backdrop" />
       
       {/* Highlight for current target */}
       {renderHighlight()}
