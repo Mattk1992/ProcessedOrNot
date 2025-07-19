@@ -147,6 +147,152 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Enhanced Features Grid */}
+            <div className="mt-12 sm:mt-16 max-w-6xl mx-auto">
+              <div className="text-center mb-8 sm:mb-12">
+                <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 gradient-text">
+                  Powerful Features for Better Nutrition
+                </h3>
+                <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+                  Discover comprehensive tools to analyze, understand, and improve your food choices
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                {/* AI-Powered Analysis */}
+                <div className="glass-card p-6 rounded-2xl hover:scale-105 transition-all duration-300 glow-effect group">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                      <span className="text-white font-bold text-lg">AI</span>
+                    </div>
+                    <h4 className="text-lg font-semibold text-foreground">AI Analysis</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Advanced GPT-4 powered ingredient analysis with processing level scoring (0-10 scale) and detailed health insights
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">Processing Score</span>
+                    <span className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">Health Insights</span>
+                  </div>
+                </div>
+
+                {/* Multi-Database Integration */}
+                <div className="glass-card p-6 rounded-2xl hover:scale-105 transition-all duration-300 glow-effect group">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                      <span className="text-white text-xl">🌐</span>
+                    </div>
+                    <h4 className="text-lg font-semibold text-foreground">14+ Databases</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Comprehensive food data from OpenFoodFacts, USDA, Health Canada, EFSA, and 10+ regional databases worldwide
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="text-xs px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full">Global Coverage</span>
+                    <span className="text-xs px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full">Real-time Data</span>
+                  </div>
+                </div>
+
+                {/* Advanced Barcode Scanning */}
+                <div className="glass-card p-6 rounded-2xl hover:scale-105 transition-all duration-300 glow-effect group">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                      <span className="text-white text-xl">📷</span>
+                    </div>
+                    <h4 className="text-lg font-semibold text-foreground">Smart Scanning</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Optimized camera controls with 2-8cm close-range scanning, autofocus, and support for 6+ barcode formats
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="text-xs px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full">Close-Range</span>
+                    <span className="text-xs px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded-full">Multi-Format</span>
+                  </div>
+                </div>
+
+                {/* NutriBot Chat */}
+                <div className="glass-card p-6 rounded-2xl hover:scale-105 transition-all duration-300 glow-effect group">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                      <span className="text-white text-xl">🤖</span>
+                    </div>
+                    <h4 className="text-lg font-semibold text-foreground">NutriBot Chat</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Interactive AI nutritionist providing personalized advice, recipe suggestions, and nutrition education
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="text-xs px-2 py-1 bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 rounded-full">24/7 Support</span>
+                    <span className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">Personalized</span>
+                  </div>
+                </div>
+
+                {/* Multi-Language Support */}
+                <div className="glass-card p-6 rounded-2xl hover:scale-105 transition-all duration-300 glow-effect group">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                      <span className="text-white text-xl">🌍</span>
+                    </div>
+                    <h4 className="text-lg font-semibold text-foreground">7 Languages</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Full internationalization support: English, Spanish, French, German, Chinese, Japanese, and Dutch
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="text-xs px-2 py-1 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full">Global</span>
+                    <span className="text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">Native UI</span>
+                  </div>
+                </div>
+
+                {/* Advanced Analytics */}
+                <div className="glass-card p-6 rounded-2xl hover:scale-105 transition-all duration-300 glow-effect group">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-teal-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                      <span className="text-white text-xl">📊</span>
+                    </div>
+                    <h4 className="text-lg font-semibold text-foreground">Smart Analytics</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Glycemic index calculation, nutritional breakdowns, search history tracking, and personalized insights
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="text-xs px-2 py-1 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 rounded-full">Glycemic Index</span>
+                    <span className="text-xs px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded-full">History</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quick Stats Section */}
+              <div className="mt-12 sm:mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">14+</div>
+                  <div className="text-sm text-muted-foreground">Food Databases</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl sm:text-4xl font-bold text-accent mb-2">7</div>
+                  <div className="text-sm text-muted-foreground">Languages</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl sm:text-4xl font-bold text-purple-500 mb-2">6+</div>
+                  <div className="text-sm text-muted-foreground">Barcode Formats</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl sm:text-4xl font-bold text-orange-500 mb-2">AI</div>
+                  <div className="text-sm text-muted-foreground">Powered Analysis</div>
+                </div>
+              </div>
+
+              {/* CTA Button */}
+              <div className="mt-12 sm:mt-16 text-center">
+                <button
+                  onClick={() => document.querySelector('[data-tutorial="camera-button"]')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl hover:from-primary/90 hover:to-accent/90 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                >
+                  Start Scanning Products
+                </button>
+              </div>
+            </div>
+
 
           </div>
         </div>
