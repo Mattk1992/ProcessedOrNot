@@ -153,9 +153,19 @@ export default function Home() {
                 <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 gradient-text">
                   Powerful Features for Better Nutrition
                 </h3>
-                <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+                <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
                   Discover comprehensive tools to analyze, understand, and improve your food choices
                 </p>
+                
+                {/* CTA Button */}
+                <div className="mb-12">
+                  <button
+                    onClick={() => document.querySelector('[data-tutorial="camera-button"]')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl hover:from-primary/90 hover:to-accent/90 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                  >
+                    Start Scanning Products
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -282,15 +292,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* CTA Button */}
-              <div className="mt-12 sm:mt-16 text-center">
-                <button
-                  onClick={() => document.querySelector('[data-tutorial="camera-button"]')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl hover:from-primary/90 hover:to-accent/90 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                  Start Scanning Products
-                </button>
-              </div>
             </div>
 
 
