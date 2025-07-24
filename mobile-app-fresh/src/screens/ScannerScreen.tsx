@@ -9,7 +9,6 @@ import {
   ActivityIndicator,
   Dimensions,
 } from 'react-native';
-import { Camera, CameraType } from 'expo-camera';
 import { BarCodeScanner } from 'expo-barcode-scanner';
 import * as Haptics from 'expo-haptics';
 import { useTheme } from '../context/ThemeContext';

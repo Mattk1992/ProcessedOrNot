@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import { StatusBar } from 'expo-status-bar';
+import { StatusBar } from 'react-native';
 
 // Import screens
 import HomeScreen from './src/screens/HomeScreen';
@@ -21,7 +21,7 @@ export default function App() {
     <ThemeProvider>
       <ApiProvider>
         <NavigationContainer>
-          <StatusBar style="auto" />
+          <StatusBar barStyle="dark-content" backgroundColor="#3B82F6" />
           <Stack.Navigator 
             initialRouteName="Home"
             screenOptions={{

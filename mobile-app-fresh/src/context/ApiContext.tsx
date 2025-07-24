@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState } from 'react';
 import axios from 'axios';
 
 // Use your existing backend API endpoint - connects to the same backend as the web app
-const API_BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://processedornot.replit.app/';
+const API_BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://processedornot.replit.app';
 
 interface ApiContextType {
   searchProduct: (query: string) => Promise<any>;

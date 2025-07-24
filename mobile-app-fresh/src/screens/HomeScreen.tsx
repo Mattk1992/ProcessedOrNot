@@ -22,21 +22,21 @@ const HomeScreen = ({ navigation }: any) => {
       description: 'Quickly scan product barcodes with your camera',
       icon: '📷',
       action: () => navigation.navigate('Scanner'),
-      gradient: ['#3B82F6', '#8B5CF6'],
+      gradient: ['#3B82F6', '#8B5CF6'] as const,
     },
     {
       title: 'Search Products',
       description: 'Search for products by name or description',
       icon: '🔍',
       action: () => navigation.navigate('Search'),
-      gradient: ['#10B981', '#059669'],
+      gradient: ['#10B981', '#059669'] as const,
     },
     {
       title: 'Settings',
       description: 'Customize your app experience',
       icon: '⚙️',
       action: () => navigation.navigate('Settings'),
-      gradient: ['#F59E0B', '#D97706'],
+      gradient: ['#F59E0B', '#D97706'] as const,
     },
   ];
 
