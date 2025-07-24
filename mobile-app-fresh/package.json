@@ -1,11 +1,11 @@
 {
   "name": "processedornot-mobile",
   "version": "1.0.0",
-  "main": "expo/AppEntry.js",
+  "main": "App.tsx",
   "scripts": {
-    "start": "npm start",
-    "dev": "echo 'Mobile app - Use npm install to install dependencies, then expo start to run'",
-    "install-mobile": "npm install axios"
+    "start": "echo 'Mobile app created! Install Expo CLI globally: npm install -g @expo/cli, then: npx create-expo-app --template blank-typescript YourAppName'",
+    "dev": "echo 'Mobile app ready - Copy files to a new Expo project'",
+    "setup": "echo 'Setup: 1) npx create-expo-app --template blank-typescript ProcessedOrNotMobile 2) Copy src/ directory and configs'"
   },
   "dependencies": {
     "axios": "^1.6.0"
@@ -13,10 +13,5 @@
   "devDependencies": {
     "typescript": "^5.1.0"
   },
-  "private": true,
-  "expo": {
-    "name": "ProcessedOrNot Scanner",
-    "slug": "processedornot-scanner",
-    "version": "1.0.0"
-  }
+  "private": true
 }
