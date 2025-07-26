@@ -211,7 +211,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.email, email));
     
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getUserByPasswordResetToken(token: string): Promise<User | undefined> {
@@ -242,7 +242,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.id, user.id));
     
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Email verification methods
@@ -256,7 +256,7 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(users.emailVerificationToken, token));
     
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Legacy methods for backwards compatibility

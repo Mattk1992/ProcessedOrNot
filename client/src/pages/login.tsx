@@ -34,20 +34,24 @@ export default function Login() {
   const loginMutation = useMutation({
     mutationFn: async (data: LoginUser) => {
       const response = await apiRequest("POST", "/api/auth/login", data);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
       return await response.json();
     },
     onSuccess: (data) => {
       toast({
-        title: t("auth.login.success"),
-        description: t("auth.login.welcomeBack"),
+        title: t("auth.login.success") || "Login successful",
+        description: t("auth.login.welcomeBack") || "Welcome back!",
       });
-      // Redirect to home page
-      setLocation("/");
+      // Force refresh auth state and redirect
+      window.location.href = "/";
     },
     onError: (error: any) => {
       toast({
-        title: t("auth.login.error"),
-        description: error.message || t("auth.login.invalidCredentials"),
+        title: t("auth.login.error") || "Login failed",
+        description: error.message || t("auth.login.invalidCredentials") || "Invalid credentials",
         variant: "destructive",
       });
     },

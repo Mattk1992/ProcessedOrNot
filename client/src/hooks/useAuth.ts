@@ -17,15 +17,18 @@ interface AuthResponse {
 }
 
 export function useAuth() {
-  const { data, isLoading, error } = useQuery<AuthResponse>({
+  const { data, isLoading, error, refetch } = useQuery<AuthResponse>({
     queryKey: ["/api/auth/me"],
     retry: false,
     staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   });
 
   return {
     user: data?.user,
     isLoading,
     isAuthenticated: !!data?.user && !error,
+    refetch,
   };
 }
