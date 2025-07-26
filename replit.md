@@ -87,7 +87,8 @@ search_history table (enhanced):
 1. **Input Processing**: System detects whether input is barcode or text search
 2. **Cascading Database Lookup**: 
    - Primary: OpenFoodFacts API
-   - Fallback: USDA FoodData Central, UPC Database, and 10+ other food databases
+   - Enhanced Coverage: FoodDB.ca, USDA FDC, OpenNutrition, Nutritionix, Spoonacular, API Ninjas
+   - Fallback: USDA FoodData Central, UPC Database, and 14+ other food databases
 3. **Data Processing**: Product information is normalized and stored locally
 4. **AI Analysis**: OpenAI analyzes ingredients for processing level (0-10 scale)
 5. **Results Display**: Comprehensive product information with processing analysis
@@ -95,7 +96,7 @@ search_history table (enhanced):
 ### Smart Lookup System
 - **Barcode Detection**: Regex patterns identify various barcode formats (EAN-8, UPC-A, EAN-13, ITF-14)
 - **Text Search**: OpenAI-powered product search for text queries
-- **Multi-Database Integration**: 14 different food databases for comprehensive coverage
+- **Multi-Database Integration**: 20+ different food databases for comprehensive coverage
 
 ### AI Integration Points
 - **Ingredient Analysis**: OpenAI GPT-4o analyzes ingredient lists for processing levels
@@ -107,6 +108,12 @@ search_history table (enhanced):
 
 ### Food Database APIs
 - OpenFoodFacts (primary)
+- FoodDB.ca (Canadian Food Database)
+- USDA Food Data Central (Enhanced API)
+- OpenNutrition
+- Nutritionix
+- Spoonacular
+- API Ninjas
 - USDA FoodData Central
 - UPC Database
 - Australian Food Composition Database
@@ -197,6 +204,7 @@ Changelog:
 - July 26, 2025. Created professional Google Play Store listing with user-friendly descriptions, feature highlights, and mobile-optimized content. Implemented automatic Play Store info updater that converts technical features into user-friendly language and maintains "What's New" section. Added auto-watcher system for seamless Play Store listing maintenance when new features are released.
 - July 26, 2025. Fixed critical encryption security bug by replacing deprecated crypto.createCipher/createDecipher functions with secure crypto.createCipheriv/createDecipheriv methods. Updated AES-256-CBC encryption system to use proper initialization vectors and enhanced security. User registration, login, and data encryption now working properly with enterprise-grade security standards.
 - July 26, 2025. Fixed encryption key rotation bug causing search history decryption failures between server restarts. Implemented graceful handling of invalid encrypted data by returning empty strings instead of throwing errors. Enhanced decryption error handling to prevent API failures when encryption keys change during development.
+- July 26, 2025. Enhanced cascading product lookup system with 6 additional food databases: FoodDB.ca (Canadian Food Database), USDA Food Data Central (Enhanced API), OpenNutrition, Nutritionix, Spoonacular, and API Ninjas. Expanded total database coverage from 14 to 20+ food databases for comprehensive global product lookup. Added complete API integration modules with authentication, data normalization, and AI ingredient analysis for all new databases. Improved fallback system reliability and international product coverage.
 
 ## Bug Fixes Applied (July 24, 2025)
 - Fixed missing expo-status-bar dependency by using native StatusBar from react-native

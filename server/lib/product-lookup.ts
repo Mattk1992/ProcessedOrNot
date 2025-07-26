@@ -13,6 +13,12 @@ import { fetchProductFromNEVO } from "./nevo";
 import { fetchProductFromVoedingscentrum } from "./voedingscentrum";
 import { fetchProductFromFoodDataCentral } from "./fooddata-central";
 import { fetchProductFromKenniscentrum } from "./kenniscentrum";
+import { fetchProductFromFoodDBCA } from "./fooddb-ca";
+import { fetchProductFromUSDAFDC } from "./usda-fdc";
+import { fetchProductFromOpenNutrition } from "./opennutrition";
+import { fetchProductFromNutritionix } from "./nutritionix";
+import { fetchProductFromSpoonacular } from "./spoonacular";
+import { fetchProductFromAPINinjas } from "./api-ninjas";
 import { analyzeIngredients, analyzeGlycemicIndex } from "./openai";
 import { isBarcode, searchProductByText } from "./text-search";
 
@@ -427,7 +433,175 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('Product API lookup failed:', error);
   }
 
-  // 9. UPC Database (fallback)
+  // 9. FoodDB.ca (Canadian Food Database)
+  try {
+    console.log('Trying FoodDB.ca...');
+    const foodDBCAProduct = await fetchProductFromFoodDBCA(barcode);
+    
+    if (foodDBCAProduct) {
+      // Analyze ingredients if available
+      if (foodDBCAProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            foodDBCAProduct.ingredientsText,
+            foodDBCAProduct.productName || "Unknown Product"
+          );
+          foodDBCAProduct.processingScore = analysis.score;
+          foodDBCAProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze FoodDB.ca ingredients:", error);
+          foodDBCAProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in FoodDB.ca');
+      return { product: foodDBCAProduct, source: 'FoodDB.ca' };
+    }
+  } catch (error) {
+    console.error('FoodDB.ca lookup failed:', error);
+  }
+
+  // 10. USDA Food Data Central (Enhanced)
+  try {
+    console.log('Trying USDA Food Data Central (Enhanced)...');
+    const usdaFDCProduct = await fetchProductFromUSDAFDC(barcode);
+    
+    if (usdaFDCProduct) {
+      // Analyze ingredients if available
+      if (usdaFDCProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            usdaFDCProduct.ingredientsText,
+            usdaFDCProduct.productName || "Unknown Product"
+          );
+          usdaFDCProduct.processingScore = analysis.score;
+          usdaFDCProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze USDA FDC ingredients:", error);
+          usdaFDCProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in USDA Food Data Central (Enhanced)');
+      return { product: usdaFDCProduct, source: 'USDA Food Data Central' };
+    }
+  } catch (error) {
+    console.error('USDA Food Data Central (Enhanced) lookup failed:', error);
+  }
+
+  // 11. OpenNutrition
+  try {
+    console.log('Trying OpenNutrition...');
+    const openNutritionProduct = await fetchProductFromOpenNutrition(barcode);
+    
+    if (openNutritionProduct) {
+      // Analyze ingredients if available
+      if (openNutritionProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            openNutritionProduct.ingredientsText,
+            openNutritionProduct.productName || "Unknown Product"
+          );
+          openNutritionProduct.processingScore = analysis.score;
+          openNutritionProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze OpenNutrition ingredients:", error);
+          openNutritionProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in OpenNutrition');
+      return { product: openNutritionProduct, source: 'OpenNutrition' };
+    }
+  } catch (error) {
+    console.error('OpenNutrition lookup failed:', error);
+  }
+
+  // 12. Nutritionix
+  try {
+    console.log('Trying Nutritionix...');
+    const nutritionixProduct = await fetchProductFromNutritionix(barcode);
+    
+    if (nutritionixProduct) {
+      // Analyze ingredients if available
+      if (nutritionixProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            nutritionixProduct.ingredientsText,
+            nutritionixProduct.productName || "Unknown Product"
+          );
+          nutritionixProduct.processingScore = analysis.score;
+          nutritionixProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze Nutritionix ingredients:", error);
+          nutritionixProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in Nutritionix');
+      return { product: nutritionixProduct, source: 'Nutritionix' };
+    }
+  } catch (error) {
+    console.error('Nutritionix lookup failed:', error);
+  }
+
+  // 13. Spoonacular
+  try {
+    console.log('Trying Spoonacular...');
+    const spoonacularProduct = await fetchProductFromSpoonacular(barcode);
+    
+    if (spoonacularProduct) {
+      // Analyze ingredients if available
+      if (spoonacularProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            spoonacularProduct.ingredientsText,
+            spoonacularProduct.productName || "Unknown Product"
+          );
+          spoonacularProduct.processingScore = analysis.score;
+          spoonacularProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze Spoonacular ingredients:", error);
+          spoonacularProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in Spoonacular');
+      return { product: spoonacularProduct, source: 'Spoonacular' };
+    }
+  } catch (error) {
+    console.error('Spoonacular lookup failed:', error);
+  }
+
+  // 14. API Ninjas
+  try {
+    console.log('Trying API Ninjas...');
+    const apiNinjasProduct = await fetchProductFromAPINinjas(barcode);
+    
+    if (apiNinjasProduct) {
+      // Analyze ingredients if available
+      if (apiNinjasProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            apiNinjasProduct.ingredientsText,
+            apiNinjasProduct.productName || "Unknown Product"
+          );
+          apiNinjasProduct.processingScore = analysis.score;
+          apiNinjasProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze API Ninjas ingredients:", error);
+          apiNinjasProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in API Ninjas');
+      return { product: apiNinjasProduct, source: 'API Ninjas' };
+    }
+  } catch (error) {
+    console.error('API Ninjas lookup failed:', error);
+  }
+
+  // 15. UPC Database (fallback)
   try {
     console.log('Trying UPC Database...');
     const upcProduct = await fetchProductFromUPCDatabase(barcode);
@@ -440,7 +614,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('UPC Database lookup failed:', error);
   }
 
-  // 10. All lookups failed
+  // 16. All lookups failed
   console.log('All database lookups failed for barcode:', barcode);
   return { 
     product: null, 
