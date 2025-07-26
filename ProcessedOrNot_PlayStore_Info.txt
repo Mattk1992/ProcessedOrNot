@@ -1,0 +1,109 @@
+# ProcessedOrNot Scanner - Google Play Store Listing
+
+## App Title
+ProcessedOrNot Scanner - AI Food Analysis v2025.07.26 v2025.07.26 v2025.07.26
+
+## Short Description (80 characters max)
+Instantly analyze food processing levels with AI-powered barcode scanning
+
+## Full Description
+
+Discover what's really in your food with ProcessedOrNot Scanner, the revolutionary app that uses artificial intelligence to analyze food processing levels instantly. Make informed, healthier choices with comprehensive nutritional insights at your fingertips.
+
+🔍 **INSTANT FOOD ANALYSIS**
+• Scan any barcode to get immediate processing level scores (0-10 scale)
+• AI-powered ingredient analysis explains why foods are classified as processed
+• Access data from 14+ authoritative food databases worldwide
+• Voice search functionality - just speak the product name
+
+🧠 **AI NUTRITIONIST IN YOUR POCKET**
+• Chat with NutriBot, your personal AI nutrition assistant
+• Get personalized advice based on your dietary preferences
+• Receive educational insights and fun nutritional facts
+• Multi-language support in 7 languages
+
+📱 **ADVANCED SCANNING TECHNOLOGY**
+• Real-time camera barcode scanning with optimized detection
+• Supports 6+ barcode formats including UPC, EAN, and ITF-14
+• Text-based product search when barcodes aren't available
+• Offline capability for previously scanned products
+
+🌟 **COMPREHENSIVE FOOD DATABASE**
+• Integration with OpenFoodFacts, USDA FoodData Central, Health Canada
+• European Food Safety Authority (EFSA) data included
+• Regional databases from Netherlands, Germany, Australia, and more
+• Constantly updated with new products and nutritional information
+
+🎯 **SMART FEATURES**
+• Glycemic index and load calculations
+• Processing level explanations with health implications
+• Search history tracking and analytics
+• Dark/light theme support
+• Tutorial system for first-time users
+
+🔒 **PRIVACY & SECURITY**
+• Enterprise-grade AES-256 encryption for all personal data
+• Secure user accounts with password protection
+• No sharing of personal information with third parties
+• GDPR compliant data handling
+
+**PERFECT FOR:**
+• Health-conscious consumers seeking food transparency
+• People with dietary restrictions or allergies
+• Parents wanting to make informed choices for their families
+• Fitness enthusiasts tracking nutrition goals
+• Anyone curious about food processing levels
+
+**WHY CHOOSE PROCESSEDORNOT SCANNER?**
+
+Unlike other nutrition apps that only show basic calories and nutrients, ProcessedOrNot Scanner focuses on food processing levels - a crucial factor in healthy eating that most apps ignore. Our AI analyzes ingredient lists to determine how processed foods are, helping you understand the difference between whole foods and ultra-processed products.
+
+Our mission is to democratize food transparency, making complex nutritional science accessible to everyone. Whether you're grocery shopping, meal planning, or just curious about a product, our app provides instant, science-based insights that empower better food choices.
+
+**ADVANCED TECHNOLOGY:**
+• OpenAI GPT-4 integration for intelligent ingredient analysis
+• Assembly AI voice transcription for hands-free searching
+• Cross-platform React Native architecture for optimal performance
+• Real-time synchronization across all your devices
+
+**GLOBAL ACCESSIBILITY:**
+Support for English, Spanish, French, German, Chinese, Japanese, and Dutch with automatic language detection based on your device settings.
+
+**CONTINUOUSLY IMPROVING:**
+Our team regularly adds new features, expands database coverage, and improves AI accuracy based on user feedback. Recent additions include voice search, comprehensive encryption, and enhanced mobile optimization.
+
+Download ProcessedOrNot Scanner today and take control of your food choices with the power of artificial intelligence. Your health deserves transparency.
+
+---
+
+**Keywords:** food scanner, nutrition analysis, barcode scanner, AI nutrition, food transparency, processed food, healthy eating, ingredient analysis, nutrition facts, food database
+
+**Category:** Health & Fitness
+**Content Rating:** Everyone
+**In-App Purchases:** None
+**Ads:** None
+
+**Screenshots Descriptions:**
+1. Main scanning interface with camera viewfinder
+2. AI analysis results showing processing score and explanation
+3. NutriBot chat interface providing nutritional advice
+4. Voice search functionality in action
+5. Product search results with detailed nutritional breakdown
+6. User-friendly dark mode interface
+7. Multi-language support demonstration
+
+**What's New (Latest Version):**
+• data encryption system for all user data. security encryption for PII (emails, names, search queries), bcrypt password hashing with 12 salt rounds, encrypted search history storage, hash-based email lookups for uniqueness while maintaining encryption, session security with custom names and strict sameSite policies, environment-based encryption key management, and security documentation. All sensitive user data is now encrypted at rest with secure authentication flows.
+• voice-activated product lookup using voice recognition technology. voice search feature with microphone recording, audio processing, and real-time transcription. Integrated voice search into main product lookup interface next to text input field with automatic submission of voice queries. voice transcription app functionality with error handling and Assembly AI integration.
+• account deletion request functionality to Settings page with detailed warning dialogs, confirmation requirements, and clear information about data removal process. Users can now request account deletion with appropriate safeguards and user experience considerations.
+• LinkedIn company profile documentation with professional descriptions of features, mission, and unique value propositions. automatic LinkedIn profile updater script that monitors replit.md changes and updates profile content when new features are added. auto-watcher for real-time profile maintenance.
+
+**Developer:** ProcessedOrNot Team
+**Contact:** [App Support Email]
+**Privacy Policy:** [Privacy Policy URL]
+**Terms of Service:** [Terms of Service URL]
+
+---
+
+*Last Updated: July 26, 2025*
+*This listing is automatically maintained to reflect our latest features and capabilities.*
