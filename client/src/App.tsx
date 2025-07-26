@@ -10,8 +10,7 @@ import Home from "@/pages/home";
 import About from "@/pages/about";
 import Features from "@/pages/features";
 import Help from "@/pages/help";
-import Login from "@/pages/login";
-import Register from "@/pages/register";
+import Auth from "@/pages/auth";
 import Settings from "@/pages/settings";
 import Admin from "@/pages/admin";
 import AdminSearchHistory from "@/pages/admin-search-history";
@@ -31,8 +30,9 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/features" component={Features} />
       <Route path="/help" component={Help} />
-      <Route path="/login" component={Login} />
-      <Route path="/register" component={Register} />
+      <Route path="/login" component={Auth} />
+      <Route path="/register" component={Auth} />
+      <Route path="/auth" component={Auth} />
       <Route path="/settings" component={Settings} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin-search-history" component={AdminSearchHistory} />
