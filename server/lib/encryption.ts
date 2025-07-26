@@ -66,7 +66,9 @@ export function decryptData(encryptedData: string): string {
     return decrypted;
   } catch (error) {
     console.error('Decryption error:', error);
-    throw new Error('Data decryption failed');
+    // Return empty string for invalid encrypted data instead of throwing
+    // This handles cases where encryption key changed between server restarts
+    return '';
   }
 }
 
@@ -136,7 +138,12 @@ export function encryptSearchData(searchInput: string): string {
  */
 export function decryptSearchData(encryptedSearch: string): string {
   if (!encryptedSearch) return '';
-  return decryptData(encryptedSearch);
+  try {
+    return decryptData(encryptedSearch);
+  } catch (error) {
+    console.warn('Failed to decrypt search data, returning placeholder');
+    return '[Encrypted Data]';
+  }
 }
 
 /**

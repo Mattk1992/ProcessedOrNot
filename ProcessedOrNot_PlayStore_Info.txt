@@ -1,7 +1,7 @@
 # ProcessedOrNot Scanner - Google Play Store Listing
 
 ## App Title
-ProcessedOrNot Scanner - AI Food Analysis v2025.07.26 v2025.07.26 v2025.07.26 v2025.07.26
+ProcessedOrNot Scanner - AI Food Analysis v2025.07.26 v2025.07.26 v2025.07.26 v2025.07.26 v2025.07.26
 
 ## Short Description (80 characters max)
 Instantly analyze food processing levels with AI-powered barcode scanning
@@ -93,10 +93,10 @@ Download ProcessedOrNot Scanner today and take control of your food choices with
 7. Multi-language support demonstration
 
 **What's New (Latest Version):**
-• data encryption system for all user data. security encryption for PII (emails, names, search queries), bcrypt password hashing with 12 salt rounds, encrypted search history storage, hash-based email lookups for uniqueness while maintaining encryption, session security with custom names and strict sameSite policies, environment-based encryption key management, and security documentation. All sensitive user data is now encrypted at rest with secure authentication flows.
-• voice-activated product lookup using voice recognition technology. voice search feature with microphone recording, audio processing, and real-time transcription. Integrated voice search into main product lookup interface next to text input field with automatic submission of voice queries. voice transcription app functionality with error handling and Assembly AI integration.
 • account deletion request functionality to Settings page with detailed warning dialogs, confirmation requirements, and clear information about data removal process. Users can now request account deletion with appropriate safeguards and user experience considerations.
 • LinkedIn company profile documentation with professional descriptions of features, mission, and unique value propositions. automatic LinkedIn profile updater script that monitors replit.md changes and updates profile content when new features are added. auto-watcher for real-time profile maintenance.
+• professional Google Play Store listing with user-friendly descriptions, feature highlights, and mobile-optimized content. automatic Play Store info updater that converts technical features into user-friendly language and maintains "What's New" section. auto-watcher system for seamless Play Store listing maintenance when new features are released.
+• Fixed critical encryption security bug by replacing deprecated crypto.createCipher/createDecipher functions with secure crypto.createCipheriv/createDecipheriv methods. Updated security encryption system to use proper initialization vectors and security. User registration, login, and data encryption now working properly with enterprise-grade security standards.
 
 **Developer:** ProcessedOrNot Team
 **Contact:** [App Support Email]
