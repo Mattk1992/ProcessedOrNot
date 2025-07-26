@@ -39,14 +39,16 @@ declare module 'express-session' {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configure session middleware
+  // Configure session middleware with enhanced security
   app.use(session({
-    secret: process.env.SESSION_SECRET || 'default-secret-change-in-production',
+    secret: process.env.SESSION_SECRET || 'secure-session-key-change-in-production-2024',
     resave: false,
     saveUninitialized: false,
+    name: 'sessionId', // Change default session name for security
     cookie: {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
+      sameSite: 'strict',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     },
   }));
@@ -150,13 +152,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User logout endpoint
+  // User logout endpoint with secure cleanup
   app.post("/api/auth/logout", (req, res) => {
     req.session.destroy((err) => {
       if (err) {
         return res.status(500).json({ message: "Logout failed" });
       }
+      // Clear both default and custom session cookies
       res.clearCookie('connect.sid');
+      res.clearCookie('sessionId');
       res.json({ message: "Logout successful" });
     });
   });

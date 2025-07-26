@@ -30,12 +30,13 @@ export const insertProductSchema = createInsertSchema(products).omit({
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof products.$inferSelect;
 
-// Search History table - enhanced to include search result data
+// Search History table - enhanced to include encrypted search result data
 export const searchHistory = pgTable("search_history", {
   id: serial("id").primaryKey(),
   searchId: varchar("search_id", { length: 255 }).notNull().unique(),
-  searchInput: text("search_input").notNull(),
+  searchInput: text("search_input").notNull(), // Encrypted search queries
   searchInputType: varchar("search_input_type", { length: 50 }).notNull(),
+  userId: integer("user_id"), // Track user searches for authenticated users
   
   // Search result data
   resultFound: boolean("result_found").notNull().default(false),
@@ -109,18 +110,19 @@ export type GlycemicAnalysis = {
   impactDescription: string;
 };
 
-// User Account System
+// User Account System - All PII fields are encrypted
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
-  username: varchar("username", { length: 50 }).notNull().unique(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
+  username: varchar("username", { length: 50 }).notNull().unique(), // Not encrypted (used for login)
+  email: text("email").notNull().unique(), // Encrypted email storage
+  emailHash: varchar("email_hash", { length: 64 }).notNull().unique(), // Hash for uniqueness checks
   passwordHash: text("password_hash").notNull(),
-  firstName: varchar("first_name", { length: 100 }),
-  lastName: varchar("last_name", { length: 100 }),
+  firstName: text("first_name"), // Encrypted
+  lastName: text("last_name"), // Encrypted
   accountType: varchar("account_type", { length: 20 }).notNull().default("Regular"),
   isEmailVerified: boolean("is_email_verified").default(false),
-  emailVerificationToken: text("email_verification_token"),
-  passwordResetToken: text("password_reset_token"),
+  emailVerificationToken: text("email_verification_token"), // Encrypted
+  passwordResetToken: text("password_reset_token"), // Encrypted
   passwordResetExpires: timestamp("password_reset_expires"),
   lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),

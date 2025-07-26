@@ -29,6 +29,7 @@ import {
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
 import { hashPassword, verifyPassword, generateEmailVerificationToken, generatePasswordResetToken, sanitizeUser, generateSearchId } from "./lib/auth";
+import { encryptPII, decryptPII, encryptEmail, decryptEmail, hashForSearch, encryptSearchData, decryptSearchData } from "./lib/encryption";
 
 export interface IStorage {
   // User authentication methods
@@ -132,40 +133,73 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Helper method to decrypt user data for display
+  private decryptUserData(user: any): User {
+    if (!user) return user;
+    
+    try {
+      return {
+        ...user,
+        email: user.email ? decryptEmail(user.email) : user.email,
+        firstName: user.firstName ? decryptPII(user.firstName) : user.firstName,
+        lastName: user.lastName ? decryptPII(user.lastName) : user.lastName,
+      };
+    } catch (error) {
+      console.error('Error decrypting user data:', error);
+      // Return user with original data if decryption fails
+      return user;
+    }
+  }
+
   // User authentication methods
   async getUserById(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user || undefined;
+    return user ? this.decryptUserData(user) : undefined;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.username, username));
-    return user || undefined;
+    return user ? this.decryptUserData(user) : undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user || undefined;
+    const emailHash = hashForSearch(email);
+    const [user] = await db.select().from(users).where(eq(users.emailHash, emailHash));
+    return user ? this.decryptUserData(user) : undefined;
   }
 
   async getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users)
-      .where(or(eq(users.username, usernameOrEmail), eq(users.email, usernameOrEmail)));
-    return user || undefined;
+    // Try by username first
+    let [user] = await db.select().from(users).where(eq(users.username, usernameOrEmail));
+    
+    // If not found, try by email hash
+    if (!user && usernameOrEmail.includes('@')) {
+      const emailHash = hashForSearch(usernameOrEmail);
+      [user] = await db.select().from(users).where(eq(users.emailHash, emailHash));
+    }
+    
+    return user ? this.decryptUserData(user) : undefined;
   }
 
   async createUser(registerUser: RegisterUser): Promise<User> {
     const hashedPassword = await hashPassword(registerUser.password);
     const emailVerificationToken = generateEmailVerificationToken();
     
+    // Encrypt sensitive user data
+    const encryptedEmail = encryptEmail(registerUser.email);
+    const emailHash = hashForSearch(registerUser.email);
+    const encryptedFirstName = encryptPII(registerUser.firstName);
+    const encryptedLastName = encryptPII(registerUser.lastName);
+    
     const [user] = await db
       .insert(users)
       .values({
         username: registerUser.username,
-        email: registerUser.email,
+        email: encryptedEmail,
+        emailHash: emailHash,
         passwordHash: hashedPassword,
-        firstName: registerUser.firstName,
-        lastName: registerUser.lastName,
+        firstName: encryptedFirstName,
+        lastName: encryptedLastName,
         emailVerificationToken,
         isEmailVerified: false,
         createdAt: new Date(),
@@ -173,7 +207,7 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     
-    return user;
+    return this.decryptUserData(user);
   }
 
   async updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined> {
@@ -439,20 +473,34 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSearchHistoryByInput(searchInput: string): Promise<SearchHistory | undefined> {
+    const encryptedSearchInput = encryptSearchData(searchInput);
     const [searchRecord] = await db
       .select()
       .from(searchHistory)
-      .where(eq(searchHistory.searchInput, searchInput))
+      .where(eq(searchHistory.searchInput, encryptedSearchInput))
       .orderBy(desc(searchHistory.createdAt))
       .limit(1);
-    return searchRecord || undefined;
+    
+    if (!searchRecord) return undefined;
+    
+    // Decrypt for return
+    return {
+      ...searchRecord,
+      searchInput: decryptSearchData(searchRecord.searchInput)
+    };
   }
 
   async getAllSearchHistory(): Promise<SearchHistory[]> {
-    return await db
+    const records = await db
       .select()
       .from(searchHistory)
       .orderBy(desc(searchHistory.createdAt));
+    
+    // Decrypt search inputs for display
+    return records.map(record => ({
+      ...record,
+      searchInput: record.searchInput ? decryptSearchData(record.searchInput) : record.searchInput
+    }));
   }
 
   async getRecentSearchHistory(limit: number = 50): Promise<SearchHistory[]> {
@@ -468,7 +516,8 @@ export class DatabaseStorage implements IStorage {
     searchInputType: string, 
     product?: Product | null, 
     error?: string,
-    lookupSource?: string
+    lookupSource?: string,
+    userId?: number
   ): Promise<SearchHistory> {
     // Check for duplicate search input first
     const existingSearch = await this.getSearchHistoryByInput(searchInput);
@@ -480,11 +529,15 @@ export class DatabaseStorage implements IStorage {
     // Generate unique search ID
     const searchId = generateSearchId();
 
+    // Encrypt sensitive search data
+    const encryptedSearchInput = encryptSearchData(searchInput);
+    
     // Prepare search history data
     const searchHistoryData: InsertSearchHistory = {
       searchId,
-      searchInput,
+      searchInput: encryptedSearchInput,
       searchInputType,
+      userId: userId || null,
       resultFound: !!product,
       productBarcode: product?.barcode || null,
       productName: product?.productName || null,
