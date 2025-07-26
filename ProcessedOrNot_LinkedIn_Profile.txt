@@ -1,0 +1,85 @@
+# ProcessedOrNot Scanner - LinkedIn Company Profile
+
+## Company Overview
+
+ProcessedOrNot Scanner is a cutting-edge technology company revolutionizing how consumers understand food processing levels through AI-powered analysis and advanced scanning capabilities. We combine artificial intelligence, computer vision, and comprehensive nutritional databases to provide instant, accurate assessments of food products' processing levels and nutritional value.
+
+## Our Mission
+
+To empower consumers with transparent, science-based insights about their food choices, helping them make informed decisions that support healthier lifestyles. We believe everyone deserves access to clear, actionable information about what they eat.
+
+## What Makes Us Unique
+
+**AI-Powered Analysis**: Our proprietary system uses OpenAI's GPT-4o to analyze ingredient lists and provide processing scores from 0-10, along with detailed explanations of why foods are classified at specific processing levels.
+
+**Multi-Database Integration**: We aggregate data from 14+ authoritative food databases including OpenFoodFacts, USDA FoodData Central, Health Canada, European Food Safety Authority, and regional databases across multiple countries.
+
+**Advanced Scanning Technology**: Our platform supports 6+ barcode formats with real-time camera scanning using ZXing library, plus text-based product search capabilities for comprehensive product discovery.
+
+**Voice-Activated Search**: Industry-leading voice transcription powered by Assembly AI enables hands-free product lookup, making our platform accessible and convenient for all users.
+
+**Global Accessibility**: Built-in internationalization supporting 7 languages (English, Spanish, French, German, Chinese, Japanese, Dutch) with dynamic language detection.
+
+**Comprehensive Security**: Enterprise-grade AES-256-CBC encryption for all user data, bcrypt password hashing, and secure session management protecting user privacy.
+
+## Core Features & Capabilities
+
+### Intelligent Product Analysis
+- Real-time barcode scanning with camera optimization for short-range detection
+- Text-based product search with AI-enhanced keyword optimization
+- Processing level scoring (0-10 scale) with detailed explanations
+- Glycemic index and load calculations
+- Nutritional insights and health recommendations
+
+### Interactive AI Assistant
+- NutriBot: AI-powered nutritionist chatbot for personalized advice
+- Multi-language support for global accessibility
+- Context-aware responses based on user's dietary preferences
+- Educational content and fun nutritional facts
+
+### Advanced User Experience
+- Cross-platform compatibility (Web application + React Native mobile apps)
+- Dark/light theme support with system preference detection
+- Tutorial overlay system for first-time users
+- Smart analytics and search history tracking
+- Comprehensive admin panel for system management
+
+### Enterprise-Ready Infrastructure
+- PostgreSQL database with Drizzle ORM for reliable data management
+- RESTful API architecture supporting mobile and web clients
+- Scalable deployment on Replit platform with autoscale capabilities
+- Real-time notifications and user management systems
+
+## Recent Platform Enhancements
+
+- Implemented Media storage system with dedicated database table for future image/video uploads. Added media fields to products table (additional_images, video_url, media_gallery), complete storage interface with CRUD operations, and support for image/video metadata, tags, and access controls.
+- Implemented comprehensive notifications system with database table, API endpoints, and UI components. Added bell icon notification button in header visible only to authenticated users, with real-time unread count badges, notification management (read/unread/archive/delete), and automatic 30-second refresh intervals. Created complete notification storage interface with user-specific filtering and notification type support (info, warning, success, error).
+- Implemented comprehensive blog system with database table, API endpoints, and complete UI interface. Added main blog page displaying all posts with search and tag filtering, new blog post creation page with form validation and preview functionality, individual blog post view page with reading time and view count tracking. Created complete blog storage interface with CRUD operations, automatic slug generation, excerpt creation, and view count tracking. Added blog navigation to header menu and sample blog posts for demonstration.
+
+## Technology Stack
+
+**Frontend**: React 18 with TypeScript, Tailwind CSS, Shadcn/ui components
+**Backend**: Express.js with TypeScript, PostgreSQL database
+**AI Integration**: OpenAI GPT-4o, Assembly AI for voice transcription
+**Mobile**: React Native with Expo for cross-platform mobile applications
+**Infrastructure**: Node.js 20, Vite build system, modern development workflow
+
+## Market Impact & Vision
+
+ProcessedOrNot Scanner addresses the growing consumer demand for food transparency in an era where processed foods dominate grocery shelves. Our technology bridges the gap between complex nutritional science and everyday food choices, making healthy eating accessible to everyone regardless of their nutritional expertise.
+
+We're building the future of food transparency, where every consumer can instantly understand what they're eating and make choices aligned with their health goals.
+
+## Contact & Social Media
+
+Website: [ProcessedOrNot Scanner]
+Industries: Health Technology, Food Tech, AI/Machine Learning, Consumer Health
+Company Size: Startup
+Founded: 2024
+Headquarters: Global (Remote-First)
+Specialties: Food Analysis, AI Technology, Nutritional Science, Mobile Applications, Health Tech
+
+---
+
+*Last Updated: July 26, 2025*
+*This profile is automatically maintained to reflect our latest features and capabilities.*
