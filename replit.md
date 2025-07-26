@@ -195,6 +195,7 @@ Changelog:
 - July 26, 2025. Added account deletion request functionality to Settings page with detailed warning dialogs, confirmation requirements, and clear information about data removal process. Users can now request account deletion with appropriate safeguards and user experience considerations.
 - July 26, 2025. Created comprehensive LinkedIn company profile documentation with professional descriptions of features, mission, and unique value propositions. Implemented automatic LinkedIn profile updater script that monitors replit.md changes and updates profile content when new features are added. Added auto-watcher for real-time profile maintenance.
 - July 26, 2025. Created professional Google Play Store listing with user-friendly descriptions, feature highlights, and mobile-optimized content. Implemented automatic Play Store info updater that converts technical features into user-friendly language and maintains "What's New" section. Added auto-watcher system for seamless Play Store listing maintenance when new features are released.
+- July 26, 2025. Fixed critical encryption security bug by replacing deprecated crypto.createCipher/createDecipher functions with secure crypto.createCipheriv/createDecipheriv methods. Updated AES-256-CBC encryption system to use proper initialization vectors and enhanced security. User registration, login, and data encryption now working properly with enterprise-grade security standards.
 
 ## Bug Fixes Applied (July 24, 2025)
 - Fixed missing expo-status-bar dependency by using native StatusBar from react-native
