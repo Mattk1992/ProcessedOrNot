@@ -22,16 +22,16 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
 
   // Menu items for non-authenticated users
   const guestMenuItems = [
+    // Sign in
     {
       label: 'Sign In',
       icon: <LogIn className="w-4 h-4" />,
       action: () => setLocation('/login')
     },
-    {
-      label: 'Create Account',
-      icon: <UserPlus className="w-4 h-4" />,
-      action: () => setLocation('/register')
-    },
+    { type: 'divider' },
+    
+    // Information & Support
+    { type: 'header', label: 'Information & Support' },
     {
       label: t('dropdown.about') || 'About us',
       icon: <Info className="w-4 h-4" />,
@@ -43,24 +43,32 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       action: () => setLocation('/features')
     },
     {
+      label: t('dropdown.help') || 'Help',
+      icon: <HelpCircle className="w-4 h-4" />,
+      action: () => setLocation('/help')
+    },
+    { type: 'divider' },
+    
+    // Content & Community
+    { type: 'header', label: 'Content & Community' },
+    {
       label: 'Blog',
       icon: <BookOpen className="w-4 h-4" />,
       action: () => setLocation('/blog')
     },
     {
-      label: t('dropdown.help') || 'Help',
-      icon: <HelpCircle className="w-4 h-4" />,
-      action: () => setLocation('/help')
+      label: 'Social Media',
+      icon: <Share2 className="w-4 h-4" />,
+      action: () => setLocation('/social-media')
     },
+    { type: 'divider' },
+    
+    // Legal & Contact
+    { type: 'header', label: 'Legal & Contact' },
     {
       label: 'Contact',
       icon: <Mail className="w-4 h-4" />,
       action: () => setLocation('/contact')
-    },
-    {
-      label: 'Social Media',
-      icon: <Share2 className="w-4 h-4" />,
-      action: () => setLocation('/social-media')
     },
     {
       label: 'Privacy Policy',
@@ -72,28 +80,38 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       icon: <FileText className="w-4 h-4" />,
       action: () => setLocation('/terms')
     },
-    ...(onStartTutorial ? [{
-      label: 'Take Tour',
-      icon: <PlayCircle className="w-4 h-4" />,
-      action: () => {
-        onStartTutorial();
-        setIsOpen(false);
+    ...(onStartTutorial ? [
+      { type: 'divider' },
+      {
+        label: 'Take Tour',
+        icon: <PlayCircle className="w-4 h-4" />,
+        action: () => {
+          onStartTutorial();
+          setIsOpen(false);
+        }
       }
-    }] : [])
+    ] : [])
   ];
 
   // Menu items for authenticated users
   const userMenuItems = [
+    // Admin Panel (if admin)
     ...(user?.accountType === 'Admin' ? [{
       label: 'Admin Panel',
       icon: <Shield className="w-4 h-4" />,
       action: () => setLocation('/admin')
-    }] : []),
+    }, { type: 'divider' }] : []),
+    
+    // User Settings
     {
       label: t('dropdown.settings') || 'Settings',
       icon: <Settings className="w-4 h-4" />,
       action: () => setLocation('/settings')
     },
+    { type: 'divider' },
+    
+    // Information & Support
+    { type: 'header', label: 'Information & Support' },
     {
       label: t('dropdown.about') || 'About us',
       icon: <Info className="w-4 h-4" />,
@@ -105,24 +123,32 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       action: () => setLocation('/features')
     },
     {
+      label: t('dropdown.help') || 'Help',
+      icon: <HelpCircle className="w-4 h-4" />,
+      action: () => setLocation('/help')
+    },
+    { type: 'divider' },
+    
+    // Content & Community
+    { type: 'header', label: 'Content & Community' },
+    {
       label: 'Blog',
       icon: <BookOpen className="w-4 h-4" />,
       action: () => setLocation('/blog')
     },
     {
-      label: t('dropdown.help') || 'Help',
-      icon: <HelpCircle className="w-4 h-4" />,
-      action: () => setLocation('/help')
+      label: 'Social Media',
+      icon: <Share2 className="w-4 h-4" />,
+      action: () => setLocation('/social-media')
     },
+    { type: 'divider' },
+    
+    // Legal & Contact
+    { type: 'header', label: 'Legal & Contact' },
     {
       label: 'Contact',
       icon: <Mail className="w-4 h-4" />,
       action: () => setLocation('/contact')
-    },
-    {
-      label: 'Social Media',
-      icon: <Share2 className="w-4 h-4" />,
-      action: () => setLocation('/social-media')
     },
     {
       label: 'Privacy Policy',
@@ -134,14 +160,18 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       icon: <FileText className="w-4 h-4" />,
       action: () => setLocation('/terms')
     },
-    ...(onStartTutorial ? [{
-      label: 'Take Tour',
-      icon: <PlayCircle className="w-4 h-4" />,
-      action: () => {
-        onStartTutorial();
-        setIsOpen(false);
+    ...(onStartTutorial ? [
+      { type: 'divider' },
+      {
+        label: 'Take Tour',
+        icon: <PlayCircle className="w-4 h-4" />,
+        action: () => {
+          onStartTutorial();
+          setIsOpen(false);
+        }
       }
-    }] : []),
+    ] : []),
+    { type: 'divider' },
     {
       label: 'Sign Out',
       icon: <LogOut className="w-4 h-4" />,
@@ -226,42 +256,69 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
               {/* Divider for mobile */}
               <div className="sm:hidden border-t border-gray-200 dark:border-gray-700 mx-6 my-2"></div>
               
-              {menuItems.map((item, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    item.action();
-                    setIsOpen(false);
-                  }}
-                  className="group flex items-center w-full px-6 py-3 text-left transition-all duration-200 hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:scale-[1.02] relative overflow-hidden dropdown-item-hover-effect dropdown-item-stagger"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  {/* Hover indicator */}
-                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-accent scale-y-0 group-hover:scale-y-100 transition-transform duration-200 origin-center"></div>
-                  
-                  <div className="flex items-center space-x-4 relative z-10">
-                    <div className={`p-2 rounded-lg transition-all duration-200 ${
-                      item.label === 'Sign Out' ? 
-                        'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 group-hover:bg-red-100 dark:group-hover:bg-red-900/30' :
-                        'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 group-hover:bg-primary/20 group-hover:text-primary'
-                    }`}>
-                      {item.icon}
-                    </div>
-                    <div>
-                      <span className={`text-sm font-medium transition-colors duration-200 ${
-                        item.label === 'Sign Out' ? 
-                          'text-red-700 dark:text-red-300 group-hover:text-red-800 dark:group-hover:text-red-200' :
-                          'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100'
-                      }`}>
+              {menuItems.map((item: any, index) => {
+                // Handle dividers
+                if (item.type === 'divider') {
+                  return (
+                    <div 
+                      key={index}
+                      className="border-t border-gray-200 dark:border-gray-700 mx-6 my-2"
+                    />
+                  );
+                }
+                
+                // Handle section headers
+                if (item.type === 'header') {
+                  return (
+                    <div 
+                      key={index}
+                      className="px-6 py-2"
+                    >
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         {item.label}
                       </span>
                     </div>
-                  </div>
-                  
-                  {/* Shimmer effect on hover */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-300"></div>
-                </button>
-              ))}
+                  );
+                }
+                
+                // Handle regular menu items
+                return (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      item.action();
+                      setIsOpen(false);
+                    }}
+                    className="group flex items-center w-full px-6 py-3 text-left transition-all duration-200 hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:scale-[1.02] relative overflow-hidden dropdown-item-hover-effect dropdown-item-stagger"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
+                    {/* Hover indicator */}
+                    <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-accent scale-y-0 group-hover:scale-y-100 transition-transform duration-200 origin-center"></div>
+                    
+                    <div className="flex items-center space-x-4 relative z-10">
+                      <div className={`p-2 rounded-lg transition-all duration-200 ${
+                        item.label === 'Sign Out' ? 
+                          'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 group-hover:bg-red-100 dark:group-hover:bg-red-900/30' :
+                          'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 group-hover:bg-primary/20 group-hover:text-primary'
+                      }`}>
+                        {item.icon}
+                      </div>
+                      <div>
+                        <span className={`text-sm font-medium transition-colors duration-200 ${
+                          item.label === 'Sign Out' ? 
+                            'text-red-700 dark:text-red-300 group-hover:text-red-800 dark:group-hover:text-red-200' :
+                            'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100'
+                        }`}>
+                          {item.label}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Shimmer effect on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-0 group-hover:opacity-100 group-hover:animate-pulse transition-opacity duration-300"></div>
+                  </button>
+                );
+              })}
             </div>
             
             {/* Enhanced Footer */}
