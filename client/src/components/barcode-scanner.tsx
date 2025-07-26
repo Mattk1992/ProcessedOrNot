@@ -9,6 +9,7 @@ import { Search, Loader2, Camera, X, RotateCcw, ZoomIn, ZoomOut } from "lucide-r
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SearchFilter from "./search-filter";
+import { VoiceSearchButton } from "./voice-search-button";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
@@ -821,24 +822,39 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           {/* Manual Input Form */}
           {!isCameraActive && (
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-              <div className="relative group">
-                <Input
-                  type="text"
-                  value={barcode}
-                  onChange={(e) => setBarcode(e.target.value)}
-                  placeholder={t('scanner.input.placeholder')}
-                  data-tutorial="manual-input"
-                  className="w-full px-4 sm:px-5 py-3 sm:py-4 text-base sm:text-lg font-mono tracking-wider pr-12 sm:pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30 mobile-touch-friendly"
-                  disabled={isLoading}
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-4">
-                  <div className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 16h4.01M5 12V7a1 1 0 011-1h4m-4 6v5a1 1 0 001 1h4m6-6V7a1 1 0 00-1-1h-4m4 6v5a1 1 0 01-1 1h-4"></path>
-                    </svg>
+              <div className="flex gap-2">
+                <div className="relative group flex-1">
+                  <Input
+                    type="text"
+                    value={barcode}
+                    onChange={(e) => setBarcode(e.target.value)}
+                    placeholder={t('scanner.input.placeholder')}
+                    data-tutorial="manual-input"
+                    className="w-full px-4 sm:px-5 py-3 sm:py-4 text-base sm:text-lg font-mono tracking-wider pr-12 sm:pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30 mobile-touch-friendly"
+                    disabled={isLoading}
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+                    <div className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors">
+                      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 16h4.01M5 12V7a1 1 0 011-1h4m-4 6v5a1 1 0 001 1h4m6-6V7a1 1 0 00-1-1h-4m4 6v5a1 1 0 01-1 1h-4"></path>
+                      </svg>
+                    </div>
                   </div>
                 </div>
-
+                
+                {/* Voice Search Button */}
+                <VoiceSearchButton
+                  onVoiceResult={(transcript) => {
+                    setBarcode(transcript);
+                    // Auto-submit if we get a voice result
+                    setTimeout(() => {
+                      if (transcript.trim()) {
+                        onScan(transcript.trim(), isTextSearch ? filters : undefined);
+                      }
+                    }, 100);
+                  }}
+                  disabled={isLoading}
+                />
               </div>
               
               <Button 

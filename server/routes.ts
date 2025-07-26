@@ -1,6 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import multer from "multer";
 import { storage } from "./storage";
+import { transcribeAudio, isVoiceTranscriptionAvailable } from "./lib/voice-transcription";
 import { smartProductLookup, cascadingProductLookup } from "./lib/product-lookup";
 import { analyzeIngredients, analyzeGlycemicIndex } from "./lib/openai";
 import { getNutriBotResponse, generateProductNutritionInsight, generateFunFacts, generateNutritionSpotlightInsights } from "./lib/nutribot";
@@ -52,6 +54,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     },
   }));
+
+  // Configure multer for voice file uploads
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 10 * 1024 * 1024, // 10MB limit
+    },
+    fileFilter: (req, file, cb) => {
+      // Accept audio files
+      if (file.mimetype.startsWith('audio/')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only audio files are allowed'));
+      }
+    },
+  });
 
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
@@ -1696,6 +1714,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error deleting user setting:", error);
       res.status(500).json({ message: "Failed to delete user setting" });
     }
+  });
+
+  // Voice transcription endpoint
+  app.post("/api/voice/transcribe", upload.single('audio'), async (req, res) => {
+    try {
+      if (!isVoiceTranscriptionAvailable()) {
+        return res.status(503).json({ 
+          message: "Voice transcription service is not available",
+          error: "ASSEMBLYAI_API_KEY not configured"
+        });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "No audio file provided" });
+      }
+
+      // Transcribe the audio using Assembly AI
+      const transcript = await transcribeAudio(req.file.buffer);
+      
+      res.json({ 
+        transcript,
+        success: true,
+        message: "Audio transcribed successfully"
+      });
+
+    } catch (error) {
+      console.error("Voice transcription error:", error);
+      res.status(500).json({ 
+        message: "Failed to transcribe audio",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Voice availability check endpoint
+  app.get("/api/voice/status", (req, res) => {
+    res.json({
+      available: isVoiceTranscriptionAvailable(),
+      message: isVoiceTranscriptionAvailable() 
+        ? "Voice transcription is available"
+        : "Voice transcription requires ASSEMBLYAI_API_KEY configuration"
+    });
   });
 
   const httpServer = createServer(app);

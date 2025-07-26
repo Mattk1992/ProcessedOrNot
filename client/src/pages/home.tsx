@@ -7,7 +7,7 @@ import LanguageSwitcher from "@/components/language-switcher";
 import HeaderDropdown from "@/components/header-dropdown";
 import NutriBotChat from "@/components/nutribot-chat";
 import TutorialOverlay from "@/components/tutorial-overlay";
-
+import { VoiceSearchButton } from "@/components/voice-search-button";
 
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";

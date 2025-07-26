@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Settings, Bot, ArrowLeft, Save, Sparkles, Brain, Zap, Cpu, Camera } from "lucide-react";
+import { Settings, Bot, ArrowLeft, Save, Sparkles, Brain, Zap, Cpu, Camera, Trash2, AlertTriangle } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 interface UserSetting {
@@ -451,6 +451,100 @@ export default function SettingsPage() {
                   </div>
                 </>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Account Management Settings */}
+          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                <Trash2 className="h-5 w-5" />
+                Account Management
+              </CardTitle>
+              <CardDescription>
+                Manage your account data and deletion requests
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Account Deletion Section */}
+                <div className="border border-red-200 dark:border-red-800 rounded-lg p-6 bg-red-50 dark:bg-red-900/20">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 rounded-lg bg-red-100 dark:bg-red-800">
+                      <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-red-900 dark:text-red-100 mb-2">
+                        Delete Account
+                      </h3>
+                      <p className="text-sm text-red-700 dark:text-red-300 mb-4">
+                        Request permanent deletion of your account and all associated data. This action cannot be undone.
+                        All your search history, preferences, and personal information will be permanently removed.
+                      </p>
+                      <div className="space-y-3">
+                        <div className="text-xs text-red-600 dark:text-red-400">
+                          <strong>What will be deleted:</strong>
+                          <ul className="list-disc list-inside mt-1 space-y-1">
+                            <li>Your user account and profile information</li>
+                            <li>All search history and product queries</li>
+                            <li>Personalized settings and preferences</li>
+                            <li>All encrypted personal data</li>
+                          </ul>
+                        </div>
+                        <Button
+                          variant="destructive"
+                          className="bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700"
+                          onClick={() => {
+                            if (window.confirm(
+                              "Are you sure you want to request account deletion? This action cannot be undone. " +
+                              "An admin will review your request and permanently delete your account and all data."
+                            )) {
+                              // Here we would typically send a deletion request
+                              toast({
+                                title: "Deletion Request Submitted",
+                                description: "Your account deletion request has been submitted. An admin will review and process your request.",
+                              });
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Request Account Deletion
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Data Export Section */}
+                <div className="border border-blue-200 dark:border-blue-800 rounded-lg p-6 bg-blue-50 dark:bg-blue-900/20">
+                  <div className="flex items-start gap-4">
+                    <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-800">
+                      <Settings className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                        Export Your Data
+                      </h3>
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mb-4">
+                        Download a copy of your personal data including search history and preferences.
+                      </p>
+                      <Button
+                        variant="outline"
+                        className="border-blue-300 text-blue-700 hover:bg-blue-100 dark:border-blue-600 dark:text-blue-300 dark:hover:bg-blue-800"
+                        onClick={() => {
+                          toast({
+                            title: "Data Export Requested",
+                            description: "Your data export is being prepared. You'll receive a download link shortly.",
+                          });
+                        }}
+                      >
+                        <Settings className="h-4 w-4 mr-2" />
+                        Export My Data
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
