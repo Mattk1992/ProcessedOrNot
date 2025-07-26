@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen } from 'lucide-react';
+import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen, Mail, FileText, Share2, Lock } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
@@ -52,6 +52,26 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       icon: <HelpCircle className="w-4 h-4" />,
       action: () => setLocation('/help')
     },
+    {
+      label: 'Contact',
+      icon: <Mail className="w-4 h-4" />,
+      action: () => setLocation('/contact')
+    },
+    {
+      label: 'Social Media',
+      icon: <Share2 className="w-4 h-4" />,
+      action: () => setLocation('/social-media')
+    },
+    {
+      label: 'Privacy Policy',
+      icon: <Lock className="w-4 h-4" />,
+      action: () => setLocation('/privacy')
+    },
+    {
+      label: 'Terms of Service',
+      icon: <FileText className="w-4 h-4" />,
+      action: () => setLocation('/terms')
+    },
     ...(onStartTutorial ? [{
       label: 'Take Tour',
       icon: <PlayCircle className="w-4 h-4" />,
@@ -93,6 +113,26 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       label: t('dropdown.help') || 'Help',
       icon: <HelpCircle className="w-4 h-4" />,
       action: () => setLocation('/help')
+    },
+    {
+      label: 'Contact',
+      icon: <Mail className="w-4 h-4" />,
+      action: () => setLocation('/contact')
+    },
+    {
+      label: 'Social Media',
+      icon: <Share2 className="w-4 h-4" />,
+      action: () => setLocation('/social-media')
+    },
+    {
+      label: 'Privacy Policy',
+      icon: <Lock className="w-4 h-4" />,
+      action: () => setLocation('/privacy')
+    },
+    {
+      label: 'Terms of Service',
+      icon: <FileText className="w-4 h-4" />,
+      action: () => setLocation('/terms')
     },
     ...(onStartTutorial ? [{
       label: 'Take Tour',

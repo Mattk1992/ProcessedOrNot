@@ -18,6 +18,10 @@ import AdminSearchHistory from "@/pages/admin-search-history";
 import Blog from "@/pages/blog";
 import BlogNew from "@/pages/blog-new";
 import BlogPost from "@/pages/blog-post";
+import Contact from "@/pages/contact";
+import Privacy from "@/pages/privacy";
+import Terms from "@/pages/terms";
+import SocialMedia from "@/pages/social-media";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -35,6 +39,10 @@ function Router() {
       <Route path="/blog" component={Blog} />
       <Route path="/blog/new" component={BlogNew} />
       <Route path="/blog/:id" component={BlogPost} />
+      <Route path="/contact" component={Contact} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/social-media" component={SocialMedia} />
       <Route component={NotFound} />
     </Switch>
   );
