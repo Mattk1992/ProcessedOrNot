@@ -44,9 +44,9 @@ export async function smartProductLookup(input: string, filters?: { includeBrand
 export async function cascadingProductLookup(barcode: string): Promise<ProductLookupResult> {
   console.log(`Starting cascading lookup for barcode: ${barcode}`);
 
-  // 1. Primary: OpenFoodFacts
+  // 1. OpenFoodFacts (Primary)
   try {
-    console.log('Trying OpenFoodFacts...');
+    console.log('1. Trying OpenFoodFacts (Primary)...');
     const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
     
     if (openFoodFactsData && openFoodFactsData.status === 1) {
@@ -112,9 +112,9 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('OpenFoodFacts lookup failed:', error);
   }
 
-  // 2. Secondary: USDA FoodData Central
+  // 2. USDA FoodData Central (Secondary)
   try {
-    console.log('Trying USDA FoodData Central...');
+    console.log('2. Trying USDA FoodData Central (Secondary)...');
     const usdaProduct = await fetchProductFromUSDA(barcode);
     
     if (usdaProduct) {
@@ -140,302 +140,9 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('USDA lookup failed:', error);
   }
 
-  // 3. Kenniscentrum Gezond Gewicht (Knowledge Centre Healthy Weight)
+  // 3. FoodDB.ca
   try {
-    console.log('Trying Kenniscentrum Gezond Gewicht...');
-    const kenniscentrumProduct = await fetchProductFromKenniscentrum(barcode);
-    
-    if (kenniscentrumProduct) {
-      // Analyze ingredients if available
-      if (kenniscentrumProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            kenniscentrumProduct.ingredientsText,
-            kenniscentrumProduct.productName || "Unknown Product"
-          );
-          kenniscentrumProduct.processingScore = analysis.score;
-          kenniscentrumProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze Kenniscentrum ingredients:", error);
-          kenniscentrumProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in Kenniscentrum Gezond Gewicht');
-      return { product: kenniscentrumProduct, source: 'Kenniscentrum Gezond Gewicht' };
-    }
-  } catch (error) {
-    console.error('Kenniscentrum lookup failed:', error);
-  }
-
-  // 4. NEVO (Nederlandse Voedingsstoffenbestand)
-  try {
-    console.log('Trying NEVO...');
-    const nevoProduct = await fetchProductFromNEVO(barcode);
-    
-    if (nevoProduct) {
-      // Analyze ingredients if available
-      if (nevoProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            nevoProduct.ingredientsText,
-            nevoProduct.productName || "Unknown Product"
-          );
-          nevoProduct.processingScore = analysis.score;
-          nevoProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze NEVO ingredients:", error);
-          nevoProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in NEVO');
-      return { product: nevoProduct, source: 'NEVO' };
-    }
-  } catch (error) {
-    console.error('NEVO lookup failed:', error);
-  }
-
-  // 5. RIVM (Rijksinstituut voor Volksgezondheid en Milieu)
-  try {
-    console.log('Trying RIVM...');
-    const rivmProduct = await fetchProductFromRIVM(barcode);
-    
-    if (rivmProduct) {
-      // Analyze ingredients if available
-      if (rivmProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            rivmProduct.ingredientsText,
-            rivmProduct.productName || "Unknown Product"
-          );
-          rivmProduct.processingScore = analysis.score;
-          rivmProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze RIVM ingredients:", error);
-          rivmProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in RIVM');
-      return { product: rivmProduct, source: 'RIVM' };
-    }
-  } catch (error) {
-    console.error('RIVM lookup failed:', error);
-  }
-
-  // 6. Voedingscentrum (Netherlands Nutrition Centre)
-  try {
-    console.log('Trying Voedingscentrum...');
-    const voedingscentrumProduct = await fetchProductFromVoedingscentrum(barcode);
-    
-    if (voedingscentrumProduct) {
-      // Analyze ingredients if available
-      if (voedingscentrumProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            voedingscentrumProduct.ingredientsText,
-            voedingscentrumProduct.productName || "Unknown Product"
-          );
-          voedingscentrumProduct.processingScore = analysis.score;
-          voedingscentrumProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze Voedingscentrum ingredients:", error);
-          voedingscentrumProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in Voedingscentrum');
-      return { product: voedingscentrumProduct, source: 'Voedingscentrum' };
-    }
-  } catch (error) {
-    console.error('Voedingscentrum lookup failed:', error);
-  }
-
-  // 7. FoodData Central (USDA)
-  try {
-    console.log('Trying FoodData Central...');
-    const foodDataCentralProduct = await fetchProductFromFoodDataCentral(barcode);
-    
-    if (foodDataCentralProduct) {
-      // Analyze ingredients if available
-      if (foodDataCentralProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            foodDataCentralProduct.ingredientsText,
-            foodDataCentralProduct.productName || "Unknown Product"
-          );
-          foodDataCentralProduct.processingScore = analysis.score;
-          foodDataCentralProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze FoodData Central ingredients:", error);
-          foodDataCentralProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in FoodData Central');
-      return { product: foodDataCentralProduct, source: 'FoodData Central' };
-    }
-  } catch (error) {
-    console.error('FoodData Central lookup failed:', error);
-  }
-
-  // 8. EFSA (European Food Safety Authority)
-  try {
-    console.log('Trying EFSA...');
-    const efsaProduct = await fetchProductFromEFSA(barcode);
-    
-    if (efsaProduct) {
-      // Analyze ingredients if available
-      if (efsaProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            efsaProduct.ingredientsText,
-            efsaProduct.productName || "Unknown Product"
-          );
-          efsaProduct.processingScore = analysis.score;
-          efsaProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze EFSA ingredients:", error);
-          efsaProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in EFSA');
-      return { product: efsaProduct, source: 'EFSA' };
-    }
-  } catch (error) {
-    console.error('EFSA lookup failed:', error);
-  }
-
-  // 9. Health Canada Food Database
-  try {
-    console.log('Trying Health Canada...');
-    const healthCanadaProduct = await fetchProductFromHealthCanada(barcode);
-    
-    if (healthCanadaProduct) {
-      // Analyze ingredients if available
-      if (healthCanadaProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            healthCanadaProduct.ingredientsText,
-            healthCanadaProduct.productName || "Unknown Product"
-          );
-          healthCanadaProduct.processingScore = analysis.score;
-          healthCanadaProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze Health Canada ingredients:", error);
-          healthCanadaProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in Health Canada');
-      return { product: healthCanadaProduct, source: 'Health Canada' };
-    }
-  } catch (error) {
-    console.error('Health Canada lookup failed:', error);
-  }
-
-  // 5. Australian Food Composition Database
-  try {
-    console.log('Trying Australian Food Database...');
-    const australianProduct = await fetchProductFromAustralianFood(barcode);
-    
-    if (australianProduct) {
-      // Analyze ingredients if available
-      if (australianProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            australianProduct.ingredientsText,
-            australianProduct.productName || "Unknown Product"
-          );
-          australianProduct.processingScore = analysis.score;
-          australianProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze Australian Food ingredients:", error);
-          australianProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in Australian Food Database');
-      return { product: australianProduct, source: 'Australian Food Database' };
-    }
-  } catch (error) {
-    console.error('Australian Food Database lookup failed:', error);
-  }
-
-  // 6. Barcode Spider
-  try {
-    console.log('Trying Barcode Spider...');
-    const barcodeSpiderProduct = await fetchProductFromBarcodeSpider(barcode);
-    
-    if (barcodeSpiderProduct) {
-      // Analyze ingredients if available
-      if (barcodeSpiderProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            barcodeSpiderProduct.ingredientsText,
-            barcodeSpiderProduct.productName || "Unknown Product"
-          );
-          barcodeSpiderProduct.processingScore = analysis.score;
-          barcodeSpiderProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze Barcode Spider ingredients:", error);
-          barcodeSpiderProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in Barcode Spider');
-      return { product: barcodeSpiderProduct, source: 'Barcode Spider' };
-    }
-  } catch (error) {
-    console.error('Barcode Spider lookup failed:', error);
-  }
-
-  // 7. EAN Search
-  try {
-    console.log('Trying EAN Search...');
-    const eanSearchProduct = await fetchProductFromEANSearch(barcode);
-    
-    if (eanSearchProduct) {
-      console.log('Found product in EAN Search');
-      return { product: eanSearchProduct, source: 'EAN Search' };
-    }
-  } catch (error) {
-    console.error('EAN Search lookup failed:', error);
-  }
-
-  // 8. Product API
-  try {
-    console.log('Trying Product API...');
-    const productAPIProduct = await fetchProductFromProductAPI(barcode);
-    
-    if (productAPIProduct) {
-      // Analyze ingredients if available
-      if (productAPIProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            productAPIProduct.ingredientsText,
-            productAPIProduct.productName || "Unknown Product"
-          );
-          productAPIProduct.processingScore = analysis.score;
-          productAPIProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze Product API ingredients:", error);
-          productAPIProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in Product API');
-      return { product: productAPIProduct, source: 'Product API' };
-    }
-  } catch (error) {
-    console.error('Product API lookup failed:', error);
-  }
-
-  // 9. FoodDB.ca (Canadian Food Database)
-  try {
-    console.log('Trying FoodDB.ca...');
+    console.log('3. Trying FoodDB.ca...');
     const foodDBCAProduct = await fetchProductFromFoodDBCA(barcode);
     
     if (foodDBCAProduct) {
@@ -461,9 +168,9 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('FoodDB.ca lookup failed:', error);
   }
 
-  // 10. USDA Food Data Central (Enhanced)
+  // 4. USDA FDC
   try {
-    console.log('Trying USDA Food Data Central (Enhanced)...');
+    console.log('4. Trying USDA FDC...');
     const usdaFDCProduct = await fetchProductFromUSDAFDC(barcode);
     
     if (usdaFDCProduct) {
@@ -482,16 +189,16 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
         }
       }
 
-      console.log('Found product in USDA Food Data Central (Enhanced)');
-      return { product: usdaFDCProduct, source: 'USDA Food Data Central' };
+      console.log('Found product in USDA FDC');
+      return { product: usdaFDCProduct, source: 'USDA FDC' };
     }
   } catch (error) {
-    console.error('USDA Food Data Central (Enhanced) lookup failed:', error);
+    console.error('USDA FDC lookup failed:', error);
   }
 
-  // 11. OpenNutrition
+  // 5. OpenNutrition
   try {
-    console.log('Trying OpenNutrition...');
+    console.log('5. Trying OpenNutrition...');
     const openNutritionProduct = await fetchProductFromOpenNutrition(barcode);
     
     if (openNutritionProduct) {
@@ -517,9 +224,9 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('OpenNutrition lookup failed:', error);
   }
 
-  // 12. Nutritionix
+  // 6. Nutritionix
   try {
-    console.log('Trying Nutritionix...');
+    console.log('6. Trying Nutritionix...');
     const nutritionixProduct = await fetchProductFromNutritionix(barcode);
     
     if (nutritionixProduct) {
@@ -545,9 +252,9 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('Nutritionix lookup failed:', error);
   }
 
-  // 13. Spoonacular
+  // 7. Spoonacular
   try {
-    console.log('Trying Spoonacular...');
+    console.log('7. Trying Spoonacular...');
     const spoonacularProduct = await fetchProductFromSpoonacular(barcode);
     
     if (spoonacularProduct) {
@@ -573,9 +280,9 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('Spoonacular lookup failed:', error);
   }
 
-  // 14. API Ninjas
+  // 8. API Ninjas
   try {
-    console.log('Trying API Ninjas...');
+    console.log('8. Trying API Ninjas...');
     const apiNinjasProduct = await fetchProductFromAPINinjas(barcode);
     
     if (apiNinjasProduct) {
@@ -601,9 +308,134 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('API Ninjas lookup failed:', error);
   }
 
-  // 15. UPC Database (fallback)
+  // 9. FoodData Central (USDA)
   try {
-    console.log('Trying UPC Database...');
+    console.log('9. Trying FoodData Central (USDA)...');
+    const foodDataCentralProduct = await fetchProductFromFoodDataCentral(barcode);
+    
+    if (foodDataCentralProduct) {
+      // Analyze ingredients if available
+      if (foodDataCentralProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            foodDataCentralProduct.ingredientsText,
+            foodDataCentralProduct.productName || "Unknown Product"
+          );
+          foodDataCentralProduct.processingScore = analysis.score;
+          foodDataCentralProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze FoodData Central ingredients:", error);
+          foodDataCentralProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in FoodData Central');
+      return { product: foodDataCentralProduct, source: 'FoodData Central' };
+    }
+  } catch (error) {
+    console.error('FoodData Central lookup failed:', error);
+  }
+
+  // 10. EFSA (European Food Safety Authority)
+  try {
+    console.log('10. Trying EFSA (European Food Safety Authority)...');
+    const efsaProduct = await fetchProductFromEFSA(barcode);
+    
+    if (efsaProduct) {
+      // Analyze ingredients if available
+      if (efsaProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            efsaProduct.ingredientsText,
+            efsaProduct.productName || "Unknown Product"
+          );
+          efsaProduct.processingScore = analysis.score;
+          efsaProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze EFSA ingredients:", error);
+          efsaProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in EFSA');
+      return { product: efsaProduct, source: 'EFSA' };
+    }
+  } catch (error) {
+    console.error('EFSA lookup failed:', error);
+  }
+
+  // 11. Health Canada Food Database
+  try {
+    console.log('11. Trying Health Canada Food Database...');
+    const healthCanadaProduct = await fetchProductFromHealthCanada(barcode);
+    
+    if (healthCanadaProduct) {
+      // Analyze ingredients if available
+      if (healthCanadaProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            healthCanadaProduct.ingredientsText,
+            healthCanadaProduct.productName || "Unknown Product"
+          );
+          healthCanadaProduct.processingScore = analysis.score;
+          healthCanadaProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze Health Canada ingredients:", error);
+          healthCanadaProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in Health Canada');
+      return { product: healthCanadaProduct, source: 'Health Canada' };
+    }
+  } catch (error) {
+    console.error('Health Canada lookup failed:', error);
+  }
+
+  // 12. Barcode Spider
+  try {
+    console.log('12. Trying Barcode Spider...');
+    const barcodeSpiderProduct = await fetchProductFromBarcodeSpider(barcode);
+    
+    if (barcodeSpiderProduct) {
+      // Analyze ingredients if available
+      if (barcodeSpiderProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            barcodeSpiderProduct.ingredientsText,
+            barcodeSpiderProduct.productName || "Unknown Product"
+          );
+          barcodeSpiderProduct.processingScore = analysis.score;
+          barcodeSpiderProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze Barcode Spider ingredients:", error);
+          barcodeSpiderProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in Barcode Spider');
+      return { product: barcodeSpiderProduct, source: 'Barcode Spider' };
+    }
+  } catch (error) {
+    console.error('Barcode Spider lookup failed:', error);
+  }
+
+  // 13. EAN Search
+  try {
+    console.log('13. Trying EAN Search...');
+    const eanSearchProduct = await fetchProductFromEANSearch(barcode);
+    
+    if (eanSearchProduct) {
+      console.log('Found product in EAN Search');
+      return { product: eanSearchProduct, source: 'EAN Search' };
+    }
+  } catch (error) {
+    console.error('EAN Search lookup failed:', error);
+  }
+
+  // 14. UPC Database
+  try {
+    console.log('14. Trying UPC Database...');
     const upcProduct = await fetchProductFromUPCDatabase(barcode);
     
     if (upcProduct) {
@@ -614,7 +446,7 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
     console.error('UPC Database lookup failed:', error);
   }
 
-  // 16. All lookups failed
+  // 15. All lookups failed
   console.log('All database lookups failed for barcode:', barcode);
   return { 
     product: null, 
