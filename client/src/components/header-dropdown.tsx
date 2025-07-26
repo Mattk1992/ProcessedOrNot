@@ -213,17 +213,17 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
           />
           
           {/* Enhanced Dropdown Menu */}
-          <div className="absolute left-0 mt-3 w-72 max-w-[calc(100vw-2rem)] sm:max-w-[18rem] mobile-dropdown bg-gradient-to-br from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-800/90 rounded-2xl shadow-2xl border border-white/30 dark:border-gray-700/50 z-50 overflow-hidden backdrop-blur-xl dropdown-menu-enhanced">
+          <div className="absolute left-0 mt-2 w-56 max-w-[calc(100vw-2rem)] sm:max-w-[14rem] mobile-dropdown bg-gradient-to-br from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-800/90 rounded-xl shadow-xl border border-white/30 dark:border-gray-700/50 z-50 overflow-hidden backdrop-blur-xl dropdown-menu-enhanced">
             
             {/* Header with user info */}
             {isAuthenticated && (
-              <div className="px-6 py-4 bg-gradient-to-r from-primary/10 to-accent/10 border-b border-white/20 dark:border-gray-700/50">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center user-avatar-glow">
-                    <User className="w-5 h-5 text-white" />
+              <div className="px-4 py-3 bg-gradient-to-r from-primary/10 to-accent/10 border-b border-white/20 dark:border-gray-700/50">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-full flex items-center justify-center user-avatar-glow">
+                    <User className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <p className="text-xs font-semibold text-gray-900 dark:text-gray-100">
                       {(user as any)?.firstName && (user as any)?.lastName ? 
                         `${(user as any).firstName} ${(user as any).lastName}` : 
                         (user as any)?.username || 'User'}
@@ -237,15 +237,15 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
             )}
             
             {/* Menu Items */}
-            <div className="py-3">
+            <div className="py-2">
               {/* Language Switcher for mobile */}
-              <div className="px-6 py-3 sm:hidden">
-                <div className="flex items-center space-x-4 relative z-10">
-                  <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
-                    <Globe className="w-4 h-4" />
+              <div className="px-4 py-2 sm:hidden">
+                <div className="flex items-center space-x-3 relative z-10">
+                  <div className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400">
+                    <Globe className="w-3.5 h-3.5" />
                   </div>
                   <div className="flex-1">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-1">
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300 block mb-1">
                       Language
                     </span>
                     <LanguageSwitcher />
@@ -254,7 +254,7 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
               </div>
               
               {/* Divider for mobile */}
-              <div className="sm:hidden border-t border-gray-200 dark:border-gray-700 mx-6 my-2"></div>
+              <div className="sm:hidden border-t border-gray-200 dark:border-gray-700 mx-4 my-1.5"></div>
               
               {menuItems.map((item: any, index) => {
                 // Handle dividers
@@ -262,7 +262,7 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
                   return (
                     <div 
                       key={index}
-                      className="border-t border-gray-200 dark:border-gray-700 mx-6 my-2"
+                      className="border-t border-gray-200 dark:border-gray-700 mx-4 my-1.5"
                     />
                   );
                 }
@@ -272,7 +272,7 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
                   return (
                     <div 
                       key={index}
-                      className="px-6 py-2"
+                      className="px-4 py-1.5"
                     >
                       <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         {item.label}
@@ -289,14 +289,14 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
                       item.action();
                       setIsOpen(false);
                     }}
-                    className="group flex items-center w-full px-6 py-3 text-left transition-all duration-200 hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:scale-[1.02] relative overflow-hidden dropdown-item-hover-effect dropdown-item-stagger"
+                    className="group flex items-center w-full px-4 py-2 text-left transition-all duration-200 hover:bg-gradient-to-r hover:from-primary/10 hover:to-accent/10 hover:scale-[1.01] relative overflow-hidden dropdown-item-hover-effect dropdown-item-stagger"
                     style={{ animationDelay: `${index * 100}ms` }}
                   >
                     {/* Hover indicator */}
                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary to-accent scale-y-0 group-hover:scale-y-100 transition-transform duration-200 origin-center"></div>
                     
-                    <div className="flex items-center space-x-4 relative z-10">
-                      <div className={`p-2 rounded-lg transition-all duration-200 ${
+                    <div className="flex items-center space-x-3 relative z-10">
+                      <div className={`p-1.5 rounded-lg transition-all duration-200 ${
                         item.label === 'Sign Out' ? 
                           'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 group-hover:bg-red-100 dark:group-hover:bg-red-900/30' :
                           'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 group-hover:bg-primary/20 group-hover:text-primary'
@@ -304,7 +304,7 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
                         {item.icon}
                       </div>
                       <div>
-                        <span className={`text-sm font-medium transition-colors duration-200 ${
+                        <span className={`text-xs font-medium transition-colors duration-200 ${
                           item.label === 'Sign Out' ? 
                             'text-red-700 dark:text-red-300 group-hover:text-red-800 dark:group-hover:text-red-200' :
                             'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-100'
@@ -322,13 +322,13 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
             </div>
             
             {/* Enhanced Footer */}
-            <div className="border-t border-white/20 dark:border-gray-700/50 px-6 py-4 bg-gradient-to-r from-gray-50/50 to-white/50 dark:from-gray-800/50 dark:to-gray-900/50">
+            <div className="border-t border-white/20 dark:border-gray-700/50 px-4 py-2.5 bg-gradient-to-r from-gray-50/50 to-white/50 dark:from-gray-800/50 dark:to-gray-900/50">
               <div className="flex items-center justify-between">
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                   ProcessedOrNot v1.0.0
                 </p>
                 <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 bg-green-400 rounded-full status-pulse"></div>
+                  <div className="w-1.5 h-1.5 bg-green-400 rounded-full status-pulse"></div>
                   <span className="text-xs text-green-600 dark:text-green-400 font-medium">Online</span>
                 </div>
               </div>
