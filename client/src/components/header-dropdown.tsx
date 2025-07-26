@@ -22,9 +22,9 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
 
   // Menu items for non-authenticated users
   const guestMenuItems = [
-    // Sign in
+    // Authentication
     {
-      label: 'Sign In',
+      label: 'Authentication',
       icon: <LogIn className="w-4 h-4" />,
       action: () => setLocation('/login')
     },
