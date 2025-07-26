@@ -1,7 +1,7 @@
 # ProcessedOrNot Scanner - Google Play Store Listing
 
 ## App Title
-ProcessedOrNot Scanner - AI Food Analysis v2025.07.26 v2025.07.26 v2025.07.26
+ProcessedOrNot Scanner - AI Food Analysis v2025.07.26 v2025.07.26 v2025.07.26 v2025.07.26
 
 ## Short Description (80 characters max)
 Instantly analyze food processing levels with AI-powered barcode scanning

@@ -1,4 +1,4 @@
-import * as CryptoJS from 'crypto-js';
+// Using native Node.js crypto module for better performance
 import * as crypto from 'crypto';
 
 // Encryption configuration
@@ -31,7 +31,7 @@ export function encryptData(plaintext: string): string {
     const key = Buffer.from(ENCRYPTION_KEY, 'hex');
     const iv = crypto.randomBytes(IV_LENGTH);
     
-    const cipher = crypto.createCipher('aes-256-cbc', key);
+    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
     
     let encrypted = cipher.update(plaintext, 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -58,7 +58,7 @@ export function decryptData(encryptedData: string): string {
     
     const iv = Buffer.from(ivHex, 'hex');
     
-    const decipher = crypto.createDecipher('aes-256-cbc', key);
+    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
     
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
@@ -113,7 +113,14 @@ export function decryptEmail(encryptedEmail: string): string {
  * This creates a one-way hash that can be used to find records without storing plaintext
  */
 export function hashForSearch(data: string): string {
-  return CryptoJS.SHA256(data + ENCRYPTION_KEY).toString(CryptoJS.enc.Hex);
+  try {
+    // Create a SHA-256 hash for searching while maintaining privacy
+    const hash = crypto.createHash('sha256').update(data + ENCRYPTION_KEY).digest('hex');
+    return hash;
+  } catch (error) {
+    console.error('Hashing error:', error);
+    throw new Error('Data hashing failed');
+  }
 }
 
 /**
