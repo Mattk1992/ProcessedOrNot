@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { loginUserSchema, registerUserSchema, type LoginUser, type RegisterUser } from "@shared/schema";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { getTranslation } from "@/lib/translations";
 
@@ -69,8 +69,11 @@ export default function Auth() {
         title: t("auth.login.success") || "Login successful",
         description: t("auth.login.welcomeBack") || "Welcome back!",
       });
-      // Force refresh auth state and redirect
-      window.location.href = "/";
+      // Invalidate auth cache and redirect
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 100);
     },
     onError: (error: any) => {
       toast({
@@ -95,8 +98,11 @@ export default function Auth() {
         title: t("auth.register.success") || "Account created successfully",
         description: t("auth.register.verificationSent") || "Please check your email for verification",
       });
-      // Redirect to home page
-      setLocation("/");
+      // Invalidate auth cache and redirect to home page
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      setTimeout(() => {
+        setLocation("/");
+      }, 100);
     },
     onError: (error: any) => {
       toast({
