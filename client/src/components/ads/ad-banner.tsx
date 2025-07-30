@@ -46,7 +46,7 @@ export default function AdBanner({
 export function HeaderBannerAd({ className = '' }: { className?: string }) {
   return (
     <AdBanner
-      slot="3116259775" // Using your actual AdSense slot ID
+      slot="8527084986" // Your banner ad unit ID
       style={{ width: 728, height: 90 }}
       format=""
       responsive={false}
@@ -58,7 +58,7 @@ export function HeaderBannerAd({ className = '' }: { className?: string }) {
 export function SidebarAd({ className = '' }: { className?: string }) {
   return (
     <AdBanner
-      slot="3116259775" // Using your actual AdSense slot ID
+      slot="8527084986" // Your banner ad unit ID
       style={{ width: 300, height: 250 }}
       format=""
       responsive={false}
@@ -70,7 +70,7 @@ export function SidebarAd({ className = '' }: { className?: string }) {
 export function ResponsiveAd({ className = '' }: { className?: string }) {
   return (
     <AdBanner
-      slot="3116259775" // Using your actual AdSense slot ID
+      slot="8527084986" // Your banner ad unit ID
       style={{ display: 'block' }}
       format="auto"
       responsive={true}
@@ -82,11 +82,34 @@ export function ResponsiveAd({ className = '' }: { className?: string }) {
 export function InArticleAd({ className = '' }: { className?: string }) {
   return (
     <AdBanner
-      slot="3116259775" // Using your actual AdSense slot ID
+      slot="8527084986" // Your banner ad unit ID
       style={{ display: 'block' }}
       format="fluid"
       layout="in-article"
       className={`in-article-ad ${className}`}
+    />
+  );
+}
+
+// Specialized banner ad with your specific ad unit ID
+export function CustomBannerAd({ 
+  className = '', 
+  width = 728, 
+  height = 90, 
+  responsive = false 
+}: { 
+  className?: string; 
+  width?: number; 
+  height?: number; 
+  responsive?: boolean; 
+}) {
+  return (
+    <AdBanner
+      slot="8527084986" // ca-app-pub-1163701043339821/8527084986
+      style={responsive ? { display: 'block' } : { width, height }}
+      format={responsive ? "auto" : ""}
+      responsive={responsive}
+      className={`custom-banner-ad ${className}`}
     />
   );
 }

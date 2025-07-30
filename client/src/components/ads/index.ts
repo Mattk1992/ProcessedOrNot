@@ -1,5 +1,5 @@
 // Ad Components Export
-export { default as AdBanner, HeaderBannerAd, SidebarAd, ResponsiveAd, InArticleAd } from './ad-banner';
+export { default as AdBanner, HeaderBannerAd, SidebarAd, ResponsiveAd, InArticleAd, CustomBannerAd } from './ad-banner';
 
 // AdMob Components (React Native Ready)
 export { 
