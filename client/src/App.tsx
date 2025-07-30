@@ -30,6 +30,8 @@ import NutriDashboard from "@/pages/nutri-dashboard";
 import NutriDiary from "@/pages/nutri-diary";
 import NutriProgress from "@/pages/nutri-progress";
 import NutriProfile from "@/pages/nutri-profile";
+import { AdManagerProvider, AdConsentBanner } from "@/components/ads";
+import AdSettings from "@/pages/ad-settings";
 
 function Router() {
   // Track page views when routes change
@@ -63,6 +65,9 @@ function Router() {
       <Route path="/nutri-progress" component={NutriProgress} />
       <Route path="/nutri-profile" component={NutriProfile} />
       
+      {/* Ad Configuration */}
+      <Route path="/ad-settings" component={AdSettings} />
+      
       <Route component={NotFound} />
     </Switch>
   );
@@ -83,11 +88,14 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <LanguageProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Router />
-            <ThemeToggle />
-          </TooltipProvider>
+          <AdManagerProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Router />
+              <ThemeToggle />
+              <AdConsentBanner />
+            </TooltipProvider>
+          </AdManagerProvider>
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
