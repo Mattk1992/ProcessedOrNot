@@ -580,6 +580,14 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     }
   }, []);
 
+  // Auto-start camera when URL contains scan parameter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('scan') === 'camera' && !isCameraActive && !isScanning) {
+      startCamera();
+    }
+  }, [startCamera, isCameraActive, isScanning]);
+
   return (
     <div className="space-y-10">
       <div className="text-center mb-8">
