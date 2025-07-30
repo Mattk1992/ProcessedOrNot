@@ -207,6 +207,12 @@ export default function AdSettings() {
                   <p className="text-xs text-gray-500">
                     Your Google AdMob application ID
                   </p>
+                  {config.admobAppId && (
+                    <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                      <Shield className="w-4 h-4" />
+                      <span className="text-sm">AdMob configured: {config.admobAppId}</span>
+                    </div>
+                  )}
                 </div>
 
                 <Alert>

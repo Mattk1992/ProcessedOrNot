@@ -46,7 +46,7 @@ export default function AdBanner({
 export function HeaderBannerAd({ className = '' }: { className?: string }) {
   return (
     <AdBanner
-      slot="1234567890" // Replace with actual slot ID
+      slot="3116259775" // Using your actual AdSense slot ID
       style={{ width: 728, height: 90 }}
       format=""
       responsive={false}
@@ -58,7 +58,7 @@ export function HeaderBannerAd({ className = '' }: { className?: string }) {
 export function SidebarAd({ className = '' }: { className?: string }) {
   return (
     <AdBanner
-      slot="2345678901" // Replace with actual slot ID
+      slot="3116259775" // Using your actual AdSense slot ID
       style={{ width: 300, height: 250 }}
       format=""
       responsive={false}
@@ -70,7 +70,7 @@ export function SidebarAd({ className = '' }: { className?: string }) {
 export function ResponsiveAd({ className = '' }: { className?: string }) {
   return (
     <AdBanner
-      slot="3456789012" // Replace with actual slot ID
+      slot="3116259775" // Using your actual AdSense slot ID
       style={{ display: 'block' }}
       format="auto"
       responsive={true}
@@ -82,7 +82,7 @@ export function ResponsiveAd({ className = '' }: { className?: string }) {
 export function InArticleAd({ className = '' }: { className?: string }) {
   return (
     <AdBanner
-      slot="4567890123" // Replace with actual slot ID
+      slot="3116259775" // Using your actual AdSense slot ID
       style={{ display: 'block' }}
       format="fluid"
       layout="in-article"

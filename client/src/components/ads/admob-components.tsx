@@ -123,6 +123,14 @@ export const TEST_AD_UNIT_IDS = {
   REWARDED: 'ca-app-pub-3940256099942544/5224354917'
 };
 
+// Production Ad Unit IDs (using your AdMob App ID)
+export const PRODUCTION_AD_UNIT_IDS = {
+  APP_ID: 'ca-app-pub-1163701043339821~8067371248',
+  BANNER: 'ca-app-pub-1163701043339821/1234567890', // You'll need to create these in AdMob console
+  INTERSTITIAL: 'ca-app-pub-1163701043339821/2345678901',
+  REWARDED: 'ca-app-pub-1163701043339821/3456789012'
+};
+
 // AdMob Configuration Types
 export interface AdMobConfig {
   androidAppId: string;
