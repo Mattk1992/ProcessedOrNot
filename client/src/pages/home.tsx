@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { trackEvent } from "@/lib/analytics";
+import { ResponsiveAd, HeaderBannerAd } from "@/components/ads";
 
 export default function Home() {
   const [currentBarcode, setCurrentBarcode] = useState<string>("");
@@ -231,6 +232,10 @@ export default function Home() {
 
             </div>
 
+            {/* Ad Space after features */}
+            <div className="mt-12 flex justify-center">
+              <ResponsiveAd className="max-w-2xl w-full" />
+            </div>
 
           </div>
         </div>
@@ -283,6 +288,14 @@ export default function Home() {
           </div>
         </section>
       )}
+      
+      {/* Ad Space before footer */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="text-center mb-4">
+          <p className="text-sm text-muted-foreground">Advertisement</p>
+        </div>
+        <HeaderBannerAd className="mx-auto" />
+      </div>
       
       {/* Footer */}
       <footer className="hidden md:block border-t border-border/50 mt-8 sm:mt-16 bg-gradient-to-r from-background/80 to-background/90 backdrop-blur-sm">

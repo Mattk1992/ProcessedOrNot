@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { trackEvent } from "@/lib/analytics";
+import { SidebarAd, InArticleAd } from "@/components/ads";
 
 export default function ProductLookup() {
   const [currentBarcode, setCurrentBarcode] = useState<string>("");
@@ -173,18 +174,30 @@ export default function ProductLookup() {
           </div>
 
           {/* NutriBot Chat Sidebar */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 space-y-6">
             <div className="gradient-card rounded-3xl p-1 glow-effect h-fit">
               <div className="bg-background rounded-3xl">
                 <NutriBotChat />
               </div>
+            </div>
+            
+            {/* Sidebar Ad */}
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-2">Advertisement</p>
+              <SidebarAd />
             </div>
           </div>
         </div>
 
         
         {currentBarcode && (
-          <div className="mt-8 sm:mt-12 slide-up">
+          <div className="mt-8 sm:mt-12 slide-up space-y-6">
+            {/* In-Article Ad */}
+            <div className="text-center">
+              <p className="text-sm text-muted-foreground mb-2">Advertisement</p>
+              <InArticleAd />
+            </div>
+            
             <div className="gradient-card rounded-3xl p-1 glow-effect">
               <div className="bg-background rounded-3xl p-4 sm:p-6">
                 <ProductResults 
