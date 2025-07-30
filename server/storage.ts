@@ -181,42 +181,53 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
+  // Helper method to check if data is encrypted (current format uses 32-char hex IV prefix)
+  private isEncrypted(data: string): boolean {
+    if (!data || data.length < 32) return false;
+    // Check if the first 32 characters are hex (IV format)
+    return /^[0-9a-f]{32}/i.test(data);
+  }
+
   // Helper method to decrypt user data for display
   private decryptUserData(user: any): User {
     if (!user) return user;
     
     try {
-      // Try to decrypt email first
+      // Handle email decryption
       let decryptedEmail = user.email;
-      try {
-        if (user.email) {
-          decryptedEmail = decryptEmail(user.email);
+      if (user.email && this.isEncrypted(user.email)) {
+        const decrypted = decryptEmail(user.email);
+        if (decrypted) {
+          decryptedEmail = decrypted;
+        } else {
+          console.warn(`Failed to decrypt email for user ${user.id}, using original`);
+          // If decryption fails, treat as plain text
+          decryptedEmail = user.email;
         }
-      } catch (emailError) {
-        console.warn(`Failed to decrypt email for user ${user.id}, using fallback email`);
-        decryptedEmail = `user${user.id}@encrypted.local`;
       }
 
-      // Try to decrypt firstName
+      // Handle firstName decryption  
       let decryptedFirstName = user.firstName;
-      try {
-        if (user.firstName) {
-          decryptedFirstName = decryptPII(user.firstName);
+      if (user.firstName && this.isEncrypted(user.firstName)) {
+        const decrypted = decryptPII(user.firstName);
+        if (decrypted) {
+          decryptedFirstName = decrypted;
+        } else {
+          console.warn(`Failed to decrypt firstName for user ${user.id}, using original`);
+          decryptedFirstName = user.firstName;
         }
-      } catch (firstNameError) {
-        console.warn(`Failed to decrypt firstName for user ${user.id}`);
-        decryptedFirstName = `User${user.id}`;
       }
 
-      // Try to decrypt lastName
+      // Handle lastName decryption
       let decryptedLastName = user.lastName;
-      try {
-        if (user.lastName) {
-          decryptedLastName = decryptPII(user.lastName);
+      if (user.lastName && this.isEncrypted(user.lastName)) {
+        const decrypted = decryptPII(user.lastName);
+        if (decrypted) {
+          decryptedLastName = decrypted;
+        } else {
+          console.warn(`Failed to decrypt lastName for user ${user.id}, using original`);
+          decryptedLastName = user.lastName;
         }
-      } catch (lastNameError) {
-        console.warn(`Failed to decrypt lastName for user ${user.id}`);
-        decryptedLastName = `LastName${user.id}`;
       }
 
       return {
@@ -227,12 +238,12 @@ export class DatabaseStorage implements IStorage {
       };
     } catch (error) {
       console.error('Error decrypting user data:', error);
-      // Return user with fallback data if decryption fails completely
+      // Return user with original data if decryption fails completely
       return {
         ...user,
-        email: `user${user.id}@encrypted.local`,
-        firstName: `User${user.id}`,
-        lastName: `LastName${user.id}`,
+        email: user.email || `user${user.id}@example.com`,
+        firstName: user.firstName || `User${user.id}`,
+        lastName: user.lastName || `LastName${user.id}`,
       };
     }
   }

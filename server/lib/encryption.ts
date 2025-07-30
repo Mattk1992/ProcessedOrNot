@@ -58,13 +58,31 @@ export function encryptData(plaintext: string): string {
  */
 export function decryptData(encryptedData: string): string {
   try {
+    // Validate input
+    if (!encryptedData || encryptedData.length < IV_LENGTH * 2) {
+      console.warn('Invalid encrypted data: too short or empty');
+      return '';
+    }
+
     const key = Buffer.from(ENCRYPTION_KEY, 'hex');
     
     // Extract IV and encrypted data
     const ivHex = encryptedData.slice(0, IV_LENGTH * 2);
     const encrypted = encryptedData.slice(IV_LENGTH * 2);
     
+    // Validate IV length
+    if (ivHex.length !== IV_LENGTH * 2 || !/^[0-9a-f]+$/i.test(ivHex)) {
+      console.warn('Invalid IV format in encrypted data');
+      return '';
+    }
+    
     const iv = Buffer.from(ivHex, 'hex');
+    
+    // Validate IV buffer length
+    if (iv.length !== IV_LENGTH) {
+      console.warn('Invalid IV length after conversion');
+      return '';
+    }
     
     const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
     
@@ -112,9 +130,18 @@ export function encryptEmail(email: string): string {
 export function decryptEmail(encryptedEmail: string): string {
   if (!encryptedEmail) return '';
   const decrypted = decryptData(encryptedEmail);
-  if (!decrypted.includes('@')) {
-    throw new Error('Decrypted email is invalid');
+  
+  // If decryption failed or returned empty string, don't validate email format
+  if (!decrypted) {
+    return '';
   }
+  
+  // Only validate email format if we actually got data back
+  if (!decrypted.includes('@')) {
+    console.warn('Decrypted email is invalid format:', decrypted);
+    return '';
+  }
+  
   return decrypted;
 }
 

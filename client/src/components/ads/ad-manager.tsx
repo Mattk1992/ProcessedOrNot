@@ -59,28 +59,40 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
   // Initialize ads based on platform
   useEffect(() => {
     if (config.platform === 'web' && config.adsenseClientId) {
-      // Initialize AdSense
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${config.adsenseClientId}`;
-      script.crossOrigin = 'anonymous';
+      // Check if AdSense script already exists to prevent duplicate loading
+      const existingScript = document.querySelector(`script[src*="pagead2.googlesyndication.com"]`);
       
-      script.onload = () => {
-        console.log('AdSense initialized');
-        setCanShowAds(true);
-      };
-      
-      script.onerror = () => {
-        console.error('Failed to load AdSense');
-        setCanShowAds(false);
-      };
-      
-      document.head.appendChild(script);
+      if (!existingScript) {
+        // Initialize AdSense only if not already loaded
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${config.adsenseClientId}`;
+        script.crossOrigin = 'anonymous';
+        script.setAttribute('data-adsense-client', config.adsenseClientId);
+        
+        script.onload = () => {
+          console.log('AdSense initialized');
+          setCanShowAds(true);
+        };
+        
+        script.onerror = () => {
+          console.error('Failed to load AdSense');
+          setCanShowAds(false);
+        };
+        
+        document.head.appendChild(script);
 
-      return () => {
-        // Cleanup
-        document.head.removeChild(script);
-      };
+        return () => {
+          // Cleanup - only remove if it exists and matches our client ID
+          const scriptToRemove = document.querySelector(`script[data-adsense-client="${config.adsenseClientId}"]`);
+          if (scriptToRemove) {
+            document.head.removeChild(scriptToRemove);
+          }
+        };
+      } else {
+        // Script already exists, just enable ads
+        setCanShowAds(true);
+      }
     } else if (config.platform === 'mobile' && config.admobAppId) {
       // Initialize AdMob (would work in React Native)
       console.log('AdMob would be initialized here for mobile platform');
