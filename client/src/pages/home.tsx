@@ -270,6 +270,40 @@ export default function Home() {
                     <span className="text-xs px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300 rounded-full">History</span>
                   </div>
                 </div>
+
+                {/* AI Nutritionist */}
+                <div className="glass-card p-6 rounded-2xl hover:scale-105 transition-all duration-300 glow-effect group">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-violet-500 to-purple-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                      <span className="text-white text-xl">🧠</span>
+                    </div>
+                    <h4 className="text-lg font-semibold text-foreground">AI Nutritionist</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Expert nutritional guidance powered by GPT-4, offering personalized meal plans, dietary advice, and health recommendations
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="text-xs px-2 py-1 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-full">Expert Advice</span>
+                    <span className="text-xs px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full">Meal Plans</span>
+                  </div>
+                </div>
+
+                {/* Smart Scanning Technology */}
+                <div className="glass-card p-6 rounded-2xl hover:scale-105 transition-all duration-300 glow-effect group">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center mr-4 group-hover:scale-110 transition-transform">
+                      <span className="text-white text-xl">⚡</span>
+                    </div>
+                    <h4 className="text-lg font-semibold text-foreground">Smart Scanning</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Lightning-fast barcode recognition with enhanced camera optimization, voice input, and intelligent product matching
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="text-xs px-2 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full">Voice Input</span>
+                    <span className="text-xs px-2 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 rounded-full">Lightning Fast</span>
+                  </div>
+                </div>
               </div>
 
               {/* Quick Stats Section */}
