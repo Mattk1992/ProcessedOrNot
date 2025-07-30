@@ -24,7 +24,19 @@ import {
   type InsertNotification,
   blogPosts,
   type BlogPost,
-  type InsertBlogPost
+  type InsertBlogPost,
+  diaryEntries,
+  type DiaryEntry,
+  type InsertDiaryEntry,
+  userGoals,
+  type UserGoals,
+  type InsertUserGoals,
+  userProfiles,
+  type UserProfile,
+  type InsertUserProfile,
+  weightEntries,
+  type WeightEntry,
+  type InsertWeightEntry
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -130,6 +142,42 @@ export interface IStorage {
   deleteBlogPost(id: number): Promise<boolean>;
   incrementViewCount(id: number): Promise<void>;
   searchBlogPosts(query: string): Promise<BlogPost[]>;
+
+  // Nutrition tracking methods
+  // Diary entries
+  createDiaryEntry(entry: InsertDiaryEntry): Promise<DiaryEntry>;
+  updateDiaryEntry(id: number, updates: Partial<InsertDiaryEntry>): Promise<DiaryEntry | undefined>;
+  deleteDiaryEntry(id: number): Promise<boolean>;
+  getDiaryEntriesByUser(userId: number): Promise<DiaryEntry[]>;
+  getDiaryEntriesByUserAndDate(userId: number, date: string): Promise<DiaryEntry[]>;
+  getRecentDiaryEntries(userId: number, limit: number): Promise<DiaryEntry[]>;
+
+  // User goals
+  createUserGoals(goals: InsertUserGoals): Promise<UserGoals>;
+  updateUserGoals(userId: number, updates: Partial<InsertUserGoals>): Promise<UserGoals | undefined>;
+  getUserGoals(userId: number): Promise<UserGoals | undefined>;
+
+  // User profiles
+  createUserProfile(profile: InsertUserProfile): Promise<UserProfile>;
+  updateUserProfile(userId: number, updates: Partial<InsertUserProfile>): Promise<UserProfile | undefined>;
+  getUserProfile(userId: number): Promise<UserProfile | undefined>;
+
+  // Weight entries
+  createWeightEntry(entry: InsertWeightEntry): Promise<WeightEntry>;
+  getWeightEntriesByUser(userId: number): Promise<WeightEntry[]>;
+  getRecentWeightEntries(userId: number, limit: number): Promise<WeightEntry[]>;
+
+  // Nutrition analytics
+  getDailyNutritionProgress(userId: number, date: string): Promise<{
+    calories: number;
+    fat: number;
+    carbs: number;
+    proteins: number;
+    salt: number;
+    fiber: number;
+    averageProcessingScore: number;
+    entriesCount: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1033,6 +1081,164 @@ export class DatabaseStorage implements IStorage {
   private generateExcerpt(content: string): string {
     const plainText = content.replace(/<[^>]*>/g, ''); // Remove HTML tags
     return plainText.length > 200 ? plainText.substring(0, 200) + '...' : plainText;
+  }
+
+  // Nutrition tracking implementations
+  async createDiaryEntry(entry: InsertDiaryEntry): Promise<DiaryEntry> {
+    const [created] = await db.insert(diaryEntries).values(entry).returning();
+    return created;
+  }
+
+  async updateDiaryEntry(id: number, updates: Partial<InsertDiaryEntry>): Promise<DiaryEntry | undefined> {
+    const [updated] = await db
+      .update(diaryEntries)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(diaryEntries.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteDiaryEntry(id: number): Promise<boolean> {
+    const result = await db.delete(diaryEntries).where(eq(diaryEntries.id, id));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async getDiaryEntriesByUser(userId: number): Promise<DiaryEntry[]> {
+    return await db.select().from(diaryEntries)
+      .where(eq(diaryEntries.userId, userId))
+      .orderBy(desc(diaryEntries.consumedAt));
+  }
+
+  async getDiaryEntriesByUserAndDate(userId: number, date: string): Promise<DiaryEntry[]> {
+    const startDate = new Date(date);
+    const endDate = new Date(date);
+    endDate.setDate(endDate.getDate() + 1);
+    
+    return await db.select().from(diaryEntries)
+      .where(and(
+        eq(diaryEntries.userId, userId),
+        sql`${diaryEntries.consumedAt} >= ${startDate}`,
+        sql`${diaryEntries.consumedAt} < ${endDate}`
+      ))
+      .orderBy(diaryEntries.consumedAt);
+  }
+
+  async getRecentDiaryEntries(userId: number, limit: number): Promise<DiaryEntry[]> {
+    return await db.select().from(diaryEntries)
+      .where(eq(diaryEntries.userId, userId))
+      .orderBy(desc(diaryEntries.consumedAt))
+      .limit(limit);
+  }
+
+  async createUserGoals(goals: InsertUserGoals): Promise<UserGoals> {
+    const [created] = await db.insert(userGoals).values(goals).returning();
+    return created;
+  }
+
+  async updateUserGoals(userId: number, updates: Partial<InsertUserGoals>): Promise<UserGoals | undefined> {
+    const [updated] = await db
+      .update(userGoals)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(userGoals.userId, userId))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getUserGoals(userId: number): Promise<UserGoals | undefined> {
+    const [goals] = await db.select().from(userGoals)
+      .where(eq(userGoals.userId, userId))
+      .limit(1);
+    return goals || undefined;
+  }
+
+  async createUserProfile(profile: InsertUserProfile): Promise<UserProfile> {
+    const [created] = await db.insert(userProfiles).values(profile).returning();
+    return created;
+  }
+
+  async updateUserProfile(userId: number, updates: Partial<InsertUserProfile>): Promise<UserProfile | undefined> {
+    const [updated] = await db
+      .update(userProfiles)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(userProfiles.userId, userId))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getUserProfile(userId: number): Promise<UserProfile | undefined> {
+    const [profile] = await db.select().from(userProfiles)
+      .where(eq(userProfiles.userId, userId))
+      .limit(1);
+    return profile || undefined;
+  }
+
+  async createWeightEntry(entry: InsertWeightEntry): Promise<WeightEntry> {
+    const [created] = await db.insert(weightEntries).values(entry).returning();
+    return created;
+  }
+
+  async getWeightEntriesByUser(userId: number): Promise<WeightEntry[]> {
+    return await db.select().from(weightEntries)
+      .where(eq(weightEntries.userId, userId))
+      .orderBy(desc(weightEntries.recordedAt));
+  }
+
+  async getRecentWeightEntries(userId: number, limit: number): Promise<WeightEntry[]> {
+    return await db.select().from(weightEntries)
+      .where(eq(weightEntries.userId, userId))
+      .orderBy(desc(weightEntries.recordedAt))
+      .limit(limit);
+  }
+
+  async getDailyNutritionProgress(userId: number, date: string): Promise<{
+    calories: number;
+    fat: number;
+    carbs: number;
+    proteins: number;
+    salt: number;
+    fiber: number;
+    averageProcessingScore: number;
+    entriesCount: number;
+  }> {
+    const startDate = new Date(date);
+    const endDate = new Date(date);
+    endDate.setDate(endDate.getDate() + 1);
+    
+    const entries = await db.select().from(diaryEntries)
+      .where(and(
+        eq(diaryEntries.userId, userId),
+        sql`${diaryEntries.consumedAt} >= ${startDate}`,
+        sql`${diaryEntries.consumedAt} < ${endDate}`
+      ));
+
+    let calories = 0, fat = 0, carbs = 0, proteins = 0, salt = 0, fiber = 0;
+    let totalProcessingScore = 0, processingEntries = 0;
+
+    for (const entry of entries) {
+      const serving = entry.servingSize || 1;
+      calories += (entry.calories || 0) * serving;
+      fat += (entry.fat || 0) * serving;
+      carbs += (entry.carbohydrates || 0) * serving;
+      proteins += (entry.proteins || 0) * serving;
+      salt += (entry.salt || 0) * serving;
+      fiber += (entry.fiber || 0) * serving;
+      
+      if (entry.processingScore !== null && entry.processingScore !== undefined) {
+        totalProcessingScore += entry.processingScore;
+        processingEntries++;
+      }
+    }
+
+    return {
+      calories: Math.round(calories * 100) / 100,
+      fat: Math.round(fat * 100) / 100,
+      carbs: Math.round(carbs * 100) / 100,
+      proteins: Math.round(proteins * 100) / 100,
+      salt: Math.round(salt * 100) / 100,
+      fiber: Math.round(fiber * 100) / 100,
+      averageProcessingScore: processingEntries > 0 ? Math.round((totalProcessingScore / processingEntries) * 100) / 100 : 0,
+      entriesCount: entries.length,
+    };
   }
 }
 

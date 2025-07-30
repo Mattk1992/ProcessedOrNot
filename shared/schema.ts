@@ -311,3 +311,121 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
 
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
+
+// Nutrition Diary Entry table
+export const diaryEntries = pgTable("diary_entries", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  productBarcode: text("product_barcode"),
+  productName: text("product_name").notNull(),
+  productBrands: text("product_brands"),
+  productImageUrl: text("product_image_url"),
+  servingSize: real("serving_size").default(1).notNull(), // multiplier for nutrition values
+  servingUnit: varchar("serving_unit", { length: 50 }).default("serving").notNull(),
+  calories: real("calories"),
+  fat: real("fat"),
+  saturatedFat: real("saturated_fat"),
+  carbohydrates: real("carbohydrates"),
+  sugars: real("sugars"),
+  proteins: real("proteins"),
+  salt: real("salt"),
+  fiber: real("fiber"),
+  processingScore: integer("processing_score"),
+  processingExplanation: text("processing_explanation"),
+  glycemicIndex: integer("glycemic_index"),
+  glycemicLoad: integer("glycemic_load"),
+  mealType: varchar("meal_type", { length: 20 }).notNull(), // 'breakfast', 'lunch', 'dinner', 'snack'
+  consumedAt: timestamp("consumed_at").defaultNow().notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("diary_user_id_idx").on(table.userId),
+  consumedAtIdx: index("diary_consumed_at_idx").on(table.consumedAt),
+}));
+
+export const insertDiaryEntrySchema = createInsertSchema(diaryEntries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertDiaryEntry = z.infer<typeof insertDiaryEntrySchema>;
+export type DiaryEntry = typeof diaryEntries.$inferSelect;
+
+// User Goals table
+export const userGoals = pgTable("user_goals", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  dailyCalories: integer("daily_calories").default(2000),
+  dailyFat: real("daily_fat").default(65),
+  dailyCarbs: real("daily_carbs").default(300),
+  dailyProteins: real("daily_proteins").default(50),
+  dailySalt: real("daily_salt").default(6),
+  dailyFiber: real("daily_fiber").default(25),
+  maxProcessingScore: integer("max_processing_score").default(5), // Target max processing score
+  activityLevel: varchar("activity_level", { length: 20 }).default("moderate"), // 'sedentary', 'light', 'moderate', 'active', 'very_active'
+  weightGoal: varchar("weight_goal", { length: 20 }).default("maintain"), // 'lose', 'maintain', 'gain'
+  dietaryRestrictions: text("dietary_restrictions").array(), // ['vegetarian', 'vegan', 'gluten_free', etc.]
+  healthConditions: text("health_conditions").array(), // ['diabetes', 'hypertension', etc.]
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertUserGoalsSchema = createInsertSchema(userGoals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUserGoals = z.infer<typeof insertUserGoalsSchema>;
+export type UserGoals = typeof userGoals.$inferSelect;
+
+// User Profile Extended Information
+export const userProfiles = pgTable("user_profiles", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  dateOfBirth: text("date_of_birth"), // Encrypted
+  gender: text("gender"), // Encrypted
+  height: real("height"), // in cm
+  weight: real("weight"), // in kg
+  bio: text("bio"), // Encrypted
+  avatarUrl: text("avatar_url"),
+  timezone: varchar("timezone", { length: 50 }).default("UTC"),
+  units: varchar("units", { length: 10 }).default("metric"), // 'metric' or 'imperial'
+  privacyLevel: varchar("privacy_level", { length: 20 }).default("public"), // 'public', 'friends', 'private'
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUserProfile = z.infer<typeof insertUserProfileSchema>;
+export type UserProfile = typeof userProfiles.$inferSelect;
+
+// Weight Tracking table
+export const weightEntries = pgTable("weight_entries", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  weight: real("weight").notNull(), // in kg
+  bodyFat: real("body_fat"), // percentage
+  muscleMass: real("muscle_mass"), // in kg
+  notes: text("notes"),
+  recordedAt: timestamp("recorded_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("weight_user_id_idx").on(table.userId),
+  recordedAtIdx: index("weight_recorded_at_idx").on(table.recordedAt),
+}));
+
+export const insertWeightEntrySchema = createInsertSchema(weightEntries).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertWeightEntry = z.infer<typeof insertWeightEntrySchema>;
+export type WeightEntry = typeof weightEntries.$inferSelect;

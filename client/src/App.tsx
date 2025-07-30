@@ -26,6 +26,10 @@ import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
 import SocialMedia from "@/pages/social-media";
 import NotFound from "@/pages/not-found";
+import NutriDashboard from "@/pages/nutri-dashboard";
+import NutriDiary from "@/pages/nutri-diary";
+import NutriProgress from "@/pages/nutri-progress";
+import NutriProfile from "@/pages/nutri-profile";
 
 function Router() {
   // Track page views when routes change
@@ -52,6 +56,13 @@ function Router() {
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
       <Route path="/social-media" component={SocialMedia} />
+      
+      {/* Nutrition Tracking Pages */}
+      <Route path="/nutri-dashboard" component={NutriDashboard} />
+      <Route path="/nutri-diary" component={NutriDiary} />
+      <Route path="/nutri-progress" component={NutriProgress} />
+      <Route path="/nutri-profile" component={NutriProfile} />
+      
       <Route component={NotFound} />
     </Switch>
   );

@@ -1884,6 +1884,287 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // ===== NUTRITION TRACKING API ROUTES =====
+
+  // Diary entries
+  app.get("/api/nutrition/diary", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const { date } = req.query;
+      const userId = req.session.userId;
+
+      if (date) {
+        const entries = await storage.getDiaryEntriesByUserAndDate(userId, date as string);
+        res.json(entries);
+      } else {
+        const entries = await storage.getDiaryEntriesByUser(userId);
+        res.json(entries);
+      }
+    } catch (error) {
+      console.error("Error fetching diary entries:", error);
+      res.status(500).json({ message: "Failed to fetch diary entries" });
+    }
+  });
+
+  app.post("/api/nutrition/diary", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const entry = { ...req.body, userId };
+      
+      const created = await storage.createDiaryEntry(entry);
+      res.status(201).json(created);
+    } catch (error) {
+      console.error("Error creating diary entry:", error);
+      res.status(500).json({ message: "Failed to create diary entry" });
+    }
+  });
+
+  app.put("/api/nutrition/diary/:id", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const id = parseInt(req.params.id);
+      const updated = await storage.updateDiaryEntry(id, req.body);
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Entry not found" });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating diary entry:", error);
+      res.status(500).json({ message: "Failed to update diary entry" });
+    }
+  });
+
+  app.delete("/api/nutrition/diary/:id", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteDiaryEntry(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Entry not found" });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting diary entry:", error);
+      res.status(500).json({ message: "Failed to delete diary entry" });
+    }
+  });
+
+  // User goals
+  app.get("/api/nutrition/goals", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const goals = await storage.getUserGoals(userId);
+      
+      if (!goals) {
+        // Return default goals if none exist
+        return res.json({
+          dailyCalories: 2000,
+          dailyFat: 65,
+          dailyCarbs: 300,
+          dailyProteins: 50,
+          dailySalt: 6,
+          dailyFiber: 25,
+          maxProcessingScore: 5,
+          activityLevel: 'moderate',
+          weightGoal: 'maintain'
+        });
+      }
+      
+      res.json(goals);
+    } catch (error) {
+      console.error("Error fetching user goals:", error);
+      res.status(500).json({ message: "Failed to fetch user goals" });
+    }
+  });
+
+  app.post("/api/nutrition/goals", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const goals = { ...req.body, userId };
+      
+      const created = await storage.createUserGoals(goals);
+      res.status(201).json(created);
+    } catch (error) {
+      console.error("Error creating user goals:", error);
+      res.status(500).json({ message: "Failed to create user goals" });
+    }
+  });
+
+  app.put("/api/nutrition/goals", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const updated = await storage.updateUserGoals(userId, req.body);
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Goals not found" });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating user goals:", error);
+      res.status(500).json({ message: "Failed to update user goals" });
+    }
+  });
+
+  // User profile
+  app.get("/api/nutrition/profile", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const profile = await storage.getUserProfile(userId);
+      res.json(profile || {});
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
+
+  app.post("/api/nutrition/profile", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const profile = { ...req.body, userId };
+      
+      const created = await storage.createUserProfile(profile);
+      res.status(201).json(created);
+    } catch (error) {
+      console.error("Error creating user profile:", error);
+      res.status(500).json({ message: "Failed to create user profile" });
+    }
+  });
+
+  app.put("/api/nutrition/profile", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const updated = await storage.updateUserProfile(userId, req.body);
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Profile not found" });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Failed to update user profile" });
+    }
+  });
+
+  // Weight entries
+  app.get("/api/nutrition/weight", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const { limit } = req.query;
+      
+      if (limit) {
+        const entries = await storage.getRecentWeightEntries(userId, parseInt(limit as string));
+        res.json(entries);
+      } else {
+        const entries = await storage.getWeightEntriesByUser(userId);
+        res.json(entries);
+      }
+    } catch (error) {
+      console.error("Error fetching weight entries:", error);
+      res.status(500).json({ message: "Failed to fetch weight entries" });
+    }
+  });
+
+  app.post("/api/nutrition/weight", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const entry = { ...req.body, userId };
+      
+      const created = await storage.createWeightEntry(entry);
+      res.status(201).json(created);
+    } catch (error) {
+      console.error("Error creating weight entry:", error);
+      res.status(500).json({ message: "Failed to create weight entry" });
+    }
+  });
+
+  // Nutrition progress
+  app.get("/api/nutrition/progress", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const { date } = req.query;
+      const targetDate = date ? date as string : new Date().toISOString().split('T')[0];
+      
+      const progress = await storage.getDailyNutritionProgress(userId, targetDate);
+      res.json(progress);
+    } catch (error) {
+      console.error("Error fetching nutrition progress:", error);
+      res.status(500).json({ message: "Failed to fetch nutrition progress" });
+    }
+  });
+
+  // Recent entries for dashboard
+  app.get("/api/nutrition/recent", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const limit = parseInt(req.query.limit as string) || 5;
+      
+      const entries = await storage.getRecentDiaryEntries(userId, limit);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching recent entries:", error);
+      res.status(500).json({ message: "Failed to fetch recent entries" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
