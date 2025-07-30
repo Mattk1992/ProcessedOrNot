@@ -143,7 +143,7 @@ export default function Home() {
             <p className="text-base sm:text-xl md:text-2xl mobile-hero-subtitle text-muted-foreground max-w-3xl mx-auto fade-in leading-relaxed px-2">
               {t('hero.description')}
             </p>
-            <div className="mt-4 sm:mt-8 flex justify-center gap-4 flex-wrap">
+            <div className="mt-4 sm:mt-8 flex justify-center gap-3 flex-wrap max-w-4xl mx-auto">
               <div className="glass-card px-3 sm:px-6 py-2 sm:py-3 rounded-full">
                 <p className="text-xs sm:text-sm mobile-text-scale text-muted-foreground">
                   {t('hero.databases')}
@@ -151,7 +151,37 @@ export default function Home() {
               </div>
               <div className="glass-card px-3 sm:px-6 py-2 sm:py-3 rounded-full">
                 <p className="text-xs sm:text-sm mobile-text-scale text-muted-foreground">
-                  AI-Powered Analysis & NutriBot Chat
+                  🤖 AI-Powered Analysis & NutriBot Chat
+                </p>
+              </div>
+              <div className="glass-card px-3 sm:px-6 py-2 sm:py-3 rounded-full">
+                <p className="text-xs sm:text-sm mobile-text-scale text-muted-foreground">
+                  ⚡ Instant Barcode Scanning
+                </p>
+              </div>
+              <div className="glass-card px-3 sm:px-6 py-2 sm:py-3 rounded-full">
+                <p className="text-xs sm:text-sm mobile-text-scale text-muted-foreground">
+                  🎯 Processing Score 0-10
+                </p>
+              </div>
+              <div className="glass-card px-3 sm:px-6 py-2 sm:py-3 rounded-full">
+                <p className="text-xs sm:text-sm mobile-text-scale text-muted-foreground">
+                  🌍 7 Languages Support
+                </p>
+              </div>
+              <div className="glass-card px-3 sm:px-6 py-2 sm:py-3 rounded-full">
+                <p className="text-xs sm:text-sm mobile-text-scale text-muted-foreground">
+                  📊 Glycemic Index Calculator
+                </p>
+              </div>
+              <div className="glass-card px-3 sm:px-6 py-2 sm:py-3 rounded-full">
+                <p className="text-xs sm:text-sm mobile-text-scale text-muted-foreground">
+                  🎙️ Voice Search Enabled
+                </p>
+              </div>
+              <div className="glass-card px-3 sm:px-6 py-2 sm:py-3 rounded-full">
+                <p className="text-xs sm:text-sm mobile-text-scale text-muted-foreground">
+                  🔒 Enterprise-Grade Security
                 </p>
               </div>
             </div>
