@@ -12,6 +12,7 @@ import SearchFilter from "./search-filter";
 import { VoiceSearchButton } from "./voice-search-button";
 import { useRewardSystem } from "@/hooks/useRewardSystem";
 import RewardModal from "./reward-modal";
+import { trackEvent } from "@/lib/analytics";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
@@ -90,9 +91,13 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
       }
       
       if (isTextSearch) {
+        // Track text search event
+        trackEvent('text_search', 'product_search', 'manual_input', barcode.trim().length);
         // For text searches, include filters
         onScan(barcode.trim(), filters);
       } else {
+        // Track barcode manual input event
+        trackEvent('barcode_manual', 'product_search', 'manual_input', barcode.trim().length);
         // For barcode searches, no filters needed
         onScan(barcode.trim());
       }
@@ -110,8 +115,12 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     
     const isTextSample = !/^[0-9\s]*$/.test(sampleBarcode);
     if (isTextSample) {
+      // Track sample text search event
+      trackEvent('sample_search', 'product_search', 'text_sample', sampleBarcode.length);
       onScan(sampleBarcode, filters);
     } else {
+      // Track sample barcode search event
+      trackEvent('sample_search', 'product_search', 'barcode_sample', sampleBarcode.length);
       onScan(sampleBarcode);
     }
   };
@@ -216,6 +225,9 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
   const startCamera = useCallback(async () => {
     try {
+      // Track camera start event
+      trackEvent('camera_start', 'user_interaction', 'barcode_scanner');
+      
       setCameraError("");
       setIsScanning(true);
       
@@ -347,6 +359,9 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   return; // Reward modal will be shown automatically
                 }
                 
+                // Track barcode scan event
+                trackEvent('barcode_scan', 'product_search', 'camera_scan', scannedCode.length);
+                
                 stopCamera();
                 onScan(scannedCode);
               } else if (scannedCode) {
@@ -423,6 +438,9 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   stopCamera();
                   return; // Reward modal will be shown automatically
                 }
+                
+                // Track barcode scan event
+                trackEvent('barcode_scan', 'product_search', 'camera_scan_fallback', scannedCode.length);
                 
                 stopCamera();
                 onScan(scannedCode);
@@ -913,6 +931,9 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                         if (!canProceed) {
                           return; // Reward modal will be shown automatically
                         }
+                        
+                        // Track voice search event
+                        trackEvent('voice_search', 'product_search', 'voice_input', transcript.trim().length);
                         
                         onScan(transcript.trim(), isTextSearch ? filters : undefined);
                       }

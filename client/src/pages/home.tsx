@@ -12,6 +12,7 @@ import { VoiceSearchButton } from "@/components/voice-search-button";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
+import { trackEvent } from "@/lib/analytics";
 
 export default function Home() {
   const [currentBarcode, setCurrentBarcode] = useState<string>("");
@@ -62,6 +63,9 @@ export default function Home() {
   const handleProductFound = (product: any) => {
     // Don't show nutrition popup during tutorial
     if (showTutorial) return;
+    
+    // Track successful product lookup
+    trackEvent('product_found', 'product_search', 'search_success', product.processingScore || 0);
     
     console.log('Product found:', product.productName);
   };
