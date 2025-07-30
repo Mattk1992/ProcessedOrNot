@@ -20,6 +20,8 @@ import {
 } from "@shared/schema";
 import { generatePasswordResetToken, sendPasswordResetEmail, sendEmailVerification, sanitizeUser, generateSearchId } from "./lib/auth";
 import session from "express-session";
+import pgSession from "connect-pg-simple";
+import { pool } from "./db";
 import { z } from "zod";
 
 
@@ -41,8 +43,16 @@ declare module 'express-session' {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Configure session middleware with enhanced security
+  // Initialize PostgreSQL session store
+  const PgSession = pgSession(session);
+  
+  // Configure session middleware with enhanced security and persistent storage
   app.use(session({
+    store: new PgSession({
+      pool: pool, // Connection pool
+      tableName: 'session', // Table name to store sessions
+      createTableIfMissing: true, // Create the table if it doesn't exist
+    }),
     secret: process.env.SESSION_SECRET || 'secure-session-key-change-in-production-2024',
     resave: false,
     saveUninitialized: false,
@@ -51,7 +61,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days default
     },
   }));
 

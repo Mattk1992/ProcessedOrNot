@@ -138,16 +138,54 @@ export class DatabaseStorage implements IStorage {
     if (!user) return user;
     
     try {
+      // Try to decrypt email first
+      let decryptedEmail = user.email;
+      try {
+        if (user.email) {
+          decryptedEmail = decryptEmail(user.email);
+        }
+      } catch (emailError) {
+        console.warn(`Failed to decrypt email for user ${user.id}, using fallback email`);
+        decryptedEmail = `user${user.id}@encrypted.local`;
+      }
+
+      // Try to decrypt firstName
+      let decryptedFirstName = user.firstName;
+      try {
+        if (user.firstName) {
+          decryptedFirstName = decryptPII(user.firstName);
+        }
+      } catch (firstNameError) {
+        console.warn(`Failed to decrypt firstName for user ${user.id}`);
+        decryptedFirstName = `User${user.id}`;
+      }
+
+      // Try to decrypt lastName
+      let decryptedLastName = user.lastName;
+      try {
+        if (user.lastName) {
+          decryptedLastName = decryptPII(user.lastName);
+        }
+      } catch (lastNameError) {
+        console.warn(`Failed to decrypt lastName for user ${user.id}`);
+        decryptedLastName = `LastName${user.id}`;
+      }
+
       return {
         ...user,
-        email: user.email ? decryptEmail(user.email) : user.email,
-        firstName: user.firstName ? decryptPII(user.firstName) : user.firstName,
-        lastName: user.lastName ? decryptPII(user.lastName) : user.lastName,
+        email: decryptedEmail,
+        firstName: decryptedFirstName,
+        lastName: decryptedLastName,
       };
     } catch (error) {
       console.error('Error decrypting user data:', error);
-      // Return user with original data if decryption fails
-      return user;
+      // Return user with fallback data if decryption fails completely
+      return {
+        ...user,
+        email: `user${user.id}@encrypted.local`,
+        firstName: `User${user.id}`,
+        lastName: `LastName${user.id}`,
+      };
     }
   }
 

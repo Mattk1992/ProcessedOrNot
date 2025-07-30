@@ -10,8 +10,16 @@ const TAG_LENGTH = 16; // 128 bits
 // Get encryption key from environment or generate one
 function getEncryptionKey(): string {
   const envKey = process.env.ENCRYPTION_KEY;
-  if (envKey && envKey.length === 64) { // 32 bytes = 64 hex chars
-    return envKey;
+  if (envKey) {
+    // If key exists but not the right length, derive a proper 64-char hex key
+    if (envKey.length === 64 && /^[0-9a-f]+$/i.test(envKey)) {
+      return envKey;
+    } else {
+      // Convert the key to a proper 32-byte hex string using SHA-256
+      const derivedKey = crypto.createHash('sha256').update(envKey).digest('hex');
+      console.log('🔐 Using derived encryption key from environment');
+      return derivedKey;
+    }
   }
   
   // Generate a new key for development (should be set in production)
