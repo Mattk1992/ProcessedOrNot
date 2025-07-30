@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import Home from "@/pages/home";
+import ProductLookup from "@/pages/product-lookup";
 import About from "@/pages/about";
 import Features from "@/pages/features";
 import Help from "@/pages/help";
@@ -33,6 +34,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/product-lookup" component={ProductLookup} />
+      <Route path="/scan" component={ProductLookup} />
       <Route path="/about" component={About} />
       <Route path="/features" component={Features} />
       <Route path="/help" component={Help} />
