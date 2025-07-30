@@ -143,10 +143,15 @@ export default function Home() {
             <p className="text-base sm:text-xl md:text-2xl mobile-hero-subtitle text-muted-foreground max-w-3xl mx-auto fade-in leading-relaxed px-2">
               {t('hero.description')}
             </p>
-            <div className="mt-4 sm:mt-8 flex justify-center">
+            <div className="mt-4 sm:mt-8 flex justify-center gap-4 flex-wrap">
               <div className="glass-card px-3 sm:px-6 py-2 sm:py-3 rounded-full">
                 <p className="text-xs sm:text-sm mobile-text-scale text-muted-foreground">
                   {t('hero.databases')}
+                </p>
+              </div>
+              <div className="glass-card px-3 sm:px-6 py-2 sm:py-3 rounded-full">
+                <p className="text-xs sm:text-sm mobile-text-scale text-muted-foreground">
+                  AI-Powered Analysis & NutriBot Chat
                 </p>
               </div>
             </div>
