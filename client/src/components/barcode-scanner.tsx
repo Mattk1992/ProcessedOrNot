@@ -10,6 +10,8 @@ import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SearchFilter from "./search-filter";
 import { VoiceSearchButton } from "./voice-search-button";
+import { useRewardSystem } from "@/hooks/useRewardSystem";
+import RewardModal from "./reward-modal";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
@@ -45,6 +47,16 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     includeBrands: [],
     excludeBrands: []
   });
+  
+  // Reward system integration
+  const { 
+    rewardStatus, 
+    showRewardModal, 
+    setShowRewardModal, 
+    openRewardUrl, 
+    isResettingReward,
+    checkRewardBeforeAction 
+  } = useRewardSystem();
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -68,9 +80,15 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   // Check if the input is likely a text search (contains non-numeric characters)
   const isTextSearch = barcode.trim().length > 0 && !/^[0-9\s]*$/.test(barcode.trim());
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (barcode.trim()) {
+      // Check reward system before proceeding
+      const canProceed = await checkRewardBeforeAction();
+      if (!canProceed) {
+        return; // Reward modal will be shown automatically
+      }
+      
       if (isTextSearch) {
         // For text searches, include filters
         onScan(barcode.trim(), filters);
@@ -81,8 +99,15 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     }
   };
 
-  const handleSampleClick = (sampleBarcode: string) => {
+  const handleSampleClick = async (sampleBarcode: string) => {
     setBarcode(sampleBarcode);
+    
+    // Check reward system before proceeding
+    const canProceed = await checkRewardBeforeAction();
+    if (!canProceed) {
+      return; // Reward modal will be shown automatically
+    }
+    
     const isTextSample = !/^[0-9\s]*$/.test(sampleBarcode);
     if (isTextSample) {
       onScan(sampleBarcode, filters);
@@ -308,13 +333,20 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         await codeReaderRef.current.decodeFromVideoDevice(
           selectedDeviceId,
           finalVideoElement,
-          (result, error) => {
+          async (result, error) => {
             if (result) {
               const scannedCode = result.getText();
               console.log("Scanned barcode:", scannedCode);
               
               // Validate barcode format before processing
               if (scannedCode && /^[0-9]{8,14}$/.test(scannedCode)) {
+                // Check reward system before processing scanned barcode
+                const canProceed = await checkRewardBeforeAction();
+                if (!canProceed) {
+                  stopCamera();
+                  return; // Reward modal will be shown automatically
+                }
+                
                 stopCamera();
                 onScan(scannedCode);
               } else if (scannedCode) {
@@ -378,13 +410,20 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         await codeReaderRef.current.decodeFromVideoDevice(
           selectedDeviceId,
           finalVideoElement,
-          (result, error) => {
+          async (result, error) => {
             if (result) {
               const scannedCode = result.getText();
               console.log("Scanned barcode (fallback):", scannedCode);
               
               // Validate barcode format before processing
               if (scannedCode && /^[0-9]{8,14}$/.test(scannedCode)) {
+                // Check reward system before processing scanned barcode
+                const canProceed = await checkRewardBeforeAction();
+                if (!canProceed) {
+                  stopCamera();
+                  return; // Reward modal will be shown automatically
+                }
+                
                 stopCamera();
                 onScan(scannedCode);
               } else if (scannedCode) {
@@ -864,11 +903,17 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 
                 {/* Voice Search Button */}
                 <VoiceSearchButton
-                  onVoiceResult={(transcript) => {
+                  onVoiceResult={async (transcript) => {
                     setBarcode(transcript);
                     // Auto-submit if we get a voice result
-                    setTimeout(() => {
+                    setTimeout(async () => {
                       if (transcript.trim()) {
+                        // Check reward system before processing voice input
+                        const canProceed = await checkRewardBeforeAction();
+                        if (!canProceed) {
+                          return; // Reward modal will be shown automatically
+                        }
+                        
                         onScan(transcript.trim(), isTextSearch ? filters : undefined);
                       }
                     }, 100);
@@ -957,6 +1002,19 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           </div>
         </CardContent>
       </Card>
+
+      {/* Reward Modal */}
+      {rewardStatus && rewardStatus.needsReward && (
+        <RewardModal
+          isOpen={showRewardModal}
+          onOpenChange={setShowRewardModal}
+          currentCount={rewardStatus.currentCount}
+          maxCount={rewardStatus.maxCount}
+          rewardUrl={rewardStatus.rewardUrl || ""}
+          onOpenRewardUrl={openRewardUrl}
+          isResetting={isResettingReward}
+        />
+      )}
     </div>
   );
 }

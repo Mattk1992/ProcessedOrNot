@@ -39,6 +39,7 @@ declare module 'express-session' {
   interface SessionData {
     userId?: number;
     user?: any;
+    reward_count?: number;
   }
 }
 
@@ -64,6 +65,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days default
     },
   }));
+
+  // Helper functions for reward tracking
+  function incrementRewardCount(req: any): number {
+    if (!req.session.reward_count) {
+      req.session.reward_count = 0;
+    }
+    req.session.reward_count++;
+    return req.session.reward_count;
+  }
+
+  function resetRewardCount(req: any): void {
+    req.session.reward_count = 0;
+  }
+
+  function getRewardCount(req: any): number {
+    return req.session.reward_count || 0;
+  }
 
   // Configure multer for voice file uploads
   const upload = multer({
@@ -381,12 +399,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Search products with filters (for text searches)
-  app.post("/api/products/search", async (req, res) => {
+  app.post("/api/products/search", async (req: any, res) => {
     try {
       const { query, filters } = req.body;
       
       if (!query || typeof query !== 'string') {
         return res.status(400).json({ message: "Query is required" });
+      }
+
+      // Increment reward count for search attempts
+      const currentCount = incrementRewardCount(req);
+      
+      // Check if user needs to visit reward URL
+      if (currentCount >= 6) {
+        return res.status(428).json({ 
+          message: "Please visit the reward URL to continue searching",
+          rewardUrl: "https://ProcessedOrNot.replit.app/?reward=product-search",
+          currentCount: currentCount
+        });
       }
 
       // Check if we have cached product data
@@ -467,9 +497,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get product by barcode
-  app.get("/api/products/:barcode", async (req, res) => {
+  app.get("/api/products/:barcode", async (req: any, res) => {
     try {
       const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
+
+      // Increment reward count for barcode scans
+      const currentCount = incrementRewardCount(req);
+      
+      // Check if user needs to visit reward URL
+      if (currentCount >= 6) {
+        return res.status(428).json({ 
+          message: "Please visit the reward URL to continue scanning",
+          rewardUrl: "https://ProcessedOrNot.replit.app/?reward=product-search",
+          currentCount: currentCount
+        });
+      }
 
       // Check if we have cached product data
       const cachedProduct = await storage.getProductByBarcode(barcode);
@@ -1765,6 +1807,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       message: isVoiceTranscriptionAvailable() 
         ? "Voice transcription is available"
         : "Voice transcription requires ASSEMBLYAI_API_KEY configuration"
+    });
+  });
+
+  // Reward system endpoints
+  // Get current reward count
+  app.get("/api/rewards/count", (req: any, res) => {
+    const count = getRewardCount(req);
+    res.json({ 
+      rewardCount: count,
+      maxCount: 6,
+      needsReward: count >= 6 
+    });
+  });
+
+  // Reset reward count when reward URL is visited
+  app.post("/api/rewards/reset", (req: any, res) => {
+    const { rewardParam } = req.body;
+    
+    // Verify the reward parameter matches expected value
+    if (rewardParam === "product-search") {
+      resetRewardCount(req);
+      res.json({ 
+        message: "Reward count reset successfully",
+        newCount: 0
+      });
+    } else {
+      res.status(400).json({ 
+        message: "Invalid reward parameter" 
+      });
+    }
+  });
+
+  // Check if reward is needed (for frontend to check without incrementing)
+  app.get("/api/rewards/status", (req: any, res) => {
+    const count = getRewardCount(req);
+    const needsReward = count >= 6;
+    
+    res.json({
+      currentCount: count,
+      maxCount: 6,
+      needsReward: needsReward,
+      rewardUrl: needsReward ? "https://ProcessedOrNot.replit.app/?reward=product-search" : null
     });
   });
 
