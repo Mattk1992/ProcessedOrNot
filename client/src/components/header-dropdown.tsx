@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen, Mail, FileText, Share2, Lock } from 'lucide-react';
+import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen, Mail, FileText, Share2, Lock, BarChart3, TrendingUp, Home, Camera } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
@@ -22,6 +22,20 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
 
   // Menu items for non-authenticated users
   const guestMenuItems = [
+    // Main Navigation
+    { type: 'header', label: 'Navigation' },
+    {
+      label: 'Home',
+      icon: <Home className="w-4 h-4" />,
+      action: () => setLocation('/')
+    },
+    {
+      label: 'Product Scanner',
+      icon: <Camera className="w-4 h-4" />,
+      action: () => setLocation('/product-lookup')
+    },
+    { type: 'divider' },
+    
     // Authentication
     {
       label: 'Authentication',
@@ -95,6 +109,44 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
 
   // Menu items for authenticated users
   const userMenuItems = [
+    // Main Navigation
+    { type: 'header', label: 'Navigation' },
+    {
+      label: 'Home',
+      icon: <Home className="w-4 h-4" />,
+      action: () => setLocation('/')
+    },
+    {
+      label: 'Product Scanner',
+      icon: <Camera className="w-4 h-4" />,
+      action: () => setLocation('/product-lookup')
+    },
+    { type: 'divider' },
+    
+    // Nutrition Tracking
+    { type: 'header', label: 'Nutrition Tracking' },
+    {
+      label: 'Dashboard',
+      icon: <BarChart3 className="w-4 h-4" />,
+      action: () => setLocation('/nutri-dashboard')
+    },
+    {
+      label: 'Food Diary',
+      icon: <BookOpen className="w-4 h-4" />,
+      action: () => setLocation('/nutri-diary')
+    },
+    {
+      label: 'Progress',
+      icon: <TrendingUp className="w-4 h-4" />,
+      action: () => setLocation('/nutri-progress')
+    },
+    {
+      label: 'Profile',
+      icon: <User className="w-4 h-4" />,
+      action: () => setLocation('/nutri-profile')
+    },
+    { type: 'divider' },
+    
     // Admin Panel (if admin)
     ...(user?.accountType === 'Admin' ? [{
       label: 'Admin Panel',
