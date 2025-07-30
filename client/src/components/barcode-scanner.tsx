@@ -569,6 +569,17 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     currentLocationRef.current = location;
   }, [location, isCameraActive, stopCamera]);
 
+  // Focus on input field when URL contains #manual-input anchor
+  useEffect(() => {
+    if (window.location.hash === '#manual-input') {
+      const inputElement = document.getElementById('manual-barcode-input');
+      if (inputElement) {
+        inputElement.focus();
+        inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, []);
+
   return (
     <div className="space-y-10">
       <div className="text-center mb-8">
@@ -830,6 +841,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                     onChange={(e) => setBarcode(e.target.value)}
                     placeholder={t('scanner.input.placeholder')}
                     data-tutorial="manual-input"
+                    id="manual-barcode-input"
                     className="w-full px-4 sm:px-5 py-3 sm:py-4 text-base sm:text-lg font-mono tracking-wider pr-12 sm:pr-14 border-2 border-border/20 focus:border-primary/50 bg-card/50 backdrop-blur-sm rounded-2xl transition-all duration-200 group-hover:border-primary/30 mobile-touch-friendly"
                     disabled={isLoading}
                   />
