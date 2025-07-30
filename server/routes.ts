@@ -56,7 +56,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }),
     secret: process.env.SESSION_SECRET || 'secure-session-key-change-in-production-2024',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true, // Create sessions for anonymous users too
     name: 'sessionId', // Change default session name for security
     cookie: {
       secure: process.env.NODE_ENV === 'production',
@@ -66,21 +66,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   }));
 
-  // Helper functions for reward tracking
+  // Helper functions for reward tracking (works for both logged-in and anonymous users)
   function incrementRewardCount(req: any): number {
+    // Ensure session exists for tracking (creates anonymous session if needed)
+    if (!req.session) {
+      req.session = {};
+    }
     if (!req.session.reward_count) {
       req.session.reward_count = 0;
     }
     req.session.reward_count++;
+    
+    // Save session to database immediately for persistence
+    req.session.save((err: any) => {
+      if (err) {
+        console.warn("Failed to save session for reward tracking:", err);
+      }
+    });
+    
     return req.session.reward_count;
   }
 
   function resetRewardCount(req: any): void {
+    // Ensure session exists
+    if (!req.session) {
+      req.session = {};
+    }
     req.session.reward_count = 0;
+    
+    // Save session to database immediately
+    req.session.save((err: any) => {
+      if (err) {
+        console.warn("Failed to save session for reward reset:", err);
+      }
+    });
   }
 
   function getRewardCount(req: any): number {
-    return req.session.reward_count || 0;
+    return (req.session && req.session.reward_count) || 0;
   }
 
   // Configure multer for voice file uploads
@@ -98,6 +121,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
     },
   });
+
+  // Middleware to ensure session exists for anonymous users
+  const ensureSession = (req: any, res: any, next: any) => {
+    // This middleware ensures that anonymous users get a session for reward tracking
+    if (!req.session) {
+      req.session = {};
+    }
+    next();
+  };
 
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
@@ -399,7 +431,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Search products with filters (for text searches)
-  app.post("/api/products/search", async (req: any, res) => {
+  app.post("/api/products/search", ensureSession, async (req: any, res) => {
     try {
       const { query, filters } = req.body;
       
@@ -497,7 +529,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get product by barcode
-  app.get("/api/products/:barcode", async (req: any, res) => {
+  app.get("/api/products/:barcode", ensureSession, async (req: any, res) => {
     try {
       const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
 
@@ -1812,7 +1844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Reward system endpoints
   // Get current reward count
-  app.get("/api/rewards/count", (req: any, res) => {
+  app.get("/api/rewards/count", ensureSession, (req: any, res) => {
     const count = getRewardCount(req);
     res.json({ 
       rewardCount: count,
@@ -1822,7 +1854,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Reset reward count when reward URL is visited
-  app.post("/api/rewards/reset", (req: any, res) => {
+  app.post("/api/rewards/reset", ensureSession, (req: any, res) => {
     const { rewardParam } = req.body;
     
     // Verify the reward parameter matches expected value
@@ -1840,7 +1872,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Check if reward is needed (for frontend to check without incrementing)
-  app.get("/api/rewards/status", (req: any, res) => {
+  app.get("/api/rewards/status", ensureSession, (req: any, res) => {
     const count = getRewardCount(req);
     const needsReward = count >= 6;
     
