@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,7 @@ export default function AdminSettings() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [editingSettings, setEditingSettings] = useState<Record<string, string>>({});
+  const [autoSaveTimeouts, setAutoSaveTimeouts] = useState<Record<string, NodeJS.Timeout>>({});
 
   // Fetch all admin settings
   const { data: settings, isLoading } = useQuery({
@@ -44,15 +45,23 @@ export default function AdminSettings() {
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
       toast({
-        title: "Setting Updated",
-        description: `${variables.key} has been updated successfully`,
+        title: "Setting Auto-Saved",
+        description: `${formatSettingName(variables.key)} has been updated automatically`,
         variant: "default",
       });
-      // Remove from editing state
+      // Remove from editing state and clear timeout
       setEditingSettings(prev => {
         const newState = { ...prev };
         delete newState[variables.key];
         return newState;
+      });
+      setAutoSaveTimeouts(prev => {
+        const newTimeouts = { ...prev };
+        if (newTimeouts[variables.key]) {
+          clearTimeout(newTimeouts[variables.key]);
+          delete newTimeouts[variables.key];
+        }
+        return newTimeouts;
       });
     },
     onError: (error) => {
@@ -86,12 +95,52 @@ export default function AdminSettings() {
     },
   });
 
+  // Debounced auto-save for text inputs
+  const debouncedAutoSave = useCallback((key: string, value: string) => {
+    // Clear existing timeout
+    if (autoSaveTimeouts[key]) {
+      clearTimeout(autoSaveTimeouts[key]);
+    }
+
+    // Set new timeout for auto-save (2 seconds after user stops typing)
+    const timeoutId = setTimeout(() => {
+      updateSettingMutation.mutate({ key, value });
+    }, 2000);
+
+    setAutoSaveTimeouts(prev => ({
+      ...prev,
+      [key]: timeoutId
+    }));
+  }, [autoSaveTimeouts, updateSettingMutation]);
+
   const handleInputChange = (key: string, value: string) => {
     setEditingSettings(prev => ({
       ...prev,
       [key]: value
     }));
+    
+    // Trigger auto-save for text inputs
+    debouncedAutoSave(key, value);
   };
+
+  // Auto-save for boolean/switch settings
+  const handleBooleanChange = (key: string, value: boolean) => {
+    const stringValue = value.toString();
+    setEditingSettings(prev => ({
+      ...prev,
+      [key]: stringValue
+    }));
+    
+    // Immediately save boolean changes
+    updateSettingMutation.mutate({ key, value: stringValue });
+  };
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      Object.values(autoSaveTimeouts).forEach(timeout => clearTimeout(timeout));
+    };
+  }, []);
 
   const handleSaveSetting = (key: string) => {
     const value = editingSettings[key];
@@ -217,33 +266,10 @@ export default function AdminSettings() {
                         <Badge variant="outline" className="text-xs">
                           Auto-save
                         </Badge>
-                      ) : isEditing ? (
-                        <>
-                          <Button
-                            onClick={() => handleSaveSetting(setting.settingKey)}
-                            disabled={updateSettingMutation.isPending}
-                            size="sm"
-                            variant="default"
-                          >
-                            <Save className="h-3 w-3 mr-1" />
-                            Save
-                          </Button>
-                          <Button
-                            onClick={() => handleCancelEdit(setting.settingKey)}
-                            size="sm"
-                            variant="outline"
-                          >
-                            Cancel
-                          </Button>
-                        </>
                       ) : (
-                        <Button
-                          onClick={() => handleInputChange(setting.settingKey, setting.settingValue)}
-                          size="sm"
-                          variant="outline"
-                        >
-                          Edit
-                        </Button>
+                        <Badge variant="outline" className="text-xs text-green-600">
+                          Auto-save in 2s
+                        </Badge>
                       )}
                     </div>
                   </div>
@@ -264,11 +290,7 @@ export default function AdminSettings() {
                           id={setting.settingKey}
                           checked={currentValue === 'true'}
                           onCheckedChange={(checked) => {
-                            const newValue = checked ? 'true' : 'false';
-                            handleInputChange(setting.settingKey, newValue);
-                            if (!isEditing) {
-                              handleSaveSetting(setting.settingKey);
-                            }
+                            handleBooleanChange(setting.settingKey, checked);
                           }}
                           disabled={updateSettingMutation.isPending}
                         />
@@ -288,11 +310,15 @@ export default function AdminSettings() {
                             onChange={(e) => handleInputChange(setting.settingKey, e.target.value)}
                             className="flex-1"
                             type={setting.settingType === 'integer' ? 'number' : 'text'}
+                            placeholder="Enter value..."
                           />
                         ) : (
-                          <span className="px-2 py-1 bg-white dark:bg-gray-700 border rounded text-sm">
-                            {currentValue}
-                          </span>
+                          <div
+                            className="px-2 py-1 bg-white dark:bg-gray-700 border rounded text-sm cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
+                            onClick={() => handleInputChange(setting.settingKey, setting.settingValue)}
+                          >
+                            {currentValue || 'Click to edit'}
+                          </div>
                         )}
                       </>
                     )}
