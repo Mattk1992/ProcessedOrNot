@@ -36,7 +36,13 @@ import {
   type InsertUserProfile,
   weightEntries,
   type WeightEntry,
-  type InsertWeightEntry
+  type InsertWeightEntry,
+  productDatabases,
+  type ProductDatabase,
+  type InsertProductDatabase,
+  deviceIdentifiers,
+  type DeviceIdentifier,
+  type InsertDeviceIdentifier
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -178,6 +184,24 @@ export interface IStorage {
     averageProcessingScore: number;
     entriesCount: number;
   }>;
+
+  // Product Database Management methods
+  getAllProductDatabases(): Promise<ProductDatabase[]>;
+  getProductDatabaseById(id: number): Promise<ProductDatabase | undefined>;
+  getProductDatabaseByName(databaseName: string): Promise<ProductDatabase | undefined>;
+  createProductDatabase(database: InsertProductDatabase): Promise<ProductDatabase>;
+  updateProductDatabase(id: number, updates: Partial<InsertProductDatabase>): Promise<ProductDatabase | undefined>;
+  deleteProductDatabase(id: number): Promise<boolean>;
+  reorderProductDatabases(databases: Array<{ id: number; priority: number }>): Promise<ProductDatabase[]>;
+  testProductDatabase(id: number, testBarcode: string): Promise<any>;
+  testAllProductDatabases(testBarcode: string): Promise<any[]>;
+  initializeDefaultProductDatabases(): Promise<ProductDatabase[]>;
+
+  // Device Identifier methods
+  logDeviceIdentifier(deviceData: any): Promise<DeviceIdentifier>;
+  getDeviceIdentifierByHash(identifierHash: string): Promise<DeviceIdentifier | undefined>;
+  updateDeviceLastSeen(identifierHash: string): Promise<void>;
+  getDeviceAnalytics(): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1249,6 +1273,464 @@ export class DatabaseStorage implements IStorage {
       fiber: Math.round(fiber * 100) / 100,
       averageProcessingScore: processingEntries > 0 ? Math.round((totalProcessingScore / processingEntries) * 100) / 100 : 0,
       entriesCount: entries.length,
+    };
+  }
+
+  // ==================== Product Database Management Methods ====================
+
+  async getAllProductDatabases(): Promise<ProductDatabase[]> {
+    return await db.select().from(productDatabases)
+      .orderBy(productDatabases.priority);
+  }
+
+  async getProductDatabaseById(id: number): Promise<ProductDatabase | undefined> {
+    const [database] = await db.select().from(productDatabases)
+      .where(eq(productDatabases.id, id))
+      .limit(1);
+    return database || undefined;
+  }
+
+  async getProductDatabaseByName(databaseName: string): Promise<ProductDatabase | undefined> {
+    const [database] = await db.select().from(productDatabases)
+      .where(eq(productDatabases.databaseName, databaseName))
+      .limit(1);
+    return database || undefined;
+  }
+
+  async createProductDatabase(database: InsertProductDatabase): Promise<ProductDatabase> {
+    const [created] = await db.insert(productDatabases).values({
+      ...database,
+      updatedAt: new Date()
+    }).returning();
+    return created;
+  }
+
+  async updateProductDatabase(id: number, updates: Partial<InsertProductDatabase>): Promise<ProductDatabase | undefined> {
+    const [updated] = await db
+      .update(productDatabases)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(productDatabases.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteProductDatabase(id: number): Promise<boolean> {
+    const result = await db.delete(productDatabases)
+      .where(eq(productDatabases.id, id));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async reorderProductDatabases(databases: Array<{ id: number; priority: number }>): Promise<ProductDatabase[]> {
+    // Update priorities in a transaction
+    const updatedDatabases: ProductDatabase[] = [];
+    
+    for (const { id, priority } of databases) {
+      const [updated] = await db
+        .update(productDatabases)
+        .set({ priority, updatedAt: new Date() })
+        .where(eq(productDatabases.id, id))
+        .returning();
+      if (updated) {
+        updatedDatabases.push(updated);
+      }
+    }
+    
+    // Return all databases in new order
+    return await this.getAllProductDatabases();
+  }
+
+  async testProductDatabase(id: number, testBarcode: string): Promise<any> {
+    const database = await this.getProductDatabaseById(id);
+    if (!database) {
+      throw new Error('Database not found');
+    }
+
+    // Import the specific database test function dynamically
+    const startTime = Date.now();
+    let result = null;
+    let error = null;
+
+    try {
+      // Import the corresponding test function based on database name
+      const testFunction = await this.getTestFunctionForDatabase(database.databaseName);
+      result = await testFunction(testBarcode);
+      
+      // Update database stats
+      const responseTime = Date.now() - startTime;
+      const hasData = result !== null && result !== undefined;
+      
+      await this.updateProductDatabase(id, {
+        lastTested: new Date(),
+        averageResponseTime: responseTime,
+        isOperational: true,
+        dataFoundRate: hasData ? 100 : 0
+      });
+
+    } catch (testError: any) {
+      error = testError.message;
+      
+      // Update database as not operational
+      await this.updateProductDatabase(id, {
+        lastTested: new Date(),
+        isOperational: false
+      });
+    }
+
+    return {
+      databaseName: database.displayName,
+      testBarcode,
+      success: error === null,
+      hasData: result !== null,
+      responseTime: Date.now() - startTime,
+      error,
+      result: result ? 'Data found' : 'No data found'
+    };
+  }
+
+  async testAllProductDatabases(testBarcode: string): Promise<any[]> {
+    const databases = await this.getAllProductDatabases();
+    const results = [];
+
+    for (const database of databases.filter(db => db.isEnabled)) {
+      try {
+        const testResult = await this.testProductDatabase(database.id, testBarcode);
+        results.push(testResult);
+      } catch (error: any) {
+        results.push({
+          databaseName: database.displayName,
+          testBarcode,
+          success: false,
+          hasData: false,
+          error: error.message,
+          result: 'Test failed'
+        });
+      }
+    }
+
+    return results;
+  }
+
+  private async getTestFunctionForDatabase(databaseName: string): Promise<(barcode: string) => Promise<any>> {
+    // Map database names to their corresponding test functions
+    const databaseMap: { [key: string]: string } = {
+      'OpenFoodFacts': 'fetchProductFromOpenFoodFacts',
+      'USDA_FoodData_Central': 'fetchProductFromUSDA',
+      'FoodDB_CA': 'fetchProductFromFoodDBCA',
+      'USDA_FDC': 'fetchProductFromUSDAFDC',
+      'OpenNutrition': 'fetchProductFromOpenNutrition',
+      'Nutritionix': 'fetchProductFromNutritionix',
+      'Spoonacular': 'fetchProductFromSpoonacular',
+      'API_Ninjas': 'fetchProductFromAPINinjas',
+      'FoodData_Central_USDA': 'fetchProductFromFoodDataCentral',
+      'EFSA': 'fetchProductFromEFSA',
+      'Health_Canada': 'fetchProductFromHealthCanada',
+      'Barcode_Spider': 'fetchProductFromBarcodeSpider',
+      'EAN_Search': 'fetchProductFromEANSearch',
+      'UPC_Database': 'fetchProductFromUPCDatabase'
+    };
+
+    const functionName = databaseMap[databaseName];
+    if (!functionName) {
+      throw new Error(`No test function found for database: ${databaseName}`);
+    }
+
+    // Dynamically import the function
+    try {
+      const module = await import('./lib/openfoodfacts');
+      return module[functionName];
+    } catch (error) {
+      throw new Error(`Failed to import test function for ${databaseName}: ${error}`);
+    }
+  }
+
+  async initializeDefaultProductDatabases(): Promise<ProductDatabase[]> {
+    // Check if databases are already initialized
+    const existingCount = await db.select({ count: sql`count(*)` }).from(productDatabases);
+    if (existingCount[0]?.count && Number(existingCount[0].count) > 0) {
+      return await this.getAllProductDatabases();
+    }
+
+    // Default database configurations based on the current cascading system
+    const defaultDatabases: InsertProductDatabase[] = [
+      {
+        databaseName: 'OpenFoodFacts',
+        displayName: 'OpenFoodFacts (Primary)',
+        priority: 1,
+        isEnabled: true,
+        apiEndpoint: 'https://world.openfoodfacts.org/api/v0/product/',
+        requiresApiKey: false,
+        apiKeyConfigured: false,
+        description: 'Global, crowd-sourced food database with comprehensive product information',
+        coverage: 'Global',
+        dataType: 'Nutrition, Ingredients, Processing',
+        isOperational: true
+      },
+      {
+        databaseName: 'USDA_FoodData_Central',
+        displayName: 'USDA FoodData Central (Secondary)',
+        priority: 2,
+        isEnabled: true,
+        apiEndpoint: 'https://api.nal.usda.gov/fdc/v1/',
+        requiresApiKey: false,
+        apiKeyConfigured: false,
+        description: 'US government nutrition database',
+        coverage: 'United States',
+        dataType: 'Nutrition, Scientific Data',
+        isOperational: true
+      },
+      {
+        databaseName: 'FoodDB_CA',
+        displayName: 'FoodDB.ca',
+        priority: 3,
+        isEnabled: true,
+        apiEndpoint: 'https://fooddb.ca/api/v1/',
+        requiresApiKey: false,
+        apiKeyConfigured: false,
+        description: 'Canadian food database',
+        coverage: 'Canada',
+        dataType: 'Nutrition, Ingredients',
+        isOperational: true
+      },
+      {
+        databaseName: 'USDA_FDC',
+        displayName: 'USDA FDC',
+        priority: 4,
+        isEnabled: true,
+        apiEndpoint: 'https://api.nal.usda.gov/fdc/v1/',
+        requiresApiKey: true,
+        apiKeyConfigured: false,
+        description: 'USDA Food Data Central API',
+        coverage: 'United States',
+        dataType: 'Comprehensive Nutrition Data',
+        isOperational: false
+      },
+      {
+        databaseName: 'OpenNutrition',
+        displayName: 'OpenNutrition',
+        priority: 5,
+        isEnabled: true,
+        apiEndpoint: 'https://opennutrition.org/api/v1/',
+        requiresApiKey: false,
+        apiKeyConfigured: false,
+        description: 'Open nutrition database',
+        coverage: 'Global',
+        dataType: 'Nutrition',
+        isOperational: true
+      },
+      {
+        databaseName: 'Nutritionix',
+        displayName: 'Nutritionix',
+        priority: 6,
+        isEnabled: true,
+        apiEndpoint: 'https://trackapi.nutritionix.com/v2/',
+        requiresApiKey: true,
+        apiKeyConfigured: false,
+        description: 'Commercial nutrition API',
+        coverage: 'United States',
+        dataType: 'Nutrition, Brand Products',
+        isOperational: false
+      },
+      {
+        databaseName: 'Spoonacular',
+        displayName: 'Spoonacular',
+        priority: 7,
+        isEnabled: true,
+        apiEndpoint: 'https://api.spoonacular.com/',
+        requiresApiKey: true,
+        apiKeyConfigured: false,
+        description: 'Recipe and food API',
+        coverage: 'Global',
+        dataType: 'Recipes, Ingredients, Nutrition',
+        isOperational: false
+      },
+      {
+        databaseName: 'API_Ninjas',
+        displayName: 'API Ninjas',
+        priority: 8,
+        isEnabled: true,
+        apiEndpoint: 'https://api.api-ninjas.com/v1/',
+        requiresApiKey: true,
+        apiKeyConfigured: false,
+        description: 'Multi-purpose API with nutrition data',
+        coverage: 'Global',
+        dataType: 'Nutrition',
+        isOperational: false
+      },
+      {
+        databaseName: 'FoodData_Central_USDA',
+        displayName: 'FoodData Central (USDA)',
+        priority: 9,
+        isEnabled: true,
+        apiEndpoint: 'https://api.nal.usda.gov/fdc/v1/',
+        requiresApiKey: false,
+        apiKeyConfigured: false,
+        description: 'USDA comprehensive food data',
+        coverage: 'United States',
+        dataType: 'Scientific Nutrition Data',
+        isOperational: true
+      },
+      {
+        databaseName: 'EFSA',
+        displayName: 'EFSA',
+        priority: 10,
+        isEnabled: true,
+        apiEndpoint: 'https://www.efsa.europa.eu/api/',
+        requiresApiKey: false,
+        apiKeyConfigured: false,
+        description: 'European Food Safety Authority',
+        coverage: 'Europe',
+        dataType: 'Safety, Nutrition',
+        isOperational: true
+      },
+      {
+        databaseName: 'Health_Canada',
+        displayName: 'Health Canada',
+        priority: 11,
+        isEnabled: true,
+        apiEndpoint: 'https://food-nutrition.canada.ca/api/',
+        requiresApiKey: false,
+        apiKeyConfigured: false,
+        description: 'Health Canada Food Database',
+        coverage: 'Canada',
+        dataType: 'Nutrition, Regulations',
+        isOperational: true
+      },
+      {
+        databaseName: 'Barcode_Spider',
+        displayName: 'Barcode Spider',
+        priority: 12,
+        isEnabled: true,
+        apiEndpoint: 'https://api.barcodespider.com/v1/',
+        requiresApiKey: false,
+        apiKeyConfigured: false,
+        description: 'Barcode lookup service',
+        coverage: 'Global',
+        dataType: 'Product Information',
+        isOperational: true
+      },
+      {
+        databaseName: 'EAN_Search',
+        displayName: 'EAN Search',
+        priority: 13,
+        isEnabled: true,
+        apiEndpoint: 'https://api.ean-search.org/',
+        requiresApiKey: false,
+        apiKeyConfigured: false,
+        description: 'EAN barcode search',
+        coverage: 'Global',
+        dataType: 'Product Identification',
+        isOperational: true
+      },
+      {
+        databaseName: 'UPC_Database',
+        displayName: 'UPC Database',
+        priority: 14,
+        isEnabled: true,
+        apiEndpoint: 'https://api.upcitemdb.com/prod/trial/',
+        requiresApiKey: false,
+        apiKeyConfigured: false,
+        description: 'UPC barcode database',
+        coverage: 'Global',
+        dataType: 'Product Information',
+        isOperational: true
+      }
+    ];
+
+    // Insert all default databases
+    const createdDatabases = await db.insert(productDatabases)
+      .values(defaultDatabases)
+      .returning();
+
+    return createdDatabases;
+  }
+
+  // ==================== Device Identifier Methods ====================
+
+  async logDeviceIdentifier(deviceData: any): Promise<DeviceIdentifier> {
+    try {
+      // Create a hash from device/browser information
+      const identifierString = `${deviceData.userAgent || ''}-${deviceData.screenResolution || ''}-${deviceData.timezone || ''}`;
+      const identifierHash = hashForSearch(identifierString);
+
+      // Check if device already exists
+      const existing = await this.getDeviceIdentifierByHash(identifierHash);
+      
+      if (existing) {
+        // Update last seen and increment visit count
+        const [updated] = await db
+          .update(deviceIdentifiers)
+          .set({ 
+            lastSeen: new Date(),
+            visitCount: sql`${deviceIdentifiers.visitCount} + 1`
+          })
+          .where(eq(deviceIdentifiers.identifierHash, identifierHash))
+          .returning();
+        return updated;
+      } else {
+        // Create new device record
+        const encryptedData = {
+          identifierHash,
+          identifierType: deviceData.identifierType || 'browser',
+          platform: deviceData.platform || 'web',
+          browserInfo: deviceData.userAgent ? encryptPII(deviceData.userAgent) : null,
+          deviceInfo: deviceData.deviceInfo ? encryptPII(JSON.stringify(deviceData.deviceInfo)) : null,
+          screenResolution: deviceData.screenResolution || null,
+          timezone: deviceData.timezone || null,
+          language: deviceData.language || null,
+          visitCount: 1,
+          isActive: true
+        };
+
+        const [created] = await db.insert(deviceIdentifiers)
+          .values(encryptedData)
+          .returning();
+        return created;
+      }
+    } catch (error) {
+      console.error('Error logging device identifier:', error);
+      throw error;
+    }
+  }
+
+  async getDeviceIdentifierByHash(identifierHash: string): Promise<DeviceIdentifier | undefined> {
+    const [device] = await db.select().from(deviceIdentifiers)
+      .where(eq(deviceIdentifiers.identifierHash, identifierHash))
+      .limit(1);
+    return device || undefined;
+  }
+
+  async updateDeviceLastSeen(identifierHash: string): Promise<void> {
+    await db
+      .update(deviceIdentifiers)
+      .set({ lastSeen: new Date() })
+      .where(eq(deviceIdentifiers.identifierHash, identifierHash));
+  }
+
+  async getDeviceAnalytics(): Promise<any> {
+    const totalDevices = await db.select({ count: sql`count(*)` }).from(deviceIdentifiers);
+    const activeDevices = await db.select({ count: sql`count(*)` })
+      .from(deviceIdentifiers)
+      .where(eq(deviceIdentifiers.isActive, true));
+    
+    const platformStats = await db.select({
+      platform: deviceIdentifiers.platform,
+      count: sql`count(*)`
+    })
+    .from(deviceIdentifiers)
+    .groupBy(deviceIdentifiers.platform);
+
+    const recentDevices = await db.select({ count: sql`count(*)` })
+      .from(deviceIdentifiers)
+      .where(sql`${deviceIdentifiers.firstSeen} >= NOW() - INTERVAL '7 days'`);
+
+    return {
+      totalDevices: Number(totalDevices[0]?.count || 0),
+      activeDevices: Number(activeDevices[0]?.count || 0),
+      recentDevices: Number(recentDevices[0]?.count || 0),
+      platformStats: platformStats.map(stat => ({
+        platform: stat.platform,
+        count: Number(stat.count)
+      }))
     };
   }
 }

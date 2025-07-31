@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, History } from "lucide-react";
+import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, History, Database } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import AdminSettings from "@/components/admin-settings";
 
@@ -146,6 +146,12 @@ export default function AdminPanel() {
                     <Button variant="outline" size="sm" className="flex items-center gap-2">
                       <History className="h-4 w-4" />
                       Search History Analytics
+                    </Button>
+                  </Link>
+                  <Link href="/admin-product-database">
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Database className="h-4 w-4" />
+                      Product Database Management
                     </Button>
                   </Link>
                 </div>

@@ -68,6 +68,69 @@ export const insertSearchHistorySchema = createInsertSchema(searchHistory).omit(
 export type InsertSearchHistory = z.infer<typeof insertSearchHistorySchema>;
 export type SearchHistory = typeof searchHistory.$inferSelect;
 
+// Product Database Configuration table - for managing the cascading database system
+export const productDatabases = pgTable("product_databases", {
+  id: serial("id").primaryKey(),
+  databaseName: text("database_name").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  priority: integer("priority").notNull().unique(),
+  isEnabled: boolean("is_enabled").notNull().default(true),
+  apiEndpoint: text("api_endpoint"),
+  requiresApiKey: boolean("requires_api_key").notNull().default(false),
+  apiKeyConfigured: boolean("api_key_configured").notNull().default(false),
+  description: text("description"),
+  coverage: text("coverage"), // Geographic or category coverage
+  dataType: text("data_type"), // Type of data provided (nutrition, barcode, etc.)
+  averageResponseTime: integer("average_response_time"), // in milliseconds
+  successRate: real("success_rate"), // percentage 0-100
+  dataFoundRate: real("data_found_rate"), // percentage 0-100
+  lastTested: timestamp("last_tested"),
+  isOperational: boolean("is_operational").notNull().default(true),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertProductDatabaseSchema = createInsertSchema(productDatabases).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertProductDatabase = z.infer<typeof insertProductDatabaseSchema>;
+export type ProductDatabase = typeof productDatabases.$inferSelect;
+
+// Device Identifier table - for logging device/browser/app identifiers
+export const deviceIdentifiers = pgTable("device_identifiers", {
+  id: serial("id").primaryKey(),
+  identifierHash: text("identifier_hash").notNull().unique(), // Encrypted hash of device ID
+  identifierType: varchar("identifier_type", { length: 50 }).notNull(), // 'browser', 'mobile_app', 'device_id'
+  platform: varchar("platform", { length: 50 }), // 'web', 'ios', 'android', 'desktop'
+  browserInfo: text("browser_info"), // Encrypted browser user agent info
+  deviceInfo: text("device_info"), // Encrypted device information
+  screenResolution: text("screen_resolution"), // Screen dimensions
+  timezone: text("timezone"), // User timezone
+  language: text("language"), // Preferred language
+  firstSeen: timestamp("first_seen").defaultNow().notNull(),
+  lastSeen: timestamp("last_seen").defaultNow().notNull(),
+  visitCount: integer("visit_count").notNull().default(1),
+  isActive: boolean("is_active").notNull().default(true),
+  notes: text("notes"),
+}, (table) => ({
+  identifierHashIdx: index("device_identifier_hash_idx").on(table.identifierHash),
+  platformIdx: index("device_platform_idx").on(table.platform),
+  lastSeenIdx: index("device_last_seen_idx").on(table.lastSeen),
+}));
+
+export const insertDeviceIdentifierSchema = createInsertSchema(deviceIdentifiers).omit({
+  id: true,
+  firstSeen: true,
+  lastSeen: true,
+});
+
+export type InsertDeviceIdentifier = z.infer<typeof insertDeviceIdentifierSchema>;
+export type DeviceIdentifier = typeof deviceIdentifiers.$inferSelect;
+
 // OpenFoodFacts API response types
 export type OpenFoodFactsProduct = {
   product: {

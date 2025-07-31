@@ -139,6 +139,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
+  // Admin access middleware
+  const requireAdmin = async (req: any, res: any, next: any) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      next();
+    } catch (error) {
+      return res.status(500).json({ message: "Authentication check failed" });
+    }
+  };
+
   // User registration endpoint
   app.post("/api/auth/register", async (req, res) => {
     try {
@@ -2192,5 +2205,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  // ==================== PRODUCT DATABASE MANAGEMENT ROUTES ====================
+
+  // Get all product databases
+  app.get("/api/admin/product-databases", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const databases = await storage.getAllProductDatabases();
+      res.json(databases);
+    } catch (error) {
+      console.error("Error fetching product databases:", error);
+      res.status(500).json({ message: "Failed to fetch product databases" });
+    }
+  });
+
+  // Update product database configuration
+  app.put("/api/admin/product-databases/:id", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const updatedDatabase = await storage.updateProductDatabase(parseInt(id), req.body);
+      res.json(updatedDatabase);
+    } catch (error) {
+      console.error("Error updating product database:", error);
+      res.status(500).json({ message: "Failed to update product database" });
+    }
+  });
+
+  // Reorder product databases (update priorities)
+  app.put("/api/admin/product-databases/reorder", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { databases } = req.body; // Array of { id, priority } objects
+      const updatedDatabases = await storage.reorderProductDatabases(databases);
+      res.json(updatedDatabases);
+    } catch (error) {
+      console.error("Error reordering product databases:", error);
+      res.status(500).json({ message: "Failed to reorder product databases" });
+    }
+  });
+
+  // Test a specific database
+  app.post("/api/admin/product-databases/:id/test", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { testBarcode } = req.body;
+      const testResult = await storage.testProductDatabase(parseInt(id), testBarcode || "7622210995292");
+      res.json(testResult);
+    } catch (error) {
+      console.error("Error testing product database:", error);
+      res.status(500).json({ message: "Failed to test product database" });
+    }
+  });
+
+  // Test all databases
+  app.post("/api/admin/product-databases/test-all", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { testBarcode } = req.body;
+      const testResults = await storage.testAllProductDatabases(testBarcode || "7622210995292");
+      res.json(testResults);
+    } catch (error) {
+      console.error("Error testing all product databases:", error);
+      res.status(500).json({ message: "Failed to test all product databases" });
+    }
+  });
+
+  // Initialize default database configurations
+  app.post("/api/admin/product-databases/initialize", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const initializedDatabases = await storage.initializeDefaultProductDatabases();
+      res.json(initializedDatabases);
+    } catch (error) {
+      console.error("Error initializing product databases:", error);
+      res.status(500).json({ message: "Failed to initialize product databases" });
+    }
+  });
+
+  // ==================== DEVICE IDENTIFIER ROUTES ====================
+
+  // Log device identifier
+  app.post("/api/device/identify", async (req: any, res) => {
+    try {
+      const deviceData = req.body;
+      const deviceIdentifier = await storage.logDeviceIdentifier(deviceData);
+      res.json({ success: true, deviceId: deviceIdentifier.id });
+    } catch (error) {
+      console.error("Error logging device identifier:", error);
+      res.status(500).json({ message: "Failed to log device identifier" });
+    }
+  });
+
+  // Get device analytics (admin only)
+  app.get("/api/admin/device-analytics", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const analytics = await storage.getDeviceAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching device analytics:", error);
+      res.status(500).json({ message: "Failed to fetch device analytics" });
+    }
+  });
+
   return httpServer;
 }

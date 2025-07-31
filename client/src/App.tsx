@@ -19,6 +19,7 @@ import Auth from "@/pages/auth";
 import Settings from "@/pages/settings";
 import Admin from "@/pages/admin";
 import AdminSearchHistory from "@/pages/admin-search-history";
+import AdminProductDatabase from "@/pages/admin-product-database";
 import Blog from "@/pages/blog";
 import BlogNew from "@/pages/blog-new";
 import BlogPost from "@/pages/blog-post";
@@ -63,6 +64,7 @@ function Router() {
         <Route path="/nutri-dashboard/site-info" component={SiteInfo} />
         <Route path="/admin" component={Admin} />
         <Route path="/admin-search-history" component={AdminSearchHistory} />
+        <Route path="/admin-product-database" component={AdminProductDatabase} />
         <Route path="/blog" component={Blog} />
         <Route path="/blog/new" component={BlogNew} />
         <Route path="/blog/:id" component={BlogPost} />
