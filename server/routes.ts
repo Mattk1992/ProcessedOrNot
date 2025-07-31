@@ -1301,6 +1301,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint for Google Ads setting (no auth required)
+  app.get("/api/settings/google-ads-enabled", async (req, res) => {
+    try {
+      const setting = await storage.getAdminSetting('google_ads_enabled');
+      const enabled = setting?.settingValue === 'true';
+      res.json({ 
+        enabled,
+        source: setting ? 'database' : 'default'
+      });
+    } catch (error) {
+      console.error("Error fetching Google Ads setting:", error);
+      res.json({ 
+        enabled: false, // Default disabled
+        source: 'fallback'
+      });
+    }
+  });
+
   // Debug endpoint for glycemic index testing
   app.post("/api/debug/glycemic", async (req, res) => {
     try {

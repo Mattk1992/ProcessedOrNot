@@ -1,5 +1,6 @@
 import React from 'react';
 import { Adsense } from '@ctrl/react-adsense';
+import { useAdManager } from './ad-manager';
 
 interface AdBannerProps {
   slot: string;
@@ -18,12 +19,24 @@ export default function AdBanner({
   layout,
   className = '' 
 }: AdBannerProps) {
+  const { canShowAds, isGloballyEnabled } = useAdManager();
+  
   // Get client ID from environment variable
   const client = import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID;
+
+  // Don't render if ads are globally disabled
+  if (!isGloballyEnabled) {
+    return null;
+  }
 
   // Don't render if no client ID is configured
   if (!client) {
     console.warn('Google AdSense client ID not configured. Set VITE_GOOGLE_ADSENSE_CLIENT_ID in environment variables.');
+    return null;
+  }
+
+  // Don't render if ads cannot be shown (consent, ad blocker, etc.)
+  if (!canShowAds) {
     return null;
   }
 
@@ -44,6 +57,12 @@ export default function AdBanner({
 
 // Pre-configured ad components for common sizes
 export function HeaderBannerAd({ className = '' }: { className?: string }) {
+  const { isGloballyEnabled } = useAdManager();
+  
+  if (!isGloballyEnabled) {
+    return null;
+  }
+  
   return (
     <AdBanner
       slot="8527084986" // Your banner ad unit ID
@@ -56,6 +75,12 @@ export function HeaderBannerAd({ className = '' }: { className?: string }) {
 }
 
 export function SidebarAd({ className = '' }: { className?: string }) {
+  const { isGloballyEnabled } = useAdManager();
+  
+  if (!isGloballyEnabled) {
+    return null;
+  }
+  
   return (
     <AdBanner
       slot="8527084986" // Your banner ad unit ID
@@ -68,6 +93,12 @@ export function SidebarAd({ className = '' }: { className?: string }) {
 }
 
 export function ResponsiveAd({ className = '' }: { className?: string }) {
+  const { isGloballyEnabled } = useAdManager();
+  
+  if (!isGloballyEnabled) {
+    return null;
+  }
+  
   return (
     <AdBanner
       slot="8527084986" // Your banner ad unit ID
@@ -80,6 +111,12 @@ export function ResponsiveAd({ className = '' }: { className?: string }) {
 }
 
 export function InArticleAd({ className = '' }: { className?: string }) {
+  const { isGloballyEnabled } = useAdManager();
+  
+  if (!isGloballyEnabled) {
+    return null;
+  }
+  
   return (
     <AdBanner
       slot="8527084986" // Your banner ad unit ID
@@ -103,6 +140,12 @@ export function CustomBannerAd({
   height?: number; 
   responsive?: boolean; 
 }) {
+  const { isGloballyEnabled } = useAdManager();
+  
+  if (!isGloballyEnabled) {
+    return null;
+  }
+  
   return (
     <AdBanner
       slot="8527084986" // ca-app-pub-1163701043339821/8527084986

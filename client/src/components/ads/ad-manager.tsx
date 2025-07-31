@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 
 interface AdConfig {
   adsenseClientId?: string;
@@ -6,6 +7,7 @@ interface AdConfig {
   testMode: boolean;
   platform: 'web' | 'mobile';
   consentGiven: boolean;
+  globallyEnabled: boolean;
 }
 
 interface AdManagerContextType {
@@ -14,21 +16,39 @@ interface AdManagerContextType {
   showAd: (type: 'banner' | 'interstitial' | 'rewarded', position?: string) => void;
   isAdBlocked: boolean;
   canShowAds: boolean;
+  isGloballyEnabled: boolean;
 }
 
 const AdManagerContext = createContext<AdManagerContextType | null>(null);
 
 export function AdManagerProvider({ children }: { children: React.ReactNode }) {
+  // Check if Google Ads are globally enabled via admin setting
+  const { data: adsEnabledData, isLoading: adsEnabledLoading } = useQuery({
+    queryKey: ["/api/settings/google-ads-enabled"],
+    refetchInterval: 30000, // Check every 30 seconds
+  });
+
   const [config, setConfig] = useState<AdConfig>({
     adsenseClientId: import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID,
     admobAppId: import.meta.env.VITE_GOOGLE_ADMOB_APP_ID,
     testMode: import.meta.env.DEV,
     platform: 'web',
-    consentGiven: false
+    consentGiven: false,
+    globallyEnabled: true, // Default to true, will be updated from API
   });
 
   const [isAdBlocked, setIsAdBlocked] = useState(false);
   const [canShowAds, setCanShowAds] = useState(false);
+
+  // Update config when global ads setting changes
+  useEffect(() => {
+    if (adsEnabledData && !adsEnabledLoading) {
+      setConfig(prev => ({
+        ...prev,
+        globallyEnabled: (adsEnabledData as any)?.enabled || false
+      }));
+    }
+  }, [adsEnabledData, adsEnabledLoading]);
 
   // Check for ad blockers
   useEffect(() => {
@@ -105,8 +125,13 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
   };
 
   const showAd = (type: 'banner' | 'interstitial' | 'rewarded', position?: string) => {
-    if (!canShowAds || isAdBlocked || !config.consentGiven) {
-      console.log('Cannot show ads:', { canShowAds, isAdBlocked, consentGiven: config.consentGiven });
+    if (!canShowAds || isAdBlocked || !config.consentGiven || !config.globallyEnabled) {
+      console.log('Cannot show ads:', { 
+        canShowAds, 
+        isAdBlocked, 
+        consentGiven: config.consentGiven, 
+        globallyEnabled: config.globallyEnabled 
+      });
       return;
     }
 
@@ -131,7 +156,8 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
     updateConfig,
     showAd,
     isAdBlocked,
-    canShowAds: canShowAds && config.consentGiven && !isAdBlocked
+    canShowAds: canShowAds && config.consentGiven && !isAdBlocked && config.globallyEnabled,
+    isGloballyEnabled: config.globallyEnabled
   };
 
   return (

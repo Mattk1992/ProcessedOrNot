@@ -8,9 +8,10 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Settings, Save, RefreshCw, Camera, Timer, Monitor, Eye } from 'lucide-react';
+import { Settings, Save, RefreshCw, Camera, Timer, Monitor, Eye, DollarSign } from 'lucide-react';
 
 interface AdminSetting {
   id: number;
@@ -114,6 +115,8 @@ export default function AdminSettings() {
         return <Monitor className="h-4 w-4" />;
       case 'ai_settings':
         return <Settings className="h-4 w-4" />;
+      case 'advertising':
+        return <DollarSign className="h-4 w-4" />;
       default:
         return <Settings className="h-4 w-4" />;
     }
@@ -125,6 +128,8 @@ export default function AdminSettings() {
         return <Timer className="h-4 w-4" />;
       case 'tutorial_overlay_enabled':
         return <Eye className="h-4 w-4" />;
+      case 'google_ads_enabled':
+        return <DollarSign className="h-4 w-4" />;
       default:
         return <Settings className="h-4 w-4" />;
     }
@@ -254,7 +259,7 @@ export default function AdminSettings() {
                         <Label htmlFor={setting.settingKey} className="text-sm font-medium">
                           Enabled:
                         </Label>
-                        <Checkbox
+                        <Switch
                           id={setting.settingKey}
                           checked={currentValue === 'true'}
                           onCheckedChange={(checked) => {
@@ -267,7 +272,7 @@ export default function AdminSettings() {
                           disabled={updateSettingMutation.isPending}
                         />
                         <span className="text-sm text-gray-600 dark:text-gray-400">
-                          {currentValue === 'true' ? 'On' : 'Off'}
+                          {currentValue === 'true' ? 'Enabled' : 'Disabled'}
                         </span>
                       </div>
                     ) : (
