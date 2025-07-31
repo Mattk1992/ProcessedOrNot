@@ -14,7 +14,7 @@ export default function Layout({ children, onStartTutorial }: LayoutProps) {
       
       {/* Main Content Area - no sidebar margin needed */}
       <main className="min-h-screen">
-        <div className="pt-16 min-h-screen">
+        <div className="pt-12 sm:pt-14 min-h-screen">
           {children}
         </div>
       </main>
