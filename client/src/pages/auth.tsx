@@ -261,7 +261,7 @@ export default function Auth() {
                             />
                           </FormControl>
                           <FormLabel className="text-sm font-normal text-gray-700 dark:text-gray-300">
-                            {t("Keep me logged in for 30 days")}
+                            {t("Keep me logged in")}
                           </FormLabel>
                         </FormItem>
                       )}

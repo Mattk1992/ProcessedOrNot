@@ -220,8 +220,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Set session duration based on "Keep logged in" checkbox
       if (validatedData.keepLoggedIn) {
-        // Keep logged in for 30 days
-        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+        // Keep logged in indefinitely (10 years)
+        req.session.cookie.maxAge = 10 * 365 * 24 * 60 * 60 * 1000;
       } else {
         // Standard session duration (24 hours)
         req.session.cookie.maxAge = 24 * 60 * 60 * 1000;
