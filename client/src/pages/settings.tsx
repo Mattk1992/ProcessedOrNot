@@ -140,7 +140,7 @@ export default function SettingsPage() {
   // Update AI provider mutation
   const updateAIProviderMutation = useMutation({
     mutationFn: async (provider: string) => {
-      return apiRequest("/api/user/settings/ai_provider", "PUT", { settingValue: provider });
+      return apiRequest("PUT", "/api/user/settings/ai_provider", { settingValue: provider });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/settings"] });
@@ -162,7 +162,7 @@ export default function SettingsPage() {
   // Update barcode scanner system mutation
   const updateBarcodeScannerSystemMutation = useMutation({
     mutationFn: async (system: string) => {
-      return apiRequest("/api/user/settings/barcode_scanner_system", "PUT", { settingValue: system });
+      return apiRequest("PUT", "/api/user/settings/barcode_scanner_system", { settingValue: system });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/user/settings"] });

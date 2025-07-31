@@ -62,9 +62,7 @@ export default function AdminProductDatabase() {
 
   // Initialize databases
   const initializeMutation = useMutation({
-    mutationFn: () => apiRequest('/api/admin/product-databases/initialize', {
-      method: 'POST',
-    }),
+    mutationFn: () => apiRequest('POST', '/api/admin/product-databases/initialize'),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/product-databases'] });
       toast({
@@ -84,10 +82,7 @@ export default function AdminProductDatabase() {
   // Update database
   const updateMutation = useMutation({
     mutationFn: ({ id, updates }: { id: number; updates: Partial<ProductDatabase> }) =>
-      apiRequest(`/api/admin/product-databases/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(updates),
-      }),
+      apiRequest('PUT', `/api/admin/product-databases/${id}`, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/product-databases'] });
       setEditingDatabase(null);
@@ -108,10 +103,7 @@ export default function AdminProductDatabase() {
   // Test single database
   const testSingleMutation = useMutation({
     mutationFn: ({ id, testBarcode }: { id: number; testBarcode: string }) =>
-      apiRequest(`/api/admin/product-databases/${id}/test`, {
-        method: 'POST',
-        body: JSON.stringify({ testBarcode }),
-      }),
+      apiRequest('POST', `/api/admin/product-databases/${id}/test`, { testBarcode }),
     onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/product-databases'] });
       toast({
@@ -132,10 +124,7 @@ export default function AdminProductDatabase() {
   // Test all databases
   const testAllMutation = useMutation({
     mutationFn: (testBarcode: string) =>
-      apiRequest('/api/admin/product-databases/test-all', {
-        method: 'POST',
-        body: JSON.stringify({ testBarcode }),
-      }),
+      apiRequest('POST', '/api/admin/product-databases/test-all', { testBarcode }),
     onSuccess: (results) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/product-databases'] });
       const successCount = results.filter((r: any) => r.success).length;
@@ -156,10 +145,7 @@ export default function AdminProductDatabase() {
   // Reorder databases
   const reorderMutation = useMutation({
     mutationFn: (databases: Array<{ id: number; priority: number }>) =>
-      apiRequest('/api/admin/product-databases/reorder', {
-        method: 'PUT',
-        body: JSON.stringify({ databases }),
-      }),
+      apiRequest('PUT', '/api/admin/product-databases/reorder', { databases }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/product-databases'] });
       toast({

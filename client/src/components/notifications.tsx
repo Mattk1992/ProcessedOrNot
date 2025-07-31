@@ -53,7 +53,7 @@ export default function NotificationButton({ className = '' }: NotificationButto
   // Mark notification as read mutation
   const markAsReadMutation = useMutation({
     mutationFn: async (notificationId: number) => {
-      return await apiRequest(`/api/notifications/${notificationId}/read`, 'PUT');
+      return await apiRequest('PUT', `/api/notifications/${notificationId}/read`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
@@ -71,7 +71,7 @@ export default function NotificationButton({ className = '' }: NotificationButto
   // Mark all as read mutation
   const markAllAsReadMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/notifications/mark-all-read', 'PUT');
+      return await apiRequest('PUT', '/api/notifications/mark-all-read');
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
@@ -93,7 +93,7 @@ export default function NotificationButton({ className = '' }: NotificationButto
   // Archive notification mutation
   const archiveNotificationMutation = useMutation({
     mutationFn: async (notificationId: number) => {
-      return await apiRequest(`/api/notifications/${notificationId}/archive`, 'PUT');
+      return await apiRequest('PUT', `/api/notifications/${notificationId}/archive`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });
@@ -115,7 +115,7 @@ export default function NotificationButton({ className = '' }: NotificationButto
   // Delete notification mutation
   const deleteNotificationMutation = useMutation({
     mutationFn: async (notificationId: number) => {
-      return await apiRequest(`/api/notifications/${notificationId}`, 'DELETE');
+      return await apiRequest('DELETE', `/api/notifications/${notificationId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/notifications'] });

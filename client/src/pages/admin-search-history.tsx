@@ -87,7 +87,7 @@ export default function AdminSearchHistory() {
   // Clear search history mutation
   const clearHistoryMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest("/api/admin/search-history/clear", "DELETE");
+      return await apiRequest("DELETE", "/api/admin/search-history/clear");
     },
     onSuccess: () => {
       toast({

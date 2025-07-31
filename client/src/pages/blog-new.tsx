@@ -41,7 +41,8 @@ export default function BlogNew() {
   // Create blog post mutation
   const createBlogMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
-      return await apiRequest('/api/blog', 'POST', data);
+      const response = await apiRequest('POST', '/api/blog', data);
+      return await response.json();
     },
     onSuccess: (newPost) => {
       queryClient.invalidateQueries({ queryKey: ['/api/blog'] });

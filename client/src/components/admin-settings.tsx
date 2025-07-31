@@ -40,7 +40,7 @@ export default function AdminSettings() {
   // Update setting mutation
   const updateSettingMutation = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
-      return apiRequest(`/api/admin/settings/${key}`, "PUT", { settingValue: value });
+      return apiRequest("PUT", `/api/admin/settings/${key}`, { settingValue: value });
     },
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
@@ -76,7 +76,7 @@ export default function AdminSettings() {
   // Initialize default settings mutation
   const initializeSettingsMutation = useMutation({
     mutationFn: async () => {
-      return apiRequest("/api/admin/settings/initialize", "POST");
+      return apiRequest("POST", "/api/admin/settings/initialize");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/settings"] });
