@@ -32,6 +32,7 @@ import NutriProgress from "@/pages/nutri-progress";
 import NutriProfile from "@/pages/nutri-profile";
 import { AdManagerProvider, AdConsentBanner } from "@/components/ads";
 import AdSettings from "@/pages/ad-settings";
+import SiteInfo from "@/pages/site-info";
 
 function Router() {
   // Track page views when routes change
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/register" component={Auth} />
       <Route path="/auth" component={Auth} />
       <Route path="/nutri-dashboard/settings" component={Settings} />
+      <Route path="/nutri-dashboard/site-info" component={SiteInfo} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin-search-history" component={AdminSearchHistory} />
       <Route path="/blog" component={Blog} />

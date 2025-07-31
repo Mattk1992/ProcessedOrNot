@@ -11,7 +11,8 @@ import {
   Plus,
   ChevronRight,
   Award,
-  AlertCircle
+  AlertCircle,
+  Info
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -181,6 +182,7 @@ export default function NutriDashboard() {
               <Link href="/nutri-dashboard/progress" className="text-muted-foreground hover:text-foreground transition-colors">Progress</Link>
               <Link href="/nutri-dashboard/profile" className="text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
               <Link href="/nutri-dashboard/settings" className="text-muted-foreground hover:text-foreground transition-colors">Settings</Link>
+              <Link href="/nutri-dashboard/site-info" className="text-muted-foreground hover:text-foreground transition-colors">Site Info</Link>
             </nav>
 
             <div className="flex items-center space-x-3">
@@ -199,7 +201,7 @@ export default function NutriDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
           <Link href="/nutri-dashboard/diary">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
@@ -241,6 +243,15 @@ export default function NutriDashboard() {
               <CardContent className="p-4 text-center">
                 <Activity className="w-8 h-8 text-orange-500 mx-auto mb-2" />
                 <p className="font-medium">Settings</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/nutri-dashboard/site-info">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <Info className="w-8 h-8 text-cyan-500 mx-auto mb-2" />
+                <p className="font-medium">Site Info</p>
               </CardContent>
             </Card>
           </Link>

@@ -47,28 +47,9 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
     // Information & Support
     { type: 'header', label: 'Information & Support' },
     {
-      label: t('dropdown.about') || 'About us',
+      label: 'Site Information',
       icon: <Info className="w-4 h-4" />,
-      action: () => setLocation('/about')
-    },
-    {
-      label: 'Features',
-      icon: <Zap className="w-4 h-4" />,
-      action: () => setLocation('/features')
-    },
-    {
-      label: t('dropdown.help') || 'Help',
-      icon: <HelpCircle className="w-4 h-4" />,
-      action: () => setLocation('/help')
-    },
-    { type: 'divider' },
-    
-    // Content & Community
-    { type: 'header', label: 'Content & Community' },
-    {
-      label: 'Blog',
-      icon: <BookOpen className="w-4 h-4" />,
-      action: () => setLocation('/blog')
+      action: () => setLocation('/nutri-dashboard/site-info')
     },
     {
       label: 'Social Media',
@@ -77,13 +58,8 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
     },
     { type: 'divider' },
     
-    // Legal & Contact
-    { type: 'header', label: 'Legal & Contact' },
-    {
-      label: 'Contact',
-      icon: <Mail className="w-4 h-4" />,
-      action: () => setLocation('/contact')
-    },
+    // Legal & Policies
+    { type: 'header', label: 'Legal & Policies' },
     {
       label: 'Privacy Policy',
       icon: <Lock className="w-4 h-4" />,
@@ -145,28 +121,9 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
     // Information & Support
     { type: 'header', label: 'Information & Support' },
     {
-      label: t('dropdown.about') || 'About us',
+      label: 'Site Information',
       icon: <Info className="w-4 h-4" />,
-      action: () => setLocation('/about')
-    },
-    {
-      label: 'Features',
-      icon: <Zap className="w-4 h-4" />,
-      action: () => setLocation('/features')
-    },
-    {
-      label: t('dropdown.help') || 'Help',
-      icon: <HelpCircle className="w-4 h-4" />,
-      action: () => setLocation('/help')
-    },
-    { type: 'divider' },
-    
-    // Content & Community
-    { type: 'header', label: 'Content & Community' },
-    {
-      label: 'Blog',
-      icon: <BookOpen className="w-4 h-4" />,
-      action: () => setLocation('/blog')
+      action: () => setLocation('/nutri-dashboard/site-info')
     },
     {
       label: 'Social Media',
@@ -175,13 +132,8 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
     },
     { type: 'divider' },
     
-    // Legal & Contact
-    { type: 'header', label: 'Legal & Contact' },
-    {
-      label: 'Contact',
-      icon: <Mail className="w-4 h-4" />,
-      action: () => setLocation('/contact')
-    },
+    // Legal & Policies
+    { type: 'header', label: 'Legal & Policies' },
     {
       label: 'Privacy Policy',
       icon: <Lock className="w-4 h-4" />,
