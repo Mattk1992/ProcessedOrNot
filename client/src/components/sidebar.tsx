@@ -67,14 +67,6 @@ export default function Sidebar({ onStartTutorial }: SidebarProps) {
       description: 'Access your account'
     },
     { type: 'divider' },
-    
-    { type: 'section', label: 'Information' },
-    {
-      label: 'Site Information',
-      icon: Info,
-      path: '/nutri-dashboard/site-info',
-      description: 'Features, help, legal & social'
-    },
     ...(onStartTutorial ? [
       { type: 'divider' },
       {
@@ -126,14 +118,6 @@ export default function Sidebar({ onStartTutorial }: SidebarProps) {
       },
       { type: 'divider' }
     ] : []),
-    
-    { type: 'section', label: 'Information' },
-    {
-      label: 'Site Information',
-      icon: Info,
-      path: '/nutri-dashboard/site-info',
-      description: 'Features, help, legal & social'
-    },
     ...(onStartTutorial ? [
       { type: 'divider' },
       {
