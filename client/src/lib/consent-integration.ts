@@ -169,7 +169,10 @@ class ConsentIntegration {
 
   // Initialize Google Ads with consent
   public initializeGoogleAds(publisherId: string) {
-    if (!this.initialized || (window as any).__adSenseInitialized) return;
+    // Prevent multiple initializations
+    if (!this.initialized || (window as any).__adSenseInitialized || (window as any).__adSenseConfigured) {
+      return;
+    }
 
     const consent = consentManager.getConsent();
     
@@ -186,25 +189,33 @@ class ConsentIntegration {
         document.head.appendChild(script);
       }
 
-      // Configure AdSense only once
-      if (!(window as any).__adSenseConfigured) {
-        (window as any).adsbygoogle = (window as any).adsbygoogle || [];
-        
-        // Set consent for AdSense
-        (window as any).adsbygoogle.push({
-          google_ad_client: `ca-pub-${publisherId}`,
-          enable_page_level_ads: true,
-          privacy_compliance: {
-            gdpr: consentManager.getSettings().region === 'EU',
-            ccpa: consentManager.getSettings().enableRDP,
-            restricted_data_processing: !consent.personalization
-          }
-        });
-        
-        (window as any).__adSenseConfigured = true;
-      }
+      // Initialize adsbygoogle array only once
+      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
       
-      (window as any).__adSenseInitialized = true;
+      // Configure AdSense only once with proper error handling
+      try {
+        // Only push enable_page_level_ads once per page load
+        if (!(window as any).__adSenseConfigured) {
+          (window as any).adsbygoogle.push({
+            google_ad_client: `ca-pub-${publisherId}`,
+            enable_page_level_ads: true,
+            privacy_compliance: {
+              gdpr: consentManager.getSettings().region === 'EU',
+              ccpa: consentManager.getSettings().enableRDP,
+              restricted_data_processing: !consent.personalization
+            }
+          });
+          
+          (window as any).__adSenseConfigured = true;
+          (window as any).__adSenseInitialized = true;
+          console.log('AdSense initialized successfully');
+        }
+      } catch (error) {
+        console.error('AdSense initialization error:', error);
+        // Reset flags on error to allow retry
+        (window as any).__adSenseConfigured = false;
+        (window as any).__adSenseInitialized = false;
+      }
     }
   }
 
