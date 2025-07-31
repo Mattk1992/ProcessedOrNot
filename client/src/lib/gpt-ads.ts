@@ -41,9 +41,9 @@ class GPTAdManager {
       return;
     }
 
-    // Check if AdSense is already configured to avoid conflicts
-    if ((window as any).__adSenseConfigured || (window as any).__adSenseInitialized) {
-      console.log('GPT initialization skipped: AdSense already configured');
+    // Use centralized ad system manager to prevent conflicts
+    const { adSystemManager } = await import('@/lib/ad-system-manager');
+    if (!adSystemManager.canInitializeGPT()) {
       return;
     }
 
@@ -118,6 +118,8 @@ class GPTAdManager {
               
               this.initialized = true;
               window.__gptInitialized = true;
+              adSystemManager.setActiveSystem('gpt');
+              adSystemManager.markInitialized();
               
               console.log('GPT initialized successfully for reward ads');
               resolve();

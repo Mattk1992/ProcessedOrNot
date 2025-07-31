@@ -2,6 +2,7 @@
 // Ensures compliance with Google Publisher Policies 2025
 
 import { consentManager, type ConsentData } from './consent-manager';
+import { adSystemManager } from './ad-system-manager';
 
 declare global {
   interface Window {
@@ -169,14 +170,13 @@ class ConsentIntegration {
 
   // Initialize Google Ads with consent
   public initializeGoogleAds(publisherId: string) {
-    // Prevent multiple initializations
-    if (!this.initialized || (window as any).__adSenseInitialized || (window as any).__adSenseConfigured) {
+    // Use centralized ad system manager to prevent conflicts
+    if (!adSystemManager.canInitializeAdSense()) {
       return;
     }
 
-    // Check if GPT is already initialized to avoid conflicts
-    if (window.__gptInitialized || window.googletag) {
-      console.log('AdSense initialization skipped: GPT already configured');
+    // Prevent multiple initializations
+    if (!this.initialized || (window as any).__adSenseInitialized || (window as any).__adSenseConfigured) {
       return;
     }
 
@@ -201,7 +201,7 @@ class ConsentIntegration {
       // Configure AdSense only once with proper error handling
       try {
         // Only push enable_page_level_ads once per page load
-        if (!(window as any).__adSenseConfigured) {
+        if (!(window as any).__adSenseConfigured && !(window as any).__adSensePageLevelEnabled) {
           (window as any).adsbygoogle.push({
             google_ad_client: `ca-pub-${publisherId}`,
             enable_page_level_ads: true,
@@ -214,13 +214,19 @@ class ConsentIntegration {
           
           (window as any).__adSenseConfigured = true;
           (window as any).__adSenseInitialized = true;
+          (window as any).__adSensePageLevelEnabled = true;
+          adSystemManager.setActiveSystem('adsense');
+          adSystemManager.markInitialized();
           console.log('AdSense initialized successfully');
+        } else {
+          console.log('AdSense initialization skipped: Already configured');
         }
       } catch (error) {
         console.error('AdSense initialization error:', error);
-        // Reset flags on error to allow retry
+        // Reset configuration flags on error to allow retry
         (window as any).__adSenseConfigured = false;
         (window as any).__adSenseInitialized = false;
+        // Don't reset __adSensePageLevelEnabled to prevent duplicate page-level ads
       }
     }
   }

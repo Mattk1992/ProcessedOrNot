@@ -113,8 +113,11 @@ function App() {
     } else {
       initGA();
     }
-    // Initialize consent integration for Google services
-    consentIntegration.initializeGoogleAds('1163701043339821');
+    // Initialize consent integration for Google services (only if not already done)
+    if (!(window as any).__globalAdInitialized) {
+      consentIntegration.initializeGoogleAds('1163701043339821');
+      (window as any).__globalAdInitialized = true;
+    }
   }, []);
 
   return (
