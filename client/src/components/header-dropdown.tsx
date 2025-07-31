@@ -66,6 +66,11 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       action: () => setLocation('/privacy')
     },
     {
+      label: 'Privacy Settings',
+      icon: <Shield className="w-4 h-4" />,
+      action: () => setLocation('/consent-settings')
+    },
+    {
       label: 'Terms of Service',
       icon: <FileText className="w-4 h-4" />,
       action: () => setLocation('/terms')
@@ -138,6 +143,11 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       label: 'Privacy Policy',
       icon: <Lock className="w-4 h-4" />,
       action: () => setLocation('/privacy')
+    },
+    {
+      label: 'Privacy Settings',
+      icon: <Shield className="w-4 h-4" />,
+      action: () => setLocation('/consent-settings')
     },
     {
       label: 'Terms of Service',

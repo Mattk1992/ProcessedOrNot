@@ -35,6 +35,9 @@ import NutriProfile from "@/pages/nutri-profile";
 import { AdManagerProvider, AdConsentBanner } from "@/components/ads";
 import AdSettings from "@/pages/ad-settings";
 import SiteInfo from "@/pages/site-info";
+import ConsentSettings from "@/pages/consent-settings";
+import ConsentBanner from "@/components/consent-banner";
+import { consentIntegration } from "@/lib/consent-integration";
 
 function Router() {
   // Track page views when routes change
@@ -50,6 +53,7 @@ function Router() {
 
   return (
     <Layout onStartTutorial={handleStartTutorial}>
+      <ConsentBanner />
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/product-lookup" component={ProductLookup} />
@@ -62,6 +66,8 @@ function Router() {
         <Route path="/auth" component={Auth} />
         <Route path="/nutri-dashboard/settings" component={Settings} />
         <Route path="/nutri-dashboard/site-info" component={SiteInfo} />
+        <Route path="/consent-settings" component={ConsentSettings} />
+        <Route path="/privacy-settings" component={ConsentSettings} />
         <Route path="/admin" component={Admin} />
         <Route path="/admin-search-history" component={AdminSearchHistory} />
         <Route path="/admin-product-database" component={AdminProductDatabase} />
@@ -97,6 +103,8 @@ function App() {
     } else {
       initGA();
     }
+    // Initialize consent integration for Google services
+    consentIntegration.initializeGoogleAds('1163701043339821');
   }, []);
 
   return (

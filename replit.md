@@ -170,6 +170,7 @@ search_history table (enhanced):
 ## Changelog
 
 Changelog:
+- July 31, 2025. **IMPLEMENTED COMPREHENSIVE CONSENT MANAGEMENT PLATFORM (CMP)**: Built complete CMP system compliant with 2025 Google Publisher Policies. Features include EU/UK/Switzerland GDPR compliance with Google-certified CMP functionality, US state privacy law support (Iowa, Delaware, New Jersey, Nebraska, New Hampshire), IAB Global Privacy Platform (GPP) integration, Restricted Data Processing (RDP) settings, automatic region detection, consent banner with customizable preferences, privacy settings page, Google Analytics/AdSense consent integration, and complete compliance string generation (TC String, USP String, GPP String). System provides proper consent management for personalized ads in regulated regions while maintaining non-personalized ad fallback for compliance.
 - July 31, 2025. **CONFIGURED ADS.TXT SERVING FOR GOOGLE ADSENSE**: Created ads.txt file in root directory with Google AdSense publisher verification (pub-1163701043339821) and added Express route to serve it at /ads.txt endpoint. File is now properly accessible for Google's crawler verification to enable ad serving authorization.
 - July 31, 2025. **REPOSITIONED LANGUAGE SWITCHER TO LEFT SIDE**: Moved language switcher from right side to left side of header across all pages. Updated dropdown alignment to "start" for proper left-side positioning. Notifications and main dropdown menu remain on right side for optimal layout balance.
 - June 16, 2025. Initial setup
