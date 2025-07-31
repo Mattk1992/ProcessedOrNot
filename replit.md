@@ -170,7 +170,7 @@ search_history table (enhanced):
 ## Changelog
 
 Changelog:
-- July 31, 2025. **MOVED DROPDOWN MENU TO RIGHT SIDE**: Repositioned the main header dropdown menu from left-aligned to right-aligned across all pages. Menu now appears on the right side of the trigger button for improved visual balance and better mobile experience.
+- July 31, 2025. **OPTIMIZED RIGHT-SIDE HEADER LAYOUT**: Confirmed optimal positioning of both notifications button and dropdown menu on the right side of all pages. Both components are properly aligned with right-side panel positioning for consistent user experience and improved visual balance.
 - June 16, 2025. Initial setup
 - June 16, 2025. Implemented comprehensive user account system with secure authentication, registration, login pages, password hashing, email verification, password reset functionality, and session management
 - June 16, 2025. Added user role system with Admin and Regular user types, role management API endpoints, and set user ID 1 to Admin role
