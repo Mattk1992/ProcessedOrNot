@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { useAdManager, ResponsiveAd, AdMobExample } from '@/components/ads';
 import Header from '@/components/header';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, EyeOff, Shield, Smartphone, Globe, Settings, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Shield, Smartphone, Globe, Settings, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Link } from 'wouter';
 
 export default function AdSettings() {
   const { config, updateConfig, isAdBlocked, canShowAds } = useAdManager();
@@ -46,13 +47,24 @@ export default function AdSettings() {
         <div className="max-w-4xl mx-auto space-y-6">
           
           {/* Header */}
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-              Ad Configuration
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400">
-              Configure Google AdSense and AdMob integration for monetization
-            </p>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-4">
+              <Link href="/settings">
+                <Button variant="outline" size="sm">
+                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  Back to Settings
+                </Button>
+              </Link>
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Settings className="h-8 w-8 text-yellow-600" />
+                  Ad Configuration
+                </h1>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Configure Google AdSense and AdMob integration for monetization
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Ad Status */}

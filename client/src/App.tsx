@@ -65,8 +65,8 @@ function Router() {
       <Route path="/nutri-progress" component={NutriProgress} />
       <Route path="/nutri-profile" component={NutriProfile} />
       
-      {/* Ad Configuration */}
-      <Route path="/ad-settings" component={AdSettings} />
+      {/* Ad Configuration - Sub-page of Settings */}
+      <Route path="/settings/ad-settings" component={AdSettings} />
       
       <Route component={NotFound} />
     </Switch>

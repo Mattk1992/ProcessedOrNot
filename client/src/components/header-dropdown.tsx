@@ -160,11 +160,6 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       icon: <Settings className="w-4 h-4" />,
       action: () => setLocation('/settings')
     },
-    {
-      label: 'Ad Settings',
-      icon: <Zap className="w-4 h-4" />,
-      action: () => setLocation('/ad-settings')
-    },
     { type: 'divider' },
     
     // Information & Support

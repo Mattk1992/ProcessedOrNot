@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Settings, Bot, ArrowLeft, Save, Sparkles, Brain, Zap, Cpu, Camera, Trash2, AlertTriangle } from "lucide-react";
+import { Settings, Bot, ArrowLeft, Save, Sparkles, Brain, Zap, Cpu, Camera, Trash2, AlertTriangle, ExternalLink } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 interface UserSetting {
@@ -451,6 +451,44 @@ export default function SettingsPage() {
                   </div>
                 </>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Ad Configuration Settings */}
+          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg mt-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Zap className="h-5 w-5 text-yellow-500" />
+                Ad Configuration
+              </CardTitle>
+              <CardDescription>
+                Configure Google AdSense and AdMob integration for monetization
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/20">
+                      <Zap className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900 dark:text-white">
+                        Advertising Settings
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Manage Google AdSense and AdMob configuration, consent settings, and ad preferences
+                      </p>
+                    </div>
+                  </div>
+                  <Link href="/settings/ad-settings">
+                    <Button variant="outline" className="flex items-center gap-2">
+                      Configure Ads
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
