@@ -196,6 +196,11 @@ export default function Sidebar({ onStartTutorial }: SidebarProps) {
     );
   };
 
+  // Hide sidebar for non-authenticated users and regular users (only show for admins)
+  if (!isAuthenticated || (user as any)?.accountType !== 'Admin') {
+    return null;
+  }
+
   return (
     <>
       {/* Mobile Menu Button */}
