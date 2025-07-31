@@ -1,12 +1,47 @@
 import OpenAI from "openai";
 import { ProcessingAnalysis, GlycemicAnalysis } from "@shared/schema";
+import { storage } from "../storage";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+// ChatGPT Nano uses "gpt-4o-mini" for ultra-fast responses
+
 const openai = new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key"
 });
 
-export async function analyzeIngredients(ingredientsText: string, productName: string, language: string = 'en'): Promise<ProcessingAnalysis> {
+// Model configuration based on AI provider
+function getModelConfig(provider: string = "ChatGPT") {
+  switch (provider) {
+    case "ChatGPT Nano":
+      return {
+        model: "gpt-4o-mini",
+        temperature: 0.3,
+        maxTokens: 500
+      };
+    case "ChatGPT":
+    default:
+      return {
+        model: "gpt-4o",
+        temperature: 0.3,
+        maxTokens: 1000
+      };
+  }
+}
+
+// Helper function to get user's AI provider setting
+export async function getUserAIProvider(userId?: number): Promise<string> {
+  if (!userId) return "ChatGPT Nano"; // Default for anonymous users
+  
+  try {
+    const setting = await storage.getUserSetting(userId, "ai_provider");
+    return setting?.settingValue || "ChatGPT Nano"; // Default to ChatGPT Nano
+  } catch (error) {
+    console.error("Error getting user AI provider setting:", error);
+    return "ChatGPT Nano"; // Fallback to default
+  }
+}
+
+export async function analyzeIngredients(ingredientsText: string, productName: string, language: string = 'en', provider: string = 'ChatGPT'): Promise<ProcessingAnalysis> {
   try {
     const languageInstructions: Record<string, string> = {
       'en': 'Provide your analysis in English.',
@@ -46,8 +81,10 @@ Provide your response in JSON format with this structure:
   }
 }`;
 
+    const modelConfig = getModelConfig(provider);
+
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: modelConfig.model,
       messages: [
         {
           role: "system",
@@ -59,7 +96,8 @@ Provide your response in JSON format with this structure:
         },
       ],
       response_format: { type: "json_object" },
-      temperature: 0.3,
+      temperature: modelConfig.temperature,
+      max_tokens: modelConfig.maxTokens,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");
@@ -83,7 +121,8 @@ export async function analyzeGlycemicIndex(
   ingredientsText: string, 
   productName: string, 
   nutriments: any,
-  language: string = 'en'
+  language: string = 'en',
+  provider: string = 'ChatGPT'
 ): Promise<GlycemicAnalysis> {
   try {
     const languageInstructions: Record<string, string> = {
@@ -145,8 +184,10 @@ Provide your response in JSON format:
   "impactDescription": "description of blood sugar impact in the requested language"
 }`;
 
+    const modelConfig = getModelConfig(provider);
+
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: modelConfig.model,
       messages: [
         {
           role: "system",
@@ -158,7 +199,8 @@ Provide your response in JSON format:
         },
       ],
       response_format: { type: "json_object" },
-      temperature: 0.3,
+      temperature: modelConfig.temperature,
+      max_tokens: modelConfig.maxTokens,
     });
 
     const result = JSON.parse(response.choices[0].message.content || "{}");

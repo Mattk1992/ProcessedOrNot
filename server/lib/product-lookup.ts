@@ -19,7 +19,7 @@ import { fetchProductFromOpenNutrition } from "./opennutrition";
 import { fetchProductFromNutritionix } from "./nutritionix";
 import { fetchProductFromSpoonacular } from "./spoonacular";
 import { fetchProductFromAPINinjas } from "./api-ninjas";
-import { analyzeIngredients, analyzeGlycemicIndex } from "./openai";
+import { analyzeIngredients, analyzeGlycemicIndex, getUserAIProvider } from "./openai";
 import { isBarcode, searchProductByText } from "./text-search";
 
 interface ProductLookupResult {
@@ -28,21 +28,24 @@ interface ProductLookupResult {
   error?: string;
 }
 
-export async function smartProductLookup(input: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }): Promise<ProductLookupResult> {
+export async function smartProductLookup(input: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }, userId?: number): Promise<ProductLookupResult> {
   console.log(`Starting smart lookup for input: ${input}`);
 
   // Check if input is a barcode or text
   if (isBarcode(input)) {
     console.log('Input detected as barcode, using cascading fallback system');
-    return cascadingProductLookup(input);
+    return cascadingProductLookup(input, userId);
   } else {
     console.log('Input detected as text, using text search');
-    return searchProductByText(input, filters);
+    return searchProductByText(input, filters, userId);
   }
 }
 
-export async function cascadingProductLookup(barcode: string): Promise<ProductLookupResult> {
+export async function cascadingProductLookup(barcode: string, userId?: number): Promise<ProductLookupResult> {
   console.log(`Starting cascading lookup for barcode: ${barcode}`);
+
+  // Get user's AI provider setting
+  const userAIProvider = await getUserAIProvider(userId);
 
   // 1. OpenFoodFacts (Primary)
   try {
@@ -63,7 +66,9 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
         try {
           const analysis = await analyzeIngredients(
             product.ingredients_text,
-            product.product_name || "Unknown Product"
+            product.product_name || "Unknown Product",
+            'en',
+            userAIProvider
           );
           processingScore = analysis.score;
           processingExplanation = analysis.explanation;
@@ -79,7 +84,9 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
           const glycemicAnalysis = await analyzeGlycemicIndex(
             product.ingredients_text || "",
             product.product_name || "Unknown Product",
-            product.nutriments
+            product.nutriments,
+            'en',
+            userAIProvider
           );
           glycemicIndex = glycemicAnalysis.glycemicIndex;
           glycemicLoad = glycemicAnalysis.glycemicLoad;
@@ -123,7 +130,9 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
         try {
           const analysis = await analyzeIngredients(
             usdaProduct.ingredientsText,
-            usdaProduct.productName || "Unknown Product"
+            usdaProduct.productName || "Unknown Product",
+            'en',
+            userAIProvider
           );
           usdaProduct.processingScore = analysis.score;
           usdaProduct.processingExplanation = analysis.explanation;
@@ -151,7 +160,9 @@ export async function cascadingProductLookup(barcode: string): Promise<ProductLo
         try {
           const analysis = await analyzeIngredients(
             foodDBCAProduct.ingredientsText,
-            foodDBCAProduct.productName || "Unknown Product"
+            foodDBCAProduct.productName || "Unknown Product",
+            'en',
+            userAIProvider
           );
           foodDBCAProduct.processingScore = analysis.score;
           foodDBCAProduct.processingExplanation = analysis.explanation;

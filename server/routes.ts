@@ -4,7 +4,7 @@ import multer from "multer";
 import { storage } from "./storage";
 import { transcribeAudio, isVoiceTranscriptionAvailable } from "./lib/voice-transcription";
 import { smartProductLookup, cascadingProductLookup } from "./lib/product-lookup";
-import { analyzeIngredients, analyzeGlycemicIndex } from "./lib/openai";
+import { analyzeIngredients, analyzeGlycemicIndex, getUserAIProvider } from "./lib/openai";
 import { getNutriBotResponse, generateProductNutritionInsight, generateFunFacts, generateNutritionSpotlightInsights } from "./lib/nutribot";
 import { 
   insertProductSchema,
@@ -466,7 +466,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Use smart lookup system with filters
-      const lookupResult = await smartProductLookup(query, filters);
+      const user = (req.session as any).user;
+      const lookupResult = await smartProductLookup(query, filters, user?.id);
       
       // Determine search input type
       const isBarcode = /^[0-9]{8,14}$/.test(query.trim());
@@ -560,7 +561,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Use smart lookup system (auto-detects barcode vs text)
-      const lookupResult = await smartProductLookup(barcode);
+      const user = (req.session as any).user;
+      const lookupResult = await smartProductLookup(barcode, undefined, user?.id);
       
       // Determine search input type
       const isBarcode = /^[0-9]{8,14}$/.test(barcode.trim());
@@ -642,13 +644,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Get user's AI provider setting
+      const user = (req.session as any).user;
+      const userAIProvider = await getUserAIProvider(user?.id);
+
       // Analyze ingredients if provided
       if (productData.ingredientsText) {
         try {
           const analysis = await analyzeIngredients(
             productData.ingredientsText,
             productData.productName || "Unknown Product",
-            language || 'en'
+            language || 'en',
+            userAIProvider
           );
           productData.processingScore = analysis.score;
           productData.processingExplanation = analysis.explanation;
@@ -664,7 +671,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               productData.ingredientsText,
               productData.productName || "Unknown Product",
               productData.nutriments,
-              language || 'en'
+              language || 'en',
+              userAIProvider
             );
             productData.glycemicIndex = glycemicAnalysis.glycemicIndex;
             productData.glycemicLoad = glycemicAnalysis.glycemicLoad;

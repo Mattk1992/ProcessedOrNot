@@ -35,6 +35,13 @@ interface AIProvider {
 
 const aiProviders: AIProvider[] = [
   {
+    value: "ChatGPT Nano",
+    label: "ChatGPT Nano",
+    description: "OpenAI's ultra-fast and efficient model optimized for quick responses",
+    icon: Zap,
+    color: "text-emerald-600 dark:text-emerald-400"
+  },
+  {
     value: "ChatGPT",
     label: "ChatGPT",
     description: "OpenAI's advanced language model for comprehensive analysis",
@@ -113,7 +120,10 @@ export default function SettingsPage() {
   // Set selected AI provider when data loads
   useEffect(() => {
     if (aiProviderSetting) {
-      setSelectedAIProvider(aiProviderSetting.settingValue || "ChatGPT");
+      setSelectedAIProvider(aiProviderSetting.settingValue || "ChatGPT Nano");
+    } else {
+      // Set default to ChatGPT Nano if no setting exists
+      setSelectedAIProvider("ChatGPT Nano");
     }
   }, [aiProviderSetting]);
 

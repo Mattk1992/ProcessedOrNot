@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { InsertProduct } from "@shared/schema";
-import { analyzeIngredients, analyzeGlycemicIndex } from "./openai";
+import { analyzeIngredients, analyzeGlycemicIndex, getUserAIProvider } from "./openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -31,7 +31,7 @@ export function isBarcode(input: string): boolean {
   return barcodePatterns.some(pattern => pattern.test(cleaned));
 }
 
-export async function searchProductByText(productName: string, filters?: SearchFilter): Promise<ProductSearchResult> {
+export async function searchProductByText(productName: string, filters?: SearchFilter, userId?: number): Promise<ProductSearchResult> {
   try {
     console.log(`Starting text search for product: ${productName}`, filters ? `with filters: ${JSON.stringify(filters)}` : '');
 
@@ -171,11 +171,16 @@ Provide realistic nutritional values based on typical products of this type. Thi
     let glycemicLoad = null;
     let glycemicExplanation = "No data available for glycemic analysis";
 
+    // Get user's AI provider setting
+    const userAIProvider = await getUserAIProvider(userId);
+
     if (searchResult.ingredientsText) {
       try {
         const analysis = await analyzeIngredients(
           searchResult.ingredientsText,
-          searchResult.productName || productName
+          searchResult.productName || productName,
+          'en',
+          userAIProvider
         );
         processingScore = analysis.score;
         processingExplanation = analysis.explanation;
@@ -191,7 +196,9 @@ Provide realistic nutritional values based on typical products of this type. Thi
         const glycemicAnalysis = await analyzeGlycemicIndex(
           searchResult.ingredientsText || "",
           searchResult.productName || productName,
-          searchResult.nutriments
+          searchResult.nutriments,
+          'en',
+          userAIProvider
         );
         glycemicIndex = glycemicAnalysis.glycemicIndex;
         glycemicLoad = glycemicAnalysis.glycemicLoad;
@@ -229,7 +236,9 @@ Provide only the ingredients list in this format:
           
           const analysis = await analyzeIngredients(
             ingredientsResult.ingredientsText,
-            searchResult.productName || productName
+            searchResult.productName || productName,
+            'en',
+            userAIProvider
           );
           processingScore = analysis.score;
           processingExplanation = analysis.explanation;
@@ -240,7 +249,9 @@ Provide only the ingredients list in this format:
               const glycemicAnalysis = await analyzeGlycemicIndex(
                 ingredientsResult.ingredientsText,
                 searchResult.productName || productName,
-                searchResult.nutriments
+                searchResult.nutriments,
+                'en',
+                userAIProvider
               );
               glycemicIndex = glycemicAnalysis.glycemicIndex;
               glycemicLoad = glycemicAnalysis.glycemicLoad;
