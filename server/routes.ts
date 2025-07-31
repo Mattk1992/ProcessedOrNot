@@ -62,12 +62,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }),
     secret: process.env.SESSION_SECRET || 'secure-session-key-change-in-production-2024',
     resave: false,
-    saveUninitialized: true, // Create sessions for anonymous users too
+    saveUninitialized: false, // Don't create sessions for anonymous users unless needed
     name: 'sessionId', // Change default session name for security
     cookie: {
       secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days default
     },
   }));
@@ -192,9 +192,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.session.userId = user.id;
       req.session.user = sanitizeUser(user);
 
-      res.status(201).json({
-        message: "Registration successful",
-        user: sanitizeUser(user)
+      // Force session save to ensure persistence
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error after registration:", err);
+          return res.status(500).json({ message: "Registration session creation failed" });
+        }
+        
+        console.log("Registration successful for user:", user.id, "Session saved:", req.session.id);
+        res.status(201).json({
+          message: "Registration successful",
+          user: sanitizeUser(user)
+        });
       });
     } catch (error: any) {
       if (error.name === 'ZodError') {
@@ -233,9 +242,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.cookie.maxAge = 24 * 60 * 60 * 1000;
       }
 
-      res.json({
-        message: "Login successful",
-        user: sanitizeUser(user)
+      // Force session save to ensure persistence
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error after login:", err);
+          return res.status(500).json({ message: "Login session creation failed" });
+        }
+        
+        console.log("Login successful for user:", user.id, "Session saved:", req.session.id);
+        res.json({
+          message: "Login successful",
+          user: sanitizeUser(user)
+        });
       });
     } catch (error: any) {
       if (error.name === 'ZodError') {
@@ -278,17 +296,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get current user endpoint
   app.get("/api/auth/me", async (req, res) => {
+    console.log("Auth check - Session ID:", req.session.id, "User ID:", req.session.userId);
+    
     if (!req.session.userId) {
+      console.log("Auth check failed - No userId in session");
       return res.status(401).json({ message: "Not authenticated" });
     }
 
     try {
       const user = await storage.getUserById(req.session.userId);
       if (!user) {
+        console.log("Auth check failed - User not found in database:", req.session.userId);
         req.session.destroy(() => {});
         return res.status(401).json({ message: "User not found" });
       }
 
+      console.log("Auth check successful for user:", user.id);
       res.json({
         user: sanitizeUser(user)
       });
