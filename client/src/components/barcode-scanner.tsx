@@ -646,11 +646,26 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     }
   }, []);
 
-  // Auto-start camera when URL contains scan parameter
+  // Auto-start camera when URL contains scan parameters
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('scan') === 'camera' && !isCameraActive && !isScanning) {
-      startCamera();
+    const scanParam = urlParams.get('scan');
+    const autoCameraParam = urlParams.get('autoCamera');
+    const autoStartParam = urlParams.get('autoStart');
+    
+    // Auto-start camera if any of these parameters indicate camera should start
+    const shouldStartCamera = 
+      scanParam === 'camera' || 
+      autoCameraParam === 'true' || 
+      autoStartParam === 'true' ||
+      autoStartParam === 'camera';
+    
+    if (shouldStartCamera && !isCameraActive && !isScanning) {
+      console.log('Auto-starting camera from URL parameter');
+      // Small delay to ensure component is fully mounted
+      setTimeout(() => {
+        startCamera();
+      }, 300);
     }
   }, [startCamera, isCameraActive, isScanning]);
 
