@@ -169,31 +169,42 @@ class ConsentIntegration {
 
   // Initialize Google Ads with consent
   public initializeGoogleAds(publisherId: string) {
-    if (!this.initialized) return;
+    if (!this.initialized || (window as any).__adSenseInitialized) return;
 
     const consent = consentManager.getConsent();
     
     // Load Google Ads only if consent is granted
     if (consent?.advertising) {
-      const script = document.createElement('script');
-      script.async = true;
-      script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-${publisherId}`;
-      script.crossOrigin = 'anonymous';
-      document.head.appendChild(script);
-
-      // Configure AdSense
-      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+      // Check if script already exists
+      const existingScript = document.querySelector(`script[src*="pagead2.googlesyndication.com"]`);
       
-      // Set consent for AdSense
-      (window as any).adsbygoogle.push({
-        google_ad_client: `ca-pub-${publisherId}`,
-        enable_page_level_ads: true,
-        privacy_compliance: {
-          gdpr: consentManager.getSettings().region === 'EU',
-          ccpa: consentManager.getSettings().enableRDP,
-          restricted_data_processing: !consent.personalization
-        }
-      });
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.async = true;
+        script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-${publisherId}`;
+        script.crossOrigin = 'anonymous';
+        document.head.appendChild(script);
+      }
+
+      // Configure AdSense only once
+      if (!(window as any).__adSenseConfigured) {
+        (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+        
+        // Set consent for AdSense
+        (window as any).adsbygoogle.push({
+          google_ad_client: `ca-pub-${publisherId}`,
+          enable_page_level_ads: true,
+          privacy_compliance: {
+            gdpr: consentManager.getSettings().region === 'EU',
+            ccpa: consentManager.getSettings().enableRDP,
+            restricted_data_processing: !consent.personalization
+          }
+        });
+        
+        (window as any).__adSenseConfigured = true;
+      }
+      
+      (window as any).__adSenseInitialized = true;
     }
   }
 

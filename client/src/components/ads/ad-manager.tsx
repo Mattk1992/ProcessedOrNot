@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { consentManager, type ConsentData } from '@/lib/consent-manager';
 
 interface AdConfig {
   adsenseClientId?: string;
@@ -40,6 +41,22 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
   const [isAdBlocked, setIsAdBlocked] = useState(false);
   const [canShowAds, setCanShowAds] = useState(false);
 
+  // Listen for CMP consent changes
+  useEffect(() => {
+    const unsubscribe = consentManager.addConsentListener((consent: ConsentData | null) => {
+      const hasAdvertisingConsent = consent?.advertising ?? false;
+      setConfig(prev => ({ ...prev, consentGiven: hasAdvertisingConsent }));
+      setCanShowAds(hasAdvertisingConsent && config.globallyEnabled && !isAdBlocked);
+    });
+    
+    // Check initial consent state
+    const currentConsent = consentManager.getConsent();
+    const hasAdvertisingConsent = currentConsent?.advertising ?? false;
+    setConfig(prev => ({ ...prev, consentGiven: hasAdvertisingConsent }));
+    
+    return unsubscribe;
+  }, [isAdBlocked, config.globallyEnabled]);
+
   // Update config when global ads setting changes
   useEffect(() => {
     if (adsEnabledData && !adsEnabledLoading) {
@@ -76,49 +93,11 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
     checkAdBlocker();
   }, []);
 
-  // Initialize ads based on platform
+  // AdSense initialization is now handled by CMP system
+  // This useEffect just sets canShowAds based on consent and global settings
   useEffect(() => {
-    if (config.platform === 'web' && config.adsenseClientId) {
-      // Check if AdSense script already exists to prevent duplicate loading
-      const existingScript = document.querySelector(`script[src*="pagead2.googlesyndication.com"]`);
-      
-      if (!existingScript) {
-        // Initialize AdSense only if not already loaded
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${config.adsenseClientId}`;
-        script.crossOrigin = 'anonymous';
-        script.setAttribute('data-adsense-client', config.adsenseClientId);
-        
-        script.onload = () => {
-          console.log('AdSense initialized');
-          setCanShowAds(true);
-        };
-        
-        script.onerror = () => {
-          console.error('Failed to load AdSense');
-          setCanShowAds(false);
-        };
-        
-        document.head.appendChild(script);
-
-        return () => {
-          // Cleanup - only remove if it exists and matches our client ID
-          const scriptToRemove = document.querySelector(`script[data-adsense-client="${config.adsenseClientId}"]`);
-          if (scriptToRemove) {
-            document.head.removeChild(scriptToRemove);
-          }
-        };
-      } else {
-        // Script already exists, just enable ads
-        setCanShowAds(true);
-      }
-    } else if (config.platform === 'mobile' && config.admobAppId) {
-      // Initialize AdMob (would work in React Native)
-      console.log('AdMob would be initialized here for mobile platform');
-      setCanShowAds(true);
-    }
-  }, [config]);
+    setCanShowAds(config.consentGiven && config.globallyEnabled && !isAdBlocked);
+  }, [config.consentGiven, config.globallyEnabled, isAdBlocked]);
 
   const updateConfig = (newConfig: Partial<AdConfig>) => {
     setConfig(prev => ({ ...prev, ...newConfig }));
@@ -177,61 +156,9 @@ export function useAdManager() {
 
 // Consent Management Component
 export function AdConsentBanner() {
-  const { config, updateConfig, canShowAds } = useAdManager();
-  const [showBanner, setShowBanner] = useState(false);
-
-  useEffect(() => {
-    // Check if consent was previously given
-    const consentGiven = localStorage.getItem('ad-consent') === 'true';
-    updateConfig({ consentGiven });
-    
-    if (!consentGiven) {
-      setShowBanner(true);
-    }
-  }, []); // Empty dependency array to run only once
-
-  const handleAcceptConsent = () => {
-    localStorage.setItem('ad-consent', 'true');
-    updateConfig({ consentGiven: true });
-    setShowBanner(false);
-  };
-
-  const handleDeclineConsent = () => {
-    localStorage.setItem('ad-consent', 'false');
-    updateConfig({ consentGiven: false });
-    setShowBanner(false);
-  };
-
-  if (!showBanner || config.consentGiven) {
-    return null;
-  }
-
-  return (
-    <div className="fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 z-50">
-      <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex-1">
-          <p className="text-sm">
-            We use ads to support our free service. By continuing to use our site, 
-            you agree to our use of cookies and data collection for advertising purposes.
-          </p>
-        </div>
-        <div className="flex gap-4">
-          <button
-            onClick={handleDeclineConsent}
-            className="px-4 py-2 text-sm border border-gray-600 rounded hover:bg-gray-800"
-          >
-            Decline
-          </button>
-          <button
-            onClick={handleAcceptConsent}
-            className="px-4 py-2 text-sm bg-primary text-white rounded hover:bg-primary/90"
-          >
-            Accept
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+  // This component is now replaced by the comprehensive CMP system
+  // The ConsentBanner component in App.tsx handles all consent management
+  return null;
 }
 
 // Ad Performance Tracking
