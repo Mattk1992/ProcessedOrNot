@@ -22,12 +22,12 @@ export default function Header({ onStartTutorial }: HeaderProps) {
               <h1 className="text-lg sm:text-2xl font-bold text-white truncate">ProcessedOrNot</h1>
               <p className="text-xs sm:text-sm text-white/80 hidden md:block">Smart Food Scanner</p>
             </div>
+            <div className="hidden sm:block ml-auto">
+              <LanguageSwitcher />
+            </div>
           </div>
           
           <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
-            <div className="hidden sm:block">
-              <LanguageSwitcher />
-            </div>
             <NotificationButton />
             <HeaderDropdown onStartTutorial={onStartTutorial} />
           </div>

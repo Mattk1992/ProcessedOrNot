@@ -59,7 +59,7 @@ export default function LanguageSwitcher() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent 
-        align="end" 
+        align="start" 
         className="w-72 p-3 animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200 language-dropdown-enter glass-card border-2 border-primary/20"
       >
         <div className="mb-3 px-3 py-2 text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-2">
