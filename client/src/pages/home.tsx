@@ -22,7 +22,7 @@ export default function Home() {
 
   const { toast } = useToast();
   const { t } = useLanguage();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
 
   // Fetch tutorial overlay setting from admin
   const { data: tutorialSetting } = useQuery<{ enabled: boolean; source: string }>({
@@ -258,13 +258,15 @@ export default function Home() {
         </section>
       )}
       
-      {/* Ad Space before footer */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="text-center mb-4">
-          <p className="text-sm text-muted-foreground">Advertisement</p>
+      {/* Ad Space before footer - Only visible to admin users */}
+      {user?.username === 'Admin' && (
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="text-center mb-4">
+            <p className="text-sm text-muted-foreground">Advertisement (Admin View)</p>
+          </div>
+          <HeaderBannerAd className="mx-auto" />
         </div>
-        <HeaderBannerAd className="mx-auto" />
-      </div>
+      )}
       
       {/* Footer */}
       <footer className="hidden md:block border-t border-border/50 mt-8 sm:mt-16 bg-gradient-to-r from-background/80 to-background/90 backdrop-blur-sm">
