@@ -635,16 +635,34 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     currentLocationRef.current = location;
   }, [location, isCameraActive, stopCamera]);
 
-  // Focus on input field when URL contains #manual-input anchor
+  // Focus on input field when URL contains #manual-input anchor or focus parameter
   useEffect(() => {
-    if (window.location.hash === '#manual-input') {
-      const inputElement = document.getElementById('manual-barcode-input');
-      if (inputElement) {
-        inputElement.focus();
-        inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+    const urlParams = new URLSearchParams(window.location.search);
+    const focusParam = urlParams.get('focus');
+    const focusInput = urlParams.get('focusInput');
+    const autoFocus = urlParams.get('autoFocus');
+    
+    // Focus on manual input if hash or URL parameters indicate it
+    const shouldFocusInput = 
+      window.location.hash === '#manual-input' ||
+      focusParam === 'input' ||
+      focusParam === 'manual' ||
+      focusInput === 'true' ||
+      autoFocus === 'true' ||
+      autoFocus === 'input';
+    
+    if (shouldFocusInput) {
+      console.log('Auto-focusing on manual input from URL parameter');
+      // Small delay to ensure component is rendered and camera is not active
+      setTimeout(() => {
+        const inputElement = document.getElementById('manual-barcode-input');
+        if (inputElement && !isCameraActive) {
+          inputElement.focus();
+          inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
     }
-  }, []);
+  }, [isCameraActive]);
 
   // Auto-start camera when URL contains scan parameters
   useEffect(() => {
