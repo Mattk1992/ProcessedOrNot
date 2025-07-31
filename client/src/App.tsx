@@ -61,9 +61,9 @@ function Router() {
       
       {/* Nutrition Tracking Pages */}
       <Route path="/nutri-dashboard" component={NutriDashboard} />
-      <Route path="/nutri-diary" component={NutriDiary} />
-      <Route path="/nutri-progress" component={NutriProgress} />
-      <Route path="/nutri-profile" component={NutriProfile} />
+      <Route path="/nutri-dashboard/diary" component={NutriDiary} />
+      <Route path="/nutri-dashboard/progress" component={NutriProgress} />
+      <Route path="/nutri-dashboard/profile" component={NutriProfile} />
       
       {/* Ad Configuration - Sub-page of Settings */}
       <Route path="/settings/ad-settings" component={AdSettings} />

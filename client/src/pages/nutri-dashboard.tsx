@@ -177,9 +177,9 @@ export default function NutriDashboard() {
             
             <nav className="hidden md:flex items-center space-x-6">
               <Link href="/nutri-dashboard" className="text-foreground font-medium">Dashboard</Link>
-              <Link href="/nutri-diary" className="text-muted-foreground hover:text-foreground transition-colors">Diary</Link>
-              <Link href="/nutri-progress" className="text-muted-foreground hover:text-foreground transition-colors">Progress</Link>
-              <Link href="/nutri-profile" className="text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
+              <Link href="/nutri-dashboard/diary" className="text-muted-foreground hover:text-foreground transition-colors">Diary</Link>
+              <Link href="/nutri-dashboard/progress" className="text-muted-foreground hover:text-foreground transition-colors">Progress</Link>
+              <Link href="/nutri-dashboard/profile" className="text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
             </nav>
 
             <div className="flex items-center space-x-3">
@@ -199,7 +199,7 @@ export default function NutriDashboard() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Link href="/nutri-diary">
+          <Link href="/nutri-dashboard/diary">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <Plus className="w-8 h-8 text-primary mx-auto mb-2" />
@@ -217,7 +217,7 @@ export default function NutriDashboard() {
             </Card>
           </Link>
           
-          <Link href="/nutri-progress">
+          <Link href="/nutri-dashboard/progress">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <TrendingUp className="w-8 h-8 text-blue-500 mx-auto mb-2" />
@@ -226,7 +226,7 @@ export default function NutriDashboard() {
             </Card>
           </Link>
           
-          <Link href="/nutri-profile">
+          <Link href="/nutri-dashboard/profile">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <Target className="w-8 h-8 text-purple-500 mx-auto mb-2" />

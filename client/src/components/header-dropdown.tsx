@@ -130,21 +130,6 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       icon: <BarChart3 className="w-4 h-4" />,
       action: () => setLocation('/nutri-dashboard')
     },
-    {
-      label: 'Food Diary',
-      icon: <BookOpen className="w-4 h-4" />,
-      action: () => setLocation('/nutri-diary')
-    },
-    {
-      label: 'Progress',
-      icon: <TrendingUp className="w-4 h-4" />,
-      action: () => setLocation('/nutri-progress')
-    },
-    {
-      label: 'Profile',
-      icon: <User className="w-4 h-4" />,
-      action: () => setLocation('/nutri-profile')
-    },
     { type: 'divider' },
     
     // Admin Panel (if admin)
