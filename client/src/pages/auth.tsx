@@ -69,13 +69,17 @@ export default function Auth() {
         title: t("auth.login.success") || "Login successful",
         description: t("auth.login.welcomeBack") || "Welcome back!",
       });
-      // Invalidate auth cache and redirect
+      // Invalidate auth cache and force refetch to ensure immediate auth state update
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
+      queryClient.refetchQueries({ queryKey: ["/api/auth/me"] });
+      
+      // Small delay to allow auth state to update before redirect
       setTimeout(() => {
         window.location.href = "/";
-      }, 100);
+      }, 200);
     },
     onError: (error: any) => {
+      console.error("Login error:", error);
       toast({
         title: t("auth.login.error") || "Login failed",
         description: error.message || t("auth.login.invalidCredentials") || "Invalid credentials",

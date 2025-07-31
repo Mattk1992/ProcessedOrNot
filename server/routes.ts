@@ -64,10 +64,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     resave: false,
     saveUninitialized: false, // Don't create sessions for anonymous users unless needed
     name: 'sessionId', // Change default session name for security
+    rolling: true, // Refresh session expiry on activity
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Set to false for development, should be true in production with HTTPS
       httpOnly: true,
-      sameSite: 'lax', // Changed from 'strict' to 'lax' for better compatibility
+      sameSite: 'lax', // Better compatibility than 'strict'
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days default
     },
   }));
@@ -272,26 +273,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // User logout endpoint with secure cleanup (POST)
   app.post("/api/auth/logout", (req, res) => {
+    console.log("Logout request - Session ID:", req.session.id, "User ID:", req.session.userId);
     req.session.destroy((err) => {
       if (err) {
+        console.error("Session destroy error:", err);
         return res.status(500).json({ message: "Logout failed" });
       }
-      // Clear both default and custom session cookies
-      res.clearCookie('connect.sid');
-      res.clearCookie('sessionId');
+      // Clear session cookies with proper path and domain settings
+      res.clearCookie('connect.sid', { path: '/', httpOnly: true });
+      res.clearCookie('sessionId', { path: '/', httpOnly: true });
+      console.log("Logout successful - Session destroyed and cookies cleared");
       res.json({ message: "Logout successful" });
     });
   });
 
   // User logout endpoint with secure cleanup (GET) - for browser redirects
   app.get("/api/logout", (req, res) => {
+    console.log("Logout GET request - Session ID:", req.session.id, "User ID:", req.session.userId);
     req.session.destroy((err) => {
       if (err) {
+        console.error("Session destroy error (GET):", err);
         return res.status(500).send("Logout failed");
       }
-      // Clear both default and custom session cookies
-      res.clearCookie('connect.sid');
-      res.clearCookie('sessionId');
+      // Clear session cookies with proper path and domain settings
+      res.clearCookie('connect.sid', { path: '/', httpOnly: true });
+      res.clearCookie('sessionId', { path: '/', httpOnly: true });
+      console.log("Logout GET successful - Session destroyed and redirecting to home");
       // Redirect to home page after logout
       res.redirect('/');
     });
@@ -313,6 +320,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.destroy(() => {});
         return res.status(401).json({ message: "User not found" });
       }
+      
+      // Update user's last login time to maintain session activity
+      await storage.updateUser(user.id, { lastLoginAt: new Date() });
 
       console.log("Auth check successful for user:", user.id);
       res.json({
@@ -323,6 +333,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to get user" });
     }
   });
+
+  // Session debug endpoint (development only)
+  if (process.env.NODE_ENV === 'development') {
+    app.get("/api/debug/session", (req, res) => {
+      res.json({
+        sessionId: req.session.id,
+        userId: req.session.userId,
+        user: req.session.user ? sanitizeUser(req.session.user) : null,
+        cookie: req.session.cookie,
+        rewardCount: req.session.reward_count || 0
+      });
+    });
+  }
 
   // Forgot password endpoint
   app.post("/api/auth/forgot-password", async (req, res) => {
