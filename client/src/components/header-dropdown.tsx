@@ -208,8 +208,8 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
             onClick={() => setIsOpen(false)}
           />
           
-          {/* Enhanced Dropdown Menu */}
-          <div className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] sm:max-w-[14rem] mobile-dropdown bg-gradient-to-br from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-800/90 rounded-xl shadow-xl border border-white/30 dark:border-gray-700/50 z-50 overflow-hidden backdrop-blur-xl dropdown-menu-enhanced">
+          {/* Enhanced Dropdown Menu - Positioned to the left */}
+          <div className="absolute left-0 mt-2 w-56 max-w-[calc(100vw-2rem)] sm:max-w-[14rem] mobile-dropdown bg-gradient-to-br from-white/95 to-white/90 dark:from-gray-900/95 dark:to-gray-800/90 rounded-xl shadow-xl border border-white/30 dark:border-gray-700/50 z-50 overflow-hidden backdrop-blur-xl dropdown-menu-enhanced">
             
             {/* Header with user info */}
             {isAuthenticated && (
