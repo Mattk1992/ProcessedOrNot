@@ -221,8 +221,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const validatedData = loginUserSchema.parse(req.body);
+      console.log("Login attempt for username:", validatedData.username);
       
       const user = await storage.verifyUserCredentials(validatedData.username, validatedData.password);
+      console.log("User verification result:", user ? `User ${user.id} found` : "User not found or invalid password");
+      
       if (!user) {
         return res.status(401).json({ 
           message: "Invalid username or password"

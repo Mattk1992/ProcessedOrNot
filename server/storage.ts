@@ -341,10 +341,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async verifyUserCredentials(username: string, password: string): Promise<User | null> {
+    console.log("Looking up user:", username);
     const user = await this.getUserByUsernameOrEmail(username);
+    console.log("User found:", user ? `User ${user.id}` : "None");
+    
     if (!user) return null;
     
+    console.log("Verifying password hash:", user.passwordHash.substring(0, 20) + "...");
     const isValidPassword = await verifyPassword(password, user.passwordHash);
+    console.log("Password valid:", isValidPassword);
+    
     if (!isValidPassword) return null;
     
     // Update last login time
