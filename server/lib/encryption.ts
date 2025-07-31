@@ -2,10 +2,9 @@
 import * as crypto from 'crypto';
 
 // Encryption configuration
-const ENCRYPTION_ALGORITHM = 'aes-256-gcm' as const;
+const ENCRYPTION_ALGORITHM = 'aes-256-cbc' as const;
 const ENCRYPTION_KEY_LENGTH = 32; // 256 bits
 const IV_LENGTH = 16; // 128 bits
-const TAG_LENGTH = 16; // 128 bits
 
 // Get encryption key from environment or generate one
 function getEncryptionKey(): string {
@@ -32,14 +31,14 @@ function getEncryptionKey(): string {
 const ENCRYPTION_KEY = getEncryptionKey();
 
 /**
- * Encrypts sensitive data using AES-256-GCM
+ * Encrypts sensitive data using AES-256-CBC
  */
 export function encryptData(plaintext: string): string {
   try {
     const key = Buffer.from(ENCRYPTION_KEY, 'hex');
     const iv = crypto.randomBytes(IV_LENGTH);
     
-    const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
+    const cipher = crypto.createCipheriv(ENCRYPTION_ALGORITHM, key, iv);
     
     let encrypted = cipher.update(plaintext, 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -84,7 +83,7 @@ export function decryptData(encryptedData: string): string {
       return '';
     }
     
-    const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
+    const decipher = crypto.createDecipheriv(ENCRYPTION_ALGORITHM, key, iv);
     
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
@@ -211,6 +210,14 @@ export function encryptSessionData(sessionData: object): string {
  * Decrypt session data
  */
 export function decryptSessionData(encryptedSession: string): object {
-  const decrypted = decryptData(encryptedSession);
-  return JSON.parse(decrypted);
+  try {
+    const decrypted = decryptData(encryptedSession);
+    if (!decrypted) {
+      return {};
+    }
+    return JSON.parse(decrypted);
+  } catch (error) {
+    console.error('Failed to decrypt session data:', error);
+    return {};
+  }
 }

@@ -36,11 +36,6 @@ export default function NotificationButton({ className = '' }: NotificationButto
   const { user, isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
 
-  // Don't render if user is not authenticated
-  if (!isAuthenticated || !user) {
-    return null;
-  }
-
   // Fetch notifications
   const { data: notifications, isLoading } = useQuery<Notification[]>({
     queryKey: ['/api/notifications'],
@@ -138,6 +133,11 @@ export default function NotificationButton({ className = '' }: NotificationButto
       });
     },
   });
+
+  // Don't render if user is not authenticated
+  if (!isAuthenticated || !user) {
+    return null;
+  }
 
   const handleNotificationClick = async (notification: Notification) => {
     if (!notification.isRead) {

@@ -26,7 +26,7 @@ export async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
         'organic', 'protein', 'carbs', 'calories', 'vitamins',
         'dairy', 'gluten', 'sugar', 'sodium', 'fiber'
       ],
-      boost_param: 'high'
+      boost_param: 'high' as const
     };
 
     // Start transcription
