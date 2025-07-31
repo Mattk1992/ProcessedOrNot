@@ -3,8 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
-import LanguageSwitcher from "@/components/language-switcher";
-import HeaderDropdown from "@/components/header-dropdown";
+
 import NutriBotChat from "@/components/nutribot-chat";
 import TutorialOverlay from "@/components/tutorial-overlay";
 import { VoiceSearchButton } from "@/components/voice-search-button";
@@ -92,29 +91,7 @@ export default function ProductLookup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
-      <header className="backdrop-blur-md bg-background/80 border-b border-border/50 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-3">
-              <img 
-                src={logoPath} 
-                alt="ProcessedOrNot Scanner" 
-                className="w-10 h-10 rounded-full"
-              />
-              <div className="hidden sm:block">
-                <h1 className="text-xl font-bold gradient-text">ProcessedOrNot</h1>
-                <p className="text-xs text-muted-foreground hidden md:block">Product Lookup & Analysis</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <LanguageSwitcher />
-              <HeaderDropdown onStartTutorial={handleStartTutorial} />
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">{/* Content with sidebar navigation */}
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {/* Key Feature Highlights */}

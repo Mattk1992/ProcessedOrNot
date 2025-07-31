@@ -3,8 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
-import LanguageSwitcher from "@/components/language-switcher";
-import HeaderDropdown from "@/components/header-dropdown";
+
 import NutriBotChat from "@/components/nutribot-chat";
 import TutorialOverlay from "@/components/tutorial-overlay";
 import { VoiceSearchButton } from "@/components/voice-search-button";
@@ -99,37 +98,7 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Header */}
-      <header className="glass-effect border-b border-border/50 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 py-6 mobile-compact-header">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-1 sm:space-x-3">
-              <div className="scale-on-hover" data-tutorial="menu-dropdown">
-                <HeaderDropdown 
-                  onStartTutorial={tutorialSetting && tutorialSetting.enabled ? handleStartTutorial : undefined} 
-                />
-              </div>
-              <div className="scale-on-hover hidden md:block">
-                <LanguageSwitcher />
-              </div>
-            </div>
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <div className="min-w-0">
-                <h1 className="text-lg sm:text-2xl font-bold gradient-text text-shadow truncate">
-                  {t('brand.title')}
-                </h1>
-                <p className="text-xs sm:text-sm text-muted-foreground truncate hidden md:block">{t('brand.subtitle')}</p>
-              </div>
-              <img 
-                src={logoPath} 
-                alt="ProcessedOrNot Logo" 
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl shadow-lg floating-animation"
-              />
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen">{/* Content with sidebar navigation */}
       {/* Hero Section */}
       <section className="relative overflow-hidden py-8 sm:py-16">
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent"></div>
