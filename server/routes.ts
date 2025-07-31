@@ -243,7 +243,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User logout endpoint with secure cleanup
+  // User logout endpoint with secure cleanup (POST)
   app.post("/api/auth/logout", (req, res) => {
     req.session.destroy((err) => {
       if (err) {
@@ -253,6 +253,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.clearCookie('connect.sid');
       res.clearCookie('sessionId');
       res.json({ message: "Logout successful" });
+    });
+  });
+
+  // User logout endpoint with secure cleanup (GET) - for browser redirects
+  app.get("/api/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).send("Logout failed");
+      }
+      // Clear both default and custom session cookies
+      res.clearCookie('connect.sid');
+      res.clearCookie('sessionId');
+      // Redirect to home page after logout
+      res.redirect('/');
     });
   });
 
