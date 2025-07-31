@@ -24,8 +24,8 @@ class GPTAdManager {
   constructor() {
     this.config = {
       publisherId: import.meta.env.VITE_GOOGLE_ADSENSE_CLIENT_ID?.replace('ca-pub-', '') || '1163701043339821',
-      rewardAdUnitId: '/22081946781/reward_interstitial', // Standard GPT ad unit format
-      testMode: import.meta.env.DEV
+      rewardAdUnitId: '/1163701043339821/reward_interstitial', // Use proper publisher ID format
+      testMode: import.meta.env.DEV || false
     };
   }
 
@@ -80,11 +80,17 @@ class GPTAdManager {
                 window.googletag.pubads().setTargeting('test', 'true');
               }
 
-              // Define reward ad slot
+              // Define reward ad slot with proper ad unit path
+              const adUnitPath = this.config.rewardAdUnitId.startsWith('/') 
+                ? this.config.rewardAdUnitId 
+                : `/${this.config.publisherId}/${this.config.rewardAdUnitId}`;
+                
               this.rewardAdSlot = window.googletag.defineOutOfPageSlot(
-                `/${this.config.publisherId}${this.config.rewardAdUnitId}`,
+                adUnitPath,
                 window.googletag.enums.OutOfPageFormat.INTERSTITIAL
               );
+              
+              console.log('Created GPT reward ad slot:', adUnitPath);
 
               if (this.rewardAdSlot) {
                 this.rewardAdSlot.addService(window.googletag.pubads());

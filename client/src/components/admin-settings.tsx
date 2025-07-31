@@ -11,7 +11,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Settings, Save, RefreshCw, Camera, Timer, Monitor, Eye, DollarSign } from 'lucide-react';
+import { Settings, Save, RefreshCw, Camera, Timer, Monitor, Eye, DollarSign, Target } from 'lucide-react';
+import { GPTTestPanel } from './gpt-test-panel';
 
 interface AdminSetting {
   id: number;
@@ -309,6 +310,19 @@ export default function AdminSettings() {
           </CardContent>
         </Card>
       ))}
+
+      {/* GPT Reward Ad Testing Panel */}
+      <Card className="border-2 border-primary/20">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            GPT Reward Ad System
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <GPTTestPanel />
+        </CardContent>
+      </Card>
 
       {/* Empty State */}
       {Object.keys(settingsByCategory).length === 0 && (
