@@ -11,8 +11,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import HeaderDropdown from "@/components/header-dropdown";
-import LanguageSwitcher from "@/components/language-switcher";
+
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
@@ -62,40 +61,36 @@ const infoPages = [
   }
 ];
 
+const legalPages = [
+  {
+    title: "Social Media",
+    description: "Follow us online and stay connected",
+    icon: Users,
+    href: "/social-media",
+    color: "text-cyan-500"
+  },
+  {
+    title: "Privacy Policy",
+    description: "How we protect and handle your personal data",
+    icon: Info,
+    href: "/privacy",
+    color: "text-green-600"
+  },
+  {
+    title: "Terms of Service",
+    description: "Usage terms and conditions for our platform",
+    icon: BookOpen,
+    href: "/terms",
+    color: "text-slate-600"
+  }
+];
+
 export default function SiteInfo() {
   const { user, isAuthenticated } = useAuth();
   const { t } = useLanguage();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
-      {/* Header */}
-      <header className="backdrop-blur-md bg-background/80 border-b border-border/50 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-3">
-              <img src={logoPath} alt="ProcessedOrNot Scanner" className="w-10 h-10 rounded-full" />
-              <div className="hidden sm:block">
-                <h1 className="text-xl font-bold gradient-text">ProcessedOrNot</h1>
-                <p className="text-xs text-muted-foreground">Site Information</p>
-              </div>
-            </div>
-            
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/nutri-dashboard" className="text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
-              <Link href="/nutri-dashboard/diary" className="text-muted-foreground hover:text-foreground transition-colors">Diary</Link>
-              <Link href="/nutri-dashboard/progress" className="text-muted-foreground hover:text-foreground transition-colors">Progress</Link>
-              <Link href="/nutri-dashboard/profile" className="text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
-              <Link href="/nutri-dashboard/settings" className="text-muted-foreground hover:text-foreground transition-colors">Settings</Link>
-              <Link href="/nutri-dashboard/site-info" className="text-foreground font-medium">Site Info</Link>
-            </nav>
-
-            <div className="flex items-center space-x-3">
-              <LanguageSwitcher />
-              <HeaderDropdown />
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">{/* Content with sidebar navigation */}
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
@@ -114,32 +109,66 @@ export default function SiteInfo() {
           </div>
         </div>
 
-        {/* Info Pages Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {infoPages.map((page) => (
-            <Link key={page.href} href={page.href}>
-              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-lg bg-muted group-hover:bg-background transition-colors`}>
-                      <page.icon className={`w-6 h-6 ${page.color}`} />
+        {/* Main Info Pages Grid */}
+        <div className="mb-12">
+          <h3 className="text-xl font-semibold mb-6">Site Information</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {infoPages.map((page) => (
+              <Link key={page.href} href={page.href}>
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-2 rounded-lg bg-muted group-hover:bg-background transition-colors`}>
+                        <page.icon className={`w-6 h-6 ${page.color}`} />
+                      </div>
+                      <div className="flex-1">
+                        <CardTitle className="flex items-center justify-between">
+                          {page.title}
+                          <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </CardTitle>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <CardTitle className="flex items-center justify-between">
-                        {page.title}
-                        <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-sm">
+                      {page.description}
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Legal & Social Pages Grid */}
+        <div className="mb-12">
+          <h3 className="text-xl font-semibold mb-6">Legal & Social</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {legalPages.map((page) => (
+              <Link key={page.href} href={page.href}>
+                <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className={`p-2 rounded-lg bg-muted group-hover:bg-background transition-colors`}>
+                        <page.icon className={`w-6 h-6 ${page.color}`} />
+                      </div>
+                      <div className="flex-1">
+                        <CardTitle className="flex items-center justify-between">
+                          {page.title}
+                          <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </CardTitle>
+                      </div>
                     </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-sm">
-                    {page.description}
-                  </CardDescription>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+                  </CardHeader>
+                  <CardContent>
+                    <CardDescription className="text-sm">
+                      {page.description}
+                    </CardDescription>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </div>
 
         {/* Quick Contact Section */}

@@ -73,28 +73,7 @@ export default function Sidebar({ onStartTutorial }: SidebarProps) {
       label: 'Site Information',
       icon: Info,
       path: '/nutri-dashboard/site-info',
-      description: 'Features, help, and about'
-    },
-    {
-      label: 'Social Media',
-      icon: Share2,
-      path: '/social-media',
-      description: 'Follow us online'
-    },
-    { type: 'divider' },
-    
-    { type: 'section', label: 'Legal' },
-    {
-      label: 'Privacy Policy',
-      icon: Lock,
-      path: '/privacy',
-      description: 'Data protection info'
-    },
-    {
-      label: 'Terms of Service',
-      icon: FileText,
-      path: '/terms',
-      description: 'Usage terms'
+      description: 'Features, help, legal & social'
     },
     ...(onStartTutorial ? [
       { type: 'divider' },
@@ -153,28 +132,7 @@ export default function Sidebar({ onStartTutorial }: SidebarProps) {
       label: 'Site Information',
       icon: Info,
       path: '/nutri-dashboard/site-info',
-      description: 'Features, help, and about'
-    },
-    {
-      label: 'Social Media',
-      icon: Share2,
-      path: '/social-media',
-      description: 'Follow us online'
-    },
-    { type: 'divider' },
-    
-    { type: 'section', label: 'Legal' },
-    {
-      label: 'Privacy Policy',
-      icon: Lock,
-      path: '/privacy',
-      description: 'Data protection info'
-    },
-    {
-      label: 'Terms of Service',
-      icon: FileText,
-      path: '/terms',
-      description: 'Usage terms'
+      description: 'Features, help, legal & social'
     },
     ...(onStartTutorial ? [
       { type: 'divider' },
