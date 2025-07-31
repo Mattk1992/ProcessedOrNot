@@ -10,8 +10,8 @@ import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SearchFilter from "./search-filter";
 import { VoiceSearchButton } from "./voice-search-button";
-import { useRewardSystem } from "@/hooks/useRewardSystem";
-import RewardModal from "./reward-modal";
+import { useGPTRewards } from "@/hooks/useGPTRewards";
+import { GPTRewardModal } from "./gpt-reward-modal";
 import { trackEvent } from "@/lib/analytics";
 
 interface BarcodeScannerProps {
@@ -49,15 +49,18 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     excludeBrands: []
   });
   
-  // Reward system integration
+  // GPT Reward system integration
   const { 
-    rewardStatus, 
-    showRewardModal, 
-    setShowRewardModal, 
-    openRewardUrl, 
-    isResettingReward,
-    checkRewardBeforeAction 
-  } = useRewardSystem();
+    clickCount,
+    maxClicks,
+    needsRewardAd,
+    isShowingAd,
+    isAdAvailable,
+    showRewardAd,
+    resetClickCount,
+    checkRewardBeforeAction,
+    remainingClicks
+  } = useGPTRewards(5);
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -225,6 +228,12 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
   const startCamera = useCallback(async () => {
     try {
+      // Check GPT reward system before starting camera
+      const canProceed = await checkRewardBeforeAction();
+      if (!canProceed) {
+        return; // GPT reward ad will be shown automatically
+      }
+
       // Track camera start event
       trackEvent('camera_start', 'user_interaction', 'barcode_scanner');
       
@@ -1024,18 +1033,27 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         </CardContent>
       </Card>
 
-      {/* Reward Modal */}
-      {rewardStatus && rewardStatus.needsReward && (
-        <RewardModal
-          isOpen={showRewardModal}
-          onOpenChange={setShowRewardModal}
-          currentCount={rewardStatus.currentCount}
-          maxCount={rewardStatus.maxCount}
-          rewardUrl={rewardStatus.rewardUrl || ""}
-          onOpenRewardUrl={openRewardUrl}
-          isResetting={isResettingReward}
-        />
+      {/* GPT Reward Status Display */}
+      {isAdAvailable && (
+        <div className="text-center mt-4 p-3 bg-muted/30 rounded-lg border">
+          <p className="text-sm text-muted-foreground">
+            Camera scans: {clickCount}/{maxClicks} 
+            {remainingClicks > 0 && (
+              <span className="ml-2 text-xs">({remainingClicks} remaining until ad)</span>
+            )}
+          </p>
+          {isShowingAd && (
+            <p className="text-xs text-primary mt-1">Showing reward ad...</p>
+          )}
+        </div>
       )}
+
+      {/* GPT Reward Modal */}
+      <GPTRewardModal
+        isVisible={isShowingAd}
+        onClose={() => {}}
+        adDuration={5000}
+      />
     </div>
   );
 }
