@@ -174,6 +174,12 @@ class ConsentIntegration {
       return;
     }
 
+    // Check if GPT is already initialized to avoid conflicts
+    if (window.__gptInitialized || window.googletag) {
+      console.log('AdSense initialization skipped: GPT already configured');
+      return;
+    }
+
     const consent = consentManager.getConsent();
     
     // Load Google Ads only if consent is granted

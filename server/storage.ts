@@ -1417,35 +1417,35 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async getTestFunctionForDatabase(databaseName: string): Promise<(barcode: string) => Promise<any>> {
-    // Map database names to their corresponding test functions
-    const databaseMap: { [key: string]: string } = {
-      'OpenFoodFacts': 'fetchProductFromOpenFoodFacts',
-      'USDA_FoodData_Central': 'fetchProductFromUSDA',
-      'FoodDB_CA': 'fetchProductFromFoodDBCA',
-      'USDA_FDC': 'fetchProductFromUSDAFDC',
-      'OpenNutrition': 'fetchProductFromOpenNutrition',
-      'Nutritionix': 'fetchProductFromNutritionix',
-      'Spoonacular': 'fetchProductFromSpoonacular',
-      'API_Ninjas': 'fetchProductFromAPINinjas',
-      'FoodData_Central_USDA': 'fetchProductFromFoodDataCentral',
-      'EFSA': 'fetchProductFromEFSA',
-      'Health_Canada': 'fetchProductFromHealthCanada',
-      'Barcode_Spider': 'fetchProductFromBarcodeSpider',
-      'EAN_Search': 'fetchProductFromEANSearch',
-      'UPC_Database': 'fetchProductFromUPCDatabase'
+    // Map database names to their corresponding modules and functions
+    const databaseMap: { [key: string]: { module: string; function: string } } = {
+      'OpenFoodFacts': { module: './lib/openfoodfacts', function: 'fetchProductFromOpenFoodFacts' },
+      'USDA_FoodData_Central': { module: './lib/usda', function: 'fetchProductFromUSDA' },
+      'FoodDB_CA': { module: './lib/fooddb-ca', function: 'fetchProductFromFoodDBCA' },
+      'USDA_FDC': { module: './lib/usda-fdc', function: 'fetchProductFromUSDAFDC' },
+      'OpenNutrition': { module: './lib/opennutrition', function: 'fetchProductFromOpenNutrition' },
+      'Nutritionix': { module: './lib/nutritionix', function: 'fetchProductFromNutritionix' },
+      'Spoonacular': { module: './lib/spoonacular', function: 'fetchProductFromSpoonacular' },
+      'API_Ninjas': { module: './lib/api-ninjas', function: 'fetchProductFromAPINinjas' },
+      'FoodData_Central_USDA': { module: './lib/fooddata-central', function: 'fetchProductFromFoodDataCentral' },
+      'EFSA': { module: './lib/efsa', function: 'fetchProductFromEFSA' },
+      'Health_Canada': { module: './lib/health-canada', function: 'fetchProductFromHealthCanada' },
+      'Barcode_Spider': { module: './lib/barcode-spider', function: 'fetchProductFromBarcodeSpider' },
+      'EAN_Search': { module: './lib/ean-search', function: 'fetchProductFromEANSearch' },
+      'UPC_Database': { module: './lib/upc', function: 'fetchProductFromUPCDatabase' }
     };
 
-    const functionName = databaseMap[databaseName];
-    if (!functionName) {
+    const config = databaseMap[databaseName];
+    if (!config) {
       throw new Error(`No test function found for database: ${databaseName}`);
     }
 
-    // Dynamically import the function
+    // Dynamically import the function from the correct module
     try {
-      const module = await import('./lib/openfoodfacts');
-      return module[functionName];
+      const module = await import(config.module);
+      return module[config.function];
     } catch (error) {
-      throw new Error(`Failed to import test function for ${databaseName}: ${error}`);
+      throw new Error(`Failed to import test function for ${databaseName} from ${config.module}: ${error}`);
     }
   }
 

@@ -41,6 +41,12 @@ class GPTAdManager {
       return;
     }
 
+    // Check if AdSense is already configured to avoid conflicts
+    if ((window as any).__adSenseConfigured || (window as any).__adSenseInitialized) {
+      console.log('GPT initialization skipped: AdSense already configured');
+      return;
+    }
+
     // Check consent before initializing GPT
     const consentManager = await import('@/lib/consent-manager').then(m => m.consentManager);
     const consent = consentManager.getConsent();
