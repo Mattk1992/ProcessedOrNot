@@ -3,9 +3,13 @@ import LanguageSwitcher from "./language-switcher";
 import HeaderDropdown from "./header-dropdown";
 import NotificationButton from "./notifications";
 
-export default function Header() {
+interface HeaderProps {
+  onStartTutorial?: () => void;
+}
+
+export default function Header({ onStartTutorial }: HeaderProps) {
   return (
-    <header className="bg-gradient-to-r from-primary to-accent text-white shadow-xl">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-primary to-accent text-white shadow-xl">
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
@@ -25,7 +29,7 @@ export default function Header() {
               <LanguageSwitcher />
             </div>
             <NotificationButton />
-            <HeaderDropdown />
+            <HeaderDropdown onStartTutorial={onStartTutorial} />
           </div>
         </div>
       </div>

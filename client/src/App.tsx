@@ -49,7 +49,7 @@ function Router() {
   };
 
   return (
-    <Layout onStartTutorial={onStartTutorial}>
+    <Layout onStartTutorial={handleStartTutorial}>
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/product-lookup" component={ProductLookup} />

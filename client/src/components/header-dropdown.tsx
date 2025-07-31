@@ -165,10 +165,7 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
 
   const menuItems = isAuthenticated ? userMenuItems : guestMenuItems;
 
-  // Hide the main menu dropdown for non-authenticated users
-  if (!isAuthenticated) {
-    return null;
-  }
+  // Show menu for all users, but with different content based on authentication status
 
   return (
     <div className="relative">
