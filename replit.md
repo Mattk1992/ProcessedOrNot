@@ -170,7 +170,7 @@ search_history table (enhanced):
 ## Changelog
 
 Changelog:
-- July 31, 2025. **ADDED ADS.TXT FOR GOOGLE ADSENSE**: Created ads.txt file in root directory with Google AdSense publisher verification (pub-1163701043339821). This enables proper ad serving authorization and prevents unauthorized inventory sales while ensuring revenue attribution.
+- July 31, 2025. **CONFIGURED ADS.TXT SERVING FOR GOOGLE ADSENSE**: Created ads.txt file in root directory with Google AdSense publisher verification (pub-1163701043339821) and added Express route to serve it at /ads.txt endpoint. File is now properly accessible for Google's crawler verification to enable ad serving authorization.
 - July 31, 2025. **REPOSITIONED LANGUAGE SWITCHER TO LEFT SIDE**: Moved language switcher from right side to left side of header across all pages. Updated dropdown alignment to "start" for proper left-side positioning. Notifications and main dropdown menu remain on right side for optimal layout balance.
 - June 16, 2025. Initial setup
 - June 16, 2025. Implemented comprehensive user account system with secure authentication, registration, login pages, password hashing, email verification, password reset functionality, and session management

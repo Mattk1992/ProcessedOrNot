@@ -44,6 +44,12 @@ declare module 'express-session' {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve ads.txt file for Google AdSense verification
+  app.get('/ads.txt', (req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
+    res.sendFile('ads.txt', { root: '.' });
+  });
+
   // Initialize PostgreSQL session store
   const PgSession = pgSession(session);
   
