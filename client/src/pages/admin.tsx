@@ -154,6 +154,24 @@ export default function AdminPanel() {
                       Product Database Management
                     </Button>
                   </Link>
+                  <Link href="/ad-placement-guidelines">
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Ad Placement Guidelines
+                    </Button>
+                  </Link>
+                  <Link href="/user-consent-collection">
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      User Consent Collection
+                    </Button>
+                  </Link>
+                  <Link href="/ad-compliance-dashboard">
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Ad Compliance Dashboard
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </CardContent>

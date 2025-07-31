@@ -36,6 +36,9 @@ import { AdManagerProvider, AdConsentBanner } from "@/components/ads";
 import AdSettings from "@/pages/ad-settings";
 import SiteInfo from "@/pages/site-info";
 import ConsentSettings from "@/pages/consent-settings";
+import AdPlacementGuidelinesPage from "@/pages/ad-placement-guidelines";
+import UserConsentCollectionPage from "@/pages/user-consent-collection";
+import AdComplianceDashboard from "@/pages/ad-compliance-dashboard";
 import ConsentBanner from "@/components/consent-banner";
 import { consentIntegration } from "@/lib/consent-integration";
 
@@ -87,6 +90,11 @@ function Router() {
         
         {/* Ad Configuration - Sub-page of Settings */}
         <Route path="/nutri-dashboard/settings/ad-settings" component={AdSettings} />
+        
+        {/* Ad Compliance Pages */}
+        <Route path="/ad-compliance-dashboard" component={AdComplianceDashboard} />
+        <Route path="/ad-placement-guidelines" component={AdPlacementGuidelinesPage} />
+        <Route path="/user-consent-collection" component={UserConsentCollectionPage} />
         
         <Route component={NotFound} />
       </Switch>
