@@ -46,6 +46,25 @@ export function GPTTestPanel() {
     setTestResult("Ad slot refreshed");
   };
 
+  const showAdMetrics = () => {
+    const metrics = gptAdManager.getAdMetrics();
+    setTestResult(`Ad Metrics: ${JSON.stringify(metrics, null, 2)}`);
+  };
+
+  const forceReinitialize = async () => {
+    setIsTestingAd(true);
+    try {
+      await gptAdManager.forceReinitialize();
+      setTestResult("GPT system reinitialized successfully");
+      setAdAvailability(true);
+    } catch (error) {
+      setTestResult(`Reinitialization failed: ${error}`);
+      setAdAvailability(false);
+    } finally {
+      setIsTestingAd(false);
+    }
+  };
+
   return (
     <Card className="w-full max-w-2xl">
       <CardHeader>
@@ -120,6 +139,24 @@ export function GPTTestPanel() {
           
           <Button onClick={gptRewards.resetClickCount} variant="outline" size="sm">
             Reset Counter
+          </Button>
+          
+          <Button onClick={showAdMetrics} variant="outline" size="sm">
+            Show Metrics
+          </Button>
+          
+          <Button 
+            onClick={forceReinitialize} 
+            disabled={isTestingAd}
+            variant="outline" 
+            size="sm"
+          >
+            {isTestingAd ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2" />
+            )}
+            Reinitialize
           </Button>
         </div>
 

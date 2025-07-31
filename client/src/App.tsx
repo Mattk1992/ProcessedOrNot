@@ -39,6 +39,7 @@ import ConsentSettings from "@/pages/consent-settings";
 import AdPlacementGuidelinesPage from "@/pages/ad-placement-guidelines";
 import UserConsentCollectionPage from "@/pages/user-consent-collection";
 import AdComplianceDashboard from "@/pages/ad-compliance-dashboard";
+import GPTConfigPage from "@/pages/gpt-config";
 import ConsentBanner from "@/components/consent-banner";
 import { consentIntegration } from "@/lib/consent-integration";
 
@@ -95,6 +96,7 @@ function Router() {
         <Route path="/ad-compliance-dashboard" component={AdComplianceDashboard} />
         <Route path="/ad-placement-guidelines" component={AdPlacementGuidelinesPage} />
         <Route path="/user-consent-collection" component={UserConsentCollectionPage} />
+        <Route path="/gpt-config" component={GPTConfigPage} />
         
         <Route component={NotFound} />
       </Switch>

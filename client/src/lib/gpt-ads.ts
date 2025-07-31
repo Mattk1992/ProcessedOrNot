@@ -72,12 +72,23 @@ class GPTAdManager {
                 mobileScaling: 2.0
               });
 
-              // Set targeting for reward ads
+              // Set comprehensive targeting for reward ads
               window.googletag.pubads().setTargeting('ad_type', 'reward');
               window.googletag.pubads().setTargeting('placement', 'interstitial');
+              window.googletag.pubads().setTargeting('app_name', 'processedornot');
+              window.googletag.pubads().setTargeting('content_category', 'nutrition');
+              window.googletag.pubads().setTargeting('user_engagement', 'high');
+              
+              // Enable privacy settings
+              window.googletag.pubads().setPrivacySettings({
+                restrictDataProcessing: true,
+                childDirectedTreatment: false,
+                underAgeOfConsent: false
+              });
               
               if (this.config.testMode) {
                 window.googletag.pubads().setTargeting('test', 'true');
+                console.log('GPT Test Mode enabled');
               }
 
               // Define reward ad slot with proper ad unit path
@@ -147,10 +158,18 @@ class GPTAdManager {
             // Display the interstitial reward ad
             window.googletag.display(this.rewardAdSlot);
             
-            // Set up event listeners for ad events
+            // Set up comprehensive event listeners for ad events
             window.googletag.pubads().addEventListener('slotOnload', (event: any) => {
               if (event.slot === this.rewardAdSlot) {
-                console.log('Reward ad loaded successfully');
+                console.log('GPT reward ad loaded successfully');
+                
+                // Track ad load event
+                if (window.gtag) {
+                  window.gtag('event', 'ad_loaded', {
+                    event_category: 'gpt_ads',
+                    event_label: 'reward_interstitial'
+                  });
+                }
                 
                 // Show ad for 5 seconds then resolve
                 setTimeout(() => {
@@ -163,9 +182,22 @@ class GPTAdManager {
             window.googletag.pubads().addEventListener('slotRenderEnded', (event: any) => {
               if (event.slot === this.rewardAdSlot) {
                 if (!event.isEmpty) {
-                  console.log('Reward ad rendered successfully');
+                  console.log('GPT reward ad rendered successfully', {
+                    size: event.size,
+                    advertiserId: event.advertiserId,
+                    campaignId: event.campaignId
+                  });
+                  
+                  // Track successful ad render
+                  if (window.gtag) {
+                    window.gtag('event', 'ad_rendered', {
+                      event_category: 'gpt_ads',
+                      event_label: 'reward_interstitial',
+                      value: 1
+                    });
+                  }
                 } else {
-                  console.log('No reward ad to display');
+                  console.log('No GPT reward ad available to display');
                   this.hideRewardAd();
                   resolve(false);
                 }
@@ -215,9 +247,37 @@ class GPTAdManager {
   refreshRewardAd(): void {
     if (window.googletag && this.rewardAdSlot) {
       window.googletag.cmd.push(() => {
+        console.log('Refreshing GPT reward ad slot');
         window.googletag.pubads().refresh([this.rewardAdSlot]);
       });
     }
+  }
+
+  // Get detailed ad performance metrics
+  getAdMetrics(): any {
+    return {
+      initialized: this.initialized,
+      adSlotAvailable: !!this.rewardAdSlot,
+      publisherId: this.config.publisherId,
+      adUnitId: this.config.rewardAdUnitId,
+      testMode: this.config.testMode,
+      timestamp: new Date().toISOString()
+    };
+  }
+
+  // Force reinitialize GPT (for troubleshooting)
+  async forceReinitialize(): Promise<void> {
+    this.initialized = false;
+    this.rewardAdSlot = null;
+    window.__gptInitialized = false;
+    
+    // Remove existing GPT script
+    const existingScript = document.querySelector('script[src*="gpt.js"]');
+    if (existingScript) {
+      existingScript.remove();
+    }
+    
+    return this.initializeGPT();
   }
 }
 
