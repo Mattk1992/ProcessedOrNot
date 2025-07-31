@@ -139,12 +139,7 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       action: () => setLocation('/admin')
     }, { type: 'divider' }] : []),
     
-    // User Settings
-    {
-      label: t('dropdown.settings') || 'Settings',
-      icon: <Settings className="w-4 h-4" />,
-      action: () => setLocation('/settings')
-    },
+
     { type: 'divider' },
     
     // Information & Support

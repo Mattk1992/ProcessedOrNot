@@ -12,6 +12,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { Settings, Bot, ArrowLeft, Save, Sparkles, Brain, Zap, Cpu, Camera, Trash2, AlertTriangle, ExternalLink } from "lucide-react";
 import { Link, useLocation } from "wouter";
+import HeaderDropdown from "@/components/header-dropdown";
+import LanguageSwitcher from "@/components/language-switcher";
+import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 
 interface UserSetting {
   id: number;
@@ -192,15 +195,43 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-blue-900 dark:to-indigo-900">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
+      {/* Header */}
+      <header className="backdrop-blur-md bg-background/80 border-b border-border/50 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-3">
+              <img src={logoPath} alt="ProcessedOrNot Scanner" className="w-10 h-10 rounded-full" />
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-bold gradient-text">ProcessedOrNot</h1>
+                <p className="text-xs text-muted-foreground">Settings</p>
+              </div>
+            </div>
+            
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link href="/nutri-dashboard" className="text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
+              <Link href="/nutri-dashboard/diary" className="text-muted-foreground hover:text-foreground transition-colors">Diary</Link>
+              <Link href="/nutri-dashboard/progress" className="text-muted-foreground hover:text-foreground transition-colors">Progress</Link>
+              <Link href="/nutri-dashboard/profile" className="text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
+              <Link href="/nutri-dashboard/settings" className="text-foreground font-medium">Settings</Link>
+            </nav>
+
+            <div className="flex items-center space-x-3">
+              <LanguageSwitcher />
+              <HeaderDropdown />
+            </div>
+          </div>
+        </div>
+      </header>
+
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Link href="/">
+            <Link href="/nutri-dashboard">
               <Button variant="outline" size="sm">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Home
+                Back to Dashboard
               </Button>
             </Link>
             <div>
@@ -481,7 +512,7 @@ export default function SettingsPage() {
                       </p>
                     </div>
                   </div>
-                  <Link href="/settings/ad-settings">
+                  <Link href="/nutri-dashboard/settings/ad-settings">
                     <Button variant="outline" className="flex items-center gap-2">
                       Configure Ads
                       <ExternalLink className="h-4 w-4" />

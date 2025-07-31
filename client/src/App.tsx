@@ -48,7 +48,7 @@ function Router() {
       <Route path="/login" component={Auth} />
       <Route path="/register" component={Auth} />
       <Route path="/auth" component={Auth} />
-      <Route path="/settings" component={Settings} />
+      <Route path="/nutri-dashboard/settings" component={Settings} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin-search-history" component={AdminSearchHistory} />
       <Route path="/blog" component={Blog} />
@@ -66,7 +66,7 @@ function Router() {
       <Route path="/nutri-dashboard/profile" component={NutriProfile} />
       
       {/* Ad Configuration - Sub-page of Settings */}
-      <Route path="/settings/ad-settings" component={AdSettings} />
+      <Route path="/nutri-dashboard/settings/ad-settings" component={AdSettings} />
       
       <Route component={NotFound} />
     </Switch>

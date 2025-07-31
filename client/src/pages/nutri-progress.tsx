@@ -158,6 +158,7 @@ export default function NutriProgress() {
               <Link href="/nutri-dashboard/diary" className="text-muted-foreground hover:text-foreground transition-colors">Diary</Link>
               <Link href="/nutri-dashboard/progress" className="text-foreground font-medium">Progress</Link>
               <Link href="/nutri-dashboard/profile" className="text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
+              <Link href="/nutri-dashboard/settings" className="text-muted-foreground hover:text-foreground transition-colors">Settings</Link>
             </nav>
 
             <div className="flex items-center space-x-3">

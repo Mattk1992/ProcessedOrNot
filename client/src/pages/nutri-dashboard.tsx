@@ -180,6 +180,7 @@ export default function NutriDashboard() {
               <Link href="/nutri-dashboard/diary" className="text-muted-foreground hover:text-foreground transition-colors">Diary</Link>
               <Link href="/nutri-dashboard/progress" className="text-muted-foreground hover:text-foreground transition-colors">Progress</Link>
               <Link href="/nutri-dashboard/profile" className="text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
+              <Link href="/nutri-dashboard/settings" className="text-muted-foreground hover:text-foreground transition-colors">Settings</Link>
             </nav>
 
             <div className="flex items-center space-x-3">
@@ -198,7 +199,7 @@ export default function NutriDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <Link href="/nutri-dashboard/diary">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
@@ -231,6 +232,15 @@ export default function NutriDashboard() {
               <CardContent className="p-4 text-center">
                 <Target className="w-8 h-8 text-purple-500 mx-auto mb-2" />
                 <p className="font-medium">Set Goals</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/nutri-dashboard/settings">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <Activity className="w-8 h-8 text-orange-500 mx-auto mb-2" />
+                <p className="font-medium">Settings</p>
               </CardContent>
             </Card>
           </Link>
