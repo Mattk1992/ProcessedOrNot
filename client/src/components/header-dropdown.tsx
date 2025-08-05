@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen, Mail, FileText, Share2, Lock, BarChart3, TrendingUp, Home, Camera, History } from 'lucide-react';
+import { ChevronDown, ChevronRight, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen, Mail, FileText, Share2, Lock, BarChart3, TrendingUp, Home, Camera, History, Database } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
@@ -196,6 +196,13 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
         onStartTutorial();
         setIsOpen(false);
       }
+    }, { type: 'divider' }] : []),
+
+    // Debug Tools - Only show for Admin users
+    ...(user?.accountType === 'Admin' ? [{
+      label: 'Debug Cascading DB',
+      icon: <Database className="w-4 h-4" />,
+      action: () => setLocation('/debug/cascading-db')
     }, { type: 'divider' }] : []),
     
     {

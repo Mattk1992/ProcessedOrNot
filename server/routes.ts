@@ -2377,5 +2377,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== DEBUG ROUTES ====================
+  
+  // Debug Routes for cascading database testing
+  app.post("/api/debug/cascading-test", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { barcode } = req.body;
+
+      if (!barcode) {
+        return res.status(400).json({ message: "Barcode is required" });
+      }
+
+      const result = await storage.testAllProductDatabases(barcode);
+      res.json(result);
+    } catch (error) {
+      console.error("Error testing cascading system:", error);
+      res.status(500).json({ message: "Failed to test cascading system" });
+    }
+  });
+
   return httpServer;
 }
