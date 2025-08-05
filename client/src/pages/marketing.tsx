@@ -362,7 +362,6 @@ export default function MarketingPage() {
             <Link href="/about" className="text-muted-foreground hover:text-primary">About</Link>
             <Link href="/privacy" className="text-muted-foreground hover:text-primary">Privacy</Link>
             <Link href="/terms" className="text-muted-foreground hover:text-primary">Terms</Link>
-            <Link href="/copyright" className="text-muted-foreground hover:text-primary">Copyright</Link>
             <Link href="/contact" className="text-muted-foreground hover:text-primary">Contact</Link>
           </div>
           <p className="text-muted-foreground">

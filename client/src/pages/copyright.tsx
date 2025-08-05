@@ -2,6 +2,9 @@ import { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
+import { useLocation } from "wouter";
 import { 
   Shield, 
   Copyright, 
@@ -12,10 +15,13 @@ import {
   Music,
   Video,
   Database,
-  AlertTriangle
+  AlertTriangle,
+  Lock
 } from "lucide-react";
 
 export default function CopyrightPage() {
+  const { isAuthenticated } = useAuth();
+  const [, setLocation] = useLocation();
   // Set page title and meta description for SEO
   useEffect(() => {
     document.title = "Copyright & Intellectual Property - ProcessedOrNot";
@@ -29,6 +35,45 @@ export default function CopyrightPage() {
     }
     metaDescription.setAttribute('content', 'Copyright and intellectual property information for ProcessedOrNot. Learn about our content rights, licensing, and third-party attributions.');
   }, []);
+
+  // Redirect non-authenticated users
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center py-12 px-4">
+        <Card className="max-w-md w-full">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Lock className="w-8 h-8 text-primary" />
+            </div>
+            <CardTitle>Access Restricted</CardTitle>
+            <CardDescription>
+              This page is only available to authenticated users.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-muted-foreground mb-6">
+              Please sign in to view copyright and intellectual property information.
+            </p>
+            <div className="space-y-3">
+              <Button 
+                onClick={() => setLocation('/login')} 
+                className="w-full"
+              >
+                Sign In
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setLocation('/')} 
+                className="w-full"
+              >
+                Return Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background py-12 px-4">

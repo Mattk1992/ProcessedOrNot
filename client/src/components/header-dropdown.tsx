@@ -108,12 +108,6 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       icon: <FileText className="w-4 h-4" />,
       action: () => setLocation('/terms'),
       group: 'Legal & Privacy'
-    },
-    {
-      label: 'Copyright',
-      icon: <Shield className="w-4 h-4" />,
-      action: () => setLocation('/copyright'),
-      group: 'Legal & Privacy'
     }
   ];
 
