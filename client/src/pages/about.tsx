@@ -64,21 +64,21 @@ export default function About() {
       {/* Main Content */}
       <main className="max-w-6xl mx-auto px-4 py-12">
         {/* Hero Section */}
-        <section className="text-center mb-16">
-          <div className="flex justify-center mb-8">
+        <section className="text-center mobile-spacing-lg px-4">
+          <div className="flex justify-center mb-6 sm:mb-8">
             <div className="relative">
               <img 
                 src={logoPath} 
                 alt="ProcessedOrNot Logo" 
-                className="w-24 h-24 rounded-2xl shadow-2xl floating-animation"
+                className="w-16 h-16 sm:w-20 sm:h-20 lg:w-24 lg:h-24 rounded-2xl shadow-2xl floating-animation"
               />
               <div className="absolute -inset-2 bg-gradient-to-br from-primary/20 to-accent/20 rounded-2xl blur-xl -z-10"></div>
             </div>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 text-shadow">
+          <h1 className="mobile-heading-scale md:text-6xl font-bold text-foreground mb-4 sm:mb-6 text-shadow">
             {t('about.hero.title')}
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
+          <p className="mobile-subheading-scale md:text-2xl text-muted-foreground max-w-4xl mx-auto leading-relaxed">
             {t('about.hero.subtitle')}
           </p>
         </section>
@@ -96,25 +96,25 @@ export default function About() {
         </section>
 
         {/* Features Grid */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-foreground mb-12 text-center">
+        <section className="mobile-spacing-lg px-4">
+          <h2 className="mobile-subheading-scale font-bold text-foreground mb-8 sm:mb-12 text-center">
             {t('about.features.title')}
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="responsive-grid-1-2-3">
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="glass-card p-6 rounded-2xl hover:scale-105 transition-transform duration-300 group"
+                className="glass-card mobile-card rounded-2xl hover:scale-105 transition-transform duration-300 group touch-target"
               >
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors">
+                <div className="flex items-center space-x-3 sm:space-x-4 mb-3 sm:mb-4">
+                  <div className="p-2 sm:p-3 bg-primary/10 rounded-xl group-hover:bg-primary/20 transition-colors flex-shrink-0">
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground">
+                  <h3 className="mobile-subheading-scale font-semibold text-foreground min-w-0">
                     {feature.title}
                   </h3>
                 </div>
-                <p className="text-muted-foreground leading-relaxed">
+                <p className="mobile-text-scale text-muted-foreground leading-relaxed">
                   {feature.description}
                 </p>
               </div>

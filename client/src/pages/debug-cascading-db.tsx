@@ -342,20 +342,20 @@ export default function DebugCascadingDatabase() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
       <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-white/20 dark:border-gray-700/50 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <img src={logoPath} alt="ProcessedOrNot" className="h-10 w-10 rounded-lg" />
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Cascading Database Debug Console
+        <div className="max-w-7xl mx-auto mobile-safe-padding py-3 sm:py-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
+              <img src={logoPath} alt="ProcessedOrNot" className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg flex-shrink-0" />
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent truncate">
+                  Debug Console
                 </h1>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">
                   System monitoring and database management
                 </p>
               </div>
             </div>
-            <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/20">
+            <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/20 text-xs sm:text-sm flex-shrink-0">
               Admin Tools
             </Badge>
           </div>
@@ -363,28 +363,28 @@ export default function DebugCascadingDatabase() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto mobile-safe-padding py-4 sm:py-6 lg:py-8">
         {/* System Overview */}
         {systemHealth && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-3 sm:p-4 lg:p-6">
                 <div className="flex items-center space-x-2">
-                  <Database className="w-5 h-5 text-blue-500" />
-                  <div>
-                    <p className="text-2xl font-bold">{systemHealth.totalDatabases}</p>
-                    <p className="text-xs text-muted-foreground">Total Databases</p>
+                  <Database className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-lg sm:text-xl lg:text-2xl font-bold">{systemHealth.totalDatabases}</p>
+                    <p className="text-xs text-muted-foreground">Total</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-3 sm:p-4 lg:p-6">
                 <div className="flex items-center space-x-2">
-                  <Zap className="w-5 h-5 text-green-500" />
-                  <div>
-                    <p className="text-2xl font-bold">{systemHealth.enabledDatabases}</p>
+                  <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-lg sm:text-xl lg:text-2xl font-bold">{systemHealth.enabledDatabases}</p>
                     <p className="text-xs text-muted-foreground">Enabled</p>
                   </div>
                 </div>
@@ -392,36 +392,38 @@ export default function DebugCascadingDatabase() {
             </Card>
             
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-3 sm:p-4 lg:p-6">
                 <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-5 h-5 text-emerald-500" />
-                  <div>
-                    <p className="text-2xl font-bold">{systemHealth.operationalDatabases}</p>
-                    <p className="text-xs text-muted-foreground">Operational</p>
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-lg sm:text-xl lg:text-2xl font-bold">{systemHealth.operationalDatabases}</p>
+                    <p className="text-xs text-muted-foreground">Online</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-3 sm:p-4 lg:p-6">
                 <div className="flex items-center space-x-2">
-                  <Clock className="w-5 h-5 text-orange-500" />
-                  <div>
-                    <p className="text-2xl font-bold">{Math.round(systemHealth.averageResponseTime)}ms</p>
-                    <p className="text-xs text-muted-foreground">Avg Response</p>
+                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-lg sm:text-xl lg:text-2xl font-bold">{Math.round(systemHealth.averageResponseTime)}ms</p>
+                    <p className="text-xs text-muted-foreground hidden sm:block">Avg Response</p>
+                    <p className="text-xs text-muted-foreground sm:hidden">Avg</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
             
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-3 sm:p-4 lg:p-6">
                 <div className="flex items-center space-x-2">
-                  <Target className="w-5 h-5 text-purple-500" />
-                  <div>
-                    <p className="text-2xl font-bold">{Math.round(systemHealth.overallSuccessRate)}%</p>
-                    <p className="text-xs text-muted-foreground">Success Rate</p>
+                  <Target className="w-4 h-4 sm:w-5 sm:h-5 text-purple-500 flex-shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-lg sm:text-xl lg:text-2xl font-bold">{Math.round(systemHealth.overallSuccessRate)}%</p>
+                    <p className="text-xs text-muted-foreground hidden sm:block">Success Rate</p>
+                    <p className="text-xs text-muted-foreground sm:hidden">Success</p>
                   </div>
                 </div>
               </CardContent>
@@ -431,22 +433,26 @@ export default function DebugCascadingDatabase() {
 
         {/* Main Tabs */}
         <Tabs defaultValue="databases" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md">
-            <TabsTrigger value="databases" className="flex items-center space-x-2">
-              <Database className="w-4 h-4" />
-              <span>Databases</span>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md gap-1 p-1">
+            <TabsTrigger value="databases" className="flex items-center justify-center space-x-1 sm:space-x-2 text-xs sm:text-sm p-2 sm:p-3">
+              <Database className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline sm:inline">Databases</span>
+              <span className="xs:hidden sm:hidden">DB</span>
             </TabsTrigger>
-            <TabsTrigger value="testing" className="flex items-center space-x-2">
-              <TestTube className="w-4 h-4" />
-              <span>Testing</span>
+            <TabsTrigger value="testing" className="flex items-center justify-center space-x-1 sm:space-x-2 text-xs sm:text-sm p-2 sm:p-3">
+              <TestTube className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline sm:inline">Testing</span>
+              <span className="xs:hidden sm:hidden">Test</span>
             </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center space-x-2">
-              <BarChart3 className="w-4 h-4" />
-              <span>Analytics</span>
+            <TabsTrigger value="analytics" className="flex items-center justify-center space-x-1 sm:space-x-2 text-xs sm:text-sm p-2 sm:p-3">
+              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline sm:inline">Analytics</span>
+              <span className="xs:hidden sm:hidden">Stats</span>
             </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center space-x-2">
-              <Settings className="w-4 h-4" />
-              <span>Settings</span>
+            <TabsTrigger value="settings" className="flex items-center justify-center space-x-1 sm:space-x-2 text-xs sm:text-sm p-2 sm:p-3">
+              <Settings className="w-3 h-3 sm:w-4 sm:h-4" />
+              <span className="hidden xs:inline sm:inline">Settings</span>
+              <span className="xs:hidden sm:hidden">Set</span>
             </TabsTrigger>
           </TabsList>
 
@@ -494,7 +500,7 @@ export default function DebugCascadingDatabase() {
                 </Card>
 
                 {/* Database Details Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   {databases
                     .sort((a, b) => a.priority - b.priority)
                     .map((database) => (

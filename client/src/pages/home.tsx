@@ -157,20 +157,20 @@ export default function Home() {
             </div>
 
             {/* Enhanced Features Grid */}
-            <div className="mt-12 sm:mt-16 max-w-6xl mx-auto">
-              <div className="text-center mb-8 sm:mb-12">
-                <h3 className="text-2xl sm:text-3xl font-bold text-foreground mb-4 gradient-text">
+            <div className="mt-8 sm:mt-12 lg:mt-16 max-w-6xl mx-auto">
+              <div className="text-center mb-6 sm:mb-8 lg:mb-12">
+                <h3 className="mobile-subheading-scale sm:text-3xl font-bold text-foreground mb-3 sm:mb-4 gradient-text px-4">
                   Powerful Features for Better Nutrition
                 </h3>
-                <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-8">
+                <p className="mobile-text-scale sm:text-lg text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-8 px-4">
                   Discover comprehensive tools to analyze, understand, and improve your food choices
                 </p>
                 
                 {/* CTA Button */}
-                <div className="mb-12">
+                <div className="mb-8 sm:mb-12 px-4">
                   <button
                     onClick={() => document.querySelector('[data-tutorial="camera-button"]')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl hover:from-primary/90 hover:to-accent/90 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+                    className="mobile-button px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl hover:from-primary/90 hover:to-accent/90 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl touch-target w-full sm:w-auto"
                   >
                     Start Scanning Products
                   </button>
@@ -180,22 +180,22 @@ export default function Home() {
 
 
               {/* Quick Stats Section */}
-              <div className="mt-12 sm:mt-16 grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div className="text-center">
-                  <div className="text-3xl sm:text-4xl font-bold text-primary mb-2">14+</div>
-                  <div className="text-sm text-muted-foreground">Food Databases</div>
+              <div className="mt-8 sm:mt-12 lg:mt-16 responsive-grid-1-2-3 md:grid-cols-4 gap-4 sm:gap-6 px-4">
+                <div className="text-center mobile-card bg-white/50 dark:bg-gray-800/50 rounded-xl border border-white/20 dark:border-gray-700/20 backdrop-blur-sm">
+                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-1 sm:mb-2">14+</div>
+                  <div className="mobile-text-scale text-muted-foreground">Food Databases</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl sm:text-4xl font-bold text-accent mb-2">7</div>
-                  <div className="text-sm text-muted-foreground">Languages</div>
+                <div className="text-center mobile-card bg-white/50 dark:bg-gray-800/50 rounded-xl border border-white/20 dark:border-gray-700/20 backdrop-blur-sm">
+                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-accent mb-1 sm:mb-2">7</div>
+                  <div className="mobile-text-scale text-muted-foreground">Languages</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl sm:text-4xl font-bold text-purple-500 mb-2">6+</div>
-                  <div className="text-sm text-muted-foreground">Barcode Formats</div>
+                <div className="text-center mobile-card bg-white/50 dark:bg-gray-800/50 rounded-xl border border-white/20 dark:border-gray-700/20 backdrop-blur-sm">
+                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-purple-500 mb-1 sm:mb-2">6+</div>
+                  <div className="mobile-text-scale text-muted-foreground">Barcode Formats</div>
                 </div>
-                <div className="text-center">
-                  <div className="text-3xl sm:text-4xl font-bold text-orange-500 mb-2">AI</div>
-                  <div className="text-sm text-muted-foreground">Powered Analysis</div>
+                <div className="text-center mobile-card bg-white/50 dark:bg-gray-800/50 rounded-xl border border-white/20 dark:border-gray-700/20 backdrop-blur-sm">
+                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-orange-500 mb-1 sm:mb-2">AI</div>
+                  <div className="mobile-text-scale text-muted-foreground">Powered Analysis</div>
                 </div>
               </div>
 
