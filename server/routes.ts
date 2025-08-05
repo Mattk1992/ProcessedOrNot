@@ -2377,6 +2377,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== CAMERA SETTINGS ROUTES ====================
+  
+  // Get camera settings
+  app.get("/api/admin/camera-settings", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getCameraSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching camera settings:", error);
+      res.status(500).json({ message: "Failed to fetch camera settings" });
+    }
+  });
+
+  // Update camera settings
+  app.put("/api/admin/camera-settings", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = req.body;
+      const updatedSettings = await storage.updateCameraSettings(settings);
+      res.json(updatedSettings);
+    } catch (error) {
+      console.error("Error updating camera settings:", error);
+      res.status(500).json({ message: "Failed to update camera settings" });
+    }
+  });
+
+  // Reset camera settings to defaults
+  app.post("/api/admin/camera-settings/reset", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const defaultSettings = await storage.resetCameraSettingsToDefaults();
+      res.json(defaultSettings);
+    } catch (error) {
+      console.error("Error resetting camera settings:", error);
+      res.status(500).json({ message: "Failed to reset camera settings" });
+    }
+  });
+
   // ==================== DEBUG ROUTES ====================
   
   // Debug Routes for cascading database testing

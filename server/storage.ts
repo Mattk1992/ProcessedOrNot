@@ -42,7 +42,10 @@ import {
   type InsertProductDatabase,
   deviceIdentifiers,
   type DeviceIdentifier,
-  type InsertDeviceIdentifier
+  type InsertDeviceIdentifier,
+  cameraSettings,
+  type CameraSettings,
+  type InsertCameraSettings
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -203,6 +206,11 @@ export interface IStorage {
   getDeviceIdentifierByHash(identifierHash: string): Promise<DeviceIdentifier | undefined>;
   updateDeviceLastSeen(identifierHash: string): Promise<void>;
   getDeviceAnalytics(): Promise<any>;
+
+  // Camera Settings methods
+  getCameraSettings(): Promise<CameraSettings>;
+  updateCameraSettings(settings: Partial<InsertCameraSettings>): Promise<CameraSettings>;
+  resetCameraSettingsToDefaults(): Promise<CameraSettings>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1754,6 +1762,102 @@ export class DatabaseStorage implements IStorage {
         count: Number(stat.count)
       }))
     };
+  }
+
+  // ==================== Camera Settings Methods ====================
+
+  async getCameraSettings(): Promise<CameraSettings> {
+    try {
+      const [settings] = await db.select().from(cameraSettings)
+        .where(eq(cameraSettings.id, 1))
+        .limit(1);
+      
+      if (!settings) {
+        // Create default settings if none exist
+        const [newSettings] = await db.insert(cameraSettings)
+          .values({ id: 1 })
+          .returning();
+        return newSettings;
+      }
+      
+      return settings;
+    } catch (error) {
+      console.error('Error fetching camera settings:', error);
+      throw error;
+    }
+  }
+
+  async updateCameraSettings(settings: Partial<InsertCameraSettings>): Promise<CameraSettings> {
+    try {
+      const [updated] = await db
+        .update(cameraSettings)
+        .set({
+          ...settings,
+          updatedAt: new Date()
+        })
+        .where(eq(cameraSettings.id, 1))
+        .returning();
+      
+      if (!updated) {
+        throw new Error('Camera settings not found');
+      }
+      
+      return updated;
+    } catch (error) {
+      console.error('Error updating camera settings:', error);
+      throw error;
+    }
+  }
+
+  async resetCameraSettingsToDefaults(): Promise<CameraSettings> {
+    try {
+      const defaultSettings = {
+        timeout: 30,
+        autoStopEnabled: true,
+        maxZoomLevel: 3.0,
+        minZoomLevel: 1.0,
+        defaultZoomLevel: 1.0,
+        focusMode: 'continuous',
+        flashMode: 'auto',
+        scanFrequency: 10,
+        enableBeepSound: true,
+        enableVibration: true,
+        overlayOpacity: 0.70,
+        scanAreaSize: 0.60,
+        optimizeForCloseRange: true,
+        enhanceContrast: true,
+        adjustBrightness: 1.0,
+        scanIntervalMs: 100,
+        torchEnabled: false,
+        videoConstraints: '{}',
+        preferredCameraId: '',
+        enableAutoFocus: true,
+        qualityPreset: 'balanced',
+        performanceMode: 'balanced',
+        errorRecoveryEnabled: true,
+        debugMode: false,
+        updatedAt: new Date()
+      };
+
+      const [updated] = await db
+        .update(cameraSettings)
+        .set(defaultSettings)
+        .where(eq(cameraSettings.id, 1))
+        .returning();
+      
+      if (!updated) {
+        // If no settings exist, create them
+        const [newSettings] = await db.insert(cameraSettings)
+          .values({ id: 1, ...defaultSettings })
+          .returning();
+        return newSettings;
+      }
+      
+      return updated;
+    } catch (error) {
+      console.error('Error resetting camera settings:', error);
+      throw error;
+    }
   }
 }
 
