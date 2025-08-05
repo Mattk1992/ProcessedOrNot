@@ -89,27 +89,7 @@ const HomeScreen = ({ navigation }: any) => {
           </Text>
         </View>
 
-        {/* Quick Stats */}
-        <View style={styles.statsContainer}>
-          <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.statNumber, { color: colors.primary }]}>14+</Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              Food Databases
-            </Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.statNumber, { color: colors.primary }]}>AI</Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              Powered Analysis
-            </Text>
-          </View>
-          <View style={[styles.statCard, { backgroundColor: colors.surface }]}>
-            <Text style={[styles.statNumber, { color: colors.primary }]}>7</Text>
-            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>
-              Languages
-            </Text>
-          </View>
-        </View>
+
       </ScrollView>
     </SafeAreaView>
   );

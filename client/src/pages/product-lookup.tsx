@@ -182,25 +182,7 @@ export default function ProductLookup() {
                 </div>
               </div>
 
-              {/* Quick Stats Section */}
-              <div className="mt-8 sm:mt-12 lg:mt-16 responsive-grid-1-2-3 md:grid-cols-4 gap-4 sm:gap-6 px-4">
-                <div className="text-center mobile-card bg-white/50 dark:bg-gray-800/50 rounded-xl border border-white/20 dark:border-gray-700/20 backdrop-blur-sm">
-                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-primary mb-1 sm:mb-2">14+</div>
-                  <div className="mobile-text-scale text-muted-foreground">Food Databases</div>
-                </div>
-                <div className="text-center mobile-card bg-white/50 dark:bg-gray-800/50 rounded-xl border border-white/20 dark:border-gray-700/20 backdrop-blur-sm">
-                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-accent mb-1 sm:mb-2">7</div>
-                  <div className="mobile-text-scale text-muted-foreground">Languages</div>
-                </div>
-                <div className="text-center mobile-card bg-white/50 dark:bg-gray-800/50 rounded-xl border border-white/20 dark:border-gray-700/20 backdrop-blur-sm">
-                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-purple-500 mb-1 sm:mb-2">6+</div>
-                  <div className="mobile-text-scale text-muted-foreground">Barcode Formats</div>
-                </div>
-                <div className="text-center mobile-card bg-white/50 dark:bg-gray-800/50 rounded-xl border border-white/20 dark:border-gray-700/20 backdrop-blur-sm">
-                  <div className="text-2xl sm:text-3xl lg:text-4xl font-bold text-orange-500 mb-1 sm:mb-2">AI</div>
-                  <div className="mobile-text-scale text-muted-foreground">Powered Analysis</div>
-                </div>
-              </div>
+
 
             </div>
 
