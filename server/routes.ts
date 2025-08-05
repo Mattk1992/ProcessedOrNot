@@ -965,14 +965,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Search History API Routes
   
-  // Get all search history
+  // Get search history for authenticated user
   app.get("/api/search-history", async (req, res) => {
     try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-      const searchHistory = await storage.getRecentSearchHistory(limit);
+      const searchHistory = await storage.getUserSearchHistory(userId, limit);
       res.json(searchHistory);
     } catch (error) {
-      console.error("Error fetching search history:", error);
+      console.error("Error fetching user search history:", error);
       res.status(500).json({ 
         message: "Failed to fetch search history" 
       });

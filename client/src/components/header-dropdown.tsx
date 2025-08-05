@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen, Mail, FileText, Share2, Lock, BarChart3, TrendingUp, Home, Camera } from 'lucide-react';
+import { ChevronDown, ChevronRight, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen, Mail, FileText, Share2, Lock, BarChart3, TrendingUp, Home, Camera, History } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
@@ -48,6 +48,12 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       label: 'Product Scanner',
       icon: <Camera className="w-4 h-4" />,
       action: () => setLocation('/product-lookup'),
+      group: 'Navigation'
+    },
+    {
+      label: 'Lookup History',
+      icon: <History className="w-4 h-4" />,
+      action: () => setLocation('/lookup-history'),
       group: 'Navigation'
     },
     { type: 'divider' },
@@ -112,6 +118,12 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       label: 'Product Scanner',
       icon: <Camera className="w-4 h-4" />,
       action: () => setLocation('/product-lookup'),
+      group: 'Navigation'
+    },
+    {
+      label: 'Lookup History',
+      icon: <History className="w-4 h-4" />,
+      action: () => setLocation('/lookup-history'),
       group: 'Navigation'
     },
     { type: 'divider' },
