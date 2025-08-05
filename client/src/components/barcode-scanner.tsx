@@ -5,13 +5,14 @@ import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_174962362
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Loader2, Camera, X, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { Search, Loader2, Camera, X, RotateCcw, ZoomIn, ZoomOut, Settings } from "lucide-react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SearchFilter from "./search-filter";
 import { VoiceSearchButton } from "./voice-search-button";
 import { useGPTRewards } from "@/hooks/useGPTRewards";
 import { GPTRewardModal } from "./gpt-reward-modal";
+import QuickCameraSettings from "./quick-camera-settings";
 import { trackEvent } from "@/lib/analytics";
 
 interface BarcodeScannerProps {
@@ -901,24 +902,36 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
             </div>
           ) : (
             <div className="mb-8">
-              <Button
-                onClick={startCamera}
-                disabled={isLoading || isScanning}
-                data-tutorial="camera-button"
-                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mb-6 mobile-touch-friendly touch-action-manipulation"
-              >
-                {isScanning ? (
-                  <>
-                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-                    <span className="text-sm sm:text-base">Starting Camera...</span>
-                  </>
-                ) : (
-                  <>
-                    <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="text-sm sm:text-base">Scan with Camera</span>
-                  </>
-                )}
-              </Button>
+              <div className="flex gap-2 mb-6">
+                <Button
+                  onClick={startCamera}
+                  disabled={isLoading || isScanning}
+                  data-tutorial="camera-button"
+                  className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
+                >
+                  {isScanning ? (
+                    <>
+                      <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                      <span className="text-sm sm:text-base">Starting Camera...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="text-sm sm:text-base">Scan with Camera</span>
+                    </>
+                  )}
+                </Button>
+                
+                <QuickCameraSettings>
+                  <Button
+                    variant="outline"
+                    className="border-2 border-primary/20 text-primary hover:bg-primary/10 py-3 sm:py-4 px-3 sm:px-4 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
+                    title="Quick Camera Settings"
+                  >
+                    <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </Button>
+                </QuickCameraSettings>
+              </div>
               
               {cameraError && (
                 <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
