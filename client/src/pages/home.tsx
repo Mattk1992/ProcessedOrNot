@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
-// Simple logo for redirect page
-const logoPath = "/generated-icon.png";
+import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 
 export default function Home() {
   const { t } = useLanguage();
@@ -24,9 +23,9 @@ export default function Home() {
           <img 
             src={logoPath} 
             alt="ProcessedOrNot Logo" 
-            className="w-16 h-16 mx-auto mb-4 rounded-xl"
+            className="w-24 h-24 mx-auto mb-6 rounded-2xl shadow-lg glow-effect floating-animation"
           />
-          <h1 className="text-3xl font-bold text-foreground mb-4 gradient-text">
+          <h1 className="text-4xl font-bold text-foreground mb-4 gradient-text text-shadow">
             ProcessedOrNot
           </h1>
           <p className="text-lg text-muted-foreground mb-6">
