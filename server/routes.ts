@@ -1920,10 +1920,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Voice transcription endpoint
   app.post("/api/voice/transcribe", upload.single('audio'), async (req, res) => {
     try {
-      if (!isVoiceTranscriptionAvailable()) {
+      const available = await isVoiceTranscriptionAvailable();
+      if (!available) {
         return res.status(503).json({ 
           message: "Voice transcription service is not available",
-          error: "ASSEMBLYAI_API_KEY not configured"
+          error: "Speech-to-Text service disabled or ASSEMBLYAI_API_KEY not configured"
         });
       }
 
