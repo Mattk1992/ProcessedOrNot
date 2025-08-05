@@ -4,10 +4,15 @@
 ProcessedOrNot Scanner is a modern web application designed to analyze food products for processing levels. It leverages barcode scanning, AI-powered ingredient analysis, and an interactive chatbot (NutriBot) to provide comprehensive food product insights. The project aims to provide users with transparent and detailed information about the food they consume, fostering healthier dietary choices. It has significant market potential as a tool for health-conscious consumers and aims to become a leading platform for food transparency.
 
 ## Recent Changes
-- **Role-Based Access Control**: Dashboard page and menu items are now restricted to Admin users only
-- **Menu Reorganization**: Reordered menu groups for better logical flow (Legal & Policies before Information & Support)
-- **Expandable Menu Groups**: Navigation sections now collapse/expand with visual indicators
-- **Admin-Only Features**: "Take Tour" functionality is now restricted to Admin users only
+- **Content Migration**: Moved comprehensive home page content to product-lookup page with rich hero section, features, stats, and footer
+- **Menu Reorganization**: Completely restructured header dropdown menu with improved logical grouping:
+  - Main Navigation (always expanded)
+  - User Account (with Dashboard for Admin, Sign Out)
+  - Admin Tools (collapsed by default - Admin Panel, Take Tour, Debug Tools)
+  - Information & Support (collapsed by default)
+  - Legal & Privacy (collapsed by default)
+- **Simplified Home Page**: Home page now shows simple redirect screen to product-lookup page
+- **Role-Based Access Control**: Dashboard page and admin features are restricted to Admin users only
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

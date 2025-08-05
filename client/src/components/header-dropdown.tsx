@@ -12,10 +12,11 @@ interface HeaderDropdownProps {
 export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    'Navigation': true,
-    'Nutrition Tracking': true,
+    'Main Navigation': true,
+    'User Account': true,
+    'Admin Tools': false,
     'Information & Support': false,
-    'Legal & Policies': false
+    'Legal & Privacy': false
   });
   const { t } = useLanguage();
   const { isAuthenticated, user } = useAuth();
@@ -37,54 +38,32 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
   // Menu items for non-authenticated users
   const guestMenuItems = [
     // Main Navigation
-    { type: 'header', label: 'Navigation', expandable: true, expanded: true },
+    { type: 'header', label: 'Main Navigation', expandable: true, expanded: true },
     {
       label: 'Home',
       icon: <Home className="w-4 h-4" />,
       action: () => setLocation('/'),
-      group: 'Navigation'
+      group: 'Main Navigation'
     },
     {
       label: 'Product Scanner',
       icon: <Camera className="w-4 h-4" />,
       action: () => setLocation('/product-lookup'),
-      group: 'Navigation'
+      group: 'Main Navigation'
     },
     {
       label: 'Lookup History',
       icon: <History className="w-4 h-4" />,
       action: () => setLocation('/lookup-history'),
-      group: 'Navigation'
+      group: 'Main Navigation'
     },
     { type: 'divider' },
     
     // Authentication
     {
-      label: 'Authentication',
+      label: 'Sign In / Register',
       icon: <LogIn className="w-4 h-4" />,
       action: () => setLocation('/login')
-    },
-    { type: 'divider' },
-    
-    // Legal & Policies
-    { type: 'header', label: 'Legal & Policies', expandable: true, expanded: false },
-    {
-      label: 'Privacy Policy',
-      icon: <Lock className="w-4 h-4" />,
-      action: () => setLocation('/privacy'),
-      group: 'Legal & Policies'
-    },
-    {
-      label: 'Privacy Settings',
-      icon: <Shield className="w-4 h-4" />,
-      action: () => setLocation('/consent-settings'),
-      group: 'Legal & Policies'
-    },
-    {
-      label: 'Terms of Service',
-      icon: <FileText className="w-4 h-4" />,
-      action: () => setLocation('/terms'),
-      group: 'Legal & Policies'
     },
     { type: 'divider' },
     
@@ -101,76 +80,99 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       icon: <Share2 className="w-4 h-4" />,
       action: () => setLocation('/social-media'),
       group: 'Information & Support'
+    },
+    { type: 'divider' },
+    
+    // Legal & Privacy
+    { type: 'header', label: 'Legal & Privacy', expandable: true, expanded: false },
+    {
+      label: 'Privacy Policy',
+      icon: <Lock className="w-4 h-4" />,
+      action: () => setLocation('/privacy'),
+      group: 'Legal & Privacy'
+    },
+    {
+      label: 'Privacy Settings',
+      icon: <Shield className="w-4 h-4" />,
+      action: () => setLocation('/consent-settings'),
+      group: 'Legal & Privacy'
+    },
+    {
+      label: 'Terms of Service',
+      icon: <FileText className="w-4 h-4" />,
+      action: () => setLocation('/terms'),
+      group: 'Legal & Privacy'
     }
   ];
 
   // Menu items for authenticated users
   const userMenuItems = [
     // Main Navigation
-    { type: 'header', label: 'Navigation', expandable: true, expanded: true },
+    { type: 'header', label: 'Main Navigation', expandable: true, expanded: true },
     {
       label: 'Home',
       icon: <Home className="w-4 h-4" />,
       action: () => setLocation('/'),
-      group: 'Navigation'
+      group: 'Main Navigation'
     },
     {
       label: 'Product Scanner',
       icon: <Camera className="w-4 h-4" />,
       action: () => setLocation('/product-lookup'),
-      group: 'Navigation'
+      group: 'Main Navigation'
     },
     {
       label: 'Lookup History',
       icon: <History className="w-4 h-4" />,
       action: () => setLocation('/lookup-history'),
-      group: 'Navigation'
+      group: 'Main Navigation'
     },
     { type: 'divider' },
     
-    // Nutrition Tracking - Only show for Admin users
+    // User Account
+    { type: 'header', label: 'User Account', expandable: true, expanded: true },
     ...(user?.accountType === 'Admin' ? [
-      { type: 'header', label: 'Nutrition Tracking', expandable: true, expanded: true },
       {
         label: 'Dashboard',
         icon: <BarChart3 className="w-4 h-4" />,
         action: () => setLocation('/nutri-dashboard'),
-        group: 'Nutrition Tracking'
+        group: 'User Account'
+      }
+    ] : []),
+    {
+      label: 'Sign Out',
+      icon: <LogOut className="w-4 h-4" />,
+      action: handleLogout,
+      group: 'User Account'
+    },
+    { type: 'divider' },
+    
+    // Admin Tools - Only show for Admin users
+    ...(user?.accountType === 'Admin' ? [
+      { type: 'header', label: 'Admin Tools', expandable: true, expanded: false },
+      {
+        label: 'Admin Panel',
+        icon: <Shield className="w-4 h-4" />,
+        action: () => setLocation('/admin'),
+        group: 'Admin Tools'
+      },
+      ...(onStartTutorial ? [{
+        label: 'Take Tour',
+        icon: <PlayCircle className="w-4 h-4" />,
+        action: () => {
+          onStartTutorial();
+          setIsOpen(false);
+        },
+        group: 'Admin Tools'
+      }] : []),
+      {
+        label: 'Debug Cascading DB',
+        icon: <Database className="w-4 h-4" />,
+        action: () => setLocation('/debug/cascading-db'),
+        group: 'Admin Tools'
       },
       { type: 'divider' }
     ] : []),
-    
-    // Admin Panel (if admin)
-    ...(user?.accountType === 'Admin' ? [{
-      label: 'Admin Panel',
-      icon: <Shield className="w-4 h-4" />,
-      action: () => setLocation('/admin')
-    }, { type: 'divider' }] : []),
-    
-
-    { type: 'divider' },
-    
-    // Legal & Policies
-    { type: 'header', label: 'Legal & Policies', expandable: true, expanded: false },
-    {
-      label: 'Privacy Policy',
-      icon: <Lock className="w-4 h-4" />,
-      action: () => setLocation('/privacy'),
-      group: 'Legal & Policies'
-    },
-    {
-      label: 'Privacy Settings',
-      icon: <Shield className="w-4 h-4" />,
-      action: () => setLocation('/consent-settings'),
-      group: 'Legal & Policies'
-    },
-    {
-      label: 'Terms of Service',
-      icon: <FileText className="w-4 h-4" />,
-      action: () => setLocation('/terms'),
-      group: 'Legal & Policies'
-    },
-    { type: 'divider' },
     
     // Information & Support
     { type: 'header', label: 'Information & Support', expandable: true, expanded: false },
@@ -188,27 +190,25 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
     },
     { type: 'divider' },
     
-    // Take Tour - Only show for Admin users
-    ...(onStartTutorial && user?.accountType === 'Admin' ? [{
-      label: 'Take Tour',
-      icon: <PlayCircle className="w-4 h-4" />,
-      action: () => {
-        onStartTutorial();
-        setIsOpen(false);
-      }
-    }, { type: 'divider' }] : []),
-
-    // Debug Tools - Only show for Admin users
-    ...(user?.accountType === 'Admin' ? [{
-      label: 'Debug Cascading DB',
-      icon: <Database className="w-4 h-4" />,
-      action: () => setLocation('/debug/cascading-db')
-    }, { type: 'divider' }] : []),
-    
+    // Legal & Privacy
+    { type: 'header', label: 'Legal & Privacy', expandable: true, expanded: false },
     {
-      label: 'Sign Out',
-      icon: <LogOut className="w-4 h-4" />,
-      action: handleLogout
+      label: 'Privacy Policy',
+      icon: <Lock className="w-4 h-4" />,
+      action: () => setLocation('/privacy'),
+      group: 'Legal & Privacy'
+    },
+    {
+      label: 'Privacy Settings',
+      icon: <Shield className="w-4 h-4" />,
+      action: () => setLocation('/consent-settings'),
+      group: 'Legal & Privacy'
+    },
+    {
+      label: 'Terms of Service',
+      icon: <FileText className="w-4 h-4" />,
+      action: () => setLocation('/terms'),
+      group: 'Legal & Privacy'
     }
   ];
 
