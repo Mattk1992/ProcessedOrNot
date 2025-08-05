@@ -265,58 +265,112 @@ export default function AdminPanel() {
 
         {/* Main Admin Panel with Tabs */}
         <div className="mb-6 md:mb-8">
-          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
             <Tabs defaultValue="debug-db" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 p-1 m-4 mb-0">
-                <TabsTrigger value="debug-db" className="flex items-center gap-2">
-                  <Database className="w-4 h-4" />
-                  Debug Cascading DB
+              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 p-1 m-4 mb-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-slate-200/50 dark:border-gray-600/50 shadow-inner">
+                <TabsTrigger 
+                  value="debug-db" 
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/25 font-medium"
+                >
+                  <Database className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">Debug DB</span>
+                  <span className="sm:hidden text-xs">DB</span>
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="flex items-center gap-2">
-                  <Settings className="w-4 h-4" />
-                  System Settings
+                <TabsTrigger 
+                  value="settings" 
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25 font-medium"
+                >
+                  <Settings className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">Settings</span>
+                  <span className="sm:hidden text-xs">Set</span>
                 </TabsTrigger>
-                <TabsTrigger value="speech-settings" className="flex items-center gap-2">
-                  <Mic className="w-4 h-4" />
-                  Speech-to-Text
+                <TabsTrigger 
+                  value="speech-settings" 
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-violet-500/25 font-medium"
+                >
+                  <Mic className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">Speech</span>
+                  <span className="sm:hidden text-xs">Mic</span>
                 </TabsTrigger>
-                <TabsTrigger value="user-management" className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  User Management
+                <TabsTrigger 
+                  value="user-management" 
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-orange-500/25 font-medium"
+                >
+                  <Users className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">Users</span>
+                  <span className="sm:hidden text-xs">User</span>
                 </TabsTrigger>
               </TabsList>
 
-              <div className="p-4">
+              <div className="p-6">
                 {/* Debug Cascading DB Tab */}
-                <TabsContent value="debug-db" className="mt-0">
-                  <DebugCascadingDB />
+                <TabsContent value="debug-db" className="mt-0 animate-in fade-in-50 duration-200">
+                  <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-blue-900/20 dark:to-indigo-900/10 rounded-xl p-1 border border-blue-200/30 dark:border-blue-700/30">
+                    <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 backdrop-blur-sm">
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white">
+                          <Database className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Debug Cascading Database</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Test and monitor database connectivity and performance</p>
+                        </div>
+                      </div>
+                      <DebugCascadingDB />
+                    </div>
+                  </div>
                 </TabsContent>
 
                 {/* System Settings Tab */}
-                <TabsContent value="settings" className="mt-0">
-                  <div>
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold">System Settings</h3>
-                      <p className="text-sm text-muted-foreground">Configure application settings and preferences</p>
+                <TabsContent value="settings" className="mt-0 animate-in fade-in-50 duration-200">
+                  <div className="bg-gradient-to-br from-emerald-50/50 to-teal-50/30 dark:from-emerald-900/20 dark:to-teal-900/10 rounded-xl p-1 border border-emerald-200/30 dark:border-emerald-700/30">
+                    <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 backdrop-blur-sm">
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white">
+                          <Settings className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">System Settings</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Configure application settings and preferences</p>
+                        </div>
+                      </div>
+                      <AdminSettings />
                     </div>
-                    <AdminSettings />
                   </div>
                 </TabsContent>
 
                 {/* Speech-to-Text Settings Tab */}
-                <TabsContent value="speech-settings" className="mt-0">
-                  <div>
-                    <div className="mb-4">
-                      <h3 className="text-lg font-semibold">Speech-to-Text Settings</h3>
-                      <p className="text-sm text-muted-foreground">Configure voice search and transcription settings</p>
+                <TabsContent value="speech-settings" className="mt-0 animate-in fade-in-50 duration-200">
+                  <div className="bg-gradient-to-br from-violet-50/50 to-purple-50/30 dark:from-violet-900/20 dark:to-purple-900/10 rounded-xl p-1 border border-violet-200/30 dark:border-violet-700/30">
+                    <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 backdrop-blur-sm">
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 text-white">
+                          <Mic className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Speech-to-Text Settings</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Configure voice search and transcription settings</p>
+                        </div>
+                      </div>
+                      <SpeechSettings />
                     </div>
-                    <SpeechSettings />
                   </div>
                 </TabsContent>
 
                 {/* User Management Tab */}
-                <TabsContent value="user-management" className="mt-0">
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <TabsContent value="user-management" className="mt-0 animate-in fade-in-50 duration-200">
+                  <div className="bg-gradient-to-br from-orange-50/50 to-red-50/30 dark:from-orange-900/20 dark:to-red-900/10 rounded-xl p-1 border border-orange-200/30 dark:border-orange-700/30">
+                    <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 backdrop-blur-sm">
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-orange-500 to-red-600 text-white">
+                          <Users className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">User Management</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Manage user accounts, roles, and permissions</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Users List */}
                     <div className="lg:col-span-2">
                       <Card>
@@ -468,14 +522,14 @@ export default function AdminPanel() {
                         </CardContent>
                       </Card>
                     </div>
+                      </div>
+                    </div>
                   </div>
                 </TabsContent>
               </div>
             </Tabs>
           </Card>
         </div>
-
-
       </div>
     </div>
   );
