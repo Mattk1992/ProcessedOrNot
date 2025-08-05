@@ -1807,10 +1807,13 @@ export class DatabaseStorage implements IStorage {
 
   async updateCameraSettings(settings: Partial<InsertCameraSettings>): Promise<CameraSettings> {
     try {
+      // Filter out timestamp fields that should be handled by the database
+      const { createdAt, updatedAt, ...updateData } = settings as any;
+      
       const [updated] = await db
         .update(cameraSettings)
         .set({
-          ...settings,
+          ...updateData,
           updatedAt: new Date()
         })
         .where(eq(cameraSettings.id, 1))
