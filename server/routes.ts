@@ -540,7 +540,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const isBarcode = /^[0-9]{8,14}$/.test(query.trim());
         const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
         try {
-          await storage.createSearchHistoryWithResult(query, searchInputType, cachedProduct, undefined, 'Cached');
+          await storage.createSearchHistoryWithResult(query, searchInputType, cachedProduct, undefined, 'Cached', req.session.userId);
         } catch (historyError) {
           console.warn("Failed to track search history for cached product:", historyError);
         }
@@ -563,7 +563,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             searchInputType, 
             null, 
             lookupResult.error || "Product not found",
-            lookupResult.source
+            lookupResult.source,
+            req.session.userId
           );
         } catch (historyError) {
           console.warn("Failed to track search history for failed lookup:", historyError);
@@ -591,7 +592,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           searchInputType, 
           savedProduct, 
           undefined,
-          lookupResult.source
+          lookupResult.source,
+          req.session.userId
         );
       } catch (historyError) {
         console.warn("Failed to track search history for successful lookup:", historyError);
@@ -635,7 +637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const isBarcode = /^[0-9]{8,14}$/.test(barcode.trim());
         const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
         try {
-          await storage.createSearchHistoryWithResult(barcode, searchInputType, cachedProduct, undefined, 'Cached');
+          await storage.createSearchHistoryWithResult(barcode, searchInputType, cachedProduct, undefined, 'Cached', req.session.userId);
         } catch (historyError) {
           console.warn("Failed to track search history for cached product:", historyError);
         }
@@ -658,7 +660,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             searchInputType, 
             null, 
             lookupResult.error || "Product not found in any database",
-            lookupResult.source
+            lookupResult.source,
+            req.session.userId
           );
         } catch (historyError) {
           console.warn("Failed to track search history for failed lookup:", historyError);
@@ -686,7 +689,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           searchInputType, 
           savedProduct, 
           undefined,
-          lookupResult.source
+          lookupResult.source,
+          req.session.userId
         );
       } catch (historyError) {
         console.warn("Failed to track search history for successful lookup:", historyError);
