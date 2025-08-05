@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronRight, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen, Mail, FileText, Share2, Lock, BarChart3, TrendingUp, Home, Camera, History, Database } from 'lucide-react';
+import { ChevronDown, ChevronRight, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen, Mail, FileText, Share2, Lock, BarChart3, TrendingUp, Home, Camera, History, Database, Copyright } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
@@ -107,6 +107,12 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       label: 'Terms of Service',
       icon: <FileText className="w-4 h-4" />,
       action: () => setLocation('/terms'),
+      group: 'Legal & Privacy'
+    },
+    {
+      label: 'Copyright',
+      icon: <Shield className="w-4 h-4" />,
+      action: () => setLocation('/copyright'),
       group: 'Legal & Privacy'
     }
   ];
@@ -220,6 +226,12 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       label: 'Terms of Service',
       icon: <FileText className="w-4 h-4" />,
       action: () => setLocation('/terms'),
+      group: 'Legal & Privacy'
+    },
+    {
+      label: 'Copyright',
+      icon: <Shield className="w-4 h-4" />,
+      action: () => setLocation('/copyright'),
       group: 'Legal & Privacy'
     }
   ];
