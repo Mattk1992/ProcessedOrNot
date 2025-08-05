@@ -171,6 +171,68 @@ export const insertDeviceIdentifierSchema = createInsertSchema(deviceIdentifiers
 export type InsertDeviceIdentifier = z.infer<typeof insertDeviceIdentifierSchema>;
 export type DeviceIdentifier = typeof deviceIdentifiers.$inferSelect;
 
+// Menu Items table - for managing navigation menu items
+export const menuItems = pgTable("menu_items", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  url: text("url").notNull(),
+  icon: text("icon"), // Lucide icon name
+  description: text("description"),
+  isVisible: boolean("is_visible").notNull().default(true),
+  isAdminOnly: boolean("is_admin_only").notNull().default(false),
+  order: integer("order").notNull().default(0),
+  parentId: integer("parent_id").references(() => menuItems.id), // For nested menus
+  target: text("target").notNull().default('_self'), // '_self' or '_blank'
+  cssClass: text("css_class"), // Custom CSS classes
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  orderIdx: index("menu_item_order_idx").on(table.order),
+  visibilityIdx: index("menu_item_visibility_idx").on(table.isVisible),
+  parentIdx: index("menu_item_parent_idx").on(table.parentId),
+}));
+
+export const insertMenuItemSchema = createInsertSchema(menuItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertMenuItem = z.infer<typeof insertMenuItemSchema>;
+export type MenuItem = typeof menuItems.$inferSelect;
+
+// Website Settings table - for global website configuration
+export const websiteSettings = pgTable("website_settings", {
+  id: serial("id").primaryKey(),
+  siteName: text("site_name").notNull().default('ProcessedOrNot'),
+  siteDescription: text("site_description"),
+  siteKeywords: text("site_keywords"),
+  logoUrl: text("logo_url"),
+  faviconUrl: text("favicon_url"),
+  primaryColor: text("primary_color").notNull().default('#3b82f6'),
+  secondaryColor: text("secondary_color").notNull().default('#64748b'),
+  accentColor: text("accent_color").notNull().default('#f59e0b'),
+  footerText: text("footer_text"),
+  contactEmail: text("contact_email"),
+  socialLinks: text("social_links"), // JSON string
+  seoSettings: text("seo_settings"), // JSON string
+  maintenanceMode: boolean("maintenance_mode").notNull().default(false),
+  analyticsCode: text("analytics_code"),
+  customCss: text("custom_css"),
+  customJs: text("custom_js"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertWebsiteSettingsSchema = createInsertSchema(websiteSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertWebsiteSettings = z.infer<typeof insertWebsiteSettingsSchema>;
+export type WebsiteSettings = typeof websiteSettings.$inferSelect;
+
 // OpenFoodFacts API response types
 export type OpenFoodFactsProduct = {
   product: {

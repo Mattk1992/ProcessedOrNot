@@ -2432,5 +2432,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== MENU ITEMS MANAGEMENT ROUTES ====================
+
+  // Get all menu items
+  app.get("/api/admin/menu-items", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const menuItems = await storage.getAllMenuItems();
+      res.json(menuItems);
+    } catch (error: any) {
+      console.error('Error fetching menu items:', error);
+      res.status(500).json({ message: "Failed to fetch menu items", error: error.message });
+    }
+  });
+
+  // Create new menu item
+  app.post("/api/admin/menu-items", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const menuItem = await storage.createMenuItem(req.body);
+      res.json(menuItem);
+    } catch (error: any) {
+      console.error('Error creating menu item:', error);
+      res.status(500).json({ message: "Failed to create menu item", error: error.message });
+    }
+  });
+
+  // Update menu item
+  app.put("/api/admin/menu-items/:id", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const menuItem = await storage.updateMenuItem(id, req.body);
+      
+      if (!menuItem) {
+        return res.status(404).json({ message: "Menu item not found" });
+      }
+      
+      res.json(menuItem);
+    } catch (error: any) {
+      console.error('Error updating menu item:', error);
+      res.status(500).json({ message: "Failed to update menu item", error: error.message });
+    }
+  });
+
+  // Delete menu item
+  app.delete("/api/admin/menu-items/:id", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteMenuItem(id);
+      res.json({ message: "Menu item deleted successfully" });
+    } catch (error: any) {
+      console.error('Error deleting menu item:', error);
+      res.status(500).json({ message: "Failed to delete menu item", error: error.message });
+    }
+  });
+
+  // Reorder menu items
+  app.put("/api/admin/menu-items/reorder", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { items } = req.body;
+      const reorderedItems = await storage.reorderMenuItems(items);
+      res.json(reorderedItems);
+    } catch (error: any) {
+      console.error('Error reordering menu items:', error);
+      res.status(500).json({ message: "Failed to reorder menu items", error: error.message });
+    }
+  });
+
+  // ==================== WEBSITE SETTINGS ROUTES ====================
+
+  // Get website settings
+  app.get("/api/admin/website-settings", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getWebsiteSettings();
+      res.json(settings);
+    } catch (error: any) {
+      console.error('Error fetching website settings:', error);
+      res.status(500).json({ message: "Failed to fetch website settings", error: error.message });
+    }
+  });
+
+  // Update website settings
+  app.put("/api/admin/website-settings", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.updateWebsiteSettings(req.body);
+      res.json(settings);
+    } catch (error: any) {
+      console.error('Error updating website settings:', error);
+      res.status(500).json({ message: "Failed to update website settings", error: error.message });
+    }
+  });
+
   return httpServer;
 }

@@ -184,6 +184,12 @@ export default function AdminPanel() {
                       Debug Cascading DB
                     </Button>
                   </Link>
+                  <Link href="/admin-website-management">
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Website Management
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </CardContent>

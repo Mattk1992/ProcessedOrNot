@@ -45,7 +45,13 @@ import {
   type InsertDeviceIdentifier,
   cameraSettings,
   type CameraSettings,
-  type InsertCameraSettings
+  type InsertCameraSettings,
+  menuItems,
+  type MenuItem,
+  type InsertMenuItem,
+  websiteSettings,
+  type WebsiteSettings,
+  type InsertWebsiteSettings
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -211,6 +217,18 @@ export interface IStorage {
   getCameraSettings(): Promise<CameraSettings>;
   updateCameraSettings(settings: Partial<InsertCameraSettings>): Promise<CameraSettings>;
   resetCameraSettingsToDefaults(): Promise<CameraSettings>;
+
+  // Menu Items methods
+  getAllMenuItems(): Promise<MenuItem[]>;
+  getMenuItemById(id: number): Promise<MenuItem | undefined>;
+  createMenuItem(item: InsertMenuItem): Promise<MenuItem>;
+  updateMenuItem(id: number, updates: Partial<InsertMenuItem>): Promise<MenuItem | undefined>;
+  deleteMenuItem(id: number): Promise<void>;
+  reorderMenuItems(items: { id: number; order: number }[]): Promise<MenuItem[]>;
+
+  // Website Settings methods
+  getWebsiteSettings(): Promise<WebsiteSettings>;
+  updateWebsiteSettings(settings: Partial<InsertWebsiteSettings>): Promise<WebsiteSettings>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1856,6 +1874,103 @@ export class DatabaseStorage implements IStorage {
       return updated;
     } catch (error) {
       console.error('Error resetting camera settings:', error);
+      throw error;
+    }
+  }
+
+  // ==================== Menu Items Methods ====================
+
+  async getAllMenuItems(): Promise<MenuItem[]> {
+    return await db.select().from(menuItems)
+      .orderBy(menuItems.order);
+  }
+
+  async getMenuItemById(id: number): Promise<MenuItem | undefined> {
+    const [item] = await db.select().from(menuItems)
+      .where(eq(menuItems.id, id))
+      .limit(1);
+    return item || undefined;
+  }
+
+  async createMenuItem(item: InsertMenuItem): Promise<MenuItem> {
+    const [created] = await db.insert(menuItems).values({
+      ...item,
+      updatedAt: new Date()
+    }).returning();
+    return created;
+  }
+
+  async updateMenuItem(id: number, updates: Partial<InsertMenuItem>): Promise<MenuItem | undefined> {
+    const [updated] = await db
+      .update(menuItems)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(menuItems.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteMenuItem(id: number): Promise<void> {
+    await db.delete(menuItems).where(eq(menuItems.id, id));
+  }
+
+  async reorderMenuItems(items: { id: number; order: number }[]): Promise<MenuItem[]> {
+    const updatedItems: MenuItem[] = [];
+    
+    for (const { id, order } of items) {
+      const [updated] = await db
+        .update(menuItems)
+        .set({ order, updatedAt: new Date() })
+        .where(eq(menuItems.id, id))
+        .returning();
+      if (updated) {
+        updatedItems.push(updated);
+      }
+    }
+    
+    return await this.getAllMenuItems();
+  }
+
+  // ==================== Website Settings Methods ====================
+
+  async getWebsiteSettings(): Promise<WebsiteSettings> {
+    try {
+      const [settings] = await db.select().from(websiteSettings)
+        .where(eq(websiteSettings.id, 1))
+        .limit(1);
+      
+      if (!settings) {
+        // Create default settings if none exist
+        const [newSettings] = await db.insert(websiteSettings)
+          .values({ id: 1 })
+          .returning();
+        return newSettings;
+      }
+      
+      return settings;
+    } catch (error) {
+      console.error('Error fetching website settings:', error);
+      throw error;
+    }
+  }
+
+  async updateWebsiteSettings(settings: Partial<InsertWebsiteSettings>): Promise<WebsiteSettings> {
+    try {
+      const [updated] = await db
+        .update(websiteSettings)
+        .set({
+          ...settings,
+          updatedAt: new Date()
+        })
+        .where(eq(websiteSettings.id, 1))
+        .returning();
+      
+      if (!updated) {
+        throw new Error('Website settings not found');
+      }
+      
+      return updated;
+    } catch (error) {
+      console.error('Error updating website settings:', error);
       throw error;
     }
   }
