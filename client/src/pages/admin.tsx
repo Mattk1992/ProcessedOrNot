@@ -11,10 +11,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, History, Database } from "lucide-react";
+import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, History, Database, Mic } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import AdminSettings from "@/components/admin-settings";
 import DebugCascadingDB from "@/components/debug-cascading-db";
+import SpeechSettings from "@/components/speech-settings";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface User {
@@ -266,7 +267,7 @@ export default function AdminPanel() {
         <div className="mb-6 md:mb-8">
           <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
             <Tabs defaultValue="debug-db" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 p-1 m-4 mb-0">
+              <TabsList className="grid w-full grid-cols-4 p-1 m-4 mb-0">
                 <TabsTrigger value="debug-db" className="flex items-center gap-2">
                   <Database className="w-4 h-4" />
                   Debug Cascading DB
@@ -274,6 +275,10 @@ export default function AdminPanel() {
                 <TabsTrigger value="settings" className="flex items-center gap-2">
                   <Settings className="w-4 h-4" />
                   System Settings
+                </TabsTrigger>
+                <TabsTrigger value="speech-settings" className="flex items-center gap-2">
+                  <Mic className="w-4 h-4" />
+                  Speech-to-Text
                 </TabsTrigger>
                 <TabsTrigger value="user-management" className="flex items-center gap-2">
                   <Users className="w-4 h-4" />
@@ -295,6 +300,17 @@ export default function AdminPanel() {
                       <p className="text-sm text-muted-foreground">Configure application settings and preferences</p>
                     </div>
                     <AdminSettings />
+                  </div>
+                </TabsContent>
+
+                {/* Speech-to-Text Settings Tab */}
+                <TabsContent value="speech-settings" className="mt-0">
+                  <div>
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold">Speech-to-Text Settings</h3>
+                      <p className="text-sm text-muted-foreground">Configure voice search and transcription settings</p>
+                    </div>
+                    <SpeechSettings />
                   </div>
                 </TabsContent>
 

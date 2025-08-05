@@ -426,6 +426,37 @@ export const insertMediaSchema = createInsertSchema(media).omit({
 export type InsertMedia = z.infer<typeof insertMediaSchema>;
 export type Media = typeof media.$inferSelect;
 
+// Speech-to-Text Settings table
+export const speechSettings = pgTable("speech_settings", {
+  id: serial("id").primaryKey(),
+  enabled: boolean("enabled").notNull().default(true),
+  apiKey: text("api_key"), // Encrypted AssemblyAI API key
+  language: varchar("language", { length: 10 }).notNull().default("en"),
+  autoStop: boolean("auto_stop").notNull().default(true),
+  autoStopDuration: integer("auto_stop_duration").notNull().default(10),
+  enhancedAccuracy: boolean("enhanced_accuracy").notNull().default(true),
+  punctuation: boolean("punctuation").notNull().default(true),
+  formatText: boolean("format_text").notNull().default(true),
+  wordBoost: text("word_boost").array(), // Array of boosted words
+  customWords: text("custom_words"), // Comma-separated custom words
+  confidenceThreshold: real("confidence_threshold").notNull().default(0.5),
+  maxRecordingDuration: integer("max_recording_duration").notNull().default(30),
+  sampleRate: integer("sample_rate").notNull().default(16000),
+  echoCancellation: boolean("echo_cancellation").notNull().default(true),
+  noiseSuppression: boolean("noise_suppression").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertSpeechSettingsSchema = createInsertSchema(speechSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSpeechSettings = z.infer<typeof insertSpeechSettingsSchema>;
+export type SpeechSettings = typeof speechSettings.$inferSelect;
+
 // Notifications table
 export const notifications = pgTable("notifications", {
   id: serial("id").primaryKey(),

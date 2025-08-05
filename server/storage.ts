@@ -51,7 +51,10 @@ import {
   type InsertMenuItem,
   websiteSettings,
   type WebsiteSettings,
-  type InsertWebsiteSettings
+  type InsertWebsiteSettings,
+  speechSettings,
+  type SpeechSettings,
+  type InsertSpeechSettings
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -229,6 +232,11 @@ export interface IStorage {
   // Website Settings methods
   getWebsiteSettings(): Promise<WebsiteSettings>;
   updateWebsiteSettings(settings: Partial<InsertWebsiteSettings>): Promise<WebsiteSettings>;
+
+  // Speech Settings methods
+  getSpeechSettings(): Promise<SpeechSettings>;
+  updateSpeechSettings(settings: Partial<InsertSpeechSettings>): Promise<SpeechSettings>;
+  resetSpeechSettingsToDefaults(): Promise<SpeechSettings>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1976,6 +1984,118 @@ export class DatabaseStorage implements IStorage {
       console.error('Error updating website settings:', error);
       throw error;
     }
+  }
+
+  // Speech Settings methods
+  async getSpeechSettings(): Promise<SpeechSettings> {
+    const settings = await db.select().from(speechSettings).limit(1);
+    
+    if (settings.length === 0) {
+      // Create default speech settings
+      const defaultSettings: InsertSpeechSettings = {
+        enabled: true,
+        apiKey: process.env.ASSEMBLYAI_API_KEY || '',
+        language: 'en',
+        autoStop: true,
+        autoStopDuration: 10,
+        enhancedAccuracy: true,
+        punctuation: true,
+        formatText: true,
+        wordBoost: [
+          'food', 'nutrition', 'ingredients', 'product', 'brand',
+          'organic', 'protein', 'carbs', 'calories', 'vitamins',
+          'dairy', 'gluten', 'sugar', 'sodium', 'fiber'
+        ],
+        customWords: '',
+        confidenceThreshold: 0.5,
+        maxRecordingDuration: 30,
+        sampleRate: 16000,
+        echoCancellation: true,
+        noiseSuppression: true,
+      };
+      
+      const created = await db.insert(speechSettings).values(defaultSettings).returning();
+      return created[0];
+    }
+    
+    // Decrypt API key for display
+    const setting = settings[0];
+    if (setting.apiKey && this.isEncrypted(setting.apiKey)) {
+      try {
+        setting.apiKey = decryptPII(setting.apiKey);
+      } catch (error) {
+        console.warn('Failed to decrypt API key, using encrypted value');
+      }
+    }
+    
+    return setting;
+  }
+
+  async updateSpeechSettings(updates: Partial<InsertSpeechSettings>): Promise<SpeechSettings> {
+    const existing = await this.getSpeechSettings();
+    
+    // Encrypt API key if provided
+    const encryptedUpdates = { ...updates };
+    if (updates.apiKey !== undefined) {
+      encryptedUpdates.apiKey = updates.apiKey ? encryptPII(updates.apiKey) : null;
+    }
+    
+    const updatedSettings = await db
+      .update(speechSettings)
+      .set({
+        ...encryptedUpdates,
+        updatedAt: new Date(),
+      })
+      .where(eq(speechSettings.id, existing.id))
+      .returning();
+    
+    // Decrypt API key for return value
+    const setting = updatedSettings[0];
+    if (setting.apiKey && this.isEncrypted(setting.apiKey)) {
+      try {
+        setting.apiKey = decryptPII(setting.apiKey);
+      } catch (error) {
+        console.warn('Failed to decrypt API key for return value');
+      }
+    }
+    
+    return setting;
+  }
+
+  async resetSpeechSettingsToDefaults(): Promise<SpeechSettings> {
+    const existing = await this.getSpeechSettings();
+    
+    const defaultSettings: Partial<InsertSpeechSettings> = {
+      enabled: true,
+      language: 'en',
+      autoStop: true,
+      autoStopDuration: 10,
+      enhancedAccuracy: true,
+      punctuation: true,
+      formatText: true,
+      wordBoost: [
+        'food', 'nutrition', 'ingredients', 'product', 'brand',
+        'organic', 'protein', 'carbs', 'calories', 'vitamins',
+        'dairy', 'gluten', 'sugar', 'sodium', 'fiber'
+      ],
+      customWords: '',
+      confidenceThreshold: 0.5,
+      maxRecordingDuration: 30,
+      sampleRate: 16000,
+      echoCancellation: true,
+      noiseSuppression: true,
+    };
+    
+    const updatedSettings = await db
+      .update(speechSettings)
+      .set({
+        ...defaultSettings,
+        updatedAt: new Date(),
+      })
+      .where(eq(speechSettings.id, existing.id))
+      .returning();
+    
+    return updatedSettings[0];
   }
 }
 

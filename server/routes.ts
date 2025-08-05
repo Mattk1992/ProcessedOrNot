@@ -2525,5 +2525,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Speech-to-Text Settings API routes
+  app.get("/api/admin/speech-settings", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getSpeechSettings();
+      res.json(settings);
+    } catch (error: any) {
+      console.error("Error fetching speech settings:", error);
+      res.status(500).json({ message: "Failed to fetch speech settings", error: error.message });
+    }
+  });
+
+  app.put("/api/admin/speech-settings", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const updates = req.body;
+      const settings = await storage.updateSpeechSettings(updates);
+      res.json(settings);
+    } catch (error: any) {
+      console.error("Error updating speech settings:", error);
+      res.status(500).json({ message: "Failed to update speech settings", error: error.message });
+    }
+  });
+
+  app.get("/api/admin/speech-status", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getSpeechSettings();
+      
+      let status = 'error';
+      let message = 'Service unavailable';
+      
+      if (settings.enabled && settings.apiKey) {
+        try {
+          // Simple check if AssemblyAI service is available
+          const available = await isVoiceTranscriptionAvailable();
+          if (available) {
+            status = 'healthy';
+            message = 'AssemblyAI service is operational';
+          } else {
+            status = 'degraded';
+            message = 'AssemblyAI API key not configured or invalid';
+          }
+        } catch (error) {
+          status = 'error';
+          message = 'Failed to connect to AssemblyAI service';
+        }
+      } else if (!settings.enabled) {
+        status = 'degraded';
+        message = 'Speech-to-Text service is disabled';
+      } else {
+        status = 'error';
+        message = 'AssemblyAI API key is required';
+      }
+
+      res.json({
+        status,
+        message,
+        lastChecked: new Date().toISOString(),
+      });
+    } catch (error: any) {
+      console.error("Error checking speech status:", error);
+      res.status(500).json({ 
+        status: 'error',
+        message: 'Failed to check service status',
+        lastChecked: new Date().toISOString(),
+        error: error.message
+      });
+    }
+  });
+
+  app.post("/api/admin/speech-test", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getSpeechSettings();
+      
+      if (!settings.enabled) {
+        return res.status(400).json({ message: "Speech-to-Text service is disabled" });
+      }
+
+      if (!settings.apiKey) {
+        return res.status(400).json({ message: "AssemblyAI API key is required" });
+      }
+
+      // Test the connection
+      const available = await isVoiceTranscriptionAvailable();
+      
+      if (available) {
+        res.json({ 
+          message: "Connection test successful! AssemblyAI service is working correctly.",
+          status: 'healthy'
+        });
+      } else {
+        res.status(500).json({ 
+          message: "Connection test failed. Please check your API key.",
+          status: 'error'
+        });
+      }
+    } catch (error: any) {
+      console.error("Error testing speech connection:", error);
+      res.status(500).json({ 
+        message: `Connection test failed: ${error.message || 'Unknown error'}`,
+        status: 'error'
+      });
+    }
+  });
+
   return httpServer;
 }
