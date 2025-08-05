@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -30,7 +30,8 @@ import {
   ArrowUp,
   ArrowDown
 } from "lucide-react";
-import { format } from "date-fns";
+import HeaderDropdown from "@/components/header-dropdown";
+import LanguageSwitcher from "@/components/language-switcher";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { apiRequest } from "@/lib/queryClient";
@@ -178,12 +179,12 @@ export default function DebugCascadingDatabase() {
 
   // Test individual database mutation
   const testDatabaseMutation = useMutation({
-    mutationFn: async ({ id, testBarcode }: { id: number; testBarcode: string }) => {
-      return await fetch(`/api/admin/product-databases/${id}/test`, {
+    mutationFn: async ({ id, barcode }: { id: number; barcode: string }) => {
+      const response = await apiRequest(`/api/admin/product-databases/${id}/test`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ testBarcode }),
-      }).then(res => res.json());
+        body: { barcode },
+      });
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/product-databases"] });
@@ -193,11 +194,11 @@ export default function DebugCascadingDatabase() {
   // Toggle database enabled/disabled mutation
   const toggleDatabaseMutation = useMutation({
     mutationFn: async ({ id, enabled }: { id: number; enabled: boolean }) => {
-      return await fetch(`/api/admin/product-databases/${id}`, {
+      const response = await apiRequest(`/api/admin/product-databases/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isEnabled: enabled }),
-      }).then(res => res.json());
+        body: { isEnabled: enabled },
+      });
+      return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/product-databases"] });
@@ -220,11 +221,11 @@ export default function DebugCascadingDatabase() {
           { id: targetDb.id, priority: currentDb.priority }
         ];
         
-        return await fetch('/api/admin/product-databases/reorder', {
+        const response = await apiRequest('/api/admin/product-databases/reorder', {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ databases: updates }),
-        }).then(res => res.json());
+          body: { databases: updates },
+        });
+        return response;
       } else if (direction === 'down' && currentIndex < sortedDbs.length - 1) {
         const targetDb = sortedDbs[currentIndex + 1];
         const updates = [
@@ -232,11 +233,11 @@ export default function DebugCascadingDatabase() {
           { id: targetDb.id, priority: currentDb.priority }
         ];
         
-        return await fetch('/api/admin/product-databases/reorder', {
+        const response = await apiRequest('/api/admin/product-databases/reorder', {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ databases: updates }),
-        }).then(res => res.json());
+          body: { databases: updates },
+        });
+        return response;
       }
     },
     onSuccess: () => {
@@ -244,34 +245,7 @@ export default function DebugCascadingDatabase() {
     },
   });
 
-  // Initialize databases mutation
-  const initializeDatabasesMutation = useMutation({
-    mutationFn: async () => {
-      return await fetch('/api/admin/product-databases/initialize', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      }).then(res => res.json());
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/product-databases"] });
-    },
-  });
-
-  // Test all databases mutation
-  const testAllDatabasesMutation = useMutation({
-    mutationFn: async ({ testBarcode }: { testBarcode: string }) => {
-      return await fetch('/api/admin/product-databases/test-all', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ testBarcode }),
-      }).then(res => res.json());
-    },
-    onSuccess: (data) => {
-      setTestResults(data);
-    },
-  });
-
-  // Test cascading system function
+  // Test cascading system
   const testCascadingSystem = async () => {
     if (!testBarcode.trim()) return;
     
@@ -279,176 +253,279 @@ export default function DebugCascadingDatabase() {
     setTestResults(null);
     
     try {
-      const response = await fetch('/api/debug/cascading-test', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ barcode: testBarcode }),
+      const startTime = Date.now();
+      const response = await apiRequest(`/api/debug/cascading-test`, {
+        method: "POST",
+        body: { barcode: testBarcode },
       });
+      const endTime = Date.now();
       
-      const result = await response.json();
-      setTestResults(result);
-    } catch (error) {
-      console.error('Cascading test error:', error);
+      setTestResults({
+        ...response,
+        totalTime: endTime - startTime,
+      });
+    } catch (error: any) {
       setTestResults({
         barcode: testBarcode,
-        success: false,
-        finalSource: 'none',
         totalTime: 0,
+        finalSource: "Error",
         testResults: [],
-        error: error instanceof Error ? error.message : 'Unknown error'
+        success: false,
+        error: error.message || "Test failed"
       });
     } finally {
       setIsTestingCascade(false);
     }
   };
 
-  // System health calculations
-  const systemHealth = databases ? {
-    totalDatabases: databases.length,
-    enabledDatabases: databases.filter(db => db.isEnabled).length,
-    operationalDatabases: databases.filter(db => db.isOperational).length,
-    averageResponseTime: databases.reduce((acc, db) => acc + (db.averageResponseTime || 0), 0) / databases.length,
-    overallSuccessRate: databases.reduce((acc, db) => acc + (db.successRate || 0), 0) / databases.length,
-  } : null;
+  // Initialize default databases
+  const initializeDatabasesMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("/api/admin/product-databases/initialize", {
+        method: "POST",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/product-databases"] });
+    },
+  });
 
-  const getStatusIcon = (database: ProductDatabase) => {
-    if (!database.isEnabled) {
-      return <XCircle className="w-4 h-4 text-gray-400" />;
-    }
-    if (database.isOperational) {
-      return <CheckCircle className="w-4 h-4 text-green-500" />;
-    }
-    return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
-  };
-
-  // Redirect if not authenticated or not admin
+  // Authentication check
   if (!isAuthenticated || user?.accountType !== 'Admin') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-8 text-center">
-            <Database className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Access Restricted</h2>
-            <p className="text-muted-foreground">
-              This debug console is only available to Admin users.
-            </p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
+        <header className="backdrop-blur-md bg-background/80 border-b border-border/50 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-3">
+                <img src={logoPath} alt="ProcessedOrNot Scanner" className="w-10 h-10 rounded-full" />
+                <div className="hidden sm:block">
+                  <h1 className="text-xl font-bold gradient-text">ProcessedOrNot</h1>
+                  <p className="text-xs text-muted-foreground">Database Debug</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <LanguageSwitcher />
+                <HeaderDropdown />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+          <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-2">Admin Access Required</h2>
+          <p className="text-muted-foreground">This debugging tool is only available to Admin users.</p>
+        </div>
       </div>
     );
   }
 
+  const getStatusIcon = (database: ProductDatabase) => {
+    if (!database.isEnabled) return <XCircle className="w-4 h-4 text-gray-500" />;
+    if (!database.isOperational) return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
+    return <CheckCircle className="w-4 h-4 text-green-500" />;
+  };
+
+  const getStatusColor = (database: ProductDatabase) => {
+    if (!database.isEnabled) return "bg-gray-500";
+    if (!database.isOperational) return "bg-yellow-500";
+    return "bg-green-500";
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-white/20 dark:border-gray-700/50 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <img src={logoPath} alt="ProcessedOrNot" className="h-10 w-10 rounded-lg" />
-              <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Cascading Database Debug Console
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  System monitoring and database management
-                </p>
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
+      <header className="backdrop-blur-md bg-background/80 border-b border-border/50 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center space-x-3">
+              <img src={logoPath} alt="ProcessedOrNot Scanner" className="w-10 h-10 rounded-full" />
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-bold gradient-text">ProcessedOrNot</h1>
+                <p className="text-xs text-muted-foreground">Database Debug Console</p>
               </div>
             </div>
-            <Badge variant="outline" className="bg-blue-50 dark:bg-blue-900/20">
-              Admin Tools
-            </Badge>
+            <div className="flex items-center space-x-3">
+              <LanguageSwitcher />
+              <HeaderDropdown />
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* System Overview */}
-        {systemHealth && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-2">
-                  <Database className="w-5 h-5 text-blue-500" />
-                  <div>
-                    <p className="text-2xl font-bold">{systemHealth.totalDatabases}</p>
-                    <p className="text-xs text-muted-foreground">Total Databases</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-2">
-                  <Zap className="w-5 h-5 text-green-500" />
-                  <div>
-                    <p className="text-2xl font-bold">{systemHealth.enabledDatabases}</p>
-                    <p className="text-xs text-muted-foreground">Enabled</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle className="w-5 h-5 text-emerald-500" />
-                  <div>
-                    <p className="text-2xl font-bold">{systemHealth.operationalDatabases}</p>
-                    <p className="text-xs text-muted-foreground">Operational</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-5 h-5 text-orange-500" />
-                  <div>
-                    <p className="text-2xl font-bold">{Math.round(systemHealth.averageResponseTime)}ms</p>
-                    <p className="text-xs text-muted-foreground">Avg Response</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-2">
-                  <Target className="w-5 h-5 text-purple-500" />
-                  <div>
-                    <p className="text-2xl font-bold">{Math.round(systemHealth.overallSuccessRate)}%</p>
-                    <p className="text-xs text-muted-foreground">Success Rate</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Header Section */}
+        <div className="mb-8">
+          <div className="flex items-center space-x-3 mb-4">
+            <Database className="w-8 h-8 text-primary" />
+            <div>
+              <h2 className="text-3xl font-bold">Cascading Database Debug Console</h2>
+              <p className="text-muted-foreground">
+                Debug and test the cascading product database system
+              </p>
+            </div>
           </div>
-        )}
 
-        {/* Main Tabs */}
-        <Tabs defaultValue="databases" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md">
-            <TabsTrigger value="databases" className="flex items-center space-x-2">
-              <Database className="w-4 h-4" />
-              <span>Databases</span>
-            </TabsTrigger>
-            <TabsTrigger value="testing" className="flex items-center space-x-2">
-              <TestTube className="w-4 h-4" />
-              <span>Testing</span>
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center space-x-2">
-              <BarChart3 className="w-4 h-4" />
-              <span>Analytics</span>
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="flex items-center space-x-2">
-              <Settings className="w-4 h-4" />
-              <span>Settings</span>
-            </TabsTrigger>
+          {/* Quick Actions */}
+          <div className="flex flex-wrap gap-3 mb-6">
+            <Button
+              onClick={() => initializeDatabasesMutation.mutate()}
+              disabled={initializeDatabasesMutation.isPending}
+              variant="outline"
+            >
+              {initializeDatabasesMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              <Settings className="w-4 h-4 mr-2" />
+              Initialize Default Databases
+            </Button>
+            
+            <Button
+              onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/admin/product-databases"] })}
+              variant="outline"
+            >
+              <Activity className="w-4 h-4 mr-2" />
+              Refresh Data
+            </Button>
+          </div>
+        </div>
+
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="databases">Database Status</TabsTrigger>
+            <TabsTrigger value="testing">Cascade Testing</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
           </TabsList>
+
+          {/* Overview Tab */}
+          <TabsContent value="overview" className="space-y-6">
+            {/* System Status Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <Database className="w-5 h-5 text-blue-500" />
+                    <div>
+                      <p className="text-sm font-medium">Total Databases</p>
+                      <p className="text-2xl font-bold">{databases?.length || 0}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle className="w-5 h-5 text-green-500" />
+                    <div>
+                      <p className="text-sm font-medium">Operational</p>
+                      <p className="text-2xl font-bold">
+                        {databases?.filter(db => db.isOperational && db.isEnabled).length || 0}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <AlertTriangle className="w-5 h-5 text-yellow-500" />
+                    <div>
+                      <p className="text-sm font-medium">Issues</p>
+                      <p className="text-2xl font-bold">
+                        {databases?.filter(db => !db.isOperational || !db.isEnabled).length || 0}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center space-x-2">
+                    <Zap className="w-5 h-5 text-purple-500" />
+                    <div>
+                      <p className="text-sm font-medium">API Keys Required</p>
+                      <p className="text-2xl font-bold">
+                        {databases?.filter(db => db.requiresApiKey && !db.apiKeyConfigured).length || 0}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* System Health */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Activity className="w-5 h-5" />
+                  <span>System Health Overview</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {databasesLoading ? (
+                  <div className="text-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+                    <p className="text-muted-foreground">Loading database configuration...</p>
+                  </div>
+                ) : databasesError ? (
+                  <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Error Loading Databases</AlertTitle>
+                    <AlertDescription>
+                      Failed to load database configuration. Please check your connection and try again.
+                    </AlertDescription>
+                  </Alert>
+                ) : databases && databases.length > 0 ? (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Databases are listed in priority order (lower numbers = higher priority)
+                    </p>
+                    {databases
+                      .sort((a, b) => a.priority - b.priority)
+                      .map((database) => (
+                        <div key={database.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            {getStatusIcon(database)}
+                            <div>
+                              <h4 className="font-medium">{database.displayName}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Priority: {database.priority} | Coverage: {database.coverage || 'Unknown'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge variant="outline" className={`${getStatusColor(database)} text-white`}>
+                              #{database.priority}
+                            </Badge>
+                            {database.requiresApiKey && !database.apiKeyConfigured && (
+                              <Badge variant="destructive">API Key Required</Badge>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    }
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Database className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No Databases Configured</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Initialize the default database configuration to get started.
+                    </p>
+                    <Button
+                      onClick={() => initializeDatabasesMutation.mutate()}
+                      disabled={initializeDatabasesMutation.isPending}
+                    >
+                      {initializeDatabasesMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                      Initialize Databases
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* Database Status Tab */}
           <TabsContent value="databases" className="space-y-6">
@@ -569,7 +646,7 @@ export default function DebugCascadingDatabase() {
 
                           {/* Test Button */}
                           <Button
-                            onClick={() => testDatabaseMutation.mutate({ id: database.id, testBarcode })}
+                            onClick={() => testDatabaseMutation.mutate({ id: database.id, barcode: testBarcode })}
                             disabled={testDatabaseMutation.isPending}
                             variant="outline"
                             size="sm"
@@ -590,14 +667,7 @@ export default function DebugCascadingDatabase() {
                 <CardContent className="p-8 text-center">
                   <Database className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No Databases Found</h3>
-                  <p className="text-muted-foreground mb-4">Initialize the database configuration to continue.</p>
-                  <Button 
-                    onClick={() => initializeDatabasesMutation.mutate()}
-                    disabled={initializeDatabasesMutation.isPending}
-                  >
-                    {initializeDatabasesMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    Initialize Databases
-                  </Button>
+                  <p className="text-muted-foreground">Initialize the database configuration to continue.</p>
                 </CardContent>
               </Card>
             )}
@@ -709,27 +779,6 @@ export default function DebugCascadingDatabase() {
                   <h3 className="text-lg font-semibold mb-2">Analytics Coming Soon</h3>
                   <p className="text-muted-foreground">
                     Performance metrics and analytics will be available in the next update.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Settings Tab */}
-          <TabsContent value="settings" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="w-5 h-5" />
-                  <span>System Settings</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Settings className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Settings Configuration</h3>
-                  <p className="text-muted-foreground">
-                    Advanced system settings will be available in future updates.
                   </p>
                 </div>
               </CardContent>
