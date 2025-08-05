@@ -35,7 +35,7 @@ import NutriDiary from "@/pages/nutri-diary";
 import NutriProgress from "@/pages/nutri-progress";
 import NutriProfile from "@/pages/nutri-profile";
 import LookupHistory from "@/pages/lookup-history";
-import DebugCascadingDatabase from "@/pages/debug-cascading-db";
+
 import { AdManagerProvider, AdConsentBanner } from "@/components/ads";
 import AdSettings from "@/pages/ad-settings";
 import SiteInfo from "@/pages/site-info";
@@ -98,8 +98,7 @@ function Router() {
         {/* Lookup History Page */}
         <Route path="/lookup-history" component={LookupHistory} />
         
-        {/* Debug Pages */}
-        <Route path="/debug/cascading-db" component={DebugCascadingDatabase} />
+
         
         {/* Ad Configuration - Sub-page of Settings */}
         <Route path="/nutri-dashboard/settings/ad-settings" component={AdSettings} />

@@ -14,6 +14,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, History, Database } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import AdminSettings from "@/components/admin-settings";
+import DebugCascadingDB from "@/components/debug-cascading-db";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface User {
   id: number;
@@ -168,12 +170,7 @@ export default function AdminPanel() {
                     </Button>
                   </Link>
                   
-                  <Link href="/debug-cascading-db" className="block">
-                    <Button variant="outline" size="sm" className="w-full h-auto p-3 flex flex-col sm:flex-row items-center gap-2 text-left">
-                      <Database className="h-4 w-4 flex-shrink-0" />
-                      <span className="text-xs sm:text-sm leading-tight">Debug Cascading DB</span>
-                    </Button>
-                  </Link>
+
                   
                   <Link href="/admin-website-management" className="block">
                     <Button variant="outline" size="sm" className="w-full h-auto p-3 flex flex-col sm:flex-row items-center gap-2 text-left">
@@ -265,166 +262,204 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* Admin Settings Section */}
+        {/* Main Admin Panel with Tabs */}
         <div className="mb-6 md:mb-8">
           <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
-                System Settings
-              </CardTitle>
-              <CardDescription className="text-sm">
-                Configure application settings and preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AdminSettings />
-            </CardContent>
+            <Tabs defaultValue="debug-db" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 p-1 m-4 mb-0">
+                <TabsTrigger value="debug-db" className="flex items-center gap-2">
+                  <Database className="w-4 h-4" />
+                  Debug Cascading DB
+                </TabsTrigger>
+                <TabsTrigger value="settings" className="flex items-center gap-2">
+                  <Settings className="w-4 h-4" />
+                  System Settings
+                </TabsTrigger>
+                <TabsTrigger value="user-management" className="flex items-center gap-2">
+                  <Users className="w-4 h-4" />
+                  User Management
+                </TabsTrigger>
+              </TabsList>
+
+              <div className="p-4">
+                {/* Debug Cascading DB Tab */}
+                <TabsContent value="debug-db" className="mt-0">
+                  <DebugCascadingDB />
+                </TabsContent>
+
+                {/* System Settings Tab */}
+                <TabsContent value="settings" className="mt-0">
+                  <div>
+                    <div className="mb-4">
+                      <h3 className="text-lg font-semibold">System Settings</h3>
+                      <p className="text-sm text-muted-foreground">Configure application settings and preferences</p>
+                    </div>
+                    <AdminSettings />
+                  </div>
+                </TabsContent>
+
+                {/* User Management Tab */}
+                <TabsContent value="user-management" className="mt-0">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    {/* Users List */}
+                    <div className="lg:col-span-2">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <Users className="h-5 w-5" />
+                            User Management
+                          </CardTitle>
+                          <CardDescription>
+                            Manage user accounts and permissions
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            {users.map((listUser: User) => (
+                              <div
+                                key={listUser.id}
+                                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 border rounded-lg bg-white/50 dark:bg-gray-700/50 gap-3"
+                              >
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                                    <h3 className="font-medium text-sm truncate">{listUser.username}</h3>
+                                    <Badge
+                                      variant={listUser.accountType === 'Admin' ? 'default' : 'secondary'}
+                                      className={`text-xs ${listUser.accountType === 'Admin' ? 'bg-blue-600' : ''}`}
+                                    >
+                                      {listUser.accountType === 'Admin' && <Crown className="h-3 w-3 mr-1" />}
+                                      {listUser.accountType}
+                                    </Badge>
+                                    {listUser.isEmailVerified ? (
+                                      <UserCheck className="h-4 w-4 text-green-600" />
+                                    ) : (
+                                      <UserX className="h-4 w-4 text-red-600" />
+                                    )}
+                                  </div>
+                                  <p className="text-xs text-gray-600 dark:text-gray-300 truncate mb-1">
+                                    {listUser.email}
+                                  </p>
+                                  <div className="text-xs text-gray-500">
+                                    <div>Joined: {new Date(listUser.createdAt).toLocaleDateString()}</div>
+                                    {listUser.lastLoginAt && (
+                                      <div>Last login: {new Date(listUser.lastLoginAt).toLocaleDateString()}</div>
+                                    )}
+                                  </div>
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => setSelectedUser(listUser)}
+                                  disabled={listUser.id === user?.id}
+                                  className="w-full sm:w-auto h-9 min-w-[80px]"
+                                >
+                                  Manage
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Selected User Details */}
+                    <div className="lg:col-span-1">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <Settings className="h-5 w-5" />
+                            User Details
+                          </CardTitle>
+                          <CardDescription>
+                            Modify user account settings
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          {selectedUser ? (
+                            <div className="space-y-4">
+                              <div className="space-y-3">
+                                <div>
+                                  <Label className="text-sm font-medium">Username</Label>
+                                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                    {selectedUser.username}
+                                  </p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium">Email</Label>
+                                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                    {selectedUser.email}
+                                  </p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium">Current Role</Label>
+                                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                    {selectedUser.accountType}
+                                  </p>
+                                </div>
+                                <div>
+                                  <Label className="text-sm font-medium">Email Verified</Label>
+                                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                    {selectedUser.isEmailVerified ? 'Yes' : 'No'}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <Separator />
+
+                              <div>
+                                <Label htmlFor="account-type-select" className="text-sm font-medium">
+                                  New Account Type
+                                </Label>
+                                <Select value={newAccountType} onValueChange={setNewAccountType}>
+                                  <SelectTrigger className="mt-1">
+                                    <SelectValue placeholder="Select new account type" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Regular">Regular User</SelectItem>
+                                    <SelectItem value="Admin">Administrator</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div className="flex flex-col gap-2">
+                                <Button
+                                  onClick={() => handleAccountTypeUpdate(selectedUser)}
+                                  disabled={updateAccountTypeMutation.isPending || !newAccountType}
+                                  className="w-full h-10"
+                                >
+                                  {updateAccountTypeMutation.isPending ? "Updating..." : "Update Role"}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  onClick={() => {
+                                    setSelectedUser(null);
+                                    setNewAccountType("");
+                                  }}
+                                  className="w-full h-10"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-center py-8">
+                              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                              <p className="text-sm text-gray-600 dark:text-gray-300">
+                                Select a user to manage their account type
+                              </p>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </TabsContent>
+              </div>
+            </Tabs>
           </Card>
         </div>
 
-        {/* User Management */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Users List */}
-          <div className="lg:col-span-2">
-            <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <Users className="h-4 w-4 sm:h-5 sm:w-5" />
-                  User Management
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  Manage user accounts and permissions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3 sm:space-y-4">
-                  {users.map((listUser: User) => (
-                    <div
-                      key={listUser.id}
-                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg bg-white/50 dark:bg-gray-700/50 gap-3 sm:gap-4"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2 mb-2">
-                          <h3 className="font-medium text-sm sm:text-base truncate">{listUser.username}</h3>
-                          <Badge
-                            variant={listUser.accountType === 'Admin' ? 'default' : 'secondary'}
-                            className={`text-xs ${listUser.accountType === 'Admin' ? 'bg-blue-600' : ''}`}
-                          >
-                            {listUser.accountType === 'Admin' && <Crown className="h-3 w-3 mr-1" />}
-                            {listUser.accountType}
-                          </Badge>
-                          {listUser.isEmailVerified ? (
-                            <UserCheck className="h-4 w-4 text-green-600 flex-shrink-0" />
-                          ) : (
-                            <UserX className="h-4 w-4 text-red-600 flex-shrink-0" />
-                          )}
-                        </div>
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 truncate mb-1">
-                          {listUser.email}
-                        </p>
-                        <div className="text-xs text-gray-500 space-y-1 sm:space-y-0">
-                          <div>Joined: {new Date(listUser.createdAt).toLocaleDateString()}</div>
-                          {listUser.lastLoginAt && (
-                            <div className="sm:inline sm:ml-2">
-                              Last login: {new Date(listUser.lastLoginAt).toLocaleDateString()}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedUser(listUser)}
-                        disabled={listUser.id === user?.id}
-                        className="w-full sm:w-auto h-9 min-w-[80px]"
-                      >
-                        Manage
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
 
-          {/* Role Management Panel */}
-          <div className="mt-6 lg:mt-0">
-            <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
-                  <Settings className="h-4 w-4 sm:h-5 sm:w-5" />
-                  Role Management
-                </CardTitle>
-                <CardDescription className="text-sm">
-                  Update user roles and permissions
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {selectedUser ? (
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium">Selected User</Label>
-                      <div className="mt-1 p-3 border rounded-lg bg-gray-50 dark:bg-gray-700">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{selectedUser.username}</span>
-                          <Badge variant="outline">{selectedUser.accountType}</Badge>
-                        </div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          {selectedUser.email}
-                        </p>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <Label htmlFor="account-type-select" className="text-sm font-medium">
-                        New Account Type
-                      </Label>
-                      <Select value={newAccountType} onValueChange={setNewAccountType}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select new account type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Regular">Regular User</SelectItem>
-                          <SelectItem value="Admin">Administrator</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                      <Button
-                        onClick={() => handleAccountTypeUpdate(selectedUser)}
-                        disabled={updateAccountTypeMutation.isPending || !newAccountType}
-                        className="flex-1 h-10"
-                      >
-                        {updateAccountTypeMutation.isPending ? "Updating..." : "Update Role"}
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedUser(null);
-                          setNewAccountType("");
-                        }}
-                        className="h-10 sm:px-6"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-6 sm:py-8">
-                    <Users className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
-                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 px-2">
-                      Select a user to manage their account type
-                    </p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
       </div>
     </div>
   );
