@@ -172,6 +172,18 @@ export default function AdminPanel() {
                       Ad Compliance Dashboard
                     </Button>
                   </Link>
+                  <Link href="/admin-camera-config">
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      Camera Configuration
+                    </Button>
+                  </Link>
+                  <Link href="/debug-cascading-db">
+                    <Button variant="outline" size="sm" className="flex items-center gap-2">
+                      <Database className="h-4 w-4" />
+                      Debug Cascading DB
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </CardContent>

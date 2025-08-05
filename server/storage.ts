@@ -1390,7 +1390,7 @@ export class DatabaseStorage implements IStorage {
       const hasData = result !== null && result !== undefined;
       
       await this.updateProductDatabase(id, {
-        lastTested: new Date(),
+        lastTestedAt: new Date(),
         averageResponseTime: responseTime,
         isOperational: true,
         dataFoundRate: hasData ? 100 : 0
@@ -1401,7 +1401,7 @@ export class DatabaseStorage implements IStorage {
       
       // Update database as not operational
       await this.updateProductDatabase(id, {
-        lastTested: new Date(),
+        lastTestedAt: new Date(),
         isOperational: false
       });
     }

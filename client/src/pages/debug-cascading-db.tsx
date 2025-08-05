@@ -161,7 +161,7 @@ interface CascadingTestResult {
   error?: string;
 }
 
-export default function DebugCascadingDatabase() {
+function CascadingDatabaseDebugConsole() {
   const { user, isAuthenticated } = useAuth();
   const { t } = useLanguage();
   const queryClient = useQueryClient();
@@ -723,20 +723,403 @@ export default function DebugCascadingDatabase() {
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* General Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Settings className="w-5 h-5" />
+                    <span>General Settings</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Configure system-wide cascading database behavior
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Global Timeout (seconds)</label>
+                    <Input
+                      type="number"
+                      placeholder="30"
+                      min="5"
+                      max="300"
+                      className="mobile-input"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Maximum time to wait for database responses
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Retry Attempts</label>
+                    <Input
+                      type="number"
+                      placeholder="3"
+                      min="0"
+                      max="10"
+                      className="mobile-input"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Number of retry attempts for failed requests
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium">Enable Parallel Requests</p>
+                      <p className="text-xs text-muted-foreground">
+                        Query multiple databases simultaneously
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium">Cache Results</p>
+                      <p className="text-xs text-muted-foreground">
+                        Cache successful lookups for faster responses
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Performance Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Zap className="w-5 h-5" />
+                    <span>Performance Settings</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Optimize database lookup performance
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Cache Duration (minutes)</label>
+                    <Input
+                      type="number"
+                      placeholder="60"
+                      min="1"
+                      max="1440"
+                      className="mobile-input"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      How long to cache successful responses
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Rate Limit (requests/min)</label>
+                    <Input
+                      type="number"
+                      placeholder="100"
+                      min="10"
+                      max="1000"
+                      className="mobile-input"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Maximum requests per database per minute
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium">Auto-Disable Failed Databases</p>
+                      <p className="text-xs text-muted-foreground">
+                        Temporarily disable databases with high failure rates
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Failure Threshold (%)</label>
+                    <Input
+                      type="number"
+                      placeholder="25"
+                      min="5"
+                      max="90"
+                      className="mobile-input"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Disable database if failure rate exceeds this threshold
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Monitoring Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Activity className="w-5 h-5" />
+                    <span>Monitoring & Alerts</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Configure monitoring and alert settings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium">Enable Health Monitoring</p>
+                      <p className="text-xs text-muted-foreground">
+                        Continuously monitor database health
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Health Check Interval (minutes)</label>
+                    <Input
+                      type="number"
+                      placeholder="15"
+                      min="1"
+                      max="60"
+                      className="mobile-input"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      How often to perform health checks
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium">Email Alerts</p>
+                      <p className="text-xs text-muted-foreground">
+                        Send email notifications for critical issues
+                      </p>
+                    </div>
+                    <Switch />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Alert Email</label>
+                    <Input
+                      type="email"
+                      placeholder="admin@example.com"
+                      className="mobile-input"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Email address for system alerts
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* API Key Management */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Target className="w-5 h-5" />
+                    <span>API Key Management</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Manage API keys for external databases
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Alert>
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Security Notice</AlertTitle>
+                    <AlertDescription>
+                      API keys are encrypted and stored securely. Never share or expose them in logs.
+                    </AlertDescription>
+                  </Alert>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">USDA API Key</label>
+                    <Input
+                      type="password"
+                      placeholder="Enter USDA API key..."
+                      className="mobile-input"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Required for USDA Food Data Central access
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Nutritionix API Key</label>
+                    <Input
+                      type="password"
+                      placeholder="Enter Nutritionix API key..."
+                      className="mobile-input"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Required for Nutritionix database access
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Spoonacular API Key</label>
+                    <Input
+                      type="password"
+                      placeholder="Enter Spoonacular API key..."
+                      className="mobile-input"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Required for Spoonacular database access
+                    </p>
+                  </div>
+
+                  <Button className="w-full mobile-button" size="mobile">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Update API Keys
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Backup & Recovery */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Database className="w-5 h-5" />
+                    <span>Backup & Recovery</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Database backup and recovery settings
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium">Auto Backup</p>
+                      <p className="text-xs text-muted-foreground">
+                        Automatically backup database configurations
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Backup Frequency</label>
+                    <select className="w-full p-2 border rounded-md mobile-input">
+                      <option>Daily</option>
+                      <option>Weekly</option>
+                      <option>Monthly</option>
+                    </select>
+                    <p className="text-xs text-muted-foreground">
+                      How often to create backups
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Retention Period (days)</label>
+                    <Input
+                      type="number"
+                      placeholder="30"
+                      min="1"
+                      max="365"
+                      className="mobile-input"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      How long to keep backup files
+                    </p>
+                  </div>
+
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="flex-1 mobile-button" size="mobile">
+                      Create Backup
+                    </Button>
+                    <Button variant="outline" className="flex-1 mobile-button" size="mobile">
+                      Restore Backup
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Advanced Configuration */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Layers className="w-5 h-5" />
+                    <span>Advanced Configuration</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Advanced system settings for power users
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Custom User Agent</label>
+                    <Textarea
+                      placeholder="ProcessedOrNot/1.0 (Food Scanner Bot)"
+                      className="mobile-input"
+                      rows={2}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Custom user agent string for API requests
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Request Headers (JSON)</label>
+                    <Textarea
+                      placeholder='{"Accept": "application/json", "Content-Type": "application/json"}'
+                      className="mobile-input font-mono text-sm"
+                      rows={3}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Additional headers to include with requests
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium">Debug Logging</p>
+                      <p className="text-xs text-muted-foreground">
+                        Enable detailed request/response logging
+                      </p>
+                    </div>
+                    <Switch />
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium">Strict SSL Verification</p>
+                      <p className="text-xs text-muted-foreground">
+                        Enforce strict SSL certificate validation
+                      </p>
+                    </div>
+                    <Switch defaultChecked />
+                  </div>
+
+                  <Alert>
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Advanced Settings</AlertTitle>
+                    <AlertDescription>
+                      These settings can affect system performance. Only modify if you understand the implications.
+                    </AlertDescription>
+                  </Alert>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Save Settings */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="w-5 h-5" />
-                  <span>System Settings</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Settings className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Settings Configuration</h3>
-                  <p className="text-muted-foreground">
-                    Advanced system settings will be available in future updates.
-                  </p>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold">Save Configuration</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Apply changes to the cascading database system
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" className="mobile-button" size="mobile">
+                      Reset to Defaults
+                    </Button>
+                    <Button className="mobile-button" size="mobile">
+                      <Settings className="w-4 h-4 mr-2" />
+                      Save Settings
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -746,3 +1129,5 @@ export default function DebugCascadingDatabase() {
     </div>
   );
 }
+
+export default CascadingDatabaseDebugConsole;

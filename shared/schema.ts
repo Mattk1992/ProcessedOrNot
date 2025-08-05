@@ -124,7 +124,7 @@ export const productDatabases = pgTable("product_databases", {
   averageResponseTime: integer("average_response_time"), // in milliseconds
   successRate: real("success_rate"), // percentage 0-100
   dataFoundRate: real("data_found_rate"), // percentage 0-100
-  lastTested: timestamp("last_tested"),
+  lastTestedAt: timestamp("last_tested_at"),
   isOperational: boolean("is_operational").notNull().default(true),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
