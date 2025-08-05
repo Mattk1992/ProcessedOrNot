@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { 
@@ -151,6 +152,7 @@ export default function DebugCascadingDB() {
   const [testBarcode, setTestBarcode] = useState("7622300871000");
   const [isTestingCascade, setIsTestingCascade] = useState(false);
   const [testResults, setTestResults] = useState<CascadeTestResult | null>(null);
+  const [selectedDatabases, setSelectedDatabases] = useState<number[]>([]);
 
   // Fetch databases
   const { data: databases, isLoading: isDatabasesLoading } = useQuery<ProductDatabase[]>({
@@ -197,13 +199,35 @@ export default function DebugCascadingDB() {
     updateDatabaseMutation.mutate({ id, data: { priority: newPriority } });
   };
 
+  const handleDatabaseSelection = (databaseId: number, checked: boolean) => {
+    setSelectedDatabases(prev => {
+      if (checked) {
+        return [...prev, databaseId];
+      } else {
+        return prev.filter(id => id !== databaseId);
+      }
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (databases) {
+      const allIds = databases.map(db => db.id);
+      setSelectedDatabases(allIds);
+    }
+  };
+
+  const handleSelectNone = () => {
+    setSelectedDatabases([]);
+  };
+
   const testCascadingSystem = async () => {
     if (!testBarcode.trim()) return;
     
     setIsTestingCascade(true);
     try {
       const response = await apiRequest('POST', '/api/admin/test-cascade', { 
-        barcode: testBarcode.trim() 
+        barcode: testBarcode.trim(),
+        selectedDatabases: selectedDatabases.length > 0 ? selectedDatabases : undefined
       });
       setTestResults(response);
     } catch (error: any) {
@@ -404,7 +428,91 @@ export default function DebugCascadingDB() {
                 Test the complete cascading database lookup system with a barcode
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              {/* Database Selection */}
+              {databases && databases.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium">Select Databases to Test</h4>
+                      <p className="text-sm text-muted-foreground">
+                        Leave empty to test all databases in priority order
+                      </p>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSelectAll}
+                        disabled={selectedDatabases.length === databases.length}
+                      >
+                        Select All
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleSelectNone}
+                        disabled={selectedDatabases.length === 0}
+                      >
+                        Clear All
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-64 overflow-y-auto border rounded-lg p-4">
+                    {databases
+                      .sort((a, b) => a.priority - b.priority)
+                      .map((database) => (
+                        <div
+                          key={database.id}
+                          className="flex items-center space-x-3 p-2 rounded border bg-card hover:bg-accent/50 transition-colors"
+                        >
+                          <Checkbox
+                            id={`db-${database.id}`}
+                            checked={selectedDatabases.includes(database.id)}
+                            onCheckedChange={(checked) => handleDatabaseSelection(database.id, checked as boolean)}
+                          />
+                          <label
+                            htmlFor={`db-${database.id}`}
+                            className="flex-1 cursor-pointer"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="outline" className="text-xs">
+                                #{database.priority}
+                              </Badge>
+                              <span className="font-medium text-sm">{database.name}</span>
+                              {database.isOperational ? (
+                                <CheckCircle className="w-3 h-3 text-green-500" />
+                              ) : (
+                                <XCircle className="w-3 h-3 text-red-500" />
+                              )}
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {database.averageResponseTime}ms avg
+                            </p>
+                          </label>
+                        </div>
+                      ))
+                    }
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <span>
+                      {selectedDatabases.length === 0 
+                        ? `All ${databases.length} databases will be tested in priority order`
+                        : `${selectedDatabases.length} of ${databases.length} database${selectedDatabases.length !== 1 ? 's' : ''} selected for testing`
+                      }
+                    </span>
+                    {selectedDatabases.length > 0 && (
+                      <Badge variant="secondary" className="text-xs">
+                        {selectedDatabases.length} selected
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Test Input and Button */}
               <div className="flex space-x-4">
                 <div className="flex-1">
                   <Input
@@ -419,7 +527,7 @@ export default function DebugCascadingDB() {
                 >
                   {isTestingCascade && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   <Play className="w-4 h-4 mr-2" />
-                  Test Cascade
+                  Test {selectedDatabases.length > 0 ? 'Selected' : 'All'}
                 </Button>
               </div>
 
@@ -434,6 +542,11 @@ export default function DebugCascadingDB() {
                         Final Source: {testResults.finalSource} | 
                         Success: {testResults.success ? 'Yes' : 'No'}
                       </p>
+                      {selectedDatabases.length > 0 && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Tested {selectedDatabases.length} selected database{selectedDatabases.length !== 1 ? 's' : ''}
+                        </p>
+                      )}
                     </div>
                     {testResults.success ? (
                       <CheckCircle className="w-6 h-6 text-green-500" />
