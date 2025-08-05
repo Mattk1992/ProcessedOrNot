@@ -7,10 +7,10 @@ export default function Home() {
   const { t } = useLanguage();
   const { isAuthenticated } = useAuth();
 
-  // Redirect to product-lookup after a short delay
+  // Redirect to marketing page after a short delay
   useEffect(() => {
     const timer = setTimeout(() => {
-      window.location.href = '/product-lookup';
+      window.location.href = '/marketing';
     }, 2000);
     
     return () => clearTimeout(timer);
@@ -29,7 +29,7 @@ export default function Home() {
             ProcessedOrNot
           </h1>
           <p className="text-lg text-muted-foreground mb-6">
-            Redirecting to scanner...
+            Redirecting to marketing page...
           </p>
         </div>
         
@@ -38,7 +38,7 @@ export default function Home() {
         </div>
         
         <div className="text-sm text-muted-foreground">
-          <p>Or <a href="/product-lookup" className="text-primary hover:underline">click here</a> to continue manually</p>
+          <p>Or <a href="/marketing" className="text-primary hover:underline">click here</a> to continue manually</p>
         </div>
       </div>
     </div>
