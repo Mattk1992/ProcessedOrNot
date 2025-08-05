@@ -12,7 +12,8 @@ import {
   ChevronRight,
   Award,
   AlertCircle,
-  Info
+  Info,
+  Shield
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -80,7 +81,7 @@ export default function NutriDashboard() {
     enabled: isAuthenticated,
   });
 
-  // Authentication check
+  // Authentication and permission check
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
@@ -114,6 +115,47 @@ export default function NutriDashboard() {
             </Link>
             <Link href="/">
               <Button variant="outline" size="lg">Back to Home</Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Admin access check
+  if (user?.accountType !== 'Admin') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
+        <header className="backdrop-blur-md bg-background/80 border-b border-border/50 sticky top-0 z-40">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-16">
+              <div className="flex items-center space-x-3">
+                <img src={logoPath} alt="ProcessedOrNot Scanner" className="w-10 h-10 rounded-full" />
+                <div className="hidden sm:block">
+                  <h1 className="text-xl font-bold gradient-text">ProcessedOrNot</h1>
+                  <p className="text-xs text-muted-foreground">Nutri Dashboard</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <LanguageSwitcher />
+                <HeaderDropdown />
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+          <div className="mb-8">
+            <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Access Restricted</h2>
+            <p className="text-muted-foreground">This feature is only available to administrators.</p>
+          </div>
+          
+          <div className="space-y-4">
+            <Link href="/">
+              <Button className="w-full max-w-xs">
+                Go Home
+              </Button>
             </Link>
           </div>
         </div>

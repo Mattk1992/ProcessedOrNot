@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen, Mail, FileText, Share2, Lock, BarChart3, TrendingUp, Home, Camera } from 'lucide-react';
+import { ChevronDown, ChevronRight, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen, Mail, FileText, Share2, Lock, BarChart3, TrendingUp, Home, Camera } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
 import { useLocation } from 'wouter';
@@ -11,9 +11,23 @@ interface HeaderDropdownProps {
 
 export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps = {}) {
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
+    'Navigation': true,
+    'Nutrition Tracking': true,
+    'Information & Support': false,
+    'Legal & Policies': false
+  });
   const { t } = useLanguage();
   const { isAuthenticated, user } = useAuth();
   const [, setLocation] = useLocation();
+
+  const toggleGroup = (groupName: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setExpandedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
+  };
 
   const handleLogout = () => {
     // Redirect to logout endpoint
@@ -23,16 +37,18 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
   // Menu items for non-authenticated users
   const guestMenuItems = [
     // Main Navigation
-    { type: 'header', label: 'Navigation' },
+    { type: 'header', label: 'Navigation', expandable: true, expanded: true },
     {
       label: 'Home',
       icon: <Home className="w-4 h-4" />,
-      action: () => setLocation('/')
+      action: () => setLocation('/'),
+      group: 'Navigation'
     },
     {
       label: 'Product Scanner',
       icon: <Camera className="w-4 h-4" />,
-      action: () => setLocation('/product-lookup')
+      action: () => setLocation('/product-lookup'),
+      group: 'Navigation'
     },
     { type: 'divider' },
     
@@ -45,35 +61,40 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
     { type: 'divider' },
     
     // Information & Support
-    { type: 'header', label: 'Information & Support' },
+    { type: 'header', label: 'Information & Support', expandable: true, expanded: false },
     {
       label: 'Site Information',
       icon: <Info className="w-4 h-4" />,
-      action: () => setLocation('/nutri-dashboard/site-info')
+      action: () => setLocation('/nutri-dashboard/site-info'),
+      group: 'Information & Support'
     },
     {
       label: 'Social Media',
       icon: <Share2 className="w-4 h-4" />,
-      action: () => setLocation('/social-media')
+      action: () => setLocation('/social-media'),
+      group: 'Information & Support'
     },
     { type: 'divider' },
     
     // Legal & Policies
-    { type: 'header', label: 'Legal & Policies' },
+    { type: 'header', label: 'Legal & Policies', expandable: true, expanded: false },
     {
       label: 'Privacy Policy',
       icon: <Lock className="w-4 h-4" />,
-      action: () => setLocation('/privacy')
+      action: () => setLocation('/privacy'),
+      group: 'Legal & Policies'
     },
     {
       label: 'Privacy Settings',
       icon: <Shield className="w-4 h-4" />,
-      action: () => setLocation('/consent-settings')
+      action: () => setLocation('/consent-settings'),
+      group: 'Legal & Policies'
     },
     {
       label: 'Terms of Service',
       icon: <FileText className="w-4 h-4" />,
-      action: () => setLocation('/terms')
+      action: () => setLocation('/terms'),
+      group: 'Legal & Policies'
     },
     ...(onStartTutorial ? [
       { type: 'divider' },
@@ -91,27 +112,32 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
   // Menu items for authenticated users
   const userMenuItems = [
     // Main Navigation
-    { type: 'header', label: 'Navigation' },
+    { type: 'header', label: 'Navigation', expandable: true, expanded: true },
     {
       label: 'Home',
       icon: <Home className="w-4 h-4" />,
-      action: () => setLocation('/')
+      action: () => setLocation('/'),
+      group: 'Navigation'
     },
     {
       label: 'Product Scanner',
       icon: <Camera className="w-4 h-4" />,
-      action: () => setLocation('/product-lookup')
+      action: () => setLocation('/product-lookup'),
+      group: 'Navigation'
     },
     { type: 'divider' },
     
-    // Nutrition Tracking
-    { type: 'header', label: 'Nutrition Tracking' },
-    {
-      label: 'Dashboard',
-      icon: <BarChart3 className="w-4 h-4" />,
-      action: () => setLocation('/nutri-dashboard')
-    },
-    { type: 'divider' },
+    // Nutrition Tracking - Only show for Admin users
+    ...(user?.accountType === 'Admin' ? [
+      { type: 'header', label: 'Nutrition Tracking', expandable: true, expanded: true },
+      {
+        label: 'Dashboard',
+        icon: <BarChart3 className="w-4 h-4" />,
+        action: () => setLocation('/nutri-dashboard'),
+        group: 'Nutrition Tracking'
+      },
+      { type: 'divider' }
+    ] : []),
     
     // Admin Panel (if admin)
     ...(user?.accountType === 'Admin' ? [{
@@ -124,35 +150,40 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
     { type: 'divider' },
     
     // Information & Support
-    { type: 'header', label: 'Information & Support' },
+    { type: 'header', label: 'Information & Support', expandable: true, expanded: false },
     {
       label: 'Site Information',
       icon: <Info className="w-4 h-4" />,
-      action: () => setLocation('/nutri-dashboard/site-info')
+      action: () => setLocation('/nutri-dashboard/site-info'),
+      group: 'Information & Support'
     },
     {
       label: 'Social Media',
       icon: <Share2 className="w-4 h-4" />,
-      action: () => setLocation('/social-media')
+      action: () => setLocation('/social-media'),
+      group: 'Information & Support'
     },
     { type: 'divider' },
     
     // Legal & Policies
-    { type: 'header', label: 'Legal & Policies' },
+    { type: 'header', label: 'Legal & Policies', expandable: true, expanded: false },
     {
       label: 'Privacy Policy',
       icon: <Lock className="w-4 h-4" />,
-      action: () => setLocation('/privacy')
+      action: () => setLocation('/privacy'),
+      group: 'Legal & Policies'
     },
     {
       label: 'Privacy Settings',
       icon: <Shield className="w-4 h-4" />,
-      action: () => setLocation('/consent-settings')
+      action: () => setLocation('/consent-settings'),
+      group: 'Legal & Policies'
     },
     {
       label: 'Terms of Service',
       icon: <FileText className="w-4 h-4" />,
-      action: () => setLocation('/terms')
+      action: () => setLocation('/terms'),
+      group: 'Legal & Policies'
     },
     ...(onStartTutorial ? [
       { type: 'divider' },
@@ -265,19 +296,40 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
                 
                 // Handle section headers
                 if (item.type === 'header') {
+                  const isExpandable = item.expandable;
+                  const isExpanded = expandedGroups[item.label];
+                  
                   return (
-                    <div 
+                    <button
                       key={index}
-                      className="px-4 py-1.5"
+                      onClick={isExpandable ? (e) => toggleGroup(item.label, e) : undefined}
+                      className={`flex items-center justify-between w-full px-4 py-1.5 ${
+                        isExpandable ? 'hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer' : 'cursor-default'
+                      }`}
                     >
                       <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         {item.label}
                       </span>
-                    </div>
+                      {isExpandable && (
+                        <ChevronRight 
+                          className={`w-3 h-3 text-gray-400 transition-transform duration-200 ${
+                            isExpanded ? 'rotate-90' : ''
+                          }`}
+                        />
+                      )}
+                    </button>
                   );
                 }
                 
                 // Handle regular menu items
+                // Only show if not in a group, or if in an expanded group
+                const itemGroup = item.group;
+                const shouldShow = !itemGroup || expandedGroups[itemGroup];
+                
+                if (!shouldShow) {
+                  return null;
+                }
+                
                 return (
                   <button
                     key={index}
