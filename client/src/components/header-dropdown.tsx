@@ -60,22 +60,6 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
     },
     { type: 'divider' },
     
-    // Information & Support
-    { type: 'header', label: 'Information & Support', expandable: true, expanded: false },
-    {
-      label: 'Site Information',
-      icon: <Info className="w-4 h-4" />,
-      action: () => setLocation('/nutri-dashboard/site-info'),
-      group: 'Information & Support'
-    },
-    {
-      label: 'Social Media',
-      icon: <Share2 className="w-4 h-4" />,
-      action: () => setLocation('/social-media'),
-      group: 'Information & Support'
-    },
-    { type: 'divider' },
-    
     // Legal & Policies
     { type: 'header', label: 'Legal & Policies', expandable: true, expanded: false },
     {
@@ -96,17 +80,22 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       action: () => setLocation('/terms'),
       group: 'Legal & Policies'
     },
-    ...(onStartTutorial ? [
-      { type: 'divider' },
-      {
-        label: 'Take Tour',
-        icon: <PlayCircle className="w-4 h-4" />,
-        action: () => {
-          onStartTutorial();
-          setIsOpen(false);
-        }
-      }
-    ] : [])
+    { type: 'divider' },
+    
+    // Information & Support
+    { type: 'header', label: 'Information & Support', expandable: true, expanded: false },
+    {
+      label: 'Site Information',
+      icon: <Info className="w-4 h-4" />,
+      action: () => setLocation('/nutri-dashboard/site-info'),
+      group: 'Information & Support'
+    },
+    {
+      label: 'Social Media',
+      icon: <Share2 className="w-4 h-4" />,
+      action: () => setLocation('/social-media'),
+      group: 'Information & Support'
+    }
   ];
 
   // Menu items for authenticated users
@@ -149,22 +138,6 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
 
     { type: 'divider' },
     
-    // Information & Support
-    { type: 'header', label: 'Information & Support', expandable: true, expanded: false },
-    {
-      label: 'Site Information',
-      icon: <Info className="w-4 h-4" />,
-      action: () => setLocation('/nutri-dashboard/site-info'),
-      group: 'Information & Support'
-    },
-    {
-      label: 'Social Media',
-      icon: <Share2 className="w-4 h-4" />,
-      action: () => setLocation('/social-media'),
-      group: 'Information & Support'
-    },
-    { type: 'divider' },
-    
     // Legal & Policies
     { type: 'header', label: 'Legal & Policies', expandable: true, expanded: false },
     {
@@ -185,18 +158,34 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       action: () => setLocation('/terms'),
       group: 'Legal & Policies'
     },
-    ...(onStartTutorial ? [
-      { type: 'divider' },
-      {
-        label: 'Take Tour',
-        icon: <PlayCircle className="w-4 h-4" />,
-        action: () => {
-          onStartTutorial();
-          setIsOpen(false);
-        }
-      }
-    ] : []),
     { type: 'divider' },
+    
+    // Information & Support
+    { type: 'header', label: 'Information & Support', expandable: true, expanded: false },
+    {
+      label: 'Site Information',
+      icon: <Info className="w-4 h-4" />,
+      action: () => setLocation('/nutri-dashboard/site-info'),
+      group: 'Information & Support'
+    },
+    {
+      label: 'Social Media',
+      icon: <Share2 className="w-4 h-4" />,
+      action: () => setLocation('/social-media'),
+      group: 'Information & Support'
+    },
+    { type: 'divider' },
+    
+    // Take Tour - Only show for Admin users
+    ...(onStartTutorial && user?.accountType === 'Admin' ? [{
+      label: 'Take Tour',
+      icon: <PlayCircle className="w-4 h-4" />,
+      action: () => {
+        onStartTutorial();
+        setIsOpen(false);
+      }
+    }, { type: 'divider' }] : []),
+    
     {
       label: 'Sign Out',
       icon: <LogOut className="w-4 h-4" />,
