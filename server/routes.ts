@@ -1387,6 +1387,90 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint for updating camera settings
+  app.put("/api/admin/camera-settings", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { timeout, autoStopEnabled, maxZoomLevel, minZoomLevel, defaultZoomLevel } = req.body;
+
+      // Update individual camera settings
+      const results = [];
+      
+      if (timeout !== undefined) {
+        const timeoutSetting = await storage.updateAdminSetting('camera_timeout', timeout.toString()) ||
+                              await storage.createAdminSetting({
+                                settingKey: 'camera_timeout',
+                                settingValue: timeout.toString(),
+                                settingType: 'number',
+                                description: 'Camera timeout in seconds',
+                                category: 'camera'
+                              });
+        results.push({ key: 'camera_timeout', value: timeout, updated: true });
+      }
+
+      if (autoStopEnabled !== undefined) {
+        const autoStopSetting = await storage.updateAdminSetting('camera_auto_stop', autoStopEnabled.toString()) ||
+                                await storage.createAdminSetting({
+                                  settingKey: 'camera_auto_stop',
+                                  settingValue: autoStopEnabled.toString(),
+                                  settingType: 'boolean',
+                                  description: 'Auto-stop camera after timeout',
+                                  category: 'camera'
+                                });
+        results.push({ key: 'camera_auto_stop', value: autoStopEnabled, updated: true });
+      }
+
+      if (maxZoomLevel !== undefined) {
+        const maxZoomSetting = await storage.updateAdminSetting('camera_max_zoom', maxZoomLevel.toString()) ||
+                              await storage.createAdminSetting({
+                                settingKey: 'camera_max_zoom',
+                                settingValue: maxZoomLevel.toString(),
+                                settingType: 'number',
+                                description: 'Maximum camera zoom level',
+                                category: 'camera'
+                              });
+        results.push({ key: 'camera_max_zoom', value: maxZoomLevel, updated: true });
+      }
+
+      if (minZoomLevel !== undefined) {
+        const minZoomSetting = await storage.updateAdminSetting('camera_min_zoom', minZoomLevel.toString()) ||
+                              await storage.createAdminSetting({
+                                settingKey: 'camera_min_zoom',
+                                settingValue: minZoomLevel.toString(),
+                                settingType: 'number',
+                                description: 'Minimum camera zoom level',
+                                category: 'camera'
+                              });
+        results.push({ key: 'camera_min_zoom', value: minZoomLevel, updated: true });
+      }
+
+      if (defaultZoomLevel !== undefined) {
+        const defaultZoomSetting = await storage.updateAdminSetting('camera_default_zoom', defaultZoomLevel.toString()) ||
+                                  await storage.createAdminSetting({
+                                    settingKey: 'camera_default_zoom',
+                                    settingValue: defaultZoomLevel.toString(),
+                                    settingType: 'number',
+                                    description: 'Default camera zoom level',
+                                    category: 'camera'
+                                  });
+        results.push({ key: 'camera_default_zoom', value: defaultZoomLevel, updated: true });
+      }
+
+      res.json({ 
+        message: "Camera settings updated successfully",
+        settings: results,
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error updating camera settings:", error);
+      res.status(500).json({ message: "Failed to update camera settings" });
+    }
+  });
+
   // Public endpoint for tutorial overlay setting (no auth required)
   app.get("/api/settings/tutorial-overlay", async (req, res) => {
     try {
