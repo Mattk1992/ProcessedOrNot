@@ -773,3 +773,104 @@ export const webhookVerificationSchema = z.object({
 });
 
 export type WebhookVerification = z.infer<typeof webhookVerificationSchema>;
+
+// Content Rights Management table for tracking intellectual property and licensing
+export const contentRights = pgTable("content_rights", {
+  id: serial("id").primaryKey(),
+  
+  // Content identification
+  contentType: varchar("content_type", { length: 50 }).notNull(), // 'image', 'video', 'text', 'audio', 'data', 'api_response'
+  contentIdentifier: text("content_identifier").notNull(), // URL, barcode, or unique ID
+  contentHash: varchar("content_hash", { length: 128 }), // SHA-256 hash for verification
+  
+  // Rights and ownership
+  copyrightOwner: text("copyright_owner"), // Primary copyright holder
+  licenseType: varchar("license_type", { length: 100 }), // 'CC BY-SA', 'MIT', 'Apache 2.0', 'proprietary', etc.
+  licenseUrl: text("license_url"), // Link to full license text
+  copyrightNotice: text("copyright_notice"), // Complete copyright statement
+  
+  // Attribution requirements
+  attributionRequired: boolean("attribution_required").default(false),
+  attributionText: text("attribution_text"), // Required attribution text
+  sourceUrl: text("source_url"), // Original source URL
+  sourceApi: varchar("source_api", { length: 100 }), // API provider name
+  
+  // Usage permissions
+  commercialUseAllowed: boolean("commercial_use_allowed").default(false),
+  modificationAllowed: boolean("modification_allowed").default(false),
+  redistributionAllowed: boolean("redistribution_allowed").default(false),
+  derivativeWorksAllowed: boolean("derivative_works_allowed").default(false),
+  
+  // Legal and compliance
+  rightsStatus: varchar("rights_status", { length: 50 }).default("verified"), // 'verified', 'pending', 'disputed', 'expired'
+  expirationDate: timestamp("expiration_date"), // When rights expire (if applicable)
+  territorialRestrictions: text("territorial_restrictions"), // Geographic restrictions
+  usageRestrictions: text("usage_restrictions"), // Other usage limitations
+  
+  // Third-party information
+  thirdPartyContent: boolean("third_party_content").default(false),
+  thirdPartyRights: jsonb("third_party_rights"), // Array of third-party rights holders
+  
+  // Metadata
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  verifiedBy: integer("verified_by").references(() => users.id), // Who verified these rights
+  notes: text("notes"), // Additional legal notes
+}, (table) => ({
+  contentTypeIdx: index("content_type_idx").on(table.contentType),
+  contentIdentifierIdx: index("content_identifier_idx").on(table.contentIdentifier),
+  copyrightOwnerIdx: index("copyright_owner_idx").on(table.copyrightOwner),
+  rightsStatusIdx: index("rights_status_idx").on(table.rightsStatus),
+}));
+
+export const insertContentRightsSchema = createInsertSchema(contentRights).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertContentRights = z.infer<typeof insertContentRightsSchema>;
+export type ContentRights = typeof contentRights.$inferSelect;
+
+// Legal notices table for managing various legal statements
+export const legalNotices = pgTable("legal_notices", {
+  id: serial("id").primaryKey(),
+  
+  // Notice identification
+  noticeType: varchar("notice_type", { length: 50 }).notNull(), // 'copyright', 'privacy', 'terms', 'disclaimer', 'attribution'
+  title: text("title").notNull(),
+  content: text("content").notNull(), // Full legal text
+  
+  // Versioning and validity
+  version: varchar("version", { length: 20 }).default("1.0"),
+  isActive: boolean("is_active").default(true),
+  effectiveDate: timestamp("effective_date").defaultNow().notNull(),
+  expirationDate: timestamp("expiration_date"),
+  
+  // Localization
+  language: varchar("language", { length: 10 }).default("en"), // ISO language code
+  jurisdiction: varchar("jurisdiction", { length: 100 }), // Legal jurisdiction
+  
+  // Display settings
+  displayLocation: varchar("display_location", { length: 100 }), // Where to show this notice
+  displayPriority: integer("display_priority").default(1), // Display order
+  requiresAcceptance: boolean("requires_acceptance").default(false),
+  
+  // Metadata
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdBy: integer("created_by").references(() => users.id),
+}, (table) => ({
+  noticeTypeIdx: index("notice_type_idx").on(table.noticeType),
+  activeIdx: index("legal_notices_active_idx").on(table.isActive),
+  languageIdx: index("legal_notices_language_idx").on(table.language),
+}));
+
+export const insertLegalNoticesSchema = createInsertSchema(legalNotices).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertLegalNotices = z.infer<typeof insertLegalNoticesSchema>;
+export type LegalNotices = typeof legalNotices.$inferSelect;

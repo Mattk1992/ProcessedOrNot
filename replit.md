@@ -38,6 +38,14 @@ ProcessedOrNot Scanner is a modern web application designed to analyze food prod
   - Admin API endpoints for secret creation, rotation, deactivation, and verification
   - Support for multiple secret types: webhook verification, API authentication, signing keys
   - Environment-based secret scoping (production, staging, development) with audit logging
+- **Content Rights Information System**: Comprehensive intellectual property management and legal compliance framework
+  - Database tables for content rights tracking (copyright owners, license types, usage permissions, attribution requirements)
+  - Legal notices management system for copyright, terms, disclaimers, and attribution statements
+  - Public copyright page displaying third-party licenses, attributions, and legal information
+  - API endpoints for content rights verification and legal notice management
+  - Support for multiple license types: MIT, Apache 2.0, ODbL, Creative Commons, proprietary licenses
+  - Automatic rights verification with expiration tracking and territorial restrictions
+  - Complete attribution management for OpenFoodFacts, USDA, Health Canada, and other data sources
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

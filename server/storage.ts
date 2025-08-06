@@ -60,7 +60,13 @@ import {
   type InsertInAppPurchase,
   appSharedSecrets,
   type AppSharedSecret,
-  type InsertAppSharedSecret
+  type InsertAppSharedSecret,
+  contentRights,
+  type ContentRights,
+  type InsertContentRights,
+  legalNotices,
+  type LegalNotices,
+  type InsertLegalNotices
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -272,6 +278,23 @@ export interface IStorage {
   deactivateSharedSecret(secretName: string): Promise<boolean>;
   verifyWebhookSignature(signature: string, payload: string, secretName: string): Promise<boolean>;
   generateNewSharedSecret(secretName: string, secretType: string, description: string, scope?: string): Promise<AppSharedSecret>;
+
+  // Content Rights Management methods
+  createContentRights(rights: InsertContentRights): Promise<ContentRights>;
+  updateContentRights(id: number, updates: Partial<InsertContentRights>): Promise<ContentRights | undefined>;
+  getContentRightsByIdentifier(contentIdentifier: string): Promise<ContentRights | undefined>;
+  getContentRightsByType(contentType: string): Promise<ContentRights[]>;
+  getAllContentRights(): Promise<ContentRights[]>;
+  verifyContentRights(contentIdentifier: string): Promise<boolean>;
+  deleteContentRights(id: number): Promise<boolean>;
+
+  // Legal Notices Management methods
+  createLegalNotice(notice: InsertLegalNotices): Promise<LegalNotices>;
+  updateLegalNotice(id: number, updates: Partial<InsertLegalNotices>): Promise<LegalNotices | undefined>;
+  getLegalNoticesByType(noticeType: string): Promise<LegalNotices[]>;
+  getActiveLegalNotices(language?: string): Promise<LegalNotices[]>;
+  getLegalNoticeById(id: number): Promise<LegalNotices | undefined>;
+  deactivateLegalNotice(id: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2503,6 +2526,174 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error generating new shared secret:', error);
       throw error;
+    }
+  }
+
+  // ==================== Content Rights Management Methods ====================
+
+  async createContentRights(rights: InsertContentRights): Promise<ContentRights> {
+    try {
+      const [created] = await db.insert(contentRights)
+        .values({
+          ...rights,
+          updatedAt: new Date()
+        })
+        .returning();
+
+      return created;
+    } catch (error) {
+      console.error('Error creating content rights:', error);
+      throw error;
+    }
+  }
+
+  async updateContentRights(id: number, updates: Partial<InsertContentRights>): Promise<ContentRights | undefined> {
+    try {
+      const [updated] = await db
+        .update(contentRights)
+        .set({
+          ...updates,
+          updatedAt: new Date()
+        })
+        .where(eq(contentRights.id, id))
+        .returning();
+      
+      return updated || undefined;
+    } catch (error) {
+      console.error('Error updating content rights:', error);
+      throw error;
+    }
+  }
+
+  async getContentRightsByIdentifier(contentIdentifier: string): Promise<ContentRights | undefined> {
+    const [rights] = await db.select().from(contentRights)
+      .where(eq(contentRights.contentIdentifier, contentIdentifier))
+      .limit(1);
+    
+    return rights || undefined;
+  }
+
+  async getContentRightsByType(contentType: string): Promise<ContentRights[]> {
+    return await db.select().from(contentRights)
+      .where(eq(contentRights.contentType, contentType))
+      .orderBy(desc(contentRights.createdAt));
+  }
+
+  async getAllContentRights(): Promise<ContentRights[]> {
+    return await db.select().from(contentRights)
+      .orderBy(contentRights.contentType, desc(contentRights.createdAt));
+  }
+
+  async verifyContentRights(contentIdentifier: string): Promise<boolean> {
+    try {
+      const rights = await this.getContentRightsByIdentifier(contentIdentifier);
+      if (!rights) {
+        return false; // No rights record found
+      }
+
+      // Check if rights are verified and not expired
+      const now = new Date();
+      const isVerified = rights.rightsStatus === 'verified';
+      const notExpired = !rights.expirationDate || new Date(rights.expirationDate) > now;
+
+      return isVerified && notExpired;
+    } catch (error) {
+      console.error('Error verifying content rights:', error);
+      return false;
+    }
+  }
+
+  async deleteContentRights(id: number): Promise<boolean> {
+    try {
+      const [deleted] = await db
+        .delete(contentRights)
+        .where(eq(contentRights.id, id))
+        .returning();
+      
+      return !!deleted;
+    } catch (error) {
+      console.error('Error deleting content rights:', error);
+      return false;
+    }
+  }
+
+  // ==================== Legal Notices Management Methods ====================
+
+  async createLegalNotice(notice: InsertLegalNotices): Promise<LegalNotices> {
+    try {
+      const [created] = await db.insert(legalNotices)
+        .values({
+          ...notice,
+          updatedAt: new Date()
+        })
+        .returning();
+
+      return created;
+    } catch (error) {
+      console.error('Error creating legal notice:', error);
+      throw error;
+    }
+  }
+
+  async updateLegalNotice(id: number, updates: Partial<InsertLegalNotices>): Promise<LegalNotices | undefined> {
+    try {
+      const [updated] = await db
+        .update(legalNotices)
+        .set({
+          ...updates,
+          updatedAt: new Date()
+        })
+        .where(eq(legalNotices.id, id))
+        .returning();
+      
+      return updated || undefined;
+    } catch (error) {
+      console.error('Error updating legal notice:', error);
+      throw error;
+    }
+  }
+
+  async getLegalNoticesByType(noticeType: string): Promise<LegalNotices[]> {
+    return await db.select().from(legalNotices)
+      .where(and(
+        eq(legalNotices.noticeType, noticeType),
+        eq(legalNotices.isActive, true)
+      ))
+      .orderBy(legalNotices.displayPriority, desc(legalNotices.effectiveDate));
+  }
+
+  async getActiveLegalNotices(language: string = 'en'): Promise<LegalNotices[]> {
+    return await db.select().from(legalNotices)
+      .where(and(
+        eq(legalNotices.isActive, true),
+        eq(legalNotices.language, language)
+      ))
+      .orderBy(legalNotices.displayPriority, desc(legalNotices.effectiveDate));
+  }
+
+  async getLegalNoticeById(id: number): Promise<LegalNotices | undefined> {
+    const [notice] = await db.select().from(legalNotices)
+      .where(eq(legalNotices.id, id))
+      .limit(1);
+    
+    return notice || undefined;
+  }
+
+  async deactivateLegalNotice(id: number): Promise<boolean> {
+    try {
+      const [updated] = await db
+        .update(legalNotices)
+        .set({
+          isActive: false,
+          updatedAt: new Date()
+        })
+        .where(eq(legalNotices.id, id))
+        .returning();
+      
+      return !!updated;
+    } catch (error) {
+      console.error('Error deactivating legal notice:', error);
+      return false;
     }
   }
 }

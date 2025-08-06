@@ -2230,6 +2230,191 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== Content Rights Management Routes ====================
+  
+  // Get all content rights (admin only)
+  app.get("/api/admin/content-rights", requireAuth, async (req, res) => {
+    try {
+      const contentRights = await storage.getAllContentRights();
+      res.json(contentRights);
+    } catch (error) {
+      console.error('Error fetching content rights:', error);
+      res.status(500).json({ error: 'Failed to fetch content rights' });
+    }
+  });
+
+  // Create new content rights entry (admin only)
+  app.post("/api/admin/content-rights", requireAuth, async (req, res) => {
+    try {
+      const rightsData = req.body;
+      const created = await storage.createContentRights(rightsData);
+      res.status(201).json(created);
+    } catch (error) {
+      console.error('Error creating content rights:', error);
+      res.status(500).json({ error: 'Failed to create content rights' });
+    }
+  });
+
+  // Update content rights (admin only)
+  app.put("/api/admin/content-rights/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const updated = await storage.updateContentRights(parseInt(id), updates);
+      
+      if (!updated) {
+        return res.status(404).json({ error: 'Content rights not found' });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating content rights:', error);
+      res.status(500).json({ error: 'Failed to update content rights' });
+    }
+  });
+
+  // Delete content rights (admin only)
+  app.delete("/api/admin/content-rights/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await storage.deleteContentRights(parseInt(id));
+      
+      if (!deleted) {
+        return res.status(404).json({ error: 'Content rights not found' });
+      }
+      
+      res.json({ message: 'Content rights deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting content rights:', error);
+      res.status(500).json({ error: 'Failed to delete content rights' });
+    }
+  });
+
+  // Verify content rights (public)
+  app.get("/api/content-rights/verify/:identifier", async (req, res) => {
+    try {
+      const { identifier } = req.params;
+      const isValid = await storage.verifyContentRights(decodeURIComponent(identifier));
+      res.json({ valid: isValid });
+    } catch (error) {
+      console.error('Error verifying content rights:', error);
+      res.status(500).json({ error: 'Failed to verify content rights' });
+    }
+  });
+
+  // Get all content rights (public, for copyright page)
+  app.get("/api/content-rights/public", async (req, res) => {
+    try {
+      const contentRights = await storage.getAllContentRights();
+      res.json(contentRights);
+    } catch (error) {
+      console.error('Error fetching public content rights:', error);
+      res.status(500).json({ error: 'Failed to fetch content rights' });
+    }
+  });
+
+  // Get content rights by identifier (public)
+  app.get("/api/content-rights/:identifier", async (req, res) => {
+    try {
+      const { identifier } = req.params;
+      const rights = await storage.getContentRightsByIdentifier(decodeURIComponent(identifier));
+      
+      if (!rights) {
+        return res.status(404).json({ error: 'Content rights not found' });
+      }
+      
+      res.json(rights);
+    } catch (error) {
+      console.error('Error fetching content rights:', error);
+      res.status(500).json({ error: 'Failed to fetch content rights' });
+    }
+  });
+
+  // ==================== Legal Notices Management Routes ====================
+  
+  // Get all legal notices (admin only)
+  app.get("/api/admin/legal-notices", requireAuth, async (req, res) => {
+    try {
+      const notices = await storage.getActiveLegalNotices();
+      res.json(notices);
+    } catch (error) {
+      console.error('Error fetching legal notices:', error);
+      res.status(500).json({ error: 'Failed to fetch legal notices' });
+    }
+  });
+
+  // Create new legal notice (admin only)
+  app.post("/api/admin/legal-notices", requireAuth, async (req, res) => {
+    try {
+      const noticeData = req.body;
+      const created = await storage.createLegalNotice(noticeData);
+      res.status(201).json(created);
+    } catch (error) {
+      console.error('Error creating legal notice:', error);
+      res.status(500).json({ error: 'Failed to create legal notice' });
+    }
+  });
+
+  // Update legal notice (admin only)
+  app.put("/api/admin/legal-notices/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const updated = await storage.updateLegalNotice(parseInt(id), updates);
+      
+      if (!updated) {
+        return res.status(404).json({ error: 'Legal notice not found' });
+      }
+      
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating legal notice:', error);
+      res.status(500).json({ error: 'Failed to update legal notice' });
+    }
+  });
+
+  // Deactivate legal notice (admin only)
+  app.delete("/api/admin/legal-notices/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deactivated = await storage.deactivateLegalNotice(parseInt(id));
+      
+      if (!deactivated) {
+        return res.status(404).json({ error: 'Legal notice not found' });
+      }
+      
+      res.json({ message: 'Legal notice deactivated successfully' });
+    } catch (error) {
+      console.error('Error deactivating legal notice:', error);
+      res.status(500).json({ error: 'Failed to deactivate legal notice' });
+    }
+  });
+
+  // Get active legal notices by type (public)
+  app.get("/api/legal-notices/:type", async (req, res) => {
+    try {
+      const { type } = req.params;
+      const { language = 'en' } = req.query;
+      const notices = await storage.getLegalNoticesByType(type);
+      res.json(notices);
+    } catch (error) {
+      console.error('Error fetching legal notices by type:', error);
+      res.status(500).json({ error: 'Failed to fetch legal notices' });
+    }
+  });
+
+  // Get all active legal notices (public)
+  app.get("/api/legal-notices", async (req, res) => {
+    try {
+      const { language = 'en' } = req.query;
+      const notices = await storage.getActiveLegalNotices(language as string);
+      res.json(notices);
+    } catch (error) {
+      console.error('Error fetching legal notices:', error);
+      res.status(500).json({ error: 'Failed to fetch legal notices' });
+    }
+  });
+
   // ==================== In-App Purchase Webhook Routes ====================
 
   // Generic webhook endpoint for other payment providers

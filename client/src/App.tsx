@@ -29,7 +29,7 @@ import BlogPost from "@/pages/blog-post";
 import Contact from "@/pages/contact";
 import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
-import Copyright from "@/pages/copyright";
+import { Copyright } from "@/pages/copyright";
 import SocialMedia from "@/pages/social-media";
 import NotFound from "@/pages/not-found";
 import NutriDashboard from "@/pages/nutri-dashboard";
