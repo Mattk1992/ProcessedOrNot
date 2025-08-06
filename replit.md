@@ -23,6 +23,12 @@ ProcessedOrNot Scanner is a modern web application designed to analyze food prod
   - User Management (user role management and permissions)
 - **Menu Reorganization**: Completely restructured header dropdown menu with improved logical grouping
 - **Role-Based Access Control**: Dashboard page and admin features are restricted to Admin users only
+- **In-App Purchase Webhook System**: Comprehensive webhook endpoints for processing purchase status updates from App Store, Google Play, and generic payment providers
+  - Automated purchase verification and status tracking in secure database
+  - Support for subscriptions, consumables, and non-consumable purchases
+  - User subscription management with active subscription tracking
+  - Receipt data encryption and webhook payload validation
+  - Industry-standard webhook formats with automatic status mapping
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

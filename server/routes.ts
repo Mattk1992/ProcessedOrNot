@@ -16,7 +16,9 @@ import {
   type LoginUser,
   type ForgotPassword,
   type ResetPassword,
-  type InsertSearchHistory
+  type InsertSearchHistory,
+  purchaseStatusUpdateSchema,
+  type PurchaseStatusUpdate
 } from "@shared/schema";
 import { generatePasswordResetToken, sendPasswordResetEmail, sendEmailVerification, sanitizeUser, generateSearchId } from "./lib/auth";
 import session from "express-session";
@@ -33,6 +35,45 @@ const inputSchema = z.object({
 const barcodeSchema = z.object({
   barcode: z.string().min(1, "Input cannot be empty"),
 });
+
+// Helper functions for mapping store-specific status codes
+function mapAppStoreStatus(notificationType: string, receiptInfo: any): string {
+  switch (notificationType) {
+    case 'INITIAL_BUY':
+    case 'DID_RENEW':
+      return 'active';
+    case 'CANCEL':
+    case 'DID_FAIL_TO_RENEW':
+      return 'cancelled';
+    case 'REFUND':
+      return 'refunded';
+    case 'DID_CHANGE_RENEWAL_PREF':
+      return receiptInfo.auto_renew_status === '1' ? 'active' : 'cancelled';
+    case 'DID_CHANGE_RENEWAL_STATUS':
+      return receiptInfo.auto_renew_status === '1' ? 'active' : 'cancelled';
+    default:
+      return 'pending';
+  }
+}
+
+function mapGooglePlayStatus(notificationType: number): string {
+  switch (notificationType) {
+    case 1: // SUBSCRIPTION_RECOVERED
+    case 2: // SUBSCRIPTION_RENEWED
+    case 4: // SUBSCRIPTION_PURCHASED
+      return 'active';
+    case 3: // SUBSCRIPTION_CANCELED
+    case 13: // SUBSCRIPTION_EXPIRED
+      return 'cancelled';
+    case 5: // SUBSCRIPTION_ON_HOLD
+    case 6: // SUBSCRIPTION_IN_GRACE_PERIOD
+      return 'pending';
+    case 12: // SUBSCRIPTION_REVOKED
+      return 'refunded';
+    default:
+      return 'pending';
+  }
+}
 
 // Configure session middleware
 declare module 'express-session' {
@@ -1911,6 +1952,174 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ? "Voice transcription is available"
         : "Voice transcription requires ASSEMBLYAI_API_KEY configuration"
     });
+  });
+
+  // ==================== In-App Purchase Webhook Routes ====================
+
+  // Webhook endpoint for App Store server-to-server notifications
+  app.post("/api/webhooks/app-store", async (req, res) => {
+    try {
+      console.log("App Store webhook received:", JSON.stringify(req.body, null, 2));
+      
+      // Extract notification data from App Store format
+      const { notification_type, unified_receipt, latest_receipt_info } = req.body;
+      
+      if (!unified_receipt || !latest_receipt_info) {
+        return res.status(400).json({ 
+          message: "Invalid App Store notification format" 
+        });
+      }
+
+      // Process each transaction in the receipt
+      for (const receiptInfo of latest_receipt_info) {
+        const purchaseData: Partial<PurchaseStatusUpdate> = {
+          store: 'app_store',
+          transactionId: receiptInfo.transaction_id,
+          originalTransactionId: receiptInfo.original_transaction_id,
+          productId: receiptInfo.product_id,
+          status: mapAppStoreStatus(notification_type, receiptInfo),
+          purchaseDate: new Date(parseInt(receiptInfo.purchase_date_ms)).toISOString(),
+          expirationDate: receiptInfo.expires_date_ms ? 
+            new Date(parseInt(receiptInfo.expires_date_ms)).toISOString() : undefined,
+          cancellationDate: receiptInfo.cancellation_date_ms ?
+            new Date(parseInt(receiptInfo.cancellation_date_ms)).toISOString() : undefined,
+          environment: unified_receipt.environment || 'production',
+          webhookData: req.body,
+          verificationData: receiptInfo
+        };
+
+        await storage.processWebhookPurchaseUpdate(
+          receiptInfo.transaction_id,
+          purchaseData
+        );
+      }
+
+      res.status(200).json({ message: "Webhook processed successfully" });
+    } catch (error) {
+      console.error("App Store webhook error:", error);
+      res.status(500).json({ message: "Webhook processing failed" });
+    }
+  });
+
+  // Webhook endpoint for Google Play Developer API notifications
+  app.post("/api/webhooks/google-play", async (req, res) => {
+    try {
+      console.log("Google Play webhook received:", JSON.stringify(req.body, null, 2));
+      
+      // Google Play sends notifications in different format
+      const { message } = req.body;
+      if (!message || !message.data) {
+        return res.status(400).json({ 
+          message: "Invalid Google Play notification format" 
+        });
+      }
+
+      // Decode the base64 message data
+      const decodedData = JSON.parse(Buffer.from(message.data, 'base64').toString());
+      const { subscriptionNotification, oneTimeProductNotification } = decodedData;
+      
+      let purchaseData: Partial<PurchaseStatusUpdate>;
+      
+      if (subscriptionNotification) {
+        purchaseData = {
+          store: 'google_play',
+          transactionId: subscriptionNotification.purchaseToken,
+          productId: subscriptionNotification.subscriptionId,
+          status: mapGooglePlayStatus(subscriptionNotification.notificationType),
+          purchaseType: 'subscription',
+          environment: 'production',
+          webhookData: req.body,
+          verificationData: decodedData
+        };
+      } else if (oneTimeProductNotification) {
+        purchaseData = {
+          store: 'google_play',
+          transactionId: oneTimeProductNotification.purchaseToken,
+          productId: oneTimeProductNotification.sku,
+          status: mapGooglePlayStatus(oneTimeProductNotification.notificationType),
+          purchaseType: 'consumable',
+          environment: 'production',
+          webhookData: req.body,
+          verificationData: decodedData
+        };
+      } else {
+        return res.status(400).json({ 
+          message: "Unknown Google Play notification type" 
+        });
+      }
+
+      await storage.processWebhookPurchaseUpdate(
+        purchaseData.transactionId!,
+        purchaseData
+      );
+
+      res.status(200).json({ message: "Webhook processed successfully" });
+    } catch (error) {
+      console.error("Google Play webhook error:", error);
+      res.status(500).json({ message: "Webhook processing failed" });
+    }
+  });
+
+  // Generic webhook endpoint for other payment providers
+  app.post("/api/webhooks/purchase-status", async (req, res) => {
+    try {
+      console.log("Generic purchase webhook received:", JSON.stringify(req.body, null, 2));
+      
+      // Validate the incoming data
+      const validatedData = purchaseStatusUpdateSchema.parse(req.body);
+      
+      await storage.processWebhookPurchaseUpdate(
+        validatedData.transactionId,
+        {
+          ...validatedData,
+          purchaseDate: new Date(validatedData.purchaseDate),
+          expirationDate: validatedData.expirationDate ? 
+            new Date(validatedData.expirationDate) : undefined,
+          cancellationDate: validatedData.cancellationDate ?
+            new Date(validatedData.cancellationDate) : undefined,
+          refundDate: validatedData.refundDate ?
+            new Date(validatedData.refundDate) : undefined,
+          webhookData: req.body
+        }
+      );
+
+      res.status(200).json({ 
+        message: "Purchase status updated successfully",
+        transactionId: validatedData.transactionId
+      });
+    } catch (error) {
+      console.error("Purchase webhook error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid webhook data format",
+          errors: error.errors
+        });
+      }
+      res.status(500).json({ message: "Webhook processing failed" });
+    }
+  });
+
+  // API routes for managing user purchases (authenticated)
+  app.get("/api/user/purchases", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const purchases = await storage.getInAppPurchasesByUserId(userId);
+      res.json(purchases);
+    } catch (error) {
+      console.error("Error fetching user purchases:", error);
+      res.status(500).json({ message: "Failed to fetch purchases" });
+    }
+  });
+
+  app.get("/api/user/subscriptions", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const subscriptions = await storage.getUserActiveSubscriptions(userId);
+      res.json(subscriptions);
+    } catch (error) {
+      console.error("Error fetching user subscriptions:", error);
+      res.status(500).json({ message: "Failed to fetch subscriptions" });
+    }
   });
 
   const httpServer = createServer(app);

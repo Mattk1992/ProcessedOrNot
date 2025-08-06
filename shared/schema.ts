@@ -625,3 +625,92 @@ export const insertWeightEntrySchema = createInsertSchema(weightEntries).omit({
 
 export type InsertWeightEntry = z.infer<typeof insertWeightEntrySchema>;
 export type WeightEntry = typeof weightEntries.$inferSelect;
+
+// In-App Purchase table for mobile app subscriptions and purchases
+export const inAppPurchases = pgTable("in_app_purchases", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
+  
+  // Purchase identification
+  transactionId: varchar("transaction_id", { length: 255 }).notNull().unique(),
+  originalTransactionId: varchar("original_transaction_id", { length: 255 }),
+  productId: varchar("product_id", { length: 255 }).notNull(),
+  
+  // Store information
+  store: varchar("store", { length: 50 }).notNull(), // 'app_store', 'google_play', 'web'
+  storeUserId: varchar("store_user_id", { length: 255 }),
+  
+  // Purchase details
+  purchaseType: varchar("purchase_type", { length: 50 }).notNull(), // 'subscription', 'consumable', 'non_consumable'
+  status: varchar("status", { length: 50 }).notNull(), // 'pending', 'active', 'expired', 'cancelled', 'refunded', 'failed'
+  priceAmount: real("price_amount"),
+  priceCurrency: varchar("price_currency", { length: 10 }),
+  
+  // Subscription-specific fields
+  subscriptionPeriod: varchar("subscription_period", { length: 50 }), // 'monthly', 'yearly', 'weekly'
+  isTrialPeriod: boolean("is_trial_period").default(false),
+  trialDuration: integer("trial_duration"), // in days
+  autoRenewing: boolean("auto_renewing").default(true),
+  
+  // Timestamps
+  purchaseDate: timestamp("purchase_date").notNull(),
+  expirationDate: timestamp("expiration_date"),
+  cancellationDate: timestamp("cancellation_date"),
+  refundDate: timestamp("refund_date"),
+  
+  // Raw data from stores
+  receiptData: text("receipt_data"), // Encrypted receipt/verification data
+  verificationData: jsonb("verification_data"), // Parsed verification response
+  webhookData: jsonb("webhook_data"), // Raw webhook payload
+  
+  // Processing
+  isVerified: boolean("is_verified").default(false),
+  verificationAttempts: integer("verification_attempts").default(0),
+  lastVerificationDate: timestamp("last_verification_date"),
+  
+  // Environment
+  environment: varchar("environment", { length: 20 }).default("production"), // 'sandbox', 'production'
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("iap_user_id_idx").on(table.userId),
+  statusIdx: index("iap_status_idx").on(table.status),
+  storeIdx: index("iap_store_idx").on(table.store),
+  productIdIdx: index("iap_product_id_idx").on(table.productId),
+}));
+
+export const insertInAppPurchaseSchema = createInsertSchema(inAppPurchases).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertInAppPurchase = z.infer<typeof insertInAppPurchaseSchema>;
+export type InAppPurchase = typeof inAppPurchases.$inferSelect;
+
+// Purchase status update webhook schema for validation
+export const purchaseStatusUpdateSchema = z.object({
+  store: z.enum(['app_store', 'google_play', 'web']),
+  transactionId: z.string().min(1),
+  originalTransactionId: z.string().optional(),
+  productId: z.string().min(1),
+  status: z.enum(['pending', 'active', 'expired', 'cancelled', 'refunded', 'failed']),
+  purchaseDate: z.string().datetime(),
+  expirationDate: z.string().datetime().optional(),
+  cancellationDate: z.string().datetime().optional(),
+  refundDate: z.string().datetime().optional(),
+  priceAmount: z.number().optional(),
+  priceCurrency: z.string().length(3).optional(),
+  subscriptionPeriod: z.enum(['weekly', 'monthly', 'yearly']).optional(),
+  isTrialPeriod: z.boolean().default(false),
+  autoRenewing: z.boolean().default(true),
+  environment: z.enum(['sandbox', 'production']).default('production'),
+  receiptData: z.string().optional(),
+  verificationData: z.any().optional(),
+  webhookData: z.any().optional(),
+  userId: z.number().optional(),
+  storeUserId: z.string().optional(),
+});
+
+export type PurchaseStatusUpdate = z.infer<typeof purchaseStatusUpdateSchema>;

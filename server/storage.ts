@@ -54,7 +54,10 @@ import {
   type InsertWebsiteSettings,
   speechSettings,
   type SpeechSettings,
-  type InsertSpeechSettings
+  type InsertSpeechSettings,
+  inAppPurchases,
+  type InAppPurchase,
+  type InsertInAppPurchase
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -237,6 +240,14 @@ export interface IStorage {
   getSpeechSettings(): Promise<SpeechSettings>;
   updateSpeechSettings(settings: Partial<InsertSpeechSettings>): Promise<SpeechSettings>;
   resetSpeechSettingsToDefaults(): Promise<SpeechSettings>;
+
+  // In-App Purchase methods
+  createInAppPurchase(purchase: InsertInAppPurchase): Promise<InAppPurchase>;
+  updateInAppPurchase(transactionId: string, updates: Partial<InsertInAppPurchase>): Promise<InAppPurchase | undefined>;
+  getInAppPurchaseByTransactionId(transactionId: string): Promise<InAppPurchase | undefined>;
+  getInAppPurchasesByUserId(userId: number): Promise<InAppPurchase[]>;
+  getUserActiveSubscriptions(userId: number): Promise<InAppPurchase[]>;
+  processWebhookPurchaseUpdate(transactionId: string, updates: Partial<InsertInAppPurchase>): Promise<InAppPurchase | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2096,6 +2107,152 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedSettings[0];
+  }
+
+  // ==================== In-App Purchase Methods ====================
+
+  async createInAppPurchase(purchase: InsertInAppPurchase): Promise<InAppPurchase> {
+    try {
+      // Encrypt sensitive receipt data if provided
+      const encryptedPurchase = { ...purchase };
+      if (purchase.receiptData) {
+        encryptedPurchase.receiptData = encryptPII(purchase.receiptData);
+      }
+
+      const [created] = await db.insert(inAppPurchases)
+        .values(encryptedPurchase)
+        .returning();
+      return created;
+    } catch (error) {
+      console.error('Error creating in-app purchase:', error);
+      throw error;
+    }
+  }
+
+  async updateInAppPurchase(transactionId: string, updates: Partial<InsertInAppPurchase>): Promise<InAppPurchase | undefined> {
+    try {
+      // Encrypt sensitive receipt data if provided
+      const encryptedUpdates = { ...updates };
+      if (updates.receiptData) {
+        encryptedUpdates.receiptData = encryptPII(updates.receiptData);
+      }
+
+      const [updated] = await db
+        .update(inAppPurchases)
+        .set({
+          ...encryptedUpdates,
+          updatedAt: new Date()
+        })
+        .where(eq(inAppPurchases.transactionId, transactionId))
+        .returning();
+      
+      return updated || undefined;
+    } catch (error) {
+      console.error('Error updating in-app purchase:', error);
+      throw error;
+    }
+  }
+
+  async getInAppPurchaseByTransactionId(transactionId: string): Promise<InAppPurchase | undefined> {
+    const [purchase] = await db.select().from(inAppPurchases)
+      .where(eq(inAppPurchases.transactionId, transactionId))
+      .limit(1);
+    
+    if (purchase && purchase.receiptData && this.isEncrypted(purchase.receiptData)) {
+      try {
+        purchase.receiptData = decryptPII(purchase.receiptData);
+      } catch (error) {
+        console.warn('Failed to decrypt receipt data');
+      }
+    }
+    
+    return purchase || undefined;
+  }
+
+  async getInAppPurchasesByUserId(userId: number): Promise<InAppPurchase[]> {
+    const purchases = await db.select().from(inAppPurchases)
+      .where(eq(inAppPurchases.userId, userId))
+      .orderBy(desc(inAppPurchases.purchaseDate));
+    
+    // Decrypt receipt data for all purchases
+    return purchases.map(purchase => {
+      if (purchase.receiptData && this.isEncrypted(purchase.receiptData)) {
+        try {
+          purchase.receiptData = decryptPII(purchase.receiptData);
+        } catch (error) {
+          console.warn(`Failed to decrypt receipt data for purchase ${purchase.id}`);
+        }
+      }
+      return purchase;
+    });
+  }
+
+  async getUserActiveSubscriptions(userId: number): Promise<InAppPurchase[]> {
+    const now = new Date();
+    const activeSubscriptions = await db.select().from(inAppPurchases)
+      .where(
+        and(
+          eq(inAppPurchases.userId, userId),
+          eq(inAppPurchases.status, 'active'),
+          eq(inAppPurchases.purchaseType, 'subscription'),
+          or(
+            isNull(inAppPurchases.expirationDate),
+            sql`${inAppPurchases.expirationDate} > ${now}`
+          )
+        )
+      )
+      .orderBy(desc(inAppPurchases.purchaseDate));
+
+    // Decrypt receipt data for all subscriptions
+    return activeSubscriptions.map(subscription => {
+      if (subscription.receiptData && this.isEncrypted(subscription.receiptData)) {
+        try {
+          subscription.receiptData = decryptPII(subscription.receiptData);
+        } catch (error) {
+          console.warn(`Failed to decrypt receipt data for subscription ${subscription.id}`);
+        }
+      }
+      return subscription;
+    });
+  }
+
+  async processWebhookPurchaseUpdate(transactionId: string, updates: Partial<InsertInAppPurchase>): Promise<InAppPurchase | undefined> {
+    try {
+      // Check if purchase exists
+      const existing = await this.getInAppPurchaseByTransactionId(transactionId);
+      
+      if (existing) {
+        // Update existing purchase
+        return await this.updateInAppPurchase(transactionId, {
+          ...updates,
+          verificationAttempts: existing.verificationAttempts + 1,
+          lastVerificationDate: new Date(),
+          isVerified: true
+        });
+      } else if (updates.userId) {
+        // Create new purchase from webhook data
+        const newPurchase: InsertInAppPurchase = {
+          transactionId,
+          userId: updates.userId,
+          productId: updates.productId || 'unknown',
+          store: updates.store || 'unknown',
+          purchaseType: updates.purchaseType || 'subscription',
+          status: updates.status || 'pending',
+          purchaseDate: updates.purchaseDate ? new Date(updates.purchaseDate) : new Date(),
+          ...updates,
+          verificationAttempts: 1,
+          lastVerificationDate: new Date(),
+          isVerified: true
+        };
+        
+        return await this.createInAppPurchase(newPurchase);
+      }
+      
+      return undefined;
+    } catch (error) {
+      console.error('Error processing webhook purchase update:', error);
+      throw error;
+    }
   }
 }
 
