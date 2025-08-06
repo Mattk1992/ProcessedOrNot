@@ -2060,6 +2060,178 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== App Shared Secrets Management Routes ====================
+  
+  // Get all active shared secrets (admin only)
+  app.get("/api/admin/secrets", requireAuth, async (req, res) => {
+    try {
+      const secrets = await storage.getAllActiveSharedSecrets();
+      
+      // Remove secret values from response for security
+      const sanitizedSecrets = secrets.map(secret => ({
+        ...secret,
+        secretValue: '***HIDDEN***'
+      }));
+      
+      res.json(sanitizedSecrets);
+    } catch (error) {
+      console.error('Error fetching shared secrets:', error);
+      res.status(500).json({ error: 'Failed to fetch shared secrets' });
+    }
+  });
+
+  // Create a new shared secret (admin only)
+  app.post("/api/admin/secrets", requireAuth, async (req, res) => {
+    try {
+      const { secretName, secretType, description, scope } = req.body;
+      
+      if (!secretName || !secretType) {
+        return res.status(400).json({ error: 'Secret name and type are required' });
+      }
+      
+      const secret = await storage.generateNewSharedSecret(
+        secretName,
+        secretType,
+        description,
+        scope
+      );
+      
+      res.status(201).json({
+        ...secret,
+        // Return the actual secret value only on creation for setup purposes
+        secretValue: secret.secretValue
+      });
+    } catch (error) {
+      console.error('Error creating shared secret:', error);
+      res.status(500).json({ error: 'Failed to create shared secret' });
+    }
+  });
+
+  // Rotate a shared secret (admin only)
+  app.post("/api/admin/secrets/:secretName/rotate", requireAuth, async (req, res) => {
+    try {
+      const { secretName } = req.params;
+      const rotated = await storage.rotateSharedSecret(secretName);
+      
+      if (!rotated) {
+        return res.status(404).json({ error: 'Secret not found' });
+      }
+      
+      res.json({
+        ...rotated,
+        // Return new secret value on rotation for setup purposes
+        secretValue: rotated.secretValue
+      });
+    } catch (error) {
+      console.error('Error rotating shared secret:', error);
+      res.status(500).json({ error: 'Failed to rotate shared secret' });
+    }
+  });
+
+  // Deactivate a shared secret (admin only)
+  app.delete("/api/admin/secrets/:secretName", requireAuth, async (req, res) => {
+    try {
+      const { secretName } = req.params;
+      const deactivated = await storage.deactivateSharedSecret(secretName);
+      
+      if (!deactivated) {
+        return res.status(404).json({ error: 'Secret not found' });
+      }
+      
+      res.json({ message: 'Secret deactivated successfully' });
+    } catch (error) {
+      console.error('Error deactivating shared secret:', error);
+      res.status(500).json({ error: 'Failed to deactivate shared secret' });
+    }
+  });
+
+  // Webhook signature verification endpoint
+  app.post("/api/webhooks/verify", async (req, res) => {
+    try {
+      const { signature, payload, secretName } = req.body;
+      
+      if (!signature || !payload || !secretName) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+      
+      const isValid = await storage.verifyWebhookSignature(
+        signature,
+        typeof payload === 'string' ? payload : JSON.stringify(payload),
+        secretName
+      );
+      
+      res.json({ valid: isValid });
+    } catch (error) {
+      console.error('Error verifying webhook signature:', error);
+      res.status(500).json({ error: 'Failed to verify signature' });
+    }
+  });
+
+  // Generate default shared secrets on first run
+  app.post("/api/admin/secrets/init-defaults", requireAuth, async (req, res) => {
+    try {
+      const defaultSecrets = [
+        {
+          secretName: 'app-store-webhook',
+          secretType: 'webhook',
+          description: 'Shared secret for App Store Server-to-Server notifications',
+          scope: 'app_store'
+        },
+        {
+          secretName: 'google-play-webhook',
+          secretType: 'webhook',
+          description: 'Shared secret for Google Play Developer API notifications',
+          scope: 'google_play'
+        },
+        {
+          secretName: 'purchase-webhook',
+          secretType: 'webhook',
+          description: 'Shared secret for generic purchase status webhooks',
+          scope: 'web'
+        },
+        {
+          secretName: 'api-key-main',
+          secretType: 'api_key',
+          description: 'Main API key for external integrations',
+          scope: 'global'
+        }
+      ];
+
+      const createdSecrets = [];
+      for (const secretData of defaultSecrets) {
+        try {
+          // Check if secret already exists
+          const existing = await storage.getSharedSecretByName(secretData.secretName);
+          if (!existing) {
+            const created = await storage.generateNewSharedSecret(
+              secretData.secretName,
+              secretData.secretType,
+              secretData.description,
+              secretData.scope
+            );
+            createdSecrets.push({
+              ...created,
+              secretValue: '***CREATED***' // Hide value in response
+            });
+          }
+        } catch (error) {
+          console.warn(`Failed to create secret ${secretData.secretName}:`, error);
+        }
+      }
+
+      res.json({
+        message: 'Default secrets initialized',
+        created: createdSecrets.length,
+        secrets: createdSecrets
+      });
+    } catch (error) {
+      console.error('Error initializing default secrets:', error);
+      res.status(500).json({ error: 'Failed to initialize default secrets' });
+    }
+  });
+
+  // ==================== In-App Purchase Webhook Routes ====================
+
   // Generic webhook endpoint for other payment providers
   app.post("/api/webhooks/purchase-status", async (req, res) => {
     try {

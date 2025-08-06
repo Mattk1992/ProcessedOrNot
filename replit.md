@@ -29,6 +29,15 @@ ProcessedOrNot Scanner is a modern web application designed to analyze food prod
   - User subscription management with active subscription tracking
   - Receipt data encryption and webhook payload validation
   - Industry-standard webhook formats with automatic status mapping
+- **App-Specific Shared Secret System**: Enterprise-grade secret management for secure webhook verification and API authentication
+  - Cryptographically secure secret generation using crypto.randomBytes with NIST-compliant entropy
+  - HMAC-SHA256 webhook signature verification with timing-safe comparison for security
+  - AES-256-GCM encrypted storage of all secrets with automatic hash generation
+  - Automatic 90-day secret rotation with lifecycle management and usage tracking
+  - Industry-standard secret formats: App Store (32 chars), Google Play (48 chars), API keys with prefixes
+  - Admin API endpoints for secret creation, rotation, deactivation, and verification
+  - Support for multiple secret types: webhook verification, API authentication, signing keys
+  - Environment-based secret scoping (production, staging, development) with audit logging
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

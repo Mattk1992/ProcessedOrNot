@@ -714,3 +714,62 @@ export const purchaseStatusUpdateSchema = z.object({
 });
 
 export type PurchaseStatusUpdate = z.infer<typeof purchaseStatusUpdateSchema>;
+
+// App Shared Secrets table for secure webhook verification and app authentication
+export const appSharedSecrets = pgTable("app_shared_secrets", {
+  id: serial("id").primaryKey(),
+  
+  // Secret identification
+  secretName: varchar("secret_name", { length: 100 }).notNull().unique(),
+  secretType: varchar("secret_type", { length: 50 }).notNull(), // 'webhook', 'app_auth', 'api_key', 'signing'
+  
+  // Secret data (encrypted)
+  secretValue: text("secret_value").notNull(), // Encrypted secret
+  secretHash: varchar("secret_hash", { length: 128 }).notNull().unique(), // SHA-512 hash for verification
+  
+  // Metadata
+  description: text("description"),
+  environment: varchar("environment", { length: 20 }).default("production"), // 'production', 'staging', 'development'
+  scope: varchar("scope", { length: 100 }).default("global"), // 'global', 'app_store', 'google_play', 'web'
+  
+  // Security settings
+  isActive: boolean("is_active").default(true).notNull(),
+  rotationIntervalDays: integer("rotation_interval_days").default(90), // Key rotation period
+  lastRotated: timestamp("last_rotated").defaultNow().notNull(),
+  nextRotation: timestamp("next_rotation"),
+  
+  // Usage tracking
+  usageCount: integer("usage_count").default(0).notNull(),
+  lastUsed: timestamp("last_used"),
+  
+  // Audit trail
+  createdBy: integer("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  secretTypeIdx: index("secret_type_idx").on(table.secretType),
+  environmentIdx: index("secret_environment_idx").on(table.environment),
+  activeIdx: index("secret_active_idx").on(table.isActive),
+}));
+
+export const insertAppSharedSecretSchema = createInsertSchema(appSharedSecrets).omit({
+  id: true,
+  secretHash: true,
+  usageCount: true,
+  lastUsed: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAppSharedSecret = z.infer<typeof insertAppSharedSecretSchema>;
+export type AppSharedSecret = typeof appSharedSecrets.$inferSelect;
+
+// Webhook verification schema with signature validation
+export const webhookVerificationSchema = z.object({
+  signature: z.string().min(1),
+  timestamp: z.number().or(z.string()),
+  secretName: z.string().optional(),
+  payload: z.any(),
+});
+
+export type WebhookVerification = z.infer<typeof webhookVerificationSchema>;

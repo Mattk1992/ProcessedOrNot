@@ -57,12 +57,25 @@ import {
   type InsertSpeechSettings,
   inAppPurchases,
   type InAppPurchase,
-  type InsertInAppPurchase
+  type InsertInAppPurchase,
+  appSharedSecrets,
+  type AppSharedSecret,
+  type InsertAppSharedSecret
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
 import { hashPassword, verifyPassword, generateEmailVerificationToken, generatePasswordResetToken, sanitizeUser, generateSearchId } from "./lib/auth";
 import { encryptPII, decryptPII, encryptEmail, decryptEmail, hashForSearch, encryptSearchData, decryptSearchData } from "./lib/encryption";
+import { 
+  generateSecureSecret, 
+  generateSecretHash, 
+  verifyWebhookSignature, 
+  generateAppStoreSharedSecret, 
+  generateGooglePlaySecret,
+  generateApiKey,
+  rotateSecret,
+  validateSecretStrength
+} from "./lib/shared-secrets";
 
 export interface IStorage {
   // User authentication methods
@@ -248,6 +261,17 @@ export interface IStorage {
   getInAppPurchasesByUserId(userId: number): Promise<InAppPurchase[]>;
   getUserActiveSubscriptions(userId: number): Promise<InAppPurchase[]>;
   processWebhookPurchaseUpdate(transactionId: string, updates: Partial<InsertInAppPurchase>): Promise<InAppPurchase | undefined>;
+
+  // App Shared Secret methods
+  createSharedSecret(secret: InsertAppSharedSecret): Promise<AppSharedSecret>;
+  updateSharedSecret(secretName: string, updates: Partial<InsertAppSharedSecret>): Promise<AppSharedSecret | undefined>;
+  getSharedSecretByName(secretName: string): Promise<AppSharedSecret | undefined>;
+  getSharedSecretsByType(secretType: string): Promise<AppSharedSecret[]>;
+  getAllActiveSharedSecrets(): Promise<AppSharedSecret[]>;
+  rotateSharedSecret(secretName: string): Promise<AppSharedSecret | undefined>;
+  deactivateSharedSecret(secretName: string): Promise<boolean>;
+  verifyWebhookSignature(signature: string, payload: string, secretName: string): Promise<boolean>;
+  generateNewSharedSecret(secretName: string, secretType: string, description: string, scope?: string): Promise<AppSharedSecret>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2251,6 +2275,233 @@ export class DatabaseStorage implements IStorage {
       return undefined;
     } catch (error) {
       console.error('Error processing webhook purchase update:', error);
+      throw error;
+    }
+  }
+
+  // ==================== App Shared Secret Methods ====================
+
+  async createSharedSecret(secret: InsertAppSharedSecret): Promise<AppSharedSecret> {
+    try {
+      // Generate a secure secret if not provided
+      let secretValue = secret.secretValue;
+      if (!secretValue) {
+        switch (secret.secretType) {
+          case 'app_store':
+            secretValue = generateAppStoreSharedSecret();
+            break;
+          case 'google_play':
+            secretValue = generateGooglePlaySecret();
+            break;
+          case 'api_key':
+            secretValue = generateApiKey();
+            break;
+          default:
+            secretValue = generateSecureSecret(64);
+        }
+      }
+
+      // Validate secret strength
+      const validation = validateSecretStrength(secretValue);
+      if (!validation.isValid) {
+        throw new Error(`Weak secret: ${validation.issues.join(', ')}`);
+      }
+
+      // Calculate next rotation date
+      const nextRotation = new Date();
+      nextRotation.setDate(nextRotation.getDate() + (secret.rotationIntervalDays || 90));
+
+      const [created] = await db.insert(appSharedSecrets)
+        .values({
+          ...secret,
+          secretValue: encryptPII(secretValue),
+          secretHash: generateSecretHash(secretValue),
+          nextRotation,
+        })
+        .returning();
+
+      // Return with decrypted secret for immediate use
+      return {
+        ...created,
+        secretValue: secretValue // Return plaintext for initial setup
+      };
+    } catch (error) {
+      console.error('Error creating shared secret:', error);
+      throw error;
+    }
+  }
+
+  async updateSharedSecret(secretName: string, updates: Partial<InsertAppSharedSecret>): Promise<AppSharedSecret | undefined> {
+    try {
+      const encryptedUpdates = { ...updates };
+      
+      // Encrypt secret value if provided
+      if (updates.secretValue) {
+        const validation = validateSecretStrength(updates.secretValue);
+        if (!validation.isValid) {
+          throw new Error(`Weak secret: ${validation.issues.join(', ')}`);
+        }
+        encryptedUpdates.secretValue = encryptPII(updates.secretValue);
+        encryptedUpdates.secretHash = generateSecretHash(updates.secretValue);
+      }
+
+      const [updated] = await db
+        .update(appSharedSecrets)
+        .set({
+          ...encryptedUpdates,
+          updatedAt: new Date()
+        })
+        .where(eq(appSharedSecrets.secretName, secretName))
+        .returning();
+      
+      if (updated && updated.secretValue && this.isEncrypted(updated.secretValue)) {
+        try {
+          updated.secretValue = decryptPII(updated.secretValue);
+        } catch (error) {
+          console.warn('Failed to decrypt secret value');
+        }
+      }
+      
+      return updated || undefined;
+    } catch (error) {
+      console.error('Error updating shared secret:', error);
+      throw error;
+    }
+  }
+
+  async getSharedSecretByName(secretName: string): Promise<AppSharedSecret | undefined> {
+    const [secret] = await db.select().from(appSharedSecrets)
+      .where(eq(appSharedSecrets.secretName, secretName))
+      .limit(1);
+    
+    if (secret && secret.secretValue && this.isEncrypted(secret.secretValue)) {
+      try {
+        secret.secretValue = decryptPII(secret.secretValue);
+      } catch (error) {
+        console.warn('Failed to decrypt secret value');
+      }
+    }
+    
+    return secret || undefined;
+  }
+
+  async getSharedSecretsByType(secretType: string): Promise<AppSharedSecret[]> {
+    const secrets = await db.select().from(appSharedSecrets)
+      .where(eq(appSharedSecrets.secretType, secretType))
+      .orderBy(desc(appSharedSecrets.createdAt));
+    
+    return secrets.map(secret => {
+      if (secret.secretValue && this.isEncrypted(secret.secretValue)) {
+        try {
+          secret.secretValue = decryptPII(secret.secretValue);
+        } catch (error) {
+          console.warn(`Failed to decrypt secret ${secret.secretName}`);
+        }
+      }
+      return secret;
+    });
+  }
+
+  async getAllActiveSharedSecrets(): Promise<AppSharedSecret[]> {
+    const secrets = await db.select().from(appSharedSecrets)
+      .where(eq(appSharedSecrets.isActive, true))
+      .orderBy(appSharedSecrets.secretType, desc(appSharedSecrets.createdAt));
+    
+    return secrets.map(secret => {
+      if (secret.secretValue && this.isEncrypted(secret.secretValue)) {
+        try {
+          secret.secretValue = decryptPII(secret.secretValue);
+        } catch (error) {
+          console.warn(`Failed to decrypt secret ${secret.secretName}`);
+        }
+      }
+      return secret;
+    });
+  }
+
+  async rotateSharedSecret(secretName: string): Promise<AppSharedSecret | undefined> {
+    try {
+      const existing = await this.getSharedSecretByName(secretName);
+      if (!existing) {
+        return undefined;
+      }
+
+      // Generate new secret using rotation function
+      const newSecret = rotateSecret(existing.secretValue, existing.secretType);
+      
+      // Calculate next rotation date
+      const nextRotation = new Date();
+      nextRotation.setDate(nextRotation.getDate() + existing.rotationIntervalDays);
+
+      return await this.updateSharedSecret(secretName, {
+        secretValue: newSecret,
+        lastRotated: new Date(),
+        nextRotation,
+      });
+    } catch (error) {
+      console.error('Error rotating shared secret:', error);
+      throw error;
+    }
+  }
+
+  async deactivateSharedSecret(secretName: string): Promise<boolean> {
+    try {
+      const [updated] = await db
+        .update(appSharedSecrets)
+        .set({
+          isActive: false,
+          updatedAt: new Date()
+        })
+        .where(eq(appSharedSecrets.secretName, secretName))
+        .returning();
+      
+      return !!updated;
+    } catch (error) {
+      console.error('Error deactivating shared secret:', error);
+      return false;
+    }
+  }
+
+  async verifyWebhookSignature(signature: string, payload: string, secretName: string): Promise<boolean> {
+    try {
+      const secret = await this.getSharedSecretByName(secretName);
+      if (!secret || !secret.isActive) {
+        return false;
+      }
+
+      // Update usage tracking
+      await db
+        .update(appSharedSecrets)
+        .set({
+          usageCount: sql`${appSharedSecrets.usageCount} + 1`,
+          lastUsed: new Date()
+        })
+        .where(eq(appSharedSecrets.secretName, secretName));
+
+      return verifyWebhookSignature(payload, signature, secret.secretValue);
+    } catch (error) {
+      console.error('Error verifying webhook signature:', error);
+      return false;
+    }
+  }
+
+  async generateNewSharedSecret(
+    secretName: string, 
+    secretType: string, 
+    description: string, 
+    scope: string = 'global'
+  ): Promise<AppSharedSecret> {
+    try {
+      return await this.createSharedSecret({
+        secretName,
+        secretType,
+        description,
+        scope,
+        environment: process.env.NODE_ENV === 'production' ? 'production' : 'development',
+        createdBy: 1 // System user for auto-generated secrets
+      });
+    } catch (error) {
+      console.error('Error generating new shared secret:', error);
       throw error;
     }
   }
