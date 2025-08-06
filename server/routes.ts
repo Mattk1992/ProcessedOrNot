@@ -1225,6 +1225,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== Camera Settings Admin Routes ====================
+
+  // Get camera settings (admin only)
+  app.get("/api/admin/camera-settings", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const settings = await storage.getCameraSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching camera settings:", error);
+      res.status(500).json({ message: "Failed to fetch camera settings" });
+    }
+  });
+
+  // Update camera settings (admin only)
+  app.put("/api/admin/camera-settings", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const settings = await storage.updateCameraSettings(req.body);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating camera settings:", error);
+      res.status(500).json({ message: "Failed to update camera settings" });
+    }
+  });
+
+  // Reset camera settings to defaults (admin only)
+  app.post("/api/admin/camera-settings/reset", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const settings = await storage.resetCameraSettingsToDefaults();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error resetting camera settings:", error);
+      res.status(500).json({ message: "Failed to reset camera settings" });
+    }
+  });
+
   app.get("/api/admin/search-history/export", async (req, res) => {
     try {
       const user = (req.session as any).user;
