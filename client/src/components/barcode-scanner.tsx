@@ -5,11 +5,12 @@ import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_174962362
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Search, Loader2, Camera, X, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
+import { Search, Loader2, Camera, X, RotateCcw, ZoomIn, ZoomOut, Settings } from "lucide-react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SearchFilter from "./search-filter";
 import { VoiceSearchButton } from "./voice-search-button";
+import QuickCameraSettings from "./quick-camera-settings";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
@@ -762,6 +763,18 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   <span className="hidden sm:inline">Stop Camera</span>
                   <span className="sm:hidden">Stop</span>
                 </Button>
+                
+                <QuickCameraSettings>
+                  <Button
+                    variant="outline"
+                    className="flex-1 border-2 border-primary/20 text-primary hover:bg-primary/10 mobile-button-full touch-action-manipulation"
+                  >
+                    <Settings className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Quick Settings</span>
+                    <span className="sm:hidden">Settings</span>
+                  </Button>
+                </QuickCameraSettings>
+                
                 <Button
                   onClick={() => {
                     console.log('Reset zoom button clicked');
