@@ -764,16 +764,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   <span className="sm:hidden">Stop</span>
                 </Button>
                 
-                <QuickCameraSettings>
-                  <Button
-                    variant="outline"
-                    className="flex-1 border-2 border-primary/20 text-primary hover:bg-primary/10 mobile-button-full touch-action-manipulation"
-                  >
-                    <Settings className="w-4 h-4 mr-2" />
-                    <span className="hidden sm:inline">Quick Settings</span>
-                    <span className="sm:hidden">Settings</span>
-                  </Button>
-                </QuickCameraSettings>
+
                 
                 <Button
                   onClick={() => {
@@ -815,24 +806,36 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
             </div>
           ) : (
             <div className="mb-8">
-              <Button
-                onClick={startCamera}
-                disabled={isLoading || isScanning}
-                data-tutorial="camera-button"
-                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mb-6 mobile-touch-friendly touch-action-manipulation"
-              >
-                {isScanning ? (
-                  <>
-                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-                    <span className="text-sm sm:text-base">Starting Camera...</span>
-                  </>
-                ) : (
-                  <>
-                    <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="text-sm sm:text-base">Scan with Camera</span>
-                  </>
-                )}
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <Button
+                  onClick={startCamera}
+                  disabled={isLoading || isScanning}
+                  data-tutorial="camera-button"
+                  className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
+                >
+                  {isScanning ? (
+                    <>
+                      <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                      <span className="text-sm sm:text-base">Starting Camera...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="text-sm sm:text-base">Scan with Camera</span>
+                    </>
+                  )}
+                </Button>
+                
+                <QuickCameraSettings>
+                  <Button
+                    variant="outline"
+                    className="flex-1 sm:flex-none border-2 border-primary/20 text-primary hover:bg-primary/10 mobile-button-full touch-action-manipulation py-3 sm:py-4 px-4 sm:px-6 rounded-2xl"
+                  >
+                    <Settings className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
+                    <span className="hidden sm:inline">Quick Settings</span>
+                  </Button>
+                </QuickCameraSettings>
+              </div>
               
               {cameraError && (
                 <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
