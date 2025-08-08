@@ -2,7 +2,7 @@
 ## (Conformément à l'Article R.226-8 du Code Pénal Français)
 
 **Référence de dossier :** PROC-2025-001  
-**Date de soumission :** 6 Août 2025  
+**Date de soumission :** 8 Août 2025  
 **Organisme déclarant :** ProcessedOrNot Scanner Application  
 
 ---
@@ -11,16 +11,16 @@
 
 **Raison sociale :** ProcessedOrNot Scanner  
 **Secteur d'activité :** Technologie alimentaire et analyse nutritionnelle  
-**Adresse du siège social :** [À COMPLÉTER]  
+**Adresse du siège social :** [Adresse physique de l'entreprise - À FOURNIR]  
 **Code APE/NAF :** 6201Z (Programmation informatique)  
-**SIRET :** [À COMPLÉTER]  
+**SIRET :** [Numéro SIRET de l'entreprise - À FOURNIR]  
 
 **Personne responsable de la déclaration :**  
-- **Nom :** [À COMPLÉTER]  
-- **Prénom :** [À COMPLÉTER]  
+- **Nom :** [Nom du responsable technique - À FOURNIR]  
+- **Prénom :** [Prénom du responsable technique - À FOURNIR]  
 - **Fonction :** Responsable Sécurité des Systèmes d'Information  
-- **Téléphone :** [À COMPLÉTER]  
-- **Email :** [À COMPLÉTER]  
+- **Téléphone :** [Numéro de téléphone professionnel - À FOURNIR]  
+- **Email :** [Email professionnel du responsable - À FOURNIR]  
 
 ---
 
@@ -158,11 +158,11 @@ Je soussigné(e), en qualité de représentant légal de l'entité susmentionné
 
 ## SIGNATURES
 
-**Date :** ________________  
-**Lieu :** ________________  
+**Date :** 8 Août 2025  
+**Lieu :** [Ville du siège social - À FOURNIR]  
 
 **Signature du déclarant :**  
-**Nom et qualité :** ________________  
+**Nom et qualité :** [Nom, Prénom et fonction du signataire autorisé - À FOURNIR]  
 
 **Cachet de l'entreprise :**  
 
