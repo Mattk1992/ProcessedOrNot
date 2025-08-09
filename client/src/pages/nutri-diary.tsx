@@ -12,7 +12,9 @@ import {
   Sunset, 
   Moon,
   AlertCircle,
-  X
+  X,
+  Camera,
+  Settings
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,6 +49,7 @@ const diaryEntrySchema = z.object({
   mealType: z.enum(["breakfast", "lunch", "dinner", "snack"]),
   consumedAt: z.string(),
   notes: z.string().optional(),
+  productLookup: z.string().optional(),
 });
 
 type DiaryEntryForm = z.infer<typeof diaryEntrySchema>;
@@ -77,6 +80,8 @@ export default function NutriDiary() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
+  const [showQuickSettings, setShowQuickSettings] = useState(false);
 
   const form = useForm<DiaryEntryForm>({
     resolver: zodResolver(diaryEntrySchema),
@@ -94,6 +99,7 @@ export default function NutriDiary() {
       mealType: "breakfast",
       consumedAt: new Date().toISOString().slice(0, 16),
       notes: "",
+      productLookup: "",
     },
   });
 
@@ -220,6 +226,56 @@ export default function NutriDiary() {
     addEntryMutation.mutate(data);
   };
 
+  const handleScanBarcode = () => {
+    setIsScanning(true);
+    toast({
+      title: "Barcode Scanner",
+      description: "Opening barcode scanner...",
+    });
+    // TODO: Implement actual barcode scanning logic
+    setTimeout(() => {
+      setIsScanning(false);
+      // Mock barcode scan result
+      const mockBarcode = "1234567890123";
+      form.setValue("productLookup", mockBarcode);
+      toast({
+        title: "Barcode Scanned",
+        description: `Found barcode: ${mockBarcode}`,
+      });
+    }, 2000);
+  };
+
+  const handleQuickSettings = () => {
+    setShowQuickSettings(!showQuickSettings);
+    toast({
+      title: "Quick Settings",
+      description: showQuickSettings ? "Settings closed" : "Settings opened",
+    });
+  };
+
+  const handleProductLookup = async (barcode: string) => {
+    if (!barcode.trim()) return;
+    
+    toast({
+      title: "Looking up product",
+      description: "Searching for product information...",
+    });
+    
+    // TODO: Implement actual product lookup API call
+    setTimeout(() => {
+      form.setValue("productName", "Sample Product");
+      form.setValue("productBrands", "Sample Brand");
+      form.setValue("calories", 150);
+      form.setValue("proteins", 8);
+      form.setValue("carbohydrates", 12);
+      form.setValue("fat", 6);
+      toast({
+        title: "Product Found",
+        description: "Product information has been populated",
+      });
+    }, 1500);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
       {/* Header */}
@@ -300,6 +356,76 @@ export default function NutriDiary() {
                 
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-lg mx-auto">
+                        {/* Barcode Scanning Section */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Quick Add</h3>
+                          
+                          {/* Scan Barcode & Quick Settings */}
+                          <div className="grid grid-cols-2 gap-3">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={handleScanBarcode}
+                              disabled={isScanning}
+                              className="h-12 text-base font-medium"
+                            >
+                              <Camera className="w-5 h-5 mr-2" />
+                              {isScanning ? "Scanning..." : "Scan Barcode"}
+                            </Button>
+                            
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={handleQuickSettings}
+                              className="h-12 text-base font-medium"
+                            >
+                              <Settings className="w-5 h-5 mr-2" />
+                              Quick Settings
+                            </Button>
+                          </div>
+                          
+                          {/* Product Lookup Field */}
+                          <FormField
+                            control={form.control}
+                            name="productLookup"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium">Product Lookup</FormLabel>
+                                <div className="flex space-x-2">
+                                  <FormControl>
+                                    <Input 
+                                      placeholder="Enter barcode or product code" 
+                                      {...field} 
+                                      className="h-12 text-base flex-1"
+                                    />
+                                  </FormControl>
+                                  <Button
+                                    type="button"
+                                    onClick={() => handleProductLookup(field.value || "")}
+                                    disabled={!field.value?.trim()}
+                                    className="h-12 px-4"
+                                  >
+                                    <Search className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          {showQuickSettings && (
+                            <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                              <h4 className="font-medium text-sm">Quick Settings</h4>
+                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                <Button variant="ghost" size="sm">Auto-fill nutrition</Button>
+                                <Button variant="ghost" size="sm">Camera settings</Button>
+                                <Button variant="ghost" size="sm">Default portion</Button>
+                                <Button variant="ghost" size="sm">Favorites</Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
                         {/* Basic Information Section */}
                         <div className="space-y-4">
                           <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Basic Information</h3>
