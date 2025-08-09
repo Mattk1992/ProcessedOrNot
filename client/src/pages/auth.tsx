@@ -57,12 +57,21 @@ export default function Auth() {
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginUser) => {
-      const response = await apiRequest("POST", "/api/auth/login", data);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message);
+      console.log("Attempting login with:", { username: data.username, hasPassword: !!data.password });
+      try {
+        const response = await apiRequest("POST", "/api/auth/login", data);
+        console.log("Login response status:", response.status);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message);
+        }
+        const result = await response.json();
+        console.log("Login successful:", result);
+        return result;
+      } catch (error) {
+        console.error("Login mutation error:", error);
+        throw error;
       }
-      return await response.json();
     },
     onSuccess: (data) => {
       toast({
