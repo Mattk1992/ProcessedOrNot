@@ -32,7 +32,7 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
 
   const handleLogout = () => {
     // Redirect to logout endpoint
-    window.location.href = '/api/logout';
+    window.location.href = '/api/auth/logout';
   };
 
   // Menu items for non-authenticated users

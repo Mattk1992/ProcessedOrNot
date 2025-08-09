@@ -221,18 +221,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User logout endpoint with secure cleanup
-  app.post("/api/auth/logout", (req, res) => {
-    req.session.destroy((err) => {
+  // User logout endpoint with secure cleanup (both GET and POST for browser compatibility)
+  const handleLogout = (req: any, res: any) => {
+    req.session.destroy((err: any) => {
       if (err) {
+        console.error("Logout error:", err);
         return res.status(500).json({ message: "Logout failed" });
       }
       // Clear both default and custom session cookies
       res.clearCookie('connect.sid');
       res.clearCookie('sessionId');
+      
+      // For GET requests (browser redirects), redirect to home page
+      if (req.method === 'GET') {
+        return res.redirect('/');
+      }
+      
+      // For POST requests (API calls), return JSON
       res.json({ message: "Logout successful" });
     });
-  });
+  };
+
+  app.post("/api/auth/logout", handleLogout);
+  app.get("/api/auth/logout", handleLogout);
 
   // Get current user endpoint
   app.get("/api/auth/me", async (req, res) => {
