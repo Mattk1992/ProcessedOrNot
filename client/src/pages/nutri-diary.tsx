@@ -11,7 +11,8 @@ import {
   Sun, 
   Sunset, 
   Moon,
-  AlertCircle
+  AlertCircle,
+  X
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -272,16 +273,28 @@ export default function NutriDiary() {
                   Add Food
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Add Food Entry</DialogTitle>
-                  <DialogDescription>
-                    Add a new food item to your diary
-                  </DialogDescription>
+              <DialogContent className="fixed inset-0 w-full h-full max-w-none max-h-none bg-background overflow-y-auto sm:p-6 p-4">
+                <DialogHeader className="sticky top-0 bg-background/95 backdrop-blur-sm border-b pb-4 mb-6 z-10">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <DialogTitle className="text-2xl">Add Food Entry</DialogTitle>
+                      <DialogDescription className="text-base mt-1">
+                        Add a new food item to your diary
+                      </DialogDescription>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsAddDialogOpen(false)}
+                      className="sm:hidden"
+                    >
+                      <X className="w-5 h-5" />
+                    </Button>
+                  </div>
                 </DialogHeader>
                 
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto pb-8">
                     <FormField
                       control={form.control}
                       name="productName"
@@ -310,7 +323,7 @@ export default function NutriDiary() {
                       )}
                     />
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="servingSize"
@@ -357,7 +370,7 @@ export default function NutriDiary() {
                       />
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="calories"
@@ -398,7 +411,7 @@ export default function NutriDiary() {
                       />
                     </div>
                     
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
                         name="carbohydrates"
@@ -492,17 +505,24 @@ export default function NutriDiary() {
                       )}
                     />
                     
-                    <div className="flex justify-end space-x-2">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => setIsAddDialogOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit" disabled={addEntryMutation.isPending}>
-                        {addEntryMutation.isPending ? "Adding..." : "Add Entry"}
-                      </Button>
+                    <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t pt-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:static sm:bg-transparent sm:border-t-0 sm:pt-0">
+                      <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => setIsAddDialogOpen(false)}
+                          className="w-full sm:w-auto"
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          type="submit" 
+                          disabled={addEntryMutation.isPending}
+                          className="w-full sm:w-auto"
+                        >
+                          {addEntryMutation.isPending ? "Adding..." : "Add Entry"}
+                        </Button>
+                      </div>
                     </div>
                   </form>
                 </Form>
