@@ -80,9 +80,17 @@ export default function Auth() {
     },
     onError: (error: any) => {
       console.error("Login error:", error);
+      
+      // Provide helpful error messages for common issues
+      let errorMessage = error.message || t("auth.login.invalidCredentials") || "Invalid credentials";
+      
+      if (error.message === "Invalid username or password") {
+        errorMessage = "Invalid credentials. Try: admin/Admin123! or demouser/Demo123!";
+      }
+      
       toast({
         title: t("auth.login.error") || "Login failed",
-        description: error.message || t("auth.login.invalidCredentials") || "Invalid credentials",
+        description: errorMessage,
         variant: "destructive",
       });
     },
@@ -210,7 +218,7 @@ export default function Auth() {
                               <Input
                                 {...field}
                                 type="text"
-                                placeholder={t("Enter your username or email")}
+                                placeholder="Try: admin or demouser"
                                 className="pl-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                                 autoComplete="username"
                               />
@@ -235,7 +243,7 @@ export default function Auth() {
                               <Input
                                 {...field}
                                 type={showPassword ? "text" : "password"}
-                                placeholder={t("Enter your password")}
+                                placeholder="Try: Admin123! or Demo123!"
                                 className="pl-10 pr-10 bg-white/50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600"
                                 autoComplete="current-password"
                               />
@@ -277,6 +285,13 @@ export default function Auth() {
                           {t("Forgot your password?")}
                         </Button>
                       </Link>
+                    </div>
+                    
+                    {/* Test Credentials Helper */}
+                    <div className="text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded border">
+                      <div className="font-medium text-blue-700 dark:text-blue-300 mb-1">Test Credentials:</div>
+                      <div>• Admin: <code>admin</code> / <code>Admin123!</code></div>
+                      <div>• User: <code>demouser</code> / <code>Demo123!</code></div>
                     </div>
 
                     <Button 
