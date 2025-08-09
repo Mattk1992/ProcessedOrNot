@@ -176,7 +176,7 @@ class ConsentIntegration {
     }
 
     // Prevent multiple initializations
-    if (!this.initialized || (window as any).__adSenseInitialized || (window as any).__adSenseConfigured) {
+    if (!this.initialized || (window as any).__adSenseInitialized || (window as any).__adSenseConfigured || (window as any).__adSensePageLevelEnabled) {
       return;
     }
 
@@ -202,15 +202,26 @@ class ConsentIntegration {
       try {
         // Only push enable_page_level_ads once per page load
         if (!(window as any).__adSenseConfigured && !(window as any).__adSensePageLevelEnabled) {
-          (window as any).adsbygoogle.push({
-            google_ad_client: `ca-pub-${publisherId}`,
-            enable_page_level_ads: true,
-            privacy_compliance: {
-              gdpr: consentManager.getSettings().region === 'EU',
-              ccpa: consentManager.getSettings().enableRDP,
-              restricted_data_processing: !consent.personalization
-            }
-          });
+          // Check if enable_page_level_ads was already pushed
+          const adSenseArray = (window as any).adsbygoogle || [];
+          const hasPageLevelAds = adSenseArray.some((config: any) => 
+            config && typeof config === 'object' && config.enable_page_level_ads === true
+          );
+          
+          if (!hasPageLevelAds) {
+            (window as any).adsbygoogle.push({
+              google_ad_client: `ca-pub-${publisherId}`,
+              enable_page_level_ads: true,
+              privacy_compliance: {
+                gdpr: consentManager.getSettings().region === 'EU',
+                ccpa: consentManager.getSettings().enableRDP,
+                restricted_data_processing: !consent.personalization
+              }
+            });
+            console.log('AdSense page-level ads enabled successfully');
+          } else {
+            console.log('AdSense page-level ads already enabled');
+          }
           
           (window as any).__adSenseConfigured = true;
           (window as any).__adSenseInitialized = true;

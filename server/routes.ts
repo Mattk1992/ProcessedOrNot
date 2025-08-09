@@ -1489,6 +1489,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint for Google Ads enabled setting (no auth required)
+  app.get("/api/settings/google-ads-enabled", async (req, res) => {
+    try {
+      const setting = await storage.getAdminSetting('google_ads_enabled');
+      const enabled = setting?.settingValue === 'true';
+      res.json({ 
+        enabled,
+        source: setting ? 'database' : 'default'
+      });
+    } catch (error) {
+      console.error("Error fetching Google Ads setting:", error);
+      res.json({ 
+        enabled: false, // Default disabled
+        source: 'fallback'
+      });
+    }
+  });
+
   // Debug endpoint for glycemic index testing
   app.post("/api/debug/glycemic", async (req, res) => {
     try {
@@ -2029,13 +2047,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Voice availability check endpoint
-  app.get("/api/voice/status", (req, res) => {
-    res.json({
-      available: isVoiceTranscriptionAvailable(),
-      message: isVoiceTranscriptionAvailable() 
-        ? "Voice transcription is available"
-        : "Voice transcription requires ASSEMBLYAI_API_KEY configuration"
-    });
+  app.get("/api/voice/status", async (req, res) => {
+    try {
+      const available = await isVoiceTranscriptionAvailable();
+      res.json({
+        available,
+        message: available 
+          ? "Voice transcription is available"
+          : "Voice transcription requires ASSEMBLYAI_API_KEY configuration"
+      });
+    } catch (error) {
+      res.json({
+        available: false,
+        message: "Error checking voice transcription availability"
+      });
+    }
   });
 
   // ==================== In-App Purchase Webhook Routes ====================
@@ -2056,17 +2082,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Process each transaction in the receipt
       for (const receiptInfo of latest_receipt_info) {
-        const purchaseData: Partial<PurchaseStatusUpdate> = {
-          store: 'app_store',
+        const purchaseData = {
+          store: 'app_store' as const,
           transactionId: receiptInfo.transaction_id,
           originalTransactionId: receiptInfo.original_transaction_id,
           productId: receiptInfo.product_id,
-          status: mapAppStoreStatus(notification_type, receiptInfo),
-          purchaseDate: new Date(parseInt(receiptInfo.purchase_date_ms)).toISOString(),
+          status: mapAppStoreStatus(notification_type, receiptInfo) as 'active' | 'cancelled' | 'refunded' | 'pending' | 'expired' | 'failed',
+          purchaseDate: new Date(parseInt(receiptInfo.purchase_date_ms)),
           expirationDate: receiptInfo.expires_date_ms ? 
-            new Date(parseInt(receiptInfo.expires_date_ms)).toISOString() : undefined,
+            new Date(parseInt(receiptInfo.expires_date_ms)) : undefined,
           cancellationDate: receiptInfo.cancellation_date_ms ?
-            new Date(parseInt(receiptInfo.cancellation_date_ms)).toISOString() : undefined,
+            new Date(parseInt(receiptInfo.cancellation_date_ms)) : undefined,
           environment: unified_receipt.environment || 'production',
           webhookData: req.body,
           verificationData: receiptInfo
@@ -2102,26 +2128,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const decodedData = JSON.parse(Buffer.from(message.data, 'base64').toString());
       const { subscriptionNotification, oneTimeProductNotification } = decodedData;
       
-      let purchaseData: Partial<PurchaseStatusUpdate>;
+      let purchaseData: any;
       
       if (subscriptionNotification) {
         purchaseData = {
-          store: 'google_play',
+          store: 'google_play' as const,
           transactionId: subscriptionNotification.purchaseToken,
           productId: subscriptionNotification.subscriptionId,
-          status: mapGooglePlayStatus(subscriptionNotification.notificationType),
+          status: mapGooglePlayStatus(subscriptionNotification.notificationType) as 'active' | 'cancelled' | 'refunded' | 'pending' | 'expired' | 'failed',
           purchaseType: 'subscription',
+          purchaseDate: new Date(),
           environment: 'production',
           webhookData: req.body,
           verificationData: decodedData
         };
       } else if (oneTimeProductNotification) {
         purchaseData = {
-          store: 'google_play',
+          store: 'google_play' as const,
           transactionId: oneTimeProductNotification.purchaseToken,
           productId: oneTimeProductNotification.sku,
-          status: mapGooglePlayStatus(oneTimeProductNotification.notificationType),
+          status: mapGooglePlayStatus(oneTimeProductNotification.notificationType) as 'active' | 'cancelled' | 'refunded' | 'pending' | 'expired' | 'failed',
           purchaseType: 'consumable',
+          purchaseDate: new Date(),
           environment: 'production',
           webhookData: req.body,
           verificationData: decodedData
@@ -2133,7 +2161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       await storage.processWebhookPurchaseUpdate(
-        purchaseData.transactionId!,
+        purchaseData.transactionId,
         purchaseData
       );
 

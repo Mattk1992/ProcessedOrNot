@@ -26,7 +26,8 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
   // Check if Google Ads are globally enabled via admin setting
   const { data: adsEnabledData, isLoading: adsEnabledLoading } = useQuery({
     queryKey: ["/api/settings/google-ads-enabled"],
-    refetchInterval: 30000, // Check every 30 seconds
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    refetchInterval: 5 * 60 * 1000, // Check every 5 minutes instead of 30 seconds
   });
 
   const [config, setConfig] = useState<AdConfig>({
@@ -117,10 +118,13 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
     console.log(`Showing ${type} ad${position ? ` at ${position}` : ''}`);
     
     if (config.platform === 'web') {
-      // Trigger AdSense ad refresh
+      // Trigger AdSense ad refresh only if AdSense is properly initialized
       try {
-        (window as any).adsbygoogle = (window as any).adsbygoogle || [];
-        (window as any).adsbygoogle.push({});
+        if ((window as any).__adSenseInitialized && (window as any).adsbygoogle) {
+          (window as any).adsbygoogle.push({});
+        } else {
+          console.log('AdSense not yet initialized, ad display skipped');
+        }
       } catch (error) {
         console.error('Error showing ad:', error);
       }
