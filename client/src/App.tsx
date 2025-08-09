@@ -47,7 +47,6 @@ import UserConsentCollectionPage from "@/pages/user-consent-collection";
 import AdComplianceDashboard from "@/pages/ad-compliance-dashboard";
 import GPTConfigPage from "@/pages/gpt-config";
 import ConsentBanner from "@/components/consent-banner";
-import { consentIntegration } from "@/lib/consent-integration";
 
 function Router() {
   // Track page views when routes change
@@ -63,7 +62,7 @@ function Router() {
 
   return (
     <Layout onStartTutorial={handleStartTutorial}>
-      <ConsentBanner />
+      {/* ConsentBanner temporarily disabled to prevent authentication interference */}
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/product-lookup" component={ProductLookup} />
@@ -124,25 +123,22 @@ function App() {
     } else {
       initGA();
     }
-    // Initialize consent integration for Google services (only if not already done)
-    if (!(window as any).__globalAdInitialized) {
-      consentIntegration.initializeGoogleAds('1163701043339821');
-      (window as any).__globalAdInitialized = true;
-    }
+    // Consent integration will be initialized later, not blocking authentication
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <LanguageProvider>
-          <AdManagerProvider>
+          {/* AdManagerProvider temporarily disabled to prevent consent interference */}
+          <div>
             <TooltipProvider>
               <Toaster />
               <Router />
               <ThemeToggle />
-              <AdConsentBanner />
+              {/* AdConsentBanner temporarily disabled to prevent consent interference */}
             </TooltipProvider>
-          </AdManagerProvider>
+          </div>
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>
