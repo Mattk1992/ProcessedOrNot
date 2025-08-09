@@ -273,259 +273,315 @@ export default function NutriDiary() {
                   Add Food
                 </Button>
               </DialogTrigger>
-              <DialogContent className="fixed inset-0 w-full h-full max-w-none max-h-none bg-background overflow-y-auto sm:p-6 p-4">
-                <DialogHeader className="sticky top-0 bg-background/95 backdrop-blur-sm border-b pb-4 mb-6 z-10">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <DialogTitle className="text-2xl">Add Food Entry</DialogTitle>
-                      <DialogDescription className="text-base mt-1">
-                        Add a new food item to your diary
-                      </DialogDescription>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setIsAddDialogOpen(false)}
-                      className="sm:hidden"
-                    >
-                      <X className="w-5 h-5" />
-                    </Button>
-                  </div>
-                </DialogHeader>
-                
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-2xl mx-auto pb-8">
-                    <FormField
-                      control={form.control}
-                      name="productName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Product Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Greek Yogurt" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="productBrands"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Brand (optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Chobani" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="servingSize"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Serving Size</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                step="0.1" 
-                                min="0.1"
-                                {...field}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="servingUnit"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Unit</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="serving">serving</SelectItem>
-                                <SelectItem value="cup">cup</SelectItem>
-                                <SelectItem value="piece">piece</SelectItem>
-                                <SelectItem value="g">grams</SelectItem>
-                                <SelectItem value="ml">ml</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="calories"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Calories</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                min="0"
-                                {...field}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="fat"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Fat (g)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                step="0.1" 
-                                min="0"
-                                {...field}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="carbohydrates"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Carbs (g)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                step="0.1" 
-                                min="0"
-                                {...field}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
-                      <FormField
-                        control={form.control}
-                        name="proteins"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Protein (g)</FormLabel>
-                            <FormControl>
-                              <Input 
-                                type="number" 
-                                step="0.1" 
-                                min="0"
-                                {...field}
-                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    
-                    <FormField
-                      control={form.control}
-                      name="mealType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Meal Type</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="breakfast">Breakfast</SelectItem>
-                              <SelectItem value="lunch">Lunch</SelectItem>
-                              <SelectItem value="dinner">Dinner</SelectItem>
-                              <SelectItem value="snack">Snack</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="consumedAt"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Consumed At</FormLabel>
-                          <FormControl>
-                            <Input type="datetime-local" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="notes"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Notes (optional)</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="Any additional notes..." {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t pt-4 -mx-4 px-4 sm:mx-0 sm:px-0 sm:static sm:bg-transparent sm:border-t-0 sm:pt-0">
-                      <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
-                        <Button 
-                          type="button" 
-                          variant="outline" 
+              <DialogContent className="fixed inset-0 w-full h-full max-w-none max-h-none bg-background overflow-y-auto p-0">
+                <div className="min-h-full flex flex-col">
+                  <DialogHeader className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border/20 px-4 py-4 z-20 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => setIsAddDialogOpen(false)}
-                          className="w-full sm:w-auto"
+                          className="h-9 w-9 rounded-full hover:bg-muted"
                         >
-                          Cancel
+                          <X className="w-5 h-5" />
                         </Button>
-                        <Button 
-                          type="submit" 
-                          disabled={addEntryMutation.isPending}
-                          className="w-full sm:w-auto"
-                        >
-                          {addEntryMutation.isPending ? "Adding..." : "Add Entry"}
-                        </Button>
+                        <div>
+                          <DialogTitle className="text-xl font-semibold">Add Food Entry</DialogTitle>
+                          <DialogDescription className="text-sm text-muted-foreground">
+                            Track your nutrition intake
+                          </DialogDescription>
+                        </div>
                       </div>
                     </div>
-                  </form>
-                </Form>
+                  </DialogHeader>
+                  
+                  <div className="flex-1 px-4 py-6">
+                
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-lg mx-auto">
+                        {/* Basic Information Section */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Basic Information</h3>
+                          
+                          <FormField
+                            control={form.control}
+                            name="productName"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium">Product Name *</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="e.g., Greek Yogurt" 
+                                    {...field} 
+                                    className="h-12 text-base"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="productBrands"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium">Brand</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="e.g., Chobani" 
+                                    {...field} 
+                                    className="h-12 text-base"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                    
+                        {/* Serving Information Section */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Serving Information</h3>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="servingSize"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-base font-medium">Amount *</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      step="0.1" 
+                                      min="0.1"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                                      className="h-12 text-base text-center"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="servingUnit"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-base font-medium">Unit *</FormLabel>
+                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger className="h-12 text-base">
+                                        <SelectValue />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="serving">serving</SelectItem>
+                                      <SelectItem value="cup">cup</SelectItem>
+                                      <SelectItem value="piece">piece</SelectItem>
+                                      <SelectItem value="g">grams</SelectItem>
+                                      <SelectItem value="ml">ml</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+                    
+                        {/* Nutrition Facts Section */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Nutrition Facts</h3>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="calories"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-base font-medium">Calories</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      min="0"
+                                      placeholder="0"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                      className="h-12 text-base text-center"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="proteins"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-base font-medium">Protein (g)</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      step="0.1" 
+                                      min="0"
+                                      placeholder="0"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                      className="h-12 text-base text-center"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="carbohydrates"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-base font-medium">Carbs (g)</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      step="0.1" 
+                                      min="0"
+                                      placeholder="0"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                      className="h-12 text-base text-center"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="fat"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel className="text-base font-medium">Fat (g)</FormLabel>
+                                  <FormControl>
+                                    <Input 
+                                      type="number" 
+                                      step="0.1" 
+                                      min="0"
+                                      placeholder="0"
+                                      {...field}
+                                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                      className="h-12 text-base text-center"
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                        </div>
+                    
+                        {/* Meal Details Section */}
+                        <div className="space-y-4">
+                          <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Meal Details</h3>
+                          
+                          <FormField
+                            control={form.control}
+                            name="mealType"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium">Meal Type *</FormLabel>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger className="h-12 text-base">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="breakfast">🥞 Breakfast</SelectItem>
+                                    <SelectItem value="lunch">🥗 Lunch</SelectItem>
+                                    <SelectItem value="dinner">🍽️ Dinner</SelectItem>
+                                    <SelectItem value="snack">🍿 Snack</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="consumedAt"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium">When did you eat this?</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="datetime-local" 
+                                    {...field} 
+                                    className="h-12 text-base"
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="notes"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel className="text-base font-medium">Notes</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Any additional notes about this food..." 
+                                    {...field} 
+                                    className="min-h-[100px] text-base resize-none"
+                                    rows={4}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                    
+                      </form>
+                    </Form>
+                  </div>
+                  
+                  {/* Fixed Bottom Action Bar */}
+                  <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border/20 px-4 py-4 z-20 shadow-lg">
+                    <div className="flex space-x-3 max-w-lg mx-auto">
+                      <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={() => setIsAddDialogOpen(false)}
+                        className="flex-1 h-12 text-base font-medium"
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        disabled={addEntryMutation.isPending}
+                        onClick={form.handleSubmit(onSubmit)}
+                        className="flex-1 h-12 text-base font-medium bg-primary hover:bg-primary/90"
+                      >
+                        {addEntryMutation.isPending ? "Adding..." : "Add Entry"}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </DialogContent>
             </Dialog>
           </div>
