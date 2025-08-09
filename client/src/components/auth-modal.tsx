@@ -152,8 +152,14 @@ export default function AuthModal({ children }: AuthModalProps) {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      console.log('Dialog onOpenChange:', open);
+      setIsOpen(open);
+    }}>
+      <DialogTrigger asChild onClick={() => {
+        console.log('DialogTrigger clicked');
+        setIsOpen(true);
+      }}>
         {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
