@@ -177,6 +177,12 @@ class ConsentIntegration {
 
     // Prevent multiple initializations
     if (!this.initialized || (window as any).__adSenseInitialized || (window as any).__adSenseConfigured || (window as any).__adSensePageLevelEnabled) {
+      console.log('AdSense initialization skipped:', {
+        initialized: this.initialized,
+        adSenseInitialized: !!(window as any).__adSenseInitialized,
+        adSenseConfigured: !!(window as any).__adSenseConfigured,
+        pageLevelEnabled: !!(window as any).__adSensePageLevelEnabled
+      });
       return;
     }
 
@@ -204,7 +210,7 @@ class ConsentIntegration {
         if (!(window as any).__adSenseConfigured && !(window as any).__adSensePageLevelEnabled) {
           // Check if enable_page_level_ads was already pushed
           const adSenseArray = (window as any).adsbygoogle || [];
-          const hasPageLevelAds = adSenseArray.some((config: any) => 
+          const hasPageLevelAds = Array.isArray(adSenseArray) && adSenseArray.some((config: any) => 
             config && typeof config === 'object' && config.enable_page_level_ads === true
           );
           
@@ -233,7 +239,17 @@ class ConsentIntegration {
           console.log('AdSense initialization skipped: Already configured');
         }
       } catch (error) {
-        console.error('AdSense initialization error:', error);
+        console.error('AdSense initialization error:', {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+          publisherId,
+          consent: !!consent?.advertising,
+          windowAdSenseState: {
+            initialized: !!(window as any).__adSenseInitialized,
+            configured: !!(window as any).__adSenseConfigured,
+            pageLevel: !!(window as any).__adSensePageLevelEnabled
+          }
+        });
         // Reset configuration flags on error to allow retry
         (window as any).__adSenseConfigured = false;
         (window as any).__adSenseInitialized = false;

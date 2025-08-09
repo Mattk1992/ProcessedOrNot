@@ -181,7 +181,7 @@ export const menuItems = pgTable("menu_items", {
   isVisible: boolean("is_visible").notNull().default(true),
   isAdminOnly: boolean("is_admin_only").notNull().default(false),
   order: integer("order").notNull().default(0),
-  parentId: integer("parent_id").references(() => menuItems.id), // For nested menus
+  parentId: integer("parent_id"), // For nested menus - self-reference handled below
   target: text("target").notNull().default('_self'), // '_self' or '_blank'
   cssClass: text("css_class"), // Custom CSS classes
   createdAt: timestamp("created_at").defaultNow().notNull(),
