@@ -48,14 +48,15 @@ class ConsentManager {
 
   constructor() {
     this.settings = {
-      showBanner: true,
+      showBanner: false, // Disable banner to prevent auth blocking
       forceConsent: false,
       enableRDP: false,
-      gppEnabled: true,
+      gppEnabled: false, // Disable GPP to prevent consent errors
       region: 'OTHER'
     };
-    this.initializeAPIs();
-    this.detectRegion();
+    // Don't initialize APIs that can block authentication
+    // this.initializeAPIs();
+    // this.detectRegion(); 
     this.loadStoredConsent();
   }
 
