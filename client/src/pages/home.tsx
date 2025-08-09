@@ -101,12 +101,61 @@ export default function Home() {
                 </Button>
               </Link>
               {!isAuthenticated && (
-                <AuthModal>
-                  <Button variant="outline" size="lg" className="px-8 py-4 text-lg font-semibold border-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
-                    <User className="w-5 h-5 mr-2" />
-                    Login or Register
-                  </Button>
-                </AuthModal>
+                <>
+                  <AuthModal>
+                    <Button variant="outline" size="lg" className="px-8 py-4 text-lg font-semibold border-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
+                      <User className="w-5 h-5 mr-2" />
+                      Login or Register
+                    </Button>
+                  </AuthModal>
+                  
+                  {/* DEBUG: Direct login test form */}
+                  <div className="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg max-w-sm mx-auto">
+                    <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-200 mb-2">🔧 DEBUG: Direct Login Test</h3>
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      const formData = new FormData(e.target as HTMLFormElement);
+                      const username = formData.get('username') as string;
+                      const password = formData.get('password') as string;
+                      
+                      fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password, keepLoggedIn: false })
+                      })
+                      .then(res => res.json())
+                      .then(data => {
+                        if (data.message === 'Login successful') {
+                          alert('✅ Login successful! Page will refresh.');
+                          window.location.reload();
+                        } else {
+                          alert('❌ Login failed: ' + (data.message || 'Unknown error'));
+                        }
+                      })
+                      .catch(err => alert('❌ Network error: ' + err.message));
+                    }} className="space-y-2">
+                      <input 
+                        name="username" 
+                        placeholder="Username (try: demouser)"
+                        className="w-full px-3 py-2 text-sm border rounded"
+                        required
+                      />
+                      <input 
+                        name="password" 
+                        type="password"
+                        placeholder="Password (try: Demo123!)"
+                        className="w-full px-3 py-2 text-sm border rounded"
+                        required
+                      />
+                      <button 
+                        type="submit"
+                        className="w-full px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
+                      >
+                        Test Direct Login
+                      </button>
+                    </form>
+                  </div>
+                </>
               )}
               <Link href="/about">
                 <Button variant="outline" size="lg" className="px-8 py-4 text-lg font-semibold border-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
