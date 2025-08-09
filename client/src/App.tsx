@@ -12,7 +12,7 @@ import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import Home from "@/pages/home";
 import ProductLookup from "@/pages/product-lookup";
-import Marketing from "@/pages/marketing";
+
 import About from "@/pages/about";
 import Features from "@/pages/features";
 import Help from "@/pages/help";
@@ -66,7 +66,6 @@ function Router() {
       <ConsentBanner />
       <Switch>
         <Route path="/" component={Home} />
-        <Route path="/marketing" component={Marketing} />
         <Route path="/product-lookup" component={ProductLookup} />
         <Route path="/scan" component={ProductLookup} />
         <Route path="/about" component={About} />
