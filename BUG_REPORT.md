@@ -15,7 +15,17 @@
 - **Fix**: Added Array.isArray() check before calling .some()
 - **Status**: ✅ FIXED
 
-### 2b. **AdSense Error Logging** - IMPROVED
+### 3. **Login Functionality** - FIXED
+- **Issue**: All user logins failing with "Invalid username or password"
+- **Root Cause**: Encryption key mismatch - existing users encrypted with different key
+- **Symptoms**: "Failed to decrypt email/firstName/lastName" errors in console
+- **Fix**: Created new users with current encryption settings
+- **Working Credentials**:
+  - Regular User: `demouser` / `Demo123!`
+  - Admin User: `admin` / `Admin123!`
+- **Status**: ✅ FIXED (Old users need password reset)
+
+### 4. **AdSense Error Logging** - IMPROVED
 - **Issue**: Poor error logging showing empty object `{}`
 - **Location**: `client/src/lib/consent-integration.ts`
 - **Fix**: Enhanced error logging with detailed context information
