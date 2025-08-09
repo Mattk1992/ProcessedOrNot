@@ -324,110 +324,92 @@ export default function NutriDiary() {
             
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button>
+                <Button onClick={() => {
+                  console.log("Add Food button clicked");
+                  setIsAddDialogOpen(true);
+                }}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add Food
                 </Button>
               </DialogTrigger>
-              <DialogContent className="fixed inset-0 w-full h-full max-w-none max-h-none bg-background overflow-y-auto p-0">
-                <div className="min-h-full flex flex-col">
-                  <DialogHeader className="sticky top-0 bg-background/95 backdrop-blur-sm border-b border-border/20 px-4 py-4 z-20 shadow-sm">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
+              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Add Food Entry</DialogTitle>
+                  <DialogDescription>
+                    Track your nutrition intake with barcode scanning or manual entry
+                  </DialogDescription>
+                </DialogHeader>
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                    {/* Barcode Scanning Section */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Quick Add</h3>
+                      {/* Scan Barcode & Quick Settings */}
+                      <div className="grid grid-cols-2 gap-3">
                         <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setIsAddDialogOpen(false)}
-                          className="h-9 w-9 rounded-full hover:bg-muted"
+                          type="button"
+                          variant="outline"
+                          onClick={handleScanBarcode}
+                          disabled={isScanning}
+                          className="h-12 text-base font-medium"
                         >
-                          <X className="w-5 h-5" />
+                          <Camera className="w-5 h-5 mr-2" />
+                          {isScanning ? "Scanning..." : "Scan Barcode"}
                         </Button>
-                        <div>
-                          <DialogTitle className="text-xl font-semibold">Add Food Entry</DialogTitle>
-                          <DialogDescription className="text-sm text-muted-foreground">
-                            Track your nutrition intake
-                          </DialogDescription>
-                        </div>
+                        
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={handleQuickSettings}
+                          className="h-12 text-base font-medium"
+                        >
+                          <Settings className="w-5 h-5 mr-2" />
+                          Quick Settings
+                        </Button>
                       </div>
-                    </div>
-                  </DialogHeader>
-                  
-                  <div className="flex-1 px-4 py-6">
-                
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-lg mx-auto">
-                        {/* Barcode Scanning Section */}
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Quick Add</h3>
-                          
-                          {/* Scan Barcode & Quick Settings */}
-                          <div className="grid grid-cols-2 gap-3">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={handleScanBarcode}
-                              disabled={isScanning}
-                              className="h-12 text-base font-medium"
-                            >
-                              <Camera className="w-5 h-5 mr-2" />
-                              {isScanning ? "Scanning..." : "Scan Barcode"}
-                            </Button>
-                            
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={handleQuickSettings}
-                              className="h-12 text-base font-medium"
-                            >
-                              <Settings className="w-5 h-5 mr-2" />
-                              Quick Settings
-                            </Button>
-                          </div>
-                          
-                          {/* Product Lookup Field */}
-                          <FormField
-                            control={form.control}
-                            name="productLookup"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium">Product Lookup</FormLabel>
-                                <div className="flex space-x-2">
-                                  <FormControl>
-                                    <Input 
-                                      placeholder="Enter barcode or product code" 
-                                      {...field} 
-                                      className="h-12 text-base flex-1"
-                                    />
-                                  </FormControl>
-                                  <Button
-                                    type="button"
-                                    onClick={() => handleProductLookup(field.value || "")}
-                                    disabled={!field.value?.trim()}
-                                    className="h-12 px-4"
-                                  >
-                                    <Search className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          {showQuickSettings && (
-                            <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-                              <h4 className="font-medium text-sm">Quick Settings</h4>
-                              <div className="grid grid-cols-2 gap-2 text-sm">
-                                <Button variant="ghost" size="sm">Auto-fill nutrition</Button>
-                                <Button variant="ghost" size="sm">Camera settings</Button>
-                                <Button variant="ghost" size="sm">Default portion</Button>
-                                <Button variant="ghost" size="sm">Favorites</Button>
-                              </div>
+                      {/* Product Lookup Field */}
+                      <FormField
+                        control={form.control}
+                        name="productLookup"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-base font-medium">Product Lookup</FormLabel>
+                            <div className="flex space-x-2">
+                              <FormControl>
+                                <Input 
+                                  placeholder="Enter barcode or product code" 
+                                  {...field} 
+                                  className="h-12 text-base flex-1"
+                                />
+                              </FormControl>
+                              <Button
+                                type="button"
+                                onClick={() => handleProductLookup(field.value || "")}
+                                disabled={!field.value?.trim()}
+                                className="h-12 px-4"
+                              >
+                                <Search className="w-4 h-4" />
+                              </Button>
                             </div>
-                          )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {showQuickSettings && (
+                        <div className="bg-muted/30 rounded-lg p-4 space-y-3">
+                          <h4 className="font-medium text-sm">Quick Settings</h4>
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <Button variant="ghost" size="sm">Auto-fill nutrition</Button>
+                            <Button variant="ghost" size="sm">Camera settings</Button>
+                            <Button variant="ghost" size="sm">Default portion</Button>
+                            <Button variant="ghost" size="sm">Favorites</Button>
+                          </div>
                         </div>
+                      )}
+                    </div>
 
-                        {/* Basic Information Section */}
-                        <div className="space-y-4">
+                    {/* Basic Information Section */}
+                    <div className="space-y-4">
                           <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Basic Information</h3>
                           
                           <FormField
@@ -681,33 +663,26 @@ export default function NutriDiary() {
                             )}
                           />
                         </div>
-                    
-                      </form>
-                    </Form>
-                  </div>
-                  
-                  {/* Fixed Bottom Action Bar */}
-                  <div className="sticky bottom-0 bg-background/95 backdrop-blur-sm border-t border-border/20 px-4 py-4 z-20 shadow-lg">
-                    <div className="flex space-x-3 max-w-lg mx-auto">
+
+                    <div className="flex space-x-3 pt-6">
                       <Button 
                         type="button" 
                         variant="outline" 
                         onClick={() => setIsAddDialogOpen(false)}
-                        className="flex-1 h-12 text-base font-medium"
+                        className="flex-1"
                       >
                         Cancel
                       </Button>
                       <Button 
                         type="submit" 
+                        className="flex-1"
                         disabled={addEntryMutation.isPending}
-                        onClick={form.handleSubmit(onSubmit)}
-                        className="flex-1 h-12 text-base font-medium bg-primary hover:bg-primary/90"
                       >
                         {addEntryMutation.isPending ? "Adding..." : "Add Entry"}
                       </Button>
                     </div>
-                  </div>
-                </div>
+                  </form>
+                </Form>
               </DialogContent>
             </Dialog>
           </div>
