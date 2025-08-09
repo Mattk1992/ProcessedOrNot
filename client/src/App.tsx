@@ -16,7 +16,7 @@ import ProductLookup from "@/pages/product-lookup";
 import About from "@/pages/about";
 import Features from "@/pages/features";
 import Help from "@/pages/help";
-import Auth from "@/pages/auth";
+
 import Settings from "@/pages/settings";
 import Admin from "@/pages/admin";
 import AdminSearchHistory from "@/pages/admin-search-history";
@@ -71,9 +71,6 @@ function Router() {
         <Route path="/about" component={About} />
         <Route path="/features" component={Features} />
         <Route path="/help" component={Help} />
-        <Route path="/login" component={Auth} />
-        <Route path="/register" component={Auth} />
-        <Route path="/auth" component={Auth} />
         <Route path="/nutri-dashboard/settings" component={Settings} />
         <Route path="/nutri-dashboard/site-info" component={SiteInfo} />
         <Route path="/consent-settings" component={ConsentSettings} />
