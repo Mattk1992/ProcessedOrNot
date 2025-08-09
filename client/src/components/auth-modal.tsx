@@ -99,7 +99,7 @@ export default function AuthModal({ children }: AuthModalProps) {
       let errorMessage = error.message || "Invalid credentials";
       
       if (error.message === "Invalid username or password") {
-        errorMessage = "Invalid credentials. Try: admin/Admin123! or demouser/Demo123!";
+        errorMessage = "Invalid credentials. Try: demouser/Demo123!";
       }
       
       toast({
@@ -193,7 +193,7 @@ export default function AuthModal({ children }: AuthModalProps) {
                               <Input
                                 {...field}
                                 type="text"
-                                placeholder="Try: admin or demouser"
+                                placeholder="Try: demouser"
                                 className="pl-10"
                                 autoComplete="username"
                               />
@@ -261,7 +261,6 @@ export default function AuthModal({ children }: AuthModalProps) {
                     {/* Test Credentials Helper */}
                     <div className="text-xs text-gray-500 dark:text-gray-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded border">
                       <div className="font-medium text-blue-700 dark:text-blue-300 mb-1">Test Credentials:</div>
-                      <div>• Admin: <code>admin</code> / <code>Admin123!</code></div>
                       <div>• User: <code>demouser</code> / <code>Demo123!</code></div>
                     </div>
 
