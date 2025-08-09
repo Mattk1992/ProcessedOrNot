@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect } from "react";
+import AuthModal from "@/components/auth-modal";
 
 export default function Home() {
   // Set page title and meta description for SEO
@@ -96,6 +97,12 @@ export default function Home() {
                   Start Scanning
                 </Button>
               </Link>
+              <AuthModal>
+                <Button variant="outline" size="lg" className="px-8 py-4 text-lg font-semibold border-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
+                  <User className="w-5 h-5 mr-2" />
+                  Login or Register
+                </Button>
+              </AuthModal>
               <Link href="/about">
                 <Button variant="outline" size="lg" className="px-8 py-4 text-lg font-semibold border-2 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200">
                   <Heart className="w-5 h-5 mr-2" />
