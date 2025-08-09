@@ -70,7 +70,8 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
-import { hashPassword, verifyPassword, generateEmailVerificationToken, generatePasswordResetToken, sanitizeUser, generateSearchId } from "./lib/auth";
+import { hashPassword, verifyPassword, migrateUserPassword } from "./lib/authUpgrade";
+import { generateEmailVerificationToken, generatePasswordResetToken, sanitizeUser, generateSearchId } from "./lib/auth";
 import { encryptPII, decryptPII, encryptEmail, decryptEmail, hashForSearch, encryptSearchData, decryptSearchData } from "./lib/encryption";
 import { 
   generateSecureSecret, 
@@ -445,6 +446,16 @@ export class DatabaseStorage implements IStorage {
     console.log("Password valid:", isValidPassword);
     
     if (!isValidPassword) return null;
+    
+    // Migrate password if using legacy bcrypt
+    if (!user.passwordHash.startsWith('$argon2id$')) {
+      console.log("🔐 Migrating password from bcrypt to Argon2id");
+      const newHash = await migrateUserPassword(password, user.passwordHash);
+      if (newHash && newHash !== user.passwordHash) {
+        await this.updateUser(user.id, { passwordHash: newHash });
+        console.log("🔐 Password migration completed successfully");
+      }
+    }
     
     // Update last login time
     await this.updateUser(user.id, { lastLoginAt: new Date() });

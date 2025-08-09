@@ -86,8 +86,16 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
         if (!isBlocked) {
           console.log('Ad blocker not detected');
         } else {
-          console.log('Ad blocker detected');
+          console.log('Ad blocker detected - ads will not be shown');
         }
+        
+        // Additional debug info
+        console.log('Ad manager state:', {
+          isAdBlocked: isBlocked,
+          globallyEnabled: config.globallyEnabled,
+          consentGiven: config.consentGiven,
+          canShowAds: config.consentGiven && config.globallyEnabled && !isBlocked
+        });
       }, 100);
     };
 

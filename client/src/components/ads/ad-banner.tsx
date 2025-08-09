@@ -41,7 +41,7 @@ export default function AdBanner({
   }
 
   return (
-    <div className={`ad-container ${className}`}>
+    <div className={`ad-container ${className}`} style={{ minWidth: '300px', minHeight: '250px', ...style }}>
       <Adsense
         client={client}
         slot={slot}
