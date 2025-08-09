@@ -29,24 +29,24 @@ class ConsentIntegration {
   }
 
   private initializeGoogleConsent() {
-    // Initialize Google Consent Mode v2
-    if (typeof window !== 'undefined') {
+    // Initialize Google Consent Mode v2 - Non-blocking for authentication
+    if (typeof window !== 'undefined' && !(window as any).__consentInitialized) {
       window.dataLayer = window.dataLayer || [];
       window.gtag = function() {
         window.dataLayer?.push(arguments);
       };
 
       // Set default consent state (before user interaction)
+      // Ensure authentication and core functionality always work
       window.gtag('consent', 'default', {
         ad_storage: 'denied',
         ad_user_data: 'denied',
         ad_personalization: 'denied',
         analytics_storage: 'denied',
-        functionality_storage: 'granted',
+        functionality_storage: 'granted', // Required for authentication
         personalization_storage: 'denied',
-        security_storage: 'granted',
-        // New 2025 consent types
-        wait_for_update: 500 // Wait for CMP
+        security_storage: 'granted', // Required for authentication
+        // Remove wait_for_update to prevent blocking
       });
 
       // Enhanced measurement for better analytics
@@ -56,6 +56,8 @@ class ConsentIntegration {
         restricted_data_processing: true
       });
 
+      // Mark as initialized to prevent duplicates
+      (window as any).__consentInitialized = true;
       this.initialized = true;
     }
   }

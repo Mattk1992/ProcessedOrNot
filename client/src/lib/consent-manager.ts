@@ -79,76 +79,101 @@ class ConsentManager {
   }
 
   private initializeGPP() {
-    // GPP API implementation
-    (window as any).__gpp = (command: string, parameter?: any, callback?: Function) => {
-      if (command === 'addEventListener') {
-        // Handle event listeners
-        if (callback) callback({ eventName: 'signalStatus', data: 'ready' });
-      } else if (command === 'getGPPData') {
-        const gppData = {
-          gppString: this.consent?.gppString || '',
-          applicableSections: this.getApplicableSections(),
-          gppVersion: 1,
-          sectionList: this.getSectionList()
-        };
-        if (callback) callback(gppData, true);
-        return gppData;
-      } else if (command === 'ping') {
-        const pingData = {
-          gppVersion: 1,
-          cmpStatus: 'loaded',
-          cmpDisplayStatus: this.settings.showBanner ? 'visible' : 'hidden',
-          applicableSections: this.getApplicableSections(),
-          supportedAPIs: ['2:tcfeuv2', '5:tcfcav1', '6:uspv1', '7:usnatv1']
-        };
-        if (callback) callback(pingData, true);
-        return pingData;
-      }
-    };
+    // GPP API implementation - Ensure it doesn't block authentication
+    if (!(window as any).__gpp) {
+      (window as any).__gpp = (command: string, parameter?: any, callback?: Function) => {
+        try {
+          if (command === 'addEventListener') {
+            // Handle event listeners - non-blocking
+            setTimeout(() => {
+              if (callback) callback({ eventName: 'signalStatus', data: 'ready' });
+            }, 0);
+          } else if (command === 'getGPPData') {
+            const gppData = {
+              gppString: this.consent?.gppString || '',
+              applicableSections: this.getApplicableSections(),
+              gppVersion: 1,
+              sectionList: this.getSectionList()
+            };
+            if (callback) {
+              setTimeout(() => callback(gppData, true), 0);
+            }
+            return gppData;
+          } else if (command === 'ping') {
+            const pingData = {
+              gppVersion: 1,
+              cmpStatus: 'loaded',
+              cmpDisplayStatus: this.settings.showBanner ? 'visible' : 'hidden',
+              applicableSections: this.getApplicableSections(),
+              supportedAPIs: ['2:tcfeuv2', '5:tcfcav1', '6:uspv1', '7:usnatv1']
+            };
+            if (callback) {
+              setTimeout(() => callback(pingData, true), 0);
+            }
+            return pingData;
+          }
+        } catch (error) {
+          console.warn('GPP API error (non-blocking):', error);
+          if (callback) callback(null, false);
+        }
+      };
 
-    // Make GPP API available
-    (window as any).__gpp.queue = [];
-    (window as any).__gpp.events = {};
+      // Make GPP API available
+      (window as any).__gpp.queue = [];
+      (window as any).__gpp.events = {};
+    }
   }
 
   private initializeTCF() {
-    // TCF API for GDPR compliance
-    (window as any).__tcfapi = (command: string, version: number, callback: Function, parameter?: any) => {
-      if (command === 'addEventListener') {
-        // Handle TCF event listeners
-        callback({ eventStatus: 'tcloaded', cmpStatus: 'loaded' }, true);
-      } else if (command === 'getTCData') {
-        const tcData = {
-          tcString: this.consent?.tcString || '',
-          gdprApplies: this.settings.region === 'EU',
-          cmpId: 1,
-          cmpVersion: 1,
-          cmpStatus: 'loaded',
-          eventStatus: 'tcloaded',
-          isServiceSpecific: true,
-          useNonStandardStacks: false,
-          purposeOneTreatment: false,
-          publisherCC: this.getPublisherCountryCode(),
-          outOfBand: {
-            allowedVendors: {},
-            disclosedVendors: {}
+    // TCF API for GDPR compliance - Non-blocking
+    if (!(window as any).__tcfapi) {
+      (window as any).__tcfapi = (command: string, version: number, callback: Function, parameter?: any) => {
+        try {
+          if (command === 'addEventListener') {
+            // Handle TCF event listeners - non-blocking
+            setTimeout(() => {
+              callback({ eventStatus: 'tcloaded', cmpStatus: 'loaded' }, true);
+            }, 0);
+          } else if (command === 'getTCData') {
+            const tcData = {
+              tcString: this.consent?.tcString || '',
+              gdprApplies: this.settings.region === 'EU',
+              cmpId: 1,
+              cmpVersion: 1,
+              cmpStatus: 'loaded',
+              eventStatus: 'tcloaded',
+              isServiceSpecific: true,
+              useNonStandardStacks: false,
+              purposeOneTreatment: false,
+              publisherCC: this.getPublisherCountryCode(),
+              outOfBand: {
+                allowedVendors: {},
+                disclosedVendors: {}
+              }
+            };
+            setTimeout(() => callback(tcData, true), 0);
+          } else if (command === 'ping') {
+            const pingData = {
+              gdprApplies: this.settings.region === 'EU',
+              cmpLoaded: true,
+              cmpStatus: 'loaded',
+              displayStatus: this.settings.showBanner ? 'visible' : 'hidden',
+              apiVersion: '2.2',
+              cmpVersion: 1,
+              cmpId: 1,
+              gvlVersion: 2,
+              tcfPolicyVersion: 4
+            };
+            setTimeout(() => callback(pingData, true), 0);
           }
-        };
-        callback(tcData, true);
-      } else if (command === 'ping') {
-        callback({
-          gdprApplies: this.settings.region === 'EU',
-          cmpLoaded: true,
-          cmpStatus: 'loaded',
-          displayStatus: this.settings.showBanner ? 'visible' : 'hidden',
-          apiVersion: '2.2',
-          cmpVersion: 1,
-          cmpId: 1,
-          gvlVersion: 2,
-          tcfPolicyVersion: 4
-        }, true);
-      }
-    };
+        } catch (error) {
+          console.warn('TCF API error (non-blocking):', error);
+          if (callback) callback(null, false);
+        }
+      };
+
+      (window as any).__tcfapi.queue = [];
+    }
 
     (window as any).__tcfapi.queue = [];
   }
