@@ -1309,6 +1309,45 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                 </CardContent>
               </Card>
 
+              {/* Nutrition Spotlight Section */}
+              {product?.nutriments && (
+                <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <TrendingUp className="w-5 h-5 text-emerald-600" />
+                      Nutrition Spotlight & Analysis
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <NutritionSpotlight 
+                      productName={product.productName || "Unknown Product"}
+                      nutriments={product.nutriments as Record<string, any> | null}
+                      processingScore={product.processingScore || 0}
+                      barcode={product.barcode}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Fun Facts Section */}
+              <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Sparkles className="w-5 h-5 text-amber-600" />
+                    Fun Facts & Insights
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <FunFacts 
+                    productName={product?.productName || "Unknown Product"}
+                    ingredients={product?.ingredientsText || ""}
+                    nutriments={product?.nutriments as Record<string, any> | null}
+                    processingScore={product?.processingScore || 0}
+                    barcode={product?.barcode || ""}
+                  />
+                </CardContent>
+              </Card>
+
               {/* NutriBot Insight Section */}
               {nutriBotInsight && (
                 <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
