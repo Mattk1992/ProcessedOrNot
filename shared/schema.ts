@@ -526,6 +526,38 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Notification = typeof notifications.$inferSelect;
 
+// Rewarding System Settings table
+export const rewardingSystemSettings = pgTable("rewarding_system_settings", {
+  id: serial("id").primaryKey(),
+  enabled: boolean("enabled").notNull().default(false),
+  pointsPerProduct: integer("points_per_product").notNull().default(10),
+  pointsPerReview: integer("points_per_review").notNull().default(20),
+  pointsPerReferral: integer("points_per_referral").notNull().default(50),
+  minRedemptionPoints: integer("min_redemption_points").notNull().default(100),
+  enabledRewards: text("enabled_rewards").array().default([]), // Array of reward types
+  rewardMultiplier: real("reward_multiplier").notNull().default(1.0),
+  bonusPointsEnabled: boolean("bonus_points_enabled").notNull().default(false),
+  dailyPointsLimit: integer("daily_points_limit").notNull().default(500),
+  weeklyPointsLimit: integer("weekly_points_limit").notNull().default(2000),
+  monthlyPointsLimit: integer("monthly_points_limit").notNull().default(8000),
+  expirationDays: integer("expiration_days").notNull().default(365), // Points expire after X days
+  levelSystemEnabled: boolean("level_system_enabled").notNull().default(false),
+  notifications: boolean("notifications").notNull().default(true),
+  description: text("description"),
+  termsAndConditions: text("terms_and_conditions"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertRewardingSystemSettingsSchema = createInsertSchema(rewardingSystemSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertRewardingSystemSettings = z.infer<typeof insertRewardingSystemSettingsSchema>;
+export type RewardingSystemSettings = typeof rewardingSystemSettings.$inferSelect;
+
 // Data Change Requests table - for product data corrections and additions
 export const dataChangeRequests = pgTable("data_change_requests", {
   id: serial("id").primaryKey(),

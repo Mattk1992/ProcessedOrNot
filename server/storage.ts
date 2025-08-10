@@ -63,7 +63,10 @@ import {
   type InsertSpeechSettings,
   userOnboarding,
   type UserOnboarding,
-  type InsertUserOnboarding
+  type InsertUserOnboarding,
+  rewardingSystemSettings,
+  type RewardingSystemSettings,
+  type InsertRewardingSystemSettings
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -276,6 +279,11 @@ export interface IStorage {
   createUserOnboarding(onboarding: InsertUserOnboarding): Promise<UserOnboarding>;
   updateUserOnboarding(userId: number, onboarding: Partial<InsertUserOnboarding>): Promise<UserOnboarding | undefined>;
   markOnboardingComplete(userId: number): Promise<boolean>;
+
+  // Rewarding System Settings methods
+  getRewardingSystemSettings(): Promise<RewardingSystemSettings>;
+  updateRewardingSystemSettings(settings: Partial<InsertRewardingSystemSettings>): Promise<RewardingSystemSettings>;
+  initializeDefaultRewardingSystemSettings(): Promise<RewardingSystemSettings>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2454,6 +2462,79 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     return !!(onboardingResult && userResult);
+  }
+
+  // Rewarding System Settings methods
+  async getRewardingSystemSettings(): Promise<RewardingSystemSettings> {
+    const [settings] = await db.select().from(rewardingSystemSettings).limit(1);
+    
+    if (!settings) {
+      // Initialize with defaults if no settings exist
+      return await this.initializeDefaultRewardingSystemSettings();
+    }
+    
+    return settings;
+  }
+
+  async updateRewardingSystemSettings(updates: Partial<InsertRewardingSystemSettings>): Promise<RewardingSystemSettings> {
+    // First try to update existing settings
+    const [updated] = await db
+      .update(rewardingSystemSettings)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    if (updated) {
+      return updated;
+    }
+
+    // If no existing settings, create new ones with the updates
+    const [created] = await db
+      .insert(rewardingSystemSettings)
+      .values({
+        ...updates,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    return created;
+  }
+
+  async initializeDefaultRewardingSystemSettings(): Promise<RewardingSystemSettings> {
+    const [existing] = await db.select().from(rewardingSystemSettings).limit(1);
+    
+    if (existing) {
+      return existing;
+    }
+
+    const [created] = await db
+      .insert(rewardingSystemSettings)
+      .values({
+        enabled: false,
+        pointsPerProduct: 10,
+        pointsPerReview: 20,
+        pointsPerReferral: 50,
+        minRedemptionPoints: 100,
+        enabledRewards: [],
+        rewardMultiplier: 1.0,
+        bonusPointsEnabled: false,
+        dailyPointsLimit: 500,
+        weeklyPointsLimit: 2000,
+        monthlyPointsLimit: 8000,
+        expirationDays: 365,
+        levelSystemEnabled: false,
+        notifications: true,
+        description: "Earn points by adding products, writing reviews, and referring friends!",
+        termsAndConditions: "Points expire after 365 days. Minimum redemption is 100 points.",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    return created;
   }
 }
 

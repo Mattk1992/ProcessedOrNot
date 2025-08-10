@@ -11,12 +11,13 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, History, Database, Mic } from "lucide-react";
+import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, History, Database, Mic, Gift } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import AdminSettings from "@/components/admin-settings";
 import DebugCascadingDB from "@/components/debug-cascading-db";
 import SpeechSettings from "@/components/speech-settings";
 import ProductManagement from "@/components/product-management";
+import AdminRewardingSystem from "@/components/admin-rewarding-system";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface User {
@@ -268,7 +269,7 @@ export default function AdminPanel() {
         <div className="mb-6 md:mb-8">
           <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
             <Tabs defaultValue="debug-db" className="w-full">
-              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 p-1 m-4 mb-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-slate-200/50 dark:border-gray-600/50 shadow-inner">
+              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 p-1 m-4 mb-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-slate-200/50 dark:border-gray-600/50 shadow-inner">
                 <TabsTrigger 
                   value="debug-db" 
                   className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/25 font-medium"
@@ -308,6 +309,14 @@ export default function AdminPanel() {
                   <Users className="w-4 h-4 flex-shrink-0" />
                   <span className="hidden sm:inline text-sm">Users</span>
                   <span className="sm:hidden text-xs">User</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="rewarding-system" 
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/25 font-medium"
+                >
+                  <Gift className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">Rewards</span>
+                  <span className="sm:hidden text-xs">Rew</span>
                 </TabsTrigger>
               </TabsList>
 
@@ -550,6 +559,24 @@ export default function AdminPanel() {
                       </Card>
                     </div>
                       </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Rewarding System Tab */}
+                <TabsContent value="rewarding-system" className="mt-0 animate-in fade-in-50 duration-200">
+                  <div className="bg-gradient-to-br from-purple-50/50 to-pink-50/30 dark:from-purple-900/20 dark:to-pink-900/10 rounded-xl p-1 border border-purple-200/30 dark:border-purple-700/30">
+                    <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 backdrop-blur-sm">
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-600 text-white">
+                          <Gift className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Rewarding System</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Configure points, rewards, and user engagement features</p>
+                        </div>
+                      </div>
+                      <AdminRewardingSystem />
                     </div>
                   </div>
                 </TabsContent>

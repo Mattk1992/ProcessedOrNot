@@ -1661,6 +1661,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint to get rewarding system settings
+  app.get("/api/admin/rewarding-system", async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const user = await storage.getUserById(req.session.userId);
+      if (!user || user.accountType !== 'Admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      const settings = await storage.getRewardingSystemSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching rewarding system settings:", error);
+      res.status(500).json({ error: "Failed to fetch rewarding system settings" });
+    }
+  });
+
+  // Admin endpoint to update rewarding system settings
+  app.put("/api/admin/rewarding-system", async (req, res) => {
+    try {
+      if (!req.session?.userId) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const user = await storage.getUserById(req.session.userId);
+      if (!user || user.accountType !== 'Admin') {
+        return res.status(403).json({ error: "Admin access required" });
+      }
+      
+      const updates = req.body;
+      const settings = await storage.updateRewardingSystemSettings(updates);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error updating rewarding system settings:", error);
+      res.status(500).json({ error: "Failed to update rewarding system settings" });
+    }
+  });
+
   // Debug endpoint for glycemic index testing
   app.post("/api/debug/glycemic", async (req, res) => {
     try {
