@@ -3,7 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { MessageCircle, X, Send, Bot, User, Loader2, Flag, AlertTriangle, RotateCcw } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface Message {
@@ -13,6 +18,8 @@ interface Message {
   timestamp: Date;
 }
 
+type ReportType = 'bug' | 'translation' | 'suspicious' | 'wrong_info';
+
 export default function NutriBotChat() {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -20,6 +27,14 @@ export default function NutriBotChat() {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { t, language } = useLanguage();
+  const { toast } = useToast();
+
+  // Report dialog state
+  const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
+  const [reportType, setReportType] = useState<ReportType | ''>('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [reportingMessageId, setReportingMessageId] = useState<string | null>(null);
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -89,6 +104,68 @@ export default function NutriBotChat() {
     sendMessage(inputValue);
   };
 
+  const openReportDialog = (messageId?: string) => {
+    setReportingMessageId(messageId || null);
+    setReportType('');
+    setReportDescription('');
+    setIsReportDialogOpen(true);
+  };
+
+  const submitReport = async () => {
+    if (!reportType || !reportDescription.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a report type and provide a description.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmittingReport(true);
+
+    try {
+      const reportData = {
+        type: reportType,
+        description: reportDescription.trim(),
+        messageId: reportingMessageId,
+        messageContent: reportingMessageId ? messages.find(m => m.id === reportingMessageId)?.content : null,
+        language: language,
+        timestamp: new Date().toISOString(),
+      };
+
+      const response = await fetch('/api/nutribot/report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reportData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit report');
+      }
+
+      toast({
+        title: "Report Submitted",
+        description: "Thank you for your feedback. We'll review your report shortly.",
+      });
+
+      setIsReportDialogOpen(false);
+      setReportType('');
+      setReportDescription('');
+      setReportingMessageId(null);
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      toast({
+        title: "Error",
+        description: "Failed to submit report. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingReport(false);
+    }
+  };
+
   const startNewConversation = () => {
     setMessages([]);
     const welcomeMessage: Message = {
@@ -138,13 +215,22 @@ export default function NutriBotChat() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
+                    onClick={() => openReportDialog()}
+                    variant="ghost"
+                    size="sm"
+                    className="text-white/80 hover:text-white hover:bg-white/10 h-8 w-8 p-0"
+                    title="Report an issue"
+                  >
+                    <Flag className="w-4 h-4" />
+                  </Button>
+                  <Button
                     onClick={startNewConversation}
                     variant="ghost"
                     size="sm"
                     className="text-white/80 hover:text-white hover:bg-white/10 h-8 w-8 p-0"
                     title="New conversation"
                   >
-                    <Bot className="w-4 h-4" />
+                    <RotateCcw className="w-4 h-4" />
                   </Button>
                   <Button
                     onClick={() => setIsOpen(false)}
@@ -165,25 +251,39 @@ export default function NutriBotChat() {
                   {messages.map((message) => (
                     <div
                       key={message.id}
-                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                      className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} group`}
                     >
-                      <div
-                        className={`max-w-[80%] rounded-2xl p-3 ${
-                          message.role === 'user'
-                            ? 'bg-gradient-to-r from-primary to-accent text-white'
-                            : 'bg-muted text-foreground'
-                        }`}
-                      >
-                        <div className="flex items-start space-x-2">
-                          {message.role === 'assistant' && (
-                            <Bot className="w-4 h-4 mt-1 text-primary" />
-                          )}
-                          {message.role === 'user' && (
-                            <User className="w-4 h-4 mt-1 text-white" />
-                          )}
-                          <div className="text-sm leading-relaxed">
-                            {message.content}
+                      <div className="flex flex-col space-y-1 max-w-[80%]">
+                        <div
+                          className={`rounded-2xl p-3 ${
+                            message.role === 'user'
+                              ? 'bg-gradient-to-r from-primary to-accent text-white'
+                              : 'bg-muted text-foreground'
+                          }`}
+                        >
+                          <div className="flex items-start space-x-2">
+                            {message.role === 'assistant' && (
+                              <Bot className="w-4 h-4 mt-1 text-primary" />
+                            )}
+                            {message.role === 'user' && (
+                              <User className="w-4 h-4 mt-1 text-white" />
+                            )}
+                            <div className="text-sm leading-relaxed">
+                              {message.content}
+                            </div>
                           </div>
+                        </div>
+                        {/* Report button for individual messages */}
+                        <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                          <Button
+                            onClick={() => openReportDialog(message.id)}
+                            variant="ghost"
+                            size="sm"
+                            className="opacity-0 group-hover:opacity-100 transition-opacity h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                          >
+                            <Flag className="w-3 h-3 mr-1" />
+                            Report
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -232,6 +332,91 @@ export default function NutriBotChat() {
           </Card>
         </div>
       )}
+
+      {/* Report Dialog */}
+      <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-orange-500" />
+              Report Issue
+            </DialogTitle>
+            <DialogDescription>
+              {reportingMessageId 
+                ? "Report a problem with this specific message" 
+                : "Report a general issue with NutriBot"
+              }
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="report-type">Report Type</Label>
+              <Select 
+                value={reportType} 
+                onValueChange={(value: ReportType) => setReportType(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select what you want to report" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="bug">Bug / Technical Issue</SelectItem>
+                  <SelectItem value="translation">Bad Translation</SelectItem>
+                  <SelectItem value="suspicious">Suspicious User Activity</SelectItem>
+                  <SelectItem value="wrong_info">Wrong Information/Data</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="report-description">Description</Label>
+              <Textarea
+                id="report-description"
+                placeholder="Please describe the issue in detail..."
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                className="min-h-[100px]"
+              />
+            </div>
+
+            {reportingMessageId && (
+              <div className="p-3 bg-muted rounded-lg">
+                <Label className="text-sm font-medium">Reported Message:</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  "{messages.find(m => m.id === reportingMessageId)?.content}"
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end space-x-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsReportDialogOpen(false)}
+              disabled={isSubmittingReport}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={submitReport}
+              disabled={isSubmittingReport || !reportType || !reportDescription.trim()}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isSubmittingReport ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Flag className="w-4 h-4 mr-2" />
+                  Submit Report
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

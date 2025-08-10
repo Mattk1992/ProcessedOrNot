@@ -2848,6 +2848,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // NutriBot Report endpoints
+  app.post("/api/nutribot/report", requireAuth, async (req: any, res) => {
+    try {
+      const { type, description, messageId, messageContent, language, timestamp } = req.body;
+      const userId = req.session.userId;
+
+      if (!type || !description) {
+        return res.status(400).json({ 
+          message: 'Report type and description are required' 
+        });
+      }
+
+      const report = {
+        id: Date.now().toString(),
+        userId,
+        type,
+        description: description.trim(),
+        messageId,
+        messageContent,
+        language,
+        timestamp,
+        createdAt: new Date(),
+      };
+
+      console.log('NutriBot Report Submitted:', {
+        reportId: report.id,
+        userId: report.userId,
+        type: report.type,
+        description: report.description.substring(0, 100) + (report.description.length > 100 ? '...' : ''),
+        messageId: report.messageId,
+        language: report.language
+      });
+
+      res.json({ 
+        message: 'Report submitted successfully',
+        reportId: report.id 
+      });
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      res.status(500).json({ 
+        message: 'Failed to submit report' 
+      });
+    }
+  });
+
   // Onboarding endpoints
   // Get user onboarding data
   app.get("/api/onboarding", requireAuth, async (req, res) => {
