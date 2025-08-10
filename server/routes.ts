@@ -69,6 +69,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       secure: false, // Set to false for development, should be true in production with HTTPS
       httpOnly: true,
       sameSite: 'lax', // Better compatibility than 'strict'
+      path: '/', // Ensure cookie is available for all paths
+      domain: undefined, // Let the browser set the domain automatically
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days default
     },
   }));
