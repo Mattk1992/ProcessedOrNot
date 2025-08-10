@@ -31,6 +31,9 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
   const [showProductAnalysis, setShowProductAnalysis] = useState(false);
   const [showAddToDiary, setShowAddToDiary] = useState(false);
   const [portionAmount, setPortionAmount] = useState<string>("100");
+  const [consumedDateTime, setConsumedDateTime] = useState<string>(
+    new Date().toISOString().slice(0, 16) // Format: YYYY-MM-DDTHH:MM
+  );
   const [isAddingToDiary, setIsAddingToDiary] = useState(false);
   const { t, language } = useLanguage();
 
@@ -75,7 +78,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
         fiber: scaledNutriments.fiber || 0,
         processingScore: product.processingScore,
         mealType: "snack", // Default to snack, could be made configurable
-        consumedAt: new Date().toISOString(),
+        consumedAt: new Date(consumedDateTime).toISOString(),
         notes: "",
       };
 
@@ -93,6 +96,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
 
       setShowAddToDiary(false);
       setPortionAmount("100");
+      setConsumedDateTime(new Date().toISOString().slice(0, 16));
       alert("Product added to your nutrition diary!");
       
     } catch (error) {
@@ -909,6 +913,23 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                       </p>
                     </div>
 
+                    {/* Date and Time Input */}
+                    <div className="space-y-3">
+                      <Label htmlFor="consumed-datetime" className="text-base font-semibold">
+                        Date and Time Consumed
+                      </Label>
+                      <Input
+                        id="consumed-datetime"
+                        type="datetime-local"
+                        value={consumedDateTime}
+                        onChange={(e) => setConsumedDateTime(e.target.value)}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Select when you consumed this product
+                      </p>
+                    </div>
+
                     {/* Calculated Nutrition for Portion */}
                     {product?.nutriments && portionAmount && !isNaN(parseFloat(portionAmount)) && (
                       <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4">
@@ -953,7 +974,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                     {/* Add Button */}
                     <Button 
                       onClick={handleAddToDiary}
-                      disabled={isAddingToDiary || !portionAmount || isNaN(parseFloat(portionAmount))}
+                      disabled={isAddingToDiary || !portionAmount || isNaN(parseFloat(portionAmount)) || !consumedDateTime}
                       className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
                     >
                       {isAddingToDiary ? (
