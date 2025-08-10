@@ -79,23 +79,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Helper functions for reward tracking (works for both logged-in and anonymous users)
   function incrementRewardCount(req: any): number {
-    // Ensure session exists for tracking (creates anonymous session if needed)
-    if (!req.session) {
-      req.session = {};
-    }
-    if (!req.session.reward_count) {
-      req.session.reward_count = 0;
-    }
-    req.session.reward_count++;
-    
-    // Save session to database immediately for persistence
-    req.session.save((err: any) => {
-      if (err) {
-        console.warn("Failed to save session for reward tracking:", err);
-      }
-    });
-    
-    return req.session.reward_count;
+    // Reward system disabled - do not increment counter
+    return 0;
   }
 
   function resetRewardCount(req: any): void {
@@ -114,7 +99,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }
 
   function getRewardCount(req: any): number {
-    return (req.session && req.session.reward_count) || 0;
+    // Reward system disabled - always return 0
+    return 0;
   }
 
   // Configure multer for voice file uploads
@@ -703,17 +689,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Query is required" });
       }
 
-      // Increment reward count for search attempts
-      const currentCount = incrementRewardCount(req);
-      
-      // Check if user needs to visit reward URL
-      if (currentCount >= 6) {
-        return res.status(428).json({ 
-          message: "Please visit the reward URL to continue searching",
-          rewardUrl: "https://ProcessedOrNot.replit.app/?reward=product-search",
-          currentCount: currentCount
-        });
-      }
+      // Reward system is disabled - no longer blocking searches
 
       // Check if we have cached product data
       const cachedProduct = await storage.getProductByBarcode(query);
@@ -800,17 +776,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
 
-      // Increment reward count for barcode scans
-      const currentCount = incrementRewardCount(req);
-      
-      // Check if user needs to visit reward URL
-      if (currentCount >= 6) {
-        return res.status(428).json({ 
-          message: "Please visit the reward URL to continue scanning",
-          rewardUrl: "https://ProcessedOrNot.replit.app/?reward=product-search",
-          currentCount: currentCount
-        });
-      }
+      // Reward system is disabled - no longer blocking scans
 
       // Check if we have cached product data
       const cachedProduct = await storage.getProductByBarcode(barcode);
@@ -2255,11 +2221,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Reward system endpoints
   // Get current reward count
   app.get("/api/rewards/count", ensureSession, (req: any, res) => {
-    const count = getRewardCount(req);
+    // Reward system disabled
     res.json({ 
-      rewardCount: count,
+      rewardCount: 0,
       maxCount: 6,
-      needsReward: count >= 6 
+      needsReward: false 
     });
   });
 
@@ -2283,14 +2249,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Check if reward is needed (for frontend to check without incrementing)
   app.get("/api/rewards/status", ensureSession, (req: any, res) => {
-    const count = getRewardCount(req);
-    const needsReward = count >= 6;
-    
+    // Reward system is disabled - always return no reward needed
     res.json({
-      currentCount: count,
+      currentCount: 0,
       maxCount: 6,
-      needsReward: needsReward,
-      rewardUrl: needsReward ? "https://ProcessedOrNot.replit.app/?reward=product-search" : null
+      needsReward: false,
+      rewardUrl: null
     });
   });
 
