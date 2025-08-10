@@ -1116,25 +1116,15 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                       )}
                     </Button>
 
-                    {/* Buttons Row */}
-                    <div className="flex gap-2">
-                      <Button 
-                        onClick={() => setShowReportModal(true)}
-                        variant="outline"
-                        className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/20"
-                      >
-                        <Flag className="w-4 h-4 mr-2" />
-                        Report Wrong Data
-                      </Button>
-                      
-                      <Button 
-                        onClick={() => setShowAnalysisSettings(true)}
-                        variant="outline"
-                        className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20"
-                      >
-                        <Settings className="w-4 h-4" />
-                      </Button>
-                    </div>
+                    {/* Report Button */}
+                    <Button 
+                      onClick={() => setShowReportModal(true)}
+                      variant="outline"
+                      className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/20"
+                    >
+                      <Flag className="w-4 h-4 mr-2" />
+                      Report Wrong Data
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -1769,14 +1759,26 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
           </ScrollArea>
 
           <div className="flex justify-between pt-4 border-t">
-            <Button 
-              onClick={handleEditProduct}
-              variant="outline"
-              className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20"
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Add Missing Data
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                onClick={handleEditProduct}
+                variant="outline"
+                size="sm"
+                className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20"
+              >
+                <Edit className="w-3 h-3 mr-1" />
+                Add Missing Data
+              </Button>
+              <Button 
+                onClick={() => setShowAnalysisSettings(true)}
+                variant="outline"
+                size="sm"
+                className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20"
+              >
+                <Settings className="w-3 h-3 mr-1" />
+                Settings
+              </Button>
+            </div>
             <Button variant="outline" onClick={() => setShowProductAnalysis(false)}>
               Close Analysis
             </Button>
