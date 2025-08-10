@@ -336,6 +336,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user profile endpoint
+  app.put("/api/auth/profile", requireAuth, async (req, res) => {
+    try {
+      const { firstName, lastName, email } = req.body;
+      const userId = req.session.userId;
+
+      // Basic validation
+      if (email && !email.includes('@')) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      // Check if email is already taken by another user
+      if (email) {
+        const existingUser = await storage.getUserByEmail(email);
+        if (existingUser && existingUser.id !== userId) {
+          return res.status(400).json({ message: "Email already in use" });
+        }
+      }
+
+      // Update user data
+      const updateData: any = {};
+      if (firstName !== undefined) updateData.firstName = firstName;
+      if (lastName !== undefined) updateData.lastName = lastName;
+      if (email !== undefined) updateData.email = email;
+      updateData.updatedAt = new Date();
+
+      const updatedUser = await storage.updateUser(userId, updateData);
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        message: "Profile updated successfully",
+        user: sanitizeUser(updatedUser)
+      });
+    } catch (error) {
+      console.error("Update profile error:", error);
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
   // Session debug endpoint (development only)
   if (process.env.NODE_ENV === 'development') {
     app.get("/api/debug/session", (req, res) => {

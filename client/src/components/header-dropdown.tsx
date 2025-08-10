@@ -131,6 +131,12 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
     
     // User Account
     { type: 'header', label: 'User Account', expandable: true, expanded: true },
+    {
+      label: 'User Profile',
+      icon: <User className="w-4 h-4" />,
+      action: () => setLocation('/profile'),
+      group: 'User Account'
+    },
     ...(user?.accountType === 'Admin' ? [
       {
         label: 'Dashboard',

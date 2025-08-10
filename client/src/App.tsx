@@ -36,6 +36,7 @@ import NutriDashboard from "@/pages/nutri-dashboard";
 import NutriDiary from "@/pages/nutri-diary";
 import NutriProgress from "@/pages/nutri-progress";
 import NutriProfile from "@/pages/nutri-profile";
+import UserProfile from "@/pages/user-profile";
 import LookupHistory from "@/pages/lookup-history";
 
 import { AdManagerProvider, AdConsentBanner } from "@/components/ads";
@@ -75,6 +76,7 @@ function Router() {
         <Route path="/login" component={Auth} />
         <Route path="/register" component={Auth} />
         <Route path="/auth" component={Auth} />
+        <Route path="/profile" component={UserProfile} />
         <Route path="/nutri-dashboard/settings" component={Settings} />
         <Route path="/nutri-dashboard/site-info" component={SiteInfo} />
         <Route path="/consent-settings" component={ConsentSettings} />
