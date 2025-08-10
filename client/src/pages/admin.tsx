@@ -49,6 +49,7 @@ export default function AdminPanel() {
   const queryClient = useQueryClient();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newAccountType, setNewAccountType] = useState<string>("");
+  const [activeTab, setActiveTab] = useState('overview');
 
   // Redirect if not admin
   useEffect(() => {
@@ -265,22 +266,179 @@ export default function AdminPanel() {
           </div>
         )}
 
-        {/* Main Admin Panel with Tabs */}
-        <div className="mb-6 md:mb-8">
-          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
-            <Tabs defaultValue="debug-db" className="w-full">
-              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 p-1 m-4 mb-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-slate-200/50 dark:border-gray-600/50 shadow-inner">
-                <TabsTrigger 
-                  value="debug-db" 
-                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/25 font-medium"
+        {/* Navigation Categories */}
+        <div className="mb-6 md:mb-8 space-y-6">
+          {/* Primary Management Section */}
+          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                <Shield className="w-6 h-6 text-blue-600" />
+                Core Management
+              </CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
+                Essential administrative functions and data management
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Card 
+                  className="group hover:shadow-md transition-all duration-200 cursor-pointer border-2 border-transparent hover:border-orange-200 dark:hover:border-orange-800"
+                  onClick={() => setActiveTab('user-management')}
                 >
-                  <Database className="w-4 h-4 flex-shrink-0" />
-                  <span className="hidden sm:inline text-sm">Debug DB</span>
-                  <span className="sm:hidden text-xs">DB</span>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 rounded-lg bg-gradient-to-r from-orange-500 to-red-600 text-white group-hover:scale-110 transition-transform duration-200">
+                        <Users className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">User Management</h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Manage accounts & permissions</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Control user roles, account types, and access levels across the platform.</p>
+                  </CardContent>
+                </Card>
+
+                <Card 
+                  className="group hover:shadow-md transition-all duration-200 cursor-pointer border-2 border-transparent hover:border-amber-200 dark:hover:border-amber-800"
+                  onClick={() => setActiveTab('product-management')}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-600 text-white group-hover:scale-110 transition-transform duration-200">
+                        <BarChart3 className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Product Database</h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Manage product catalog</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Add, edit, and organize products in the nutrition database.</p>
+                  </CardContent>
+                </Card>
+
+                <Card 
+                  className="group hover:shadow-md transition-all duration-200 cursor-pointer border-2 border-transparent hover:border-blue-200 dark:hover:border-blue-800"
+                  onClick={() => setActiveTab('debug-db')}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 text-white group-hover:scale-110 transition-transform duration-200">
+                        <Database className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Database Debug</h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">System diagnostics</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Monitor database performance and test connectivity.</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* System Configuration Section */}
+          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-3">
+                <Settings className="w-6 h-6 text-green-600" />
+                System Configuration
+              </CardTitle>
+              <CardDescription className="text-gray-600 dark:text-gray-400">
+                Application settings, features, and integrations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Card 
+                  className="group hover:shadow-md transition-all duration-200 cursor-pointer border-2 border-transparent hover:border-emerald-200 dark:hover:border-emerald-800"
+                  onClick={() => setActiveTab('settings')}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-600 text-white group-hover:scale-110 transition-transform duration-200">
+                        <Settings className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">General Settings</h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Core app configuration</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Configure global application settings and preferences.</p>
+                  </CardContent>
+                </Card>
+
+                <Card 
+                  className="group hover:shadow-md transition-all duration-200 cursor-pointer border-2 border-transparent hover:border-violet-200 dark:hover:border-violet-800"
+                  onClick={() => setActiveTab('speech-settings')}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 rounded-lg bg-gradient-to-r from-violet-500 to-purple-600 text-white group-hover:scale-110 transition-transform duration-200">
+                        <Mic className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Speech Settings</h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Voice transcription</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Configure speech-to-text and voice input features.</p>
+                  </CardContent>
+                </Card>
+
+                <Card 
+                  className="group hover:shadow-md transition-all duration-200 cursor-pointer border-2 border-transparent hover:border-purple-200 dark:hover:border-purple-800"
+                  onClick={() => setActiveTab('rewarding-system')}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 rounded-lg bg-gradient-to-r from-purple-500 to-pink-600 text-white group-hover:scale-110 transition-transform duration-200">
+                        <Gift className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Reward System</h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Points & engagement</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Configure user rewards, points, and engagement features.</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Detailed Management Panel */}
+          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 p-1 m-4 mb-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-slate-200/50 dark:border-gray-600/50 shadow-inner">
+                <TabsTrigger 
+                  value="overview" 
+                  className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-500 data-[state=active]:to-gray-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-slate-500/25 font-medium"
+                >
+                  <Shield className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">Overview</span>
+                  <span className="sm:hidden text-xs">Home</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="user-management" 
+                  className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-orange-500/25 font-medium"
+                >
+                  <Users className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">Users</span>
+                  <span className="sm:hidden text-xs">User</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="product-management" 
+                  className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 font-medium"
+                >
+                  <BarChart3 className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">Products</span>
+                  <span className="sm:hidden text-xs">Prod</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="settings" 
-                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25 font-medium"
+                  className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-emerald-500/25 font-medium"
                 >
                   <Settings className="w-4 h-4 flex-shrink-0" />
                   <span className="hidden sm:inline text-sm">Settings</span>
@@ -288,39 +446,163 @@ export default function AdminPanel() {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="speech-settings" 
-                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-violet-500/25 font-medium"
+                  className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-violet-500 data-[state=active]:to-purple-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-violet-500/25 font-medium"
                 >
                   <Mic className="w-4 h-4 flex-shrink-0" />
                   <span className="hidden sm:inline text-sm">Speech</span>
                   <span className="sm:hidden text-xs">Mic</span>
                 </TabsTrigger>
                 <TabsTrigger 
-                  value="product-management" 
-                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 font-medium"
-                >
-                  <BarChart3 className="w-4 h-4 flex-shrink-0" />
-                  <span className="hidden sm:inline text-sm">Products</span>
-                  <span className="sm:hidden text-xs">Prod</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="user-management" 
-                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-orange-500/25 font-medium"
-                >
-                  <Users className="w-4 h-4 flex-shrink-0" />
-                  <span className="hidden sm:inline text-sm">Users</span>
-                  <span className="sm:hidden text-xs">User</span>
-                </TabsTrigger>
-                <TabsTrigger 
                   value="rewarding-system" 
-                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/25 font-medium"
+                  className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-purple-500/25 font-medium"
                 >
                   <Gift className="w-4 h-4 flex-shrink-0" />
                   <span className="hidden sm:inline text-sm">Rewards</span>
                   <span className="sm:hidden text-xs">Rew</span>
                 </TabsTrigger>
+                <TabsTrigger 
+                  value="debug-db" 
+                  className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/25 font-medium"
+                >
+                  <Database className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">Debug</span>
+                  <span className="sm:hidden text-xs">DB</span>
+                </TabsTrigger>
               </TabsList>
 
               <div className="p-6">
+                {/* Overview Tab */}
+                <TabsContent value="overview" className="mt-0 animate-in fade-in-50 duration-200">
+                  <div className="space-y-6">
+                    <div className="text-center mb-8">
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">Admin Dashboard Overview</h3>
+                      <p className="text-gray-600 dark:text-gray-400">Comprehensive administrative control center for ProcessedOrNot Scanner</p>
+                    </div>
+
+                    {/* Quick Actions Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                      {/* Core Management Section */}
+                      <Card className="border-2 border-orange-200 dark:border-orange-800/50 bg-gradient-to-br from-orange-50/50 to-red-50/30 dark:from-orange-900/10 dark:to-red-900/10">
+                        <CardHeader>
+                          <CardTitle className="text-lg text-orange-800 dark:text-orange-200 flex items-center gap-2">
+                            <Users className="w-5 h-5" />
+                            User Management
+                          </CardTitle>
+                          <CardDescription className="text-orange-700 dark:text-orange-300">
+                            Control user accounts, roles, and permissions
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">Total Users</span>
+                              <span className="font-semibold text-gray-900 dark:text-gray-100">{stats?.totalUsers || 0}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">Admin Users</span>
+                              <span className="font-semibold text-gray-900 dark:text-gray-100">{stats?.adminUsers || 0}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">Verified Users</span>
+                              <span className="font-semibold text-gray-900 dark:text-gray-100">{stats?.verifiedUsers || 0}</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-2 border-amber-200 dark:border-amber-800/50 bg-gradient-to-br from-amber-50/50 to-yellow-50/30 dark:from-amber-900/10 dark:to-yellow-900/10">
+                        <CardHeader>
+                          <CardTitle className="text-lg text-amber-800 dark:text-amber-200 flex items-center gap-2">
+                            <BarChart3 className="w-5 h-5" />
+                            Product Database
+                          </CardTitle>
+                          <CardDescription className="text-amber-700 dark:text-amber-300">
+                            Manage nutrition database entries
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">Total Products</span>
+                              <span className="font-semibold text-gray-900 dark:text-gray-100">{stats?.totalProducts || 0}</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">Recent Searches</span>
+                              <span className="font-semibold text-gray-900 dark:text-gray-100">{stats?.recentSearches || 0}</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="border-2 border-emerald-200 dark:border-emerald-800/50 bg-gradient-to-br from-emerald-50/50 to-teal-50/30 dark:from-emerald-900/10 dark:to-teal-900/10">
+                        <CardHeader>
+                          <CardTitle className="text-lg text-emerald-800 dark:text-emerald-200 flex items-center gap-2">
+                            <Settings className="w-5 h-5" />
+                            System Health
+                          </CardTitle>
+                          <CardDescription className="text-emerald-700 dark:text-emerald-300">
+                            Application status and configuration
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">System Status</span>
+                              <span className="font-semibold text-green-600 dark:text-green-400">Healthy</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-gray-600 dark:text-gray-400">Database</span>
+                              <span className="font-semibold text-green-600 dark:text-green-400">Connected</span>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Feature Status Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card className="bg-gradient-to-br from-violet-50/50 to-purple-50/30 dark:from-violet-900/10 dark:to-purple-900/10 border border-violet-200 dark:border-violet-700/50">
+                        <CardContent className="p-4 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Mic className="w-5 h-5 text-violet-600 dark:text-violet-400" />
+                            <div>
+                              <p className="font-medium text-gray-900 dark:text-gray-100">Speech-to-Text</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">Voice search enabled</p>
+                            </div>
+                          </div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-gradient-to-br from-purple-50/50 to-pink-50/30 dark:from-purple-900/10 dark:to-pink-900/10 border border-purple-200 dark:border-purple-700/50">
+                        <CardContent className="p-4 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Gift className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            <div>
+                              <p className="font-medium text-gray-900 dark:text-gray-100">Reward System</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">User engagement</p>
+                            </div>
+                          </div>
+                          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-blue-900/10 dark:to-indigo-900/10 border border-blue-200 dark:border-blue-700/50">
+                        <CardContent className="p-4 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Database className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            <div>
+                              <p className="font-medium text-gray-900 dark:text-gray-100">Database Monitor</p>
+                              <p className="text-sm text-gray-600 dark:text-gray-400">Debug & diagnostics</p>
+                            </div>
+                          </div>
+                          <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                </TabsContent>
+
                 {/* Debug Cascading DB Tab */}
                 <TabsContent value="debug-db" className="mt-0 animate-in fade-in-50 duration-200">
                   <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/30 dark:from-blue-900/20 dark:to-indigo-900/10 rounded-xl p-1 border border-blue-200/30 dark:border-blue-700/30">
