@@ -312,10 +312,20 @@ export default function NutriDashboard() {
             </Card>
           </Link>
           
-          <Link href="/lookup-history">
+          <Link href="/nutrition-calendar">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <Calendar className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                <p className="font-medium">Nutrition Calendar</p>
+                <p className="text-xs text-muted-foreground mt-1">Track daily intake</p>
+              </CardContent>
+            </Card>
+          </Link>
+          
+          <Link href="/lookup-history">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <Calendar className="w-8 h-8 text-blue-500 mx-auto mb-2" />
                 <p className="font-medium">Lookup History</p>
                 <p className="text-xs text-muted-foreground mt-1">Past searches</p>
               </CardContent>
