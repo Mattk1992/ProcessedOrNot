@@ -3171,7 +3171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (request.proposedChanges && request.productBarcode) {
         try {
           await storage.updateProductByBarcode(request.productBarcode, request.proposedChanges as any);
-          await storage.updateDataChangeRequest(request.id, { appliedAt: new Date() });
+          // Note: appliedAt would need to be added to schema if tracking application time is needed
         } catch (error) {
           console.error("Error applying data changes:", error);
         }

@@ -5,11 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles, X, Info, BarChart3, Zap, TrendingUp, Activity, Calendar, Apple, Flag, Edit } from "lucide-react";
+import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles, X, Info, BarChart3, Zap, TrendingUp, Activity, Calendar, Apple, Flag, Edit, Settings } from "lucide-react";
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
 import NutritionSpotlight from "./nutrition-spotlight";
@@ -42,7 +43,29 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
   const [editedProduct, setEditedProduct] = useState<any>(null);
+  const [showAnalysisSettings, setShowAnalysisSettings] = useState(false);
   const { t, language } = useLanguage();
+
+  // Analysis section visibility settings
+  const [analysisSettings, setAnalysisSettings] = useState(() => {
+    const saved = localStorage.getItem('productAnalysisSettings');
+    return saved ? JSON.parse(saved) : {
+      processingAnalysis: true,
+      nutritionFacts: true,
+      glycemicImpact: true,
+      ingredientsList: true,
+      productMetadata: true,
+      nutritionSpotlight: true,
+      funFacts: true,
+      nutriBotInsight: true
+    };
+  });
+
+  // Save settings to localStorage whenever they change
+  const updateAnalysisSettings = (newSettings: typeof analysisSettings) => {
+    setAnalysisSettings(newSettings);
+    localStorage.setItem('productAnalysisSettings', JSON.stringify(newSettings));
+  };
 
   // Function to handle adding product to diary
   const handleAddToDiary = async () => {
@@ -1093,15 +1116,25 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                       )}
                     </Button>
 
-                    {/* Report Button */}
-                    <Button 
-                      onClick={() => setShowReportModal(true)}
-                      variant="outline"
-                      className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/20"
-                    >
-                      <Flag className="w-4 h-4 mr-2" />
-                      Report Wrong Data
-                    </Button>
+                    {/* Buttons Row */}
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => setShowReportModal(true)}
+                        variant="outline"
+                        className="flex-1 border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/20"
+                      >
+                        <Flag className="w-4 h-4 mr-2" />
+                        Report Wrong Data
+                      </Button>
+                      
+                      <Button 
+                        onClick={() => setShowAnalysisSettings(true)}
+                        variant="outline"
+                        className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20"
+                      >
+                        <Settings className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -1165,7 +1198,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               </Card>
 
               {/* Processing Analysis Section */}
-              {(product?.processingScore !== null || analysis) && (
+              {(product?.processingScore !== null || analysis) && analysisSettings.processingAnalysis && (
                 <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-lg">
@@ -1300,7 +1333,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               )}
 
               {/* Nutrition Information Section */}
-              {product?.nutriments && (
+              {product?.nutriments && analysisSettings.nutritionFacts && (
                 <Card className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-lg">
@@ -1460,7 +1493,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               )}
 
               {/* Glycemic Information Section */}
-              {(product?.glycemicIndex || product?.glycemicLoad) && (
+              {(product?.glycemicIndex || product?.glycemicLoad) && analysisSettings.glycemicImpact && (
                 <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-lg">
@@ -1493,7 +1526,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               )}
 
               {/* Ingredients Section */}
-              {product?.ingredientsText && (
+              {product?.ingredientsText && analysisSettings.ingredientsList && (
                 <Card className="border-gray-200 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-950/20 dark:to-slate-950/20">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-lg">
@@ -1592,7 +1625,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               )}
 
               {/* Product Metadata & Additional Information */}
-              <Card className="border-gray-200 bg-gradient-to-r from-gray-50 to-neutral-50 dark:from-gray-950/20 dark:to-neutral-950/20">
+              {analysisSettings.productMetadata && (
+                <Card className="border-gray-200 bg-gradient-to-r from-gray-50 to-neutral-50 dark:from-gray-950/20 dark:to-neutral-950/20">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Database className="w-5 h-5 text-gray-600" />
@@ -1672,9 +1706,10 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                   )}
                 </CardContent>
               </Card>
+              )}
 
               {/* Nutrition Spotlight Section */}
-              {product?.nutriments && (
+              {product?.nutriments && analysisSettings.nutritionSpotlight && (
                 <Card className="border-emerald-200 bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-950/20 dark:to-green-950/20">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-lg">
@@ -1694,7 +1729,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               )}
 
               {/* Fun Facts Section */}
-              <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
+              {analysisSettings.funFacts && (
+                <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Sparkles className="w-5 h-5 text-amber-600" />
@@ -1711,9 +1747,10 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                   />
                 </CardContent>
               </Card>
+              )}
 
               {/* NutriBot Insight Section */}
-              {nutriBotInsight && (
+              {nutriBotInsight && analysisSettings.nutriBotInsight && (
                 <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-lg">
@@ -1978,6 +2015,156 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Analysis Settings Modal */}
+      <Dialog open={showAnalysisSettings} onOpenChange={setShowAnalysisSettings}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-blue-600" />
+              Product Analysis Settings
+            </DialogTitle>
+            <DialogDescription>
+              Customize which analysis sections you want to see when viewing product details.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="processing-analysis"
+                  checked={analysisSettings.processingAnalysis}
+                  onCheckedChange={(checked) => 
+                    updateAnalysisSettings({ ...analysisSettings, processingAnalysis: !!checked })
+                  }
+                />
+                <Label htmlFor="processing-analysis" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Processing Analysis & Ingredient Categories
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="nutrition-facts"
+                  checked={analysisSettings.nutritionFacts}
+                  onCheckedChange={(checked) => 
+                    updateAnalysisSettings({ ...analysisSettings, nutritionFacts: !!checked })
+                  }
+                />
+                <Label htmlFor="nutrition-facts" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Nutrition Facts
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="glycemic-impact"
+                  checked={analysisSettings.glycemicImpact}
+                  onCheckedChange={(checked) => 
+                    updateAnalysisSettings({ ...analysisSettings, glycemicImpact: !!checked })
+                  }
+                />
+                <Label htmlFor="glycemic-impact" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Glycemic Impact
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="ingredients-list"
+                  checked={analysisSettings.ingredientsList}
+                  onCheckedChange={(checked) => 
+                    updateAnalysisSettings({ ...analysisSettings, ingredientsList: !!checked })
+                  }
+                />
+                <Label htmlFor="ingredients-list" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Ingredients List
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="product-metadata"
+                  checked={analysisSettings.productMetadata}
+                  onCheckedChange={(checked) => 
+                    updateAnalysisSettings({ ...analysisSettings, productMetadata: !!checked })
+                  }
+                />
+                <Label htmlFor="product-metadata" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Product Metadata & Additional Information
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="nutrition-spotlight"
+                  checked={analysisSettings.nutritionSpotlight}
+                  onCheckedChange={(checked) => 
+                    updateAnalysisSettings({ ...analysisSettings, nutritionSpotlight: !!checked })
+                  }
+                />
+                <Label htmlFor="nutrition-spotlight" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Nutrition Spotlight & Analysis
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="fun-facts"
+                  checked={analysisSettings.funFacts}
+                  onCheckedChange={(checked) => 
+                    updateAnalysisSettings({ ...analysisSettings, funFacts: !!checked })
+                  }
+                />
+                <Label htmlFor="fun-facts" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Fun Facts & Insights
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="nutribot-insight"
+                  checked={analysisSettings.nutriBotInsight}
+                  onCheckedChange={(checked) => 
+                    updateAnalysisSettings({ ...analysisSettings, nutriBotInsight: !!checked })
+                  }
+                />
+                <Label htmlFor="nutribot-insight" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  NutriBot AI Insight
+                </Label>
+              </div>
+            </div>
+
+            <div className="flex gap-2 justify-end pt-4 border-t">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowAnalysisSettings(false)}
+              >
+                Close
+              </Button>
+              <Button 
+                onClick={() => {
+                  // Reset to all enabled
+                  updateAnalysisSettings({
+                    processingAnalysis: true,
+                    nutritionFacts: true,
+                    glycemicImpact: true,
+                    ingredientsList: true,
+                    productMetadata: true,
+                    nutritionSpotlight: true,
+                    funFacts: true,
+                    nutriBotInsight: true
+                  });
+                }}
+                variant="outline"
+              >
+                Enable All
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
