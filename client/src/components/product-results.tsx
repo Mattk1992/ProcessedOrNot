@@ -18,6 +18,7 @@ import FunFacts from "./fun-facts";
 import SocialShare from "./social-share";
 import NutritionFactPopup from "./nutrition-fact-popup";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAuth } from "@/hooks/useAuth";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -45,6 +46,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
   const [editedProduct, setEditedProduct] = useState<any>(null);
   const [showAnalysisSettings, setShowAnalysisSettings] = useState(false);
   const { t, language } = useLanguage();
+  const { user } = useAuth();
 
   // Analysis section visibility settings
   const [analysisSettings, setAnalysisSettings] = useState(() => {
@@ -1614,8 +1616,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                 </Card>
               )}
 
-              {/* Product Metadata & Additional Information */}
-              {analysisSettings.productMetadata && (
+              {/* Product Metadata & Additional Information - Admin Only */}
+              {analysisSettings.productMetadata && user?.accountType === "Admin" && (
                 <Card className="border-gray-200 bg-gradient-to-r from-gray-50 to-neutral-50 dark:from-gray-950/20 dark:to-neutral-950/20">
                 <CardHeader className="pb-4">
                   <CardTitle className="flex items-center gap-2 text-lg">
@@ -2087,18 +2089,21 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                 </Label>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="product-metadata"
-                  checked={analysisSettings.productMetadata}
-                  onCheckedChange={(checked) => 
-                    updateAnalysisSettings({ ...analysisSettings, productMetadata: !!checked })
-                  }
-                />
-                <Label htmlFor="product-metadata" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Product Metadata & Additional Information
-                </Label>
-              </div>
+              {/* Product Metadata checkbox - Admin Only */}
+              {user?.accountType === "Admin" && (
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="product-metadata"
+                    checked={analysisSettings.productMetadata}
+                    onCheckedChange={(checked) => 
+                      updateAnalysisSettings({ ...analysisSettings, productMetadata: !!checked })
+                    }
+                  />
+                  <Label htmlFor="product-metadata" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Product Metadata & Additional Information
+                  </Label>
+                </div>
+              )}
 
               <div className="flex items-center space-x-2">
                 <Checkbox
