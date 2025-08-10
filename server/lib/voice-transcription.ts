@@ -10,13 +10,16 @@ export async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
       throw new Error('Speech-to-Text service is disabled');
     }
 
-    if (!settings.apiKey) {
+    // Use environment variable directly if available, otherwise fall back to database setting
+    const apiKey = process.env.ASSEMBLYAI_API_KEY || settings.apiKey;
+    
+    if (!apiKey) {
       throw new Error('ASSEMBLYAI_API_KEY is not configured');
     }
 
-    // Initialize Assembly AI client with dynamic API key
+    // Initialize Assembly AI client with API key
     const client = new AssemblyAI({
-      apiKey: settings.apiKey
+      apiKey: apiKey
     });
 
     // Upload audio file to Assembly AI
@@ -58,7 +61,8 @@ export async function transcribeAudio(audioBuffer: Buffer): Promise<string> {
 export async function isVoiceTranscriptionAvailable(): Promise<boolean> {
   try {
     const settings = await storage.getSpeechSettings();
-    return settings.enabled && !!settings.apiKey;
+    const apiKey = process.env.ASSEMBLYAI_API_KEY || settings.apiKey;
+    return settings.enabled && !!apiKey;
   } catch (error) {
     console.error('Error checking voice transcription availability:', error);
     return false;
