@@ -10,6 +10,7 @@ interface AuthUser {
   isEmailVerified: boolean;
   createdAt: string;
   lastLoginAt?: string;
+  onboardingCompleted?: boolean;
 }
 
 interface AuthResponse {
