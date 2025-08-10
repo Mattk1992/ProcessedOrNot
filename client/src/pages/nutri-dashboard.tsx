@@ -13,7 +13,8 @@ import {
   Award,
   AlertCircle,
   Info,
-  Shield
+  Shield,
+  User
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -294,6 +295,49 @@ export default function NutriDashboard() {
               <CardContent className="p-4 text-center">
                 <Info className="w-8 h-8 text-cyan-500 mx-auto mb-2" />
                 <p className="font-medium">Site Info</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+
+        {/* Additional Quick Actions */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <Link href="/profile">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+              <CardContent className="p-4 text-center">
+                <User className="w-8 h-8 text-primary mx-auto mb-2" />
+                <p className="font-medium">User Profile</p>
+                <p className="text-xs text-muted-foreground mt-1">Manage account</p>
+              </CardContent>
+            </Card>
+          </Link>
+          
+          <Link href="/lookup-history">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <Calendar className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                <p className="font-medium">Lookup History</p>
+                <p className="text-xs text-muted-foreground mt-1">Past searches</p>
+              </CardContent>
+            </Card>
+          </Link>
+          
+          <Link href="/admin">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <Shield className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+                <p className="font-medium">Admin Panel</p>
+                <p className="text-xs text-muted-foreground mt-1">System tools</p>
+              </CardContent>
+            </Card>
+          </Link>
+          
+          <Link href="/">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <Apple className="w-8 h-8 text-rose-500 mx-auto mb-2" />
+                <p className="font-medium">Main App</p>
+                <p className="text-xs text-muted-foreground mt-1">Scanner home</p>
               </CardContent>
             </Card>
           </Link>
