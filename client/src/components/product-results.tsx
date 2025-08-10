@@ -4,10 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles, X, Info, BarChart3, Zap, TrendingUp, Activity } from "lucide-react";
+import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles, X, Info, BarChart3, Zap, TrendingUp, Activity, Calendar, Apple } from "lucide-react";
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
 import NutritionSpotlight from "./nutrition-spotlight";
@@ -27,7 +29,79 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
   const [showManualForm, setShowManualForm] = useState(false);
   const [showNutritionPopup, setShowNutritionPopup] = useState(false);
   const [showProductAnalysis, setShowProductAnalysis] = useState(false);
+  const [showAddToDiary, setShowAddToDiary] = useState(false);
+  const [portionAmount, setPortionAmount] = useState<string>("100");
+  const [isAddingToDiary, setIsAddingToDiary] = useState(false);
   const { t, language } = useLanguage();
+
+  // Function to handle adding product to diary
+  const handleAddToDiary = async () => {
+    if (!product || !portionAmount) return;
+    
+    setIsAddingToDiary(true);
+    try {
+      const portion = parseFloat(portionAmount);
+      if (isNaN(portion) || portion <= 0) {
+        alert("Please enter a valid portion amount");
+        return;
+      }
+
+      // Calculate nutritional values based on portion
+      const nutriments = product.nutriments as Record<string, any>;
+      const scaledNutriments: Record<string, number> = {};
+      
+      // Scale all nutrients based on portion (assuming base is per 100g/ml)
+      Object.entries(nutriments).forEach(([key, value]) => {
+        if (typeof value === 'number' && key.includes('_100g')) {
+          const baseKey = key.replace('_100g', '');
+          scaledNutriments[baseKey] = (value * portion) / 100;
+        }
+      });
+
+      const diaryEntry = {
+        productBarcode: product.barcode,
+        productName: product.productName,
+        productBrands: product.brands,
+        productImageUrl: product.imageUrl,
+        servingSize: portion / 100, // Convert to multiplier (e.g., 150g = 1.5)
+        servingUnit: "g",
+        calories: scaledNutriments.energy || 0,
+        fat: scaledNutriments.fat || 0,
+        saturatedFat: scaledNutriments.saturated_fat || 0,
+        carbohydrates: scaledNutriments.carbohydrates || 0,
+        sugars: scaledNutriments.sugars || 0,
+        proteins: scaledNutriments.proteins || 0,
+        salt: scaledNutriments.salt || 0,
+        fiber: scaledNutriments.fiber || 0,
+        processingScore: product.processingScore,
+        mealType: "snack", // Default to snack, could be made configurable
+        consumedAt: new Date().toISOString(),
+        notes: "",
+      };
+
+      const response = await fetch('/api/nutrition-diary', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(diaryEntry),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add to diary');
+      }
+
+      setShowAddToDiary(false);
+      setPortionAmount("100");
+      alert("Product added to your nutrition diary!");
+      
+    } catch (error) {
+      console.error('Error adding to diary:', error);
+      alert("Failed to add product to diary. Please try again.");
+    } finally {
+      setIsAddingToDiary(false);
+    }
+  };
 
   // Determine if this is a text search with filters
   const isTextSearch = !/^[0-9\s]*$/.test(barcode.trim());
@@ -736,12 +810,168 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       <Dialog open={showProductAnalysis} onOpenChange={setShowProductAnalysis}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-3 text-2xl">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                <Info className="w-5 h-5 text-white" />
-              </div>
-              Product Analysis & Information
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-3 text-2xl">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                  <Info className="w-5 h-5 text-white" />
+                </div>
+                Product Analysis & Information
+              </DialogTitle>
+              
+              {/* Add to Diary Button */}
+              <Dialog open={showAddToDiary} onOpenChange={setShowAddToDiary}>
+                <DialogTrigger asChild>
+                  <Button 
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 shadow-lg"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    Add to Diary
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Apple className="w-5 h-5 text-green-600" />
+                      Add to Nutrition Diary
+                    </DialogTitle>
+                    <DialogDescription>
+                      Add {product?.productName || "this product"} to your nutrition diary
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-6">
+                    {/* Product Summary */}
+                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                      {product?.imageUrl ? (
+                        <img 
+                          src={product.imageUrl} 
+                          alt={product?.productName || "Product"} 
+                          className="w-12 h-12 object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                          <Database className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="font-semibold">{product?.productName || "Unknown Product"}</h4>
+                        {product?.brands && <p className="text-sm text-muted-foreground">{String(product.brands)}</p>}
+                      </div>
+                    </div>
+
+                    {/* Nutrition Summary */}
+                    {product?.nutriments && (
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg p-4">
+                        <h4 className="font-semibold mb-3 text-sm">Nutrition Facts (per 100g)</h4>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div className="flex justify-between">
+                            <span>Calories:</span>
+                            <span className="font-mono">{(product.nutriments as any)?.energy_100g || "N/A"}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Protein:</span>
+                            <span className="font-mono">{(product.nutriments as any)?.proteins_100g ? `${(product.nutriments as any).proteins_100g}g` : "N/A"}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Carbs:</span>
+                            <span className="font-mono">{(product.nutriments as any)?.carbohydrates_100g ? `${(product.nutriments as any).carbohydrates_100g}g` : "N/A"}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Fat:</span>
+                            <span className="font-mono">{(product.nutriments as any)?.fat_100g ? `${(product.nutriments as any).fat_100g}g` : "N/A"}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Portion Input */}
+                    <div className="space-y-3">
+                      <Label htmlFor="portion-amount" className="text-base font-semibold">
+                        Portion Amount
+                      </Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          id="portion-amount"
+                          type="number"
+                          value={portionAmount}
+                          onChange={(e) => setPortionAmount(e.target.value)}
+                          placeholder="100"
+                          min="0"
+                          step="0.1"
+                          className="flex-1"
+                        />
+                        <span className="text-sm font-medium text-muted-foreground px-3 py-2 bg-muted rounded-md">
+                          grams
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Enter the weight or volume you consumed
+                      </p>
+                    </div>
+
+                    {/* Calculated Nutrition for Portion */}
+                    {product?.nutriments && portionAmount && !isNaN(parseFloat(portionAmount)) && (
+                      <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4">
+                        <h4 className="font-semibold mb-3 text-sm">Nutrition for {portionAmount}g portion:</h4>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div className="flex justify-between">
+                            <span>Calories:</span>
+                            <span className="font-mono">
+                              {(product.nutriments as any)?.energy_100g 
+                                ? Math.round(((product.nutriments as any).energy_100g * parseFloat(portionAmount)) / 100)
+                                : "N/A"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Protein:</span>
+                            <span className="font-mono">
+                              {(product.nutriments as any)?.proteins_100g 
+                                ? `${(((product.nutriments as any).proteins_100g * parseFloat(portionAmount)) / 100).toFixed(1)}g`
+                                : "N/A"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Carbs:</span>
+                            <span className="font-mono">
+                              {(product.nutriments as any)?.carbohydrates_100g 
+                                ? `${(((product.nutriments as any).carbohydrates_100g * parseFloat(portionAmount)) / 100).toFixed(1)}g`
+                                : "N/A"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Fat:</span>
+                            <span className="font-mono">
+                              {(product.nutriments as any)?.fat_100g 
+                                ? `${(((product.nutriments as any).fat_100g * parseFloat(portionAmount)) / 100).toFixed(1)}g`
+                                : "N/A"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Add Button */}
+                    <Button 
+                      onClick={handleAddToDiary}
+                      disabled={isAddingToDiary || !portionAmount || isNaN(parseFloat(portionAmount))}
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+                    >
+                      {isAddingToDiary ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Adding...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add to Diary
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
             <DialogDescription>
               Comprehensive analysis and detailed information for {product?.productName || "this product"}
             </DialogDescription>

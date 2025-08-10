@@ -176,10 +176,11 @@ export interface IStorage {
   // Diary entries
   createDiaryEntry(entry: InsertDiaryEntry): Promise<DiaryEntry>;
   updateDiaryEntry(id: number, updates: Partial<InsertDiaryEntry>): Promise<DiaryEntry | undefined>;
-  deleteDiaryEntry(id: number): Promise<boolean>;
+  deleteDiaryEntry(id: number, userId?: number): Promise<boolean>;
   getDiaryEntriesByUser(userId: number): Promise<DiaryEntry[]>;
   getDiaryEntriesByUserAndDate(userId: number, date: string): Promise<DiaryEntry[]>;
   getRecentDiaryEntries(userId: number, limit: number): Promise<DiaryEntry[]>;
+  getDiaryEntries(userId: number, date?: string, limit?: number): Promise<DiaryEntry[]>;
 
   // User goals
   createUserGoals(goals: InsertUserGoals): Promise<UserGoals>;
@@ -1243,8 +1244,13 @@ export class DatabaseStorage implements IStorage {
     return updated || undefined;
   }
 
-  async deleteDiaryEntry(id: number): Promise<boolean> {
-    const result = await db.delete(diaryEntries).where(eq(diaryEntries.id, id));
+  async deleteDiaryEntry(id: number, userId?: number): Promise<boolean> {
+    const conditions = [eq(diaryEntries.id, id)];
+    if (userId) {
+      conditions.push(eq(diaryEntries.userId, userId));
+    }
+    
+    const result = await db.delete(diaryEntries).where(and(...conditions));
     return (result.rowCount ?? 0) > 0;
   }
 
@@ -1273,6 +1279,16 @@ export class DatabaseStorage implements IStorage {
       .where(eq(diaryEntries.userId, userId))
       .orderBy(desc(diaryEntries.consumedAt))
       .limit(limit);
+  }
+
+  async getDiaryEntries(userId: number, date?: string, limit: number = 50): Promise<DiaryEntry[]> {
+    if (date) {
+      // If date is provided, get entries for that specific date
+      return await this.getDiaryEntriesByUserAndDate(userId, date);
+    } else {
+      // If no date, get recent entries with limit
+      return await this.getRecentDiaryEntries(userId, limit);
+    }
   }
 
   async createUserGoals(goals: InsertUserGoals): Promise<UserGoals> {

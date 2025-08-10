@@ -12,11 +12,13 @@ import {
   loginUserSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  insertDiaryEntrySchema,
   type RegisterUser,
   type LoginUser,
   type ForgotPassword,
   type ResetPassword,
-  type InsertSearchHistory
+  type InsertSearchHistory,
+  type InsertDiaryEntry
 } from "@shared/schema";
 import { generatePasswordResetToken, sendPasswordResetEmail, sendEmailVerification, sanitizeUser, generateSearchId } from "./lib/auth";
 import session from "express-session";
@@ -3020,6 +3022,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Error saving onboarding:", error);
       res.status(500).json({ message: "Failed to save onboarding data" });
+    }
+  });
+
+  // Add to nutrition diary endpoint
+  app.post("/api/nutrition-diary", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      // Validate request body
+      const validatedData = insertDiaryEntrySchema.parse({
+        ...req.body,
+        userId: userId,
+      });
+
+      const diaryEntry = await storage.createDiaryEntry(validatedData);
+      
+      res.status(201).json({
+        message: "Product added to nutrition diary successfully",
+        entry: diaryEntry
+      });
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors
+        });
+      }
+      console.error("Add to diary error:", error);
+      res.status(500).json({ message: "Failed to add product to diary" });
+    }
+  });
+
+  // Get nutrition diary entries for a user
+  app.get("/api/nutrition-diary", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { date, limit = '50' } = req.query;
+      const entries = await storage.getDiaryEntries(userId, date as string, parseInt(limit as string));
+      
+      res.json(entries);
+    } catch (error) {
+      console.error("Get diary entries error:", error);
+      res.status(500).json({ message: "Failed to get diary entries" });
+    }
+  });
+
+  // Delete nutrition diary entry
+  app.delete("/api/nutrition-diary/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      const entryId = parseInt(req.params.id);
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const success = await storage.deleteDiaryEntry(entryId, userId);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Diary entry not found or unauthorized" });
+      }
+      
+      res.json({ message: "Diary entry deleted successfully" });
+    } catch (error) {
+      console.error("Delete diary entry error:", error);
+      res.status(500).json({ message: "Failed to delete diary entry" });
     }
   });
 
