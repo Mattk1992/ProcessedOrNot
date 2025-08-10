@@ -53,6 +53,15 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
   const { data: settings, isLoading } = useQuery({
     queryKey: ['/api/user/camera-settings'],
     enabled: isOpen,
+    queryFn: async () => {
+      const response = await fetch('/api/user/camera-settings', {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch camera settings');
+      }
+      return response.json();
+    },
   });
 
   // Local state for form
@@ -121,6 +130,7 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Ensure cookies/session are sent
         body: JSON.stringify(data),
       });
       
