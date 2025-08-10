@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Settings, Save, RotateCcw, X, Monitor, ScanLine, Eye, BarChart3 } from "lucide-react";
+import { Settings, Save, RotateCcw, X, Monitor, ScanLine, Eye, BarChart3, Camera, Volume2, Smartphone } from "lucide-react";
 
 interface CameraSettings {
   id: number;
@@ -18,6 +19,23 @@ interface CameraSettings {
   maxZoomLevel: number;
   minZoomLevel: number;
   defaultZoomLevel: number;
+  focusMode: string;
+  flashMode: string;
+  scanFrequency: number;
+  enableBeepSound: boolean;
+  enableVibration: boolean;
+  overlayOpacity: number;
+  scanAreaSize: number;
+  optimizeForCloseRange: boolean;
+  enhanceContrast: boolean;
+  adjustBrightness: number;
+  scanIntervalMs: number;
+  torchEnabled: boolean;
+  enableAutoFocus: boolean;
+  qualityPreset: string;
+  performanceMode: string;
+  errorRecoveryEnabled: boolean;
+  debugMode: boolean;
   updatedAt: string;
 }
 
@@ -44,6 +62,23 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
     maxZoomLevel: 3,
     minZoomLevel: 1,
     defaultZoomLevel: 1,
+    focusMode: 'continuous',
+    flashMode: 'auto',
+    scanFrequency: 10,
+    enableBeepSound: true,
+    enableVibration: true,
+    overlayOpacity: 0.70,
+    scanAreaSize: 0.60,
+    optimizeForCloseRange: true,
+    enhanceContrast: true,
+    adjustBrightness: 1.0,
+    scanIntervalMs: 100,
+    torchEnabled: false,
+    enableAutoFocus: true,
+    qualityPreset: 'balanced',
+    performanceMode: 'balanced',
+    errorRecoveryEnabled: true,
+    debugMode: false,
   });
 
   // Initialize form data when settings load
@@ -56,6 +91,23 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
         maxZoomLevel: settingsData.maxZoomLevel || 3,
         minZoomLevel: settingsData.minZoomLevel || 1,
         defaultZoomLevel: settingsData.defaultZoomLevel || 1,
+        focusMode: settingsData.focusMode || 'continuous',
+        flashMode: settingsData.flashMode || 'auto',
+        scanFrequency: settingsData.scanFrequency || 10,
+        enableBeepSound: settingsData.enableBeepSound ?? true,
+        enableVibration: settingsData.enableVibration ?? true,
+        overlayOpacity: settingsData.overlayOpacity || 0.70,
+        scanAreaSize: settingsData.scanAreaSize || 0.60,
+        optimizeForCloseRange: settingsData.optimizeForCloseRange ?? true,
+        enhanceContrast: settingsData.enhanceContrast ?? true,
+        adjustBrightness: settingsData.adjustBrightness || 1.0,
+        scanIntervalMs: settingsData.scanIntervalMs || 100,
+        torchEnabled: settingsData.torchEnabled ?? false,
+        enableAutoFocus: settingsData.enableAutoFocus ?? true,
+        qualityPreset: settingsData.qualityPreset || 'balanced',
+        performanceMode: settingsData.performanceMode || 'balanced',
+        errorRecoveryEnabled: settingsData.errorRecoveryEnabled ?? true,
+        debugMode: settingsData.debugMode ?? false,
       });
       setHasUnsavedChanges(false);
     }
@@ -114,6 +166,23 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
       maxZoomLevel: 3,
       minZoomLevel: 1,
       defaultZoomLevel: 1,
+      focusMode: 'continuous',
+      flashMode: 'auto',
+      scanFrequency: 10,
+      enableBeepSound: true,
+      enableVibration: true,
+      overlayOpacity: 0.70,
+      scanAreaSize: 0.60,
+      optimizeForCloseRange: true,
+      enhanceContrast: true,
+      adjustBrightness: 1.0,
+      scanIntervalMs: 100,
+      torchEnabled: false,
+      enableAutoFocus: true,
+      qualityPreset: 'balanced',
+      performanceMode: 'balanced',
+      errorRecoveryEnabled: true,
+      debugMode: false,
     };
     setFormData(defaultSettings);
     setHasUnsavedChanges(true);
@@ -140,7 +209,7 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
             </div>
           ) : (
             <Tabs defaultValue="advanced" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 mb-6">
+              <TabsList className="grid w-full grid-cols-6 mb-6">
                 <TabsTrigger value="advanced" className="flex items-center gap-1 text-xs">
                   <Monitor className="w-3 h-3" />
                   <span className="hidden sm:inline">Advanced</span>
@@ -148,6 +217,14 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
                 <TabsTrigger value="scanning" className="flex items-center gap-1 text-xs">
                   <ScanLine className="w-3 h-3" />
                   <span className="hidden sm:inline">Scanning</span>
+                </TabsTrigger>
+                <TabsTrigger value="camera" className="flex items-center gap-1 text-xs">
+                  <Camera className="w-3 h-3" />
+                  <span className="hidden sm:inline">Camera</span>
+                </TabsTrigger>
+                <TabsTrigger value="feedback" className="flex items-center gap-1 text-xs">
+                  <Volume2 className="w-3 h-3" />
+                  <span className="hidden sm:inline">Feedback</span>
                 </TabsTrigger>
                 <TabsTrigger value="display" className="flex items-center gap-1 text-xs">
                   <Eye className="w-3 h-3" />
@@ -266,19 +343,318 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
                   </Card>
                 </TabsContent>
 
-                {/* Display & Feedback Settings Tab */}
+                {/* Camera Hardware Tab */}
+                <TabsContent value="camera" className="space-y-4 mt-0">
+                  <Card>
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Camera className="w-4 h-4" />
+                        Camera Hardware Settings
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <Label>Focus Mode</Label>
+                          <Select
+                            value={formData.focusMode || 'continuous'}
+                            onValueChange={(value) => handleInputChange('focusMode', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select focus mode" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="continuous">Continuous</SelectItem>
+                              <SelectItem value="single">Single Shot</SelectItem>
+                              <SelectItem value="manual">Manual</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className="text-sm text-muted-foreground">
+                            Camera focus behavior during scanning
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Flash Mode</Label>
+                          <Select
+                            value={formData.flashMode || 'auto'}
+                            onValueChange={(value) => handleInputChange('flashMode', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select flash mode" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="auto">Auto</SelectItem>
+                              <SelectItem value="on">Always On</SelectItem>
+                              <SelectItem value="off">Always Off</SelectItem>
+                              <SelectItem value="torch">Torch Mode</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className="text-sm text-muted-foreground">
+                            Flash behavior for low-light conditions
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Quality Preset</Label>
+                          <Select
+                            value={formData.qualityPreset || 'balanced'}
+                            onValueChange={(value) => handleInputChange('qualityPreset', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select quality preset" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="high">High Quality</SelectItem>
+                              <SelectItem value="balanced">Balanced</SelectItem>
+                              <SelectItem value="performance">Performance</SelectItem>
+                              <SelectItem value="battery">Battery Saving</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className="text-sm text-muted-foreground">
+                            Balance between quality and performance
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Performance Mode</Label>
+                          <Select
+                            value={formData.performanceMode || 'balanced'}
+                            onValueChange={(value) => handleInputChange('performanceMode', value)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select performance mode" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="maximum">Maximum</SelectItem>
+                              <SelectItem value="balanced">Balanced</SelectItem>
+                              <SelectItem value="efficiency">Efficiency</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <p className="text-sm text-muted-foreground">
+                            CPU and processing performance level
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label>Brightness Adjustment</Label>
+                          <Slider
+                            value={[formData.adjustBrightness || 1.0]}
+                            onValueChange={(value) => handleInputChange('adjustBrightness', value[0])}
+                            min={0.5}
+                            max={2.0}
+                            step={0.1}
+                            className="w-full"
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Current: {formData.adjustBrightness || 1.0}x brightness
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          <div className="flex items-center space-x-3 p-3 border rounded-lg">
+                            <Switch
+                              checked={formData.enableAutoFocus ?? true}
+                              onCheckedChange={(checked) => handleInputChange('enableAutoFocus', checked)}
+                            />
+                            <div>
+                              <p className="text-sm font-medium">Auto Focus</p>
+                              <p className="text-xs text-muted-foreground">
+                                Automatic focus adjustment
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-3 p-3 border rounded-lg">
+                            <Switch
+                              checked={formData.torchEnabled ?? false}
+                              onCheckedChange={(checked) => handleInputChange('torchEnabled', checked)}
+                            />
+                            <div>
+                              <p className="text-sm font-medium">Torch/Flashlight</p>
+                              <p className="text-xs text-muted-foreground">
+                                Enable camera torch
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-3 p-3 border rounded-lg">
+                            <Switch
+                              checked={formData.enhanceContrast ?? true}
+                              onCheckedChange={(checked) => handleInputChange('enhanceContrast', checked)}
+                            />
+                            <div>
+                              <p className="text-sm font-medium">Enhance Contrast</p>
+                              <p className="text-xs text-muted-foreground">
+                                Improve barcode visibility
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-3 p-3 border rounded-lg">
+                            <Switch
+                              checked={formData.optimizeForCloseRange ?? true}
+                              onCheckedChange={(checked) => handleInputChange('optimizeForCloseRange', checked)}
+                            />
+                            <div>
+                              <p className="text-sm font-medium">Close Range Optimization</p>
+                              <p className="text-xs text-muted-foreground">
+                                Better for close-up scanning
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Feedback Settings Tab */}
+                <TabsContent value="feedback" className="space-y-4 mt-0">
+                  <Card>
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Volume2 className="w-4 h-4" />
+                        Audio & Haptic Feedback
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="flex items-center space-x-3 p-3 border rounded-lg">
+                          <Switch
+                            checked={formData.enableBeepSound ?? true}
+                            onCheckedChange={(checked) => handleInputChange('enableBeepSound', checked)}
+                          />
+                          <div>
+                            <p className="text-sm font-medium">Scan Sound</p>
+                            <p className="text-xs text-muted-foreground">
+                              Play sound when barcode is detected
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-3 p-3 border rounded-lg">
+                          <Switch
+                            checked={formData.enableVibration ?? true}
+                            onCheckedChange={(checked) => handleInputChange('enableVibration', checked)}
+                          />
+                          <div>
+                            <p className="text-sm font-medium">Vibration</p>
+                            <p className="text-xs text-muted-foreground">
+                              Vibrate on successful scan
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-3 p-3 border rounded-lg">
+                          <Switch
+                            checked={formData.errorRecoveryEnabled ?? true}
+                            onCheckedChange={(checked) => handleInputChange('errorRecoveryEnabled', checked)}
+                          />
+                          <div>
+                            <p className="text-sm font-medium">Error Recovery</p>
+                            <p className="text-xs text-muted-foreground">
+                              Auto-recovery from scan errors
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-3 p-3 border rounded-lg">
+                          <Switch
+                            checked={formData.debugMode ?? false}
+                            onCheckedChange={(checked) => handleInputChange('debugMode', checked)}
+                          />
+                          <div>
+                            <p className="text-sm font-medium">Debug Mode</p>
+                            <p className="text-xs text-muted-foreground">
+                              Show detailed scanning info
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="scan-frequency">Scan Frequency (per second)</Label>
+                          <Input
+                            id="scan-frequency"
+                            type="number"
+                            value={formData.scanFrequency || 10}
+                            onChange={(e) => handleInputChange('scanFrequency', parseInt(e.target.value))}
+                            min="1"
+                            max="30"
+                            className="w-full"
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            How many scans per second to attempt
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="scan-interval">Scan Interval (milliseconds)</Label>
+                          <Input
+                            id="scan-interval"
+                            type="number"
+                            value={formData.scanIntervalMs || 100}
+                            onChange={(e) => handleInputChange('scanIntervalMs', parseInt(e.target.value))}
+                            min="50"
+                            max="1000"
+                            className="w-full"
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Delay between scan attempts
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                {/* Display & Overlay Settings Tab */}
                 <TabsContent value="display" className="space-y-4 mt-0">
                   <Card>
                     <CardHeader className="pb-4">
                       <CardTitle className="text-lg flex items-center gap-2">
                         <Eye className="w-4 h-4" />
-                        Display & Feedback Settings
+                        Display & Overlay Settings
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                       <div className="space-y-4">
                         <div className="space-y-2">
-                          <Label>Visual Feedback</Label>
+                          <Label>Overlay Opacity</Label>
+                          <Slider
+                            value={[formData.overlayOpacity || 0.70]}
+                            onValueChange={(value) => handleInputChange('overlayOpacity', value[0])}
+                            min={0.1}
+                            max={1.0}
+                            step={0.05}
+                            className="w-full"
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Current: {Math.round((formData.overlayOpacity || 0.70) * 100)}% opacity
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Scan Area Size</Label>
+                          <Slider
+                            value={[formData.scanAreaSize || 0.60]}
+                            onValueChange={(value) => handleInputChange('scanAreaSize', value[0])}
+                            min={0.3}
+                            max={0.9}
+                            step={0.05}
+                            className="w-full"
+                          />
+                          <p className="text-sm text-muted-foreground">
+                            Current: {Math.round((formData.scanAreaSize || 0.60) * 100)}% of screen
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Visual Effects</Label>
                           <div className="grid grid-cols-1 gap-3">
                             <div className="flex items-center space-x-3 p-3 border rounded-lg">
                               <Switch
@@ -307,22 +683,28 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
                           </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label>Audio Feedback</Label>
-                          <div className="grid grid-cols-1 gap-3">
-                            <div className="flex items-center space-x-3 p-3 border rounded-lg">
-                              <Switch
-                                checked={false}
-                                disabled
-                              />
-                              <div>
-                                <p className="text-sm font-medium">Scan Sound</p>
-                                <p className="text-xs text-muted-foreground">
-                                  Play sound when barcode is detected
-                                </p>
+                        <div className="border-t pt-4">
+                          <h4 className="text-sm font-semibold mb-3">Preview</h4>
+                          <div className="relative bg-gray-100 dark:bg-gray-800 rounded-lg h-32 overflow-hidden">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div 
+                                className="border-2 border-primary rounded-lg bg-transparent"
+                                style={{
+                                  width: `${(formData.scanAreaSize || 0.60) * 100}%`,
+                                  height: `${(formData.scanAreaSize || 0.60) * 80}%`,
+                                  backgroundColor: `rgba(59, 130, 246, ${(formData.overlayOpacity || 0.70) * 0.1})`,
+                                  borderColor: `rgba(59, 130, 246, ${formData.overlayOpacity || 0.70})`,
+                                }}
+                              >
+                                <div className="flex items-center justify-center h-full">
+                                  <ScanLine className="w-6 h-6 text-primary animate-pulse" />
+                                </div>
                               </div>
                             </div>
                           </div>
+                          <p className="text-xs text-muted-foreground mt-2 text-center">
+                            Preview of scan overlay with current settings
+                          </p>
                         </div>
                       </div>
                     </CardContent>
