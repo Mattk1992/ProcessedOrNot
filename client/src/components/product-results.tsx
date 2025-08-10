@@ -801,32 +801,134 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               </Card>
 
               {/* Processing Analysis Section */}
-              {product?.processingScore !== null && (
+              {(product?.processingScore !== null || analysis) && (
                 <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20">
                   <CardHeader className="pb-4">
                     <CardTitle className="flex items-center gap-2 text-lg">
                       <Zap className="w-5 h-5 text-orange-600" />
-                      Processing Analysis
+                      Processing Analysis & Ingredient Categories
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Processing Level</p>
-                        <p className={`text-xl font-bold ${getScoreColor(product.processingScore)}`}>
-                          {getScoreLabel(product.processingScore)}
-                        </p>
+                    {product?.processingScore !== null && (
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-muted-foreground">Processing Level</p>
+                          <p className={`text-xl font-bold ${getScoreColor(product.processingScore)}`}>
+                            {getScoreLabel(product.processingScore)}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-muted-foreground">Score</p>
+                          <p className={`text-3xl font-bold ${getScoreColor(product.processingScore)}`}>
+                            {product.processingScore}<span className="text-muted-foreground">/10</span>
+                          </p>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">Score</p>
-                        <p className={`text-3xl font-bold ${getScoreColor(product.processingScore)}`}>
-                          {product.processingScore}<span className="text-muted-foreground">/10</span>
-                        </p>
-                      </div>
-                    </div>
+                    )}
+                    
                     {product.processingExplanation && (
                       <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
+                        <h4 className="font-semibold mb-2 text-sm">Processing Explanation</h4>
                         <p className="text-sm leading-relaxed">{product.processingExplanation}</p>
+                      </div>
+                    )}
+
+                    {/* Analysis Score and Data */}
+                    {analysis && (
+                      <div className="space-y-4">
+                        <Separator />
+                        <h4 className="font-semibold text-sm">AI Analysis Results</h4>
+                        
+                        {analysis.score && (
+                          <div className="flex items-center justify-between bg-white/50 dark:bg-black/20 rounded-lg p-3">
+                            <span className="text-sm font-medium">AI Analysis Score:</span>
+                            <span className={`text-lg font-bold ${getScoreColor(analysis.score)}`}>
+                              {analysis.score}/10
+                            </span>
+                          </div>
+                        )}
+
+                        {analysis.explanation && (
+                          <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
+                            <h5 className="font-semibold mb-2 text-sm">AI Explanation</h5>
+                            <p className="text-sm leading-relaxed">{analysis.explanation}</p>
+                          </div>
+                        )}
+
+                        {/* Ingredient Categories */}
+                        {analysis.categories && (
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Ultra-processed ingredients */}
+                            <div className="border-2 border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 rounded-2xl p-4">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></div>
+                                <span className="text-sm font-semibold text-red-800">Ultra-Processed</span>
+                              </div>
+                              <div className="space-y-1 text-xs text-red-700">
+                                {analysis.categories.ultraProcessed && analysis.categories.ultraProcessed.length > 0 ? (
+                                  analysis.categories.ultraProcessed.map((ingredient: string, index: number) => (
+                                    <div key={index} className="flex items-start space-x-2">
+                                      <span className="text-red-500 mt-0.5">•</span>
+                                      <span>{ingredient}</span>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="flex items-center space-x-2 text-red-600">
+                                    <CheckCircle className="w-3 h-3" />
+                                    <span>None detected</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Processed ingredients */}
+                            <div className="border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50 rounded-2xl p-4">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-4 h-4 bg-yellow-500 rounded-full shadow-sm"></div>
+                                <span className="text-sm font-semibold text-yellow-800">Processed</span>
+                              </div>
+                              <div className="space-y-1 text-xs text-yellow-700">
+                                {analysis.categories.processed && analysis.categories.processed.length > 0 ? (
+                                  analysis.categories.processed.map((ingredient: string, index: number) => (
+                                    <div key={index} className="flex items-start space-x-2">
+                                      <span className="text-yellow-500 mt-0.5">•</span>
+                                      <span>{ingredient}</span>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="flex items-center space-x-2 text-yellow-600">
+                                    <CheckCircle className="w-3 h-3" />
+                                    <span>None detected</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Minimally processed ingredients */}
+                            <div className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl p-4">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-4 h-4 bg-emerald-500 rounded-full shadow-sm"></div>
+                                <span className="text-sm font-semibold text-emerald-800">Minimally Processed</span>
+                              </div>
+                              <div className="space-y-1 text-xs text-emerald-700">
+                                {analysis.categories.minimallyProcessed && analysis.categories.minimallyProcessed.length > 0 ? (
+                                  analysis.categories.minimallyProcessed.map((ingredient: string, index: number) => (
+                                    <div key={index} className="flex items-start space-x-2">
+                                      <span className="text-emerald-500 mt-0.5">•</span>
+                                      <span>{ingredient}</span>
+                                    </div>
+                                  ))
+                                ) : (
+                                  <div className="flex items-center space-x-2 text-emerald-600">
+                                    <AlertTriangle className="w-3 h-3" />
+                                    <span>None detected</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     )}
                   </CardContent>
@@ -885,33 +987,109 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                     {/* Detailed Nutrition Table */}
                     <Separator className="my-4" />
                     <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4">
-                      <h4 className="font-semibold mb-3 text-sm">Detailed Breakdown</h4>
-                      <div className="space-y-2 text-sm">
-                        {(product.nutriments as any).sugars_100g && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Sugars</span>
-                            <span className="font-mono">{(product.nutriments as any).sugars_100g}g</span>
-                          </div>
-                        )}
-                        {(product.nutriments as any).saturated_fat_100g && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Saturated Fat</span>
-                            <span className="font-mono">{(product.nutriments as any).saturated_fat_100g}g</span>
-                          </div>
-                        )}
-                        {(product.nutriments as any).salt_100g && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Salt</span>
-                            <span className="font-mono">{(product.nutriments as any).salt_100g}g</span>
-                          </div>
-                        )}
-                        {(product.nutriments as any).fiber_100g && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Fiber</span>
-                            <span className="font-mono">{(product.nutriments as any).fiber_100g}g</span>
-                          </div>
-                        )}
+                      <h4 className="font-semibold mb-3 text-sm">Complete Nutrition Profile</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Primary Nutrients */}
+                        <div className="space-y-2 text-sm">
+                          <h5 className="font-medium text-green-700 dark:text-green-400 mb-2">Primary Nutrients</h5>
+                          {(product.nutriments as any).sugars_100g && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Sugars</span>
+                              <span className="font-mono">{(product.nutriments as any).sugars_100g}g</span>
+                            </div>
+                          )}
+                          {(product.nutriments as any).saturated_fat_100g && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Saturated Fat</span>
+                              <span className="font-mono">{(product.nutriments as any).saturated_fat_100g}g</span>
+                            </div>
+                          )}
+                          {(product.nutriments as any).fiber_100g && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Fiber</span>
+                              <span className="font-mono">{(product.nutriments as any).fiber_100g}g</span>
+                            </div>
+                          )}
+                          {(product.nutriments as any).salt_100g && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Salt</span>
+                              <span className="font-mono">{(product.nutriments as any).salt_100g}g</span>
+                            </div>
+                          )}
+                          {(product.nutriments as any).sodium_100g && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Sodium</span>
+                              <span className="font-mono">{(product.nutriments as any).sodium_100g}mg</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Additional Nutrients */}
+                        <div className="space-y-2 text-sm">
+                          <h5 className="font-medium text-blue-700 dark:text-blue-400 mb-2">Additional Nutrients</h5>
+                          {(product.nutriments as any).trans_fat_100g && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Trans Fat</span>
+                              <span className="font-mono">{(product.nutriments as any).trans_fat_100g}g</span>
+                            </div>
+                          )}
+                          {(product.nutriments as any).cholesterol_100g && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Cholesterol</span>
+                              <span className="font-mono">{(product.nutriments as any).cholesterol_100g}mg</span>
+                            </div>
+                          )}
+                          {(product.nutriments as any).calcium_100g && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Calcium</span>
+                              <span className="font-mono">{(product.nutriments as any).calcium_100g}mg</span>
+                            </div>
+                          )}
+                          {(product.nutriments as any).iron_100g && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Iron</span>
+                              <span className="font-mono">{(product.nutriments as any).iron_100g}mg</span>
+                            </div>
+                          )}
+                          {(product.nutriments as any).vitamin_c_100g && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Vitamin C</span>
+                              <span className="font-mono">{(product.nutriments as any).vitamin_c_100g}mg</span>
+                            </div>
+                          )}
+                          {(product.nutriments as any).potassium_100g && (
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Potassium</span>
+                              <span className="font-mono">{(product.nutriments as any).potassium_100g}mg</span>
+                            </div>
+                          )}
+                        </div>
                       </div>
+
+                      {/* All Other Nutriments */}
+                      <Separator className="my-3" />
+                      <details>
+                        <summary className="cursor-pointer font-medium text-sm mb-2 text-purple-700 dark:text-purple-400">
+                          All Available Nutriment Data (Click to expand)
+                        </summary>
+                        <div className="mt-2 p-3 bg-muted/30 rounded border max-h-40 overflow-auto">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                            {Object.entries(product.nutriments as Record<string, any>).map(([key, value]) => (
+                              <div key={key} className="flex justify-between py-1 border-b border-border/10">
+                                <span className="text-muted-foreground capitalize">
+                                  {key.replace(/_/g, ' ').replace('100g', '(per 100g)')}:
+                                </span>
+                                <span className="font-mono text-right">
+                                  {typeof value === 'number' ? value : String(value)}
+                                  {key.includes('energy') ? ' kcal' : 
+                                   key.includes('_100g') && typeof value === 'number' ? 
+                                   (value < 1 ? 'mg' : 'g') : ''}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </details>
                     </div>
                   </CardContent>
                 </Card>
@@ -966,6 +1144,170 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                   </CardContent>
                 </Card>
               )}
+
+              {/* Additional Images Gallery */}
+              {product?.additionalImages && product.additionalImages.length > 0 && (
+                <Card className="border-pink-200 bg-gradient-to-r from-pink-50 to-rose-50 dark:from-pink-950/20 dark:to-rose-950/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <svg className="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
+                      Additional Product Images
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {product.additionalImages.map((imageUrl, index) => (
+                        <div key={index} className="relative group">
+                          <img 
+                            src={imageUrl} 
+                            alt={`${product.productName} - Image ${index + 1}`}
+                            className="w-full h-24 object-cover rounded-lg border-2 border-border/20 group-hover:shadow-lg transition-all duration-300"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Product Video */}
+              {product?.videoUrl && (
+                <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-950/20 dark:to-violet-950/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1.01M15 10h1.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                      </svg>
+                      Product Video
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
+                      <video 
+                        controls 
+                        className="w-full max-h-64 rounded-lg"
+                        poster={product.imageUrl || undefined}
+                      >
+                        <source src={product.videoUrl} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Media Gallery */}
+              {product?.mediaGallery && typeof product.mediaGallery === 'object' && Array.isArray(product.mediaGallery) && product.mediaGallery.length > 0 && (
+                <Card className="border-cyan-200 bg-gradient-to-r from-cyan-50 to-teal-50 dark:from-cyan-950/20 dark:to-teal-950/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <svg className="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                      </svg>
+                      Media Gallery
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
+                      <div className="space-y-2">
+                        {product.mediaGallery.map((media: any, index: number) => (
+                          <div key={index} className="flex items-center justify-between p-2 bg-muted/30 rounded-lg">
+                            <span className="text-sm font-medium">Media Item {index + 1}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {media.type || "Unknown"}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Product Metadata & Additional Information */}
+              <Card className="border-gray-200 bg-gradient-to-r from-gray-50 to-neutral-50 dark:from-gray-950/20 dark:to-neutral-950/20">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Database className="w-5 h-5 text-gray-600" />
+                    Product Metadata & Additional Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-sm text-muted-foreground">Product Identifiers</h4>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Product ID:</span>
+                          <span className="font-mono">{product?.id || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Barcode:</span>
+                          <span className="font-mono">{product?.barcode || "N/A"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Data Source:</span>
+                          <span>{product?.dataSource || product?.lookupSource || "N/A"}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-sm text-muted-foreground">Timestamps & Updates</h4>
+                      <div className="space-y-2 text-sm">
+                        {product?.lastUpdated && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Last Updated:</span>
+                            <span className="font-mono">{product.lastUpdated}</span>
+                          </div>
+                        )}
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Analysis Date:</span>
+                          <span className="font-mono">{new Date().toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Raw Product Data for Debugging */}
+                  <Separator className="my-4" />
+                  <details className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
+                    <summary className="cursor-pointer font-semibold text-sm mb-2">
+                      Raw Product Data (for debugging)
+                    </summary>
+                    <div className="mt-2 p-3 bg-muted/30 rounded border text-xs font-mono overflow-auto max-h-32">
+                      <pre>{JSON.stringify(product, null, 2)}</pre>
+                    </div>
+                  </details>
+
+                  {/* Analysis Data */}
+                  {analysis && (
+                    <details className="mt-4 bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
+                      <summary className="cursor-pointer font-semibold text-sm mb-2">
+                        Raw Analysis Data (for debugging)
+                      </summary>
+                      <div className="mt-2 p-3 bg-muted/30 rounded border text-xs font-mono overflow-auto max-h-32">
+                        <pre>{JSON.stringify(analysis, null, 2)}</pre>
+                      </div>
+                    </details>
+                  )}
+
+                  {/* NutriBot Insight Data */}
+                  {nutriBotInsight && (
+                    <details className="mt-4 bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
+                      <summary className="cursor-pointer font-semibold text-sm mb-2">
+                        Raw NutriBot Data (for debugging)
+                      </summary>
+                      <div className="mt-2 p-3 bg-muted/30 rounded border text-xs font-mono overflow-auto max-h-32">
+                        <pre>{JSON.stringify(nutriBotInsight, null, 2)}</pre>
+                      </div>
+                    </details>
+                  )}
+                </CardContent>
+              </Card>
 
               {/* NutriBot Insight Section */}
               {nutriBotInsight && (
