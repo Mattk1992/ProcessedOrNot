@@ -22,7 +22,7 @@ import {
 import { Link } from "wouter";
 import { useEffect } from "react";
 
-export default function MarketingPage() {
+export default function HomePage() {
   // Set page title and meta description for SEO
   useEffect(() => {
     document.title = "ProcessedOrNot - AI-Powered Food Analysis & Nutrition Scanner";
