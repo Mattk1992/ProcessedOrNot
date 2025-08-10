@@ -4,6 +4,11 @@
 ProcessedOrNot Scanner is a modern web application designed to analyze food products for processing levels. It leverages barcode scanning, AI-powered ingredient analysis, and an interactive chatbot (NutriBot) to provide comprehensive food product insights. The project aims to provide users with transparent and detailed information about the food they consume, fostering healthier dietary choices. It has significant market potential as a tool for health-conscious consumers and aims to become a leading platform for food transparency.
 
 ## Recent Changes
+- **NutriBot AI Personalization**: Enhanced NutriBot with user data integration for personalized nutrition advice:
+  - Added "ExtraInfo" parameter to getNutriBotSystemPrompt and getNutriBotResponse functions
+  - Modified NutriBot chat API endpoint to fetch and include all user profile data (except name, username, email, password)
+  - User data includes health goals, activity level, weight goals, dietary restrictions, health conditions, physical attributes, onboarding information, allergies, dietary preferences, lifestyle factors, fitness goals, cooking skills, meal prep time, and budget preferences
+  - NutriBot now provides personalized recommendations based on authenticated user's complete profile
 - **Product Analysis Settings**: Implemented customizable analysis sections with toggleable visibility:
   - Added Product Analysis Settings button to main Product Analysis screen (moved from Add to Nutrition Diary modal)
   - Created settings modal with checkboxes for 8 analysis sections (Processing Analysis, Nutrition Facts, Glycemic Impact, Ingredients List, Product Metadata, Nutrition Spotlight, Fun Facts, NutriBot AI Insight)

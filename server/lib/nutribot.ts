@@ -9,7 +9,7 @@ interface ChatMessage {
   timestamp: Date;
 }
 
-function getNutriBotSystemPrompt(language: string): string {
+function getNutriBotSystemPrompt(language: string, extraInfo?: string): string {
   const languageInstructions: Record<string, string> = {
     'en': 'Respond in English.',
     'es': 'Responde en español de manera natural y fluida.',
@@ -21,6 +21,13 @@ function getNutriBotSystemPrompt(language: string): string {
   };
 
   const languageInstruction = languageInstructions[language] || languageInstructions['en'];
+
+  const userContext = extraInfo ? `
+
+USER PROFILE INFORMATION:
+${extraInfo}
+
+Please consider this user information when providing personalized nutrition advice and recommendations. Tailor your responses to their specific health goals, dietary preferences, and lifestyle factors.` : '';
 
   return `You are NutriBot, a friendly AI nutritionist. ${languageInstruction}
 
@@ -49,16 +56,16 @@ GUIDELINES:
 - If asked about medical conditions, remind users to consult healthcare providers
 - Focus on sustainable, realistic dietary changes
 - Celebrate small wins and progress
-- Ask follow-up questions to better understand user needs
+- Ask follow-up questions to better understand user needs${userContext}
 
 Remember: You're a supportive companion on their health journey, making nutrition enjoyable and achievable!`;
 }
 
-export async function getNutriBotResponse(message: string, history: ChatMessage[], language: string = 'en'): Promise<string> {
+export async function getNutriBotResponse(message: string, history: ChatMessage[], language: string = 'en', extraInfo?: string): Promise<string> {
   try {
     // Convert chat history to OpenAI format
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
-      { role: "system", content: getNutriBotSystemPrompt(language) }
+      { role: "system", content: getNutriBotSystemPrompt(language, extraInfo) }
     ];
 
     // Add recent conversation history for context (last 10 messages)

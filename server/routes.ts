@@ -1036,7 +1036,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // NutriBot Chat API
-  app.post("/api/nutribot/chat", async (req, res) => {
+  app.post("/api/nutribot/chat", async (req: any, res) => {
     try {
       const { message, history, language } = req.body;
 
@@ -1046,7 +1046,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const response = await getNutriBotResponse(message.trim(), history || [], language || 'en');
+      let extraInfo = '';
+      
+      // If user is authenticated, fetch their profile data for personalization
+      if (req.session?.userId) {
+        try {
+          const userId = req.session.userId;
+          const [userGoals, userProfile, userOnboarding] = await Promise.all([
+            storage.getUserGoals(userId),
+            storage.getUserProfile(userId),
+            storage.getUserOnboarding(userId)
+          ]);
+          
+          // Build extra info string from user data (excluding name, username, email, password)
+          const infoItems = [];
+          
+          if (userGoals) {
+            infoItems.push(`Health Goals: Daily calories ${userGoals.dailyCalories}, fat ${userGoals.dailyFat}g, carbs ${userGoals.dailyCarbs}g, proteins ${userGoals.dailyProteins}g, salt ${userGoals.dailySalt}g, fiber ${userGoals.dailyFiber}g`);
+            infoItems.push(`Activity Level: ${userGoals.activityLevel}`);
+            infoItems.push(`Weight Goal: ${userGoals.weightGoal}`);
+            if (userGoals.dietaryRestrictions?.length) {
+              infoItems.push(`Dietary Restrictions: ${userGoals.dietaryRestrictions.join(', ')}`);
+            }
+            if (userGoals.healthConditions?.length) {
+              infoItems.push(`Health Conditions: ${userGoals.healthConditions.join(', ')}`);
+            }
+          }
+          
+          if (userProfile) {
+            if (userProfile.gender) infoItems.push(`Gender: ${userProfile.gender}`);
+            if (userProfile.height) infoItems.push(`Height: ${userProfile.height}cm`);
+            if (userProfile.weight) infoItems.push(`Weight: ${userProfile.weight}kg`);
+            if (userProfile.units) infoItems.push(`Preferred Units: ${userProfile.units}`);
+          }
+          
+          if (userOnboarding) {
+            if (userOnboarding.age) infoItems.push(`Age: ${userOnboarding.age}`);
+            if (userOnboarding.medicalConditions?.length) {
+              infoItems.push(`Medical Conditions: ${userOnboarding.medicalConditions.join(', ')}`);
+            }
+            if (userOnboarding.allergies?.length) {
+              infoItems.push(`Allergies: ${userOnboarding.allergies.join(', ')}`);
+            }
+            if (userOnboarding.dietaryRestrictions?.length) {
+              infoItems.push(`Dietary Restrictions: ${userOnboarding.dietaryRestrictions.join(', ')}`);
+            }
+            if (userOnboarding.activityLevel) infoItems.push(`Activity Level: ${userOnboarding.activityLevel}`);
+            if (userOnboarding.healthGoals?.length) {
+              infoItems.push(`Health Goals: ${userOnboarding.healthGoals.join(', ')}`);
+            }
+            if (userOnboarding.cookingSkill) infoItems.push(`Cooking Skill: ${userOnboarding.cookingSkill}`);
+            if (userOnboarding.weightGoals) infoItems.push(`Weight Goals: ${userOnboarding.weightGoals}`);
+            if (userOnboarding.exerciseTypes?.length) {
+              infoItems.push(`Exercise Types: ${userOnboarding.exerciseTypes.join(', ')}`);
+            }
+            if (userOnboarding.foodPreferences?.length) {
+              infoItems.push(`Food Preferences: ${userOnboarding.foodPreferences.join(', ')}`);
+            }
+            if (userOnboarding.foodDislikes?.length) {
+              infoItems.push(`Food Dislikes: ${userOnboarding.foodDislikes.join(', ')}`);
+            }
+          }
+          
+          extraInfo = infoItems.join('\n');
+        } catch (error) {
+          console.log('Could not fetch user profile data for NutriBot personalization:', error);
+          // Continue without personalization
+        }
+      }
+
+      const response = await getNutriBotResponse(message.trim(), history || [], language || 'en', extraInfo);
       res.json({ response });
 
     } catch (error) {
