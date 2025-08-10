@@ -57,7 +57,10 @@ import {
   type InsertWebsiteSettings,
   speechSettings,
   type SpeechSettings,
-  type InsertSpeechSettings
+  type InsertSpeechSettings,
+  userOnboarding,
+  type UserOnboarding,
+  type InsertUserOnboarding
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -250,6 +253,12 @@ export interface IStorage {
   getSpeechSettings(): Promise<SpeechSettings>;
   updateSpeechSettings(settings: Partial<InsertSpeechSettings>): Promise<SpeechSettings>;
   resetSpeechSettingsToDefaults(): Promise<SpeechSettings>;
+  
+  // User onboarding methods
+  getUserOnboarding(userId: number): Promise<UserOnboarding | undefined>;
+  createUserOnboarding(onboarding: InsertUserOnboarding): Promise<UserOnboarding>;
+  updateUserOnboarding(userId: number, onboarding: Partial<InsertUserOnboarding>): Promise<UserOnboarding | undefined>;
+  markOnboardingComplete(userId: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2277,6 +2286,67 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedSettings[0];
+  }
+
+  // User onboarding methods
+  async getUserOnboarding(userId: number): Promise<UserOnboarding | undefined> {
+    const [onboarding] = await db
+      .select()
+      .from(userOnboarding)
+      .where(eq(userOnboarding.userId, userId));
+    
+    return onboarding || undefined;
+  }
+
+  async createUserOnboarding(onboarding: InsertUserOnboarding): Promise<UserOnboarding> {
+    const [created] = await db
+      .insert(userOnboarding)
+      .values({
+        ...onboarding,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+    
+    return created;
+  }
+
+  async updateUserOnboarding(userId: number, updates: Partial<InsertUserOnboarding>): Promise<UserOnboarding | undefined> {
+    const [updated] = await db
+      .update(userOnboarding)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(userOnboarding.userId, userId))
+      .returning();
+    
+    return updated || undefined;
+  }
+
+  async markOnboardingComplete(userId: number): Promise<boolean> {
+    // Update onboarding table
+    const [onboardingResult] = await db
+      .update(userOnboarding)
+      .set({
+        isCompleted: true,
+        completedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(userOnboarding.userId, userId))
+      .returning();
+
+    // Update user table
+    const [userResult] = await db
+      .update(users)
+      .set({
+        onboardingCompleted: true,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+
+    return !!(onboardingResult && userResult);
   }
 }
 

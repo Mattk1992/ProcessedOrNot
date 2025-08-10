@@ -334,6 +334,8 @@ export const users = pgTable("users", {
   lastLoginAt: timestamp("last_login_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
+  // Add onboarding completion flag
+  onboardingCompleted: boolean("onboarding_completed").default(false),
 });
 
 // User Authentication Schemas
@@ -667,3 +669,72 @@ export const insertWeightEntrySchema = createInsertSchema(weightEntries).omit({
 
 export type InsertWeightEntry = z.infer<typeof insertWeightEntrySchema>;
 export type WeightEntry = typeof weightEntries.$inferSelect;
+
+// User Onboarding Information - Comprehensive health and lifestyle data
+export const userOnboarding = pgTable("user_onboarding", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  
+  // Basic Information
+  age: integer("age"),
+  gender: varchar("gender", { length: 20 }), // 'male', 'female', 'other', 'prefer_not_to_say'
+  height: real("height"), // in cm
+  weight: real("weight"), // in kg
+  
+  // Health Status
+  medicalConditions: text("medical_conditions").array(), // ['diabetes', 'hypertension', 'heart_disease', 'thyroid', 'none']
+  allergies: text("allergies").array(), // ['nuts', 'dairy', 'gluten', 'shellfish', 'eggs', 'soy', 'none']
+  medications: text("medications").array(), // List of current medications
+  
+  // Lifestyle Factors
+  activityLevel: varchar("activity_level", { length: 20 }), // 'sedentary', 'lightly_active', 'moderately_active', 'very_active', 'extremely_active'
+  occupation: varchar("occupation", { length: 100 }), // Job type
+  exerciseFrequency: varchar("exercise_frequency", { length: 20 }), // 'never', 'rarely', '1-2_times_week', '3-4_times_week', '5-6_times_week', 'daily'
+  exerciseTypes: text("exercise_types").array(), // ['cardio', 'strength', 'yoga', 'sports', 'walking', 'cycling']
+  
+  // Dietary Preferences
+  foodPreferences: text("food_preferences").array(), // Liked foods
+  foodDislikes: text("food_dislikes").array(), // Disliked foods
+  dietaryRestrictions: text("dietary_restrictions").array(), // ['vegetarian', 'vegan', 'keto', 'paleo', 'mediterranean', 'gluten_free', 'dairy_free']
+  
+  // Goals
+  weightGoals: varchar("weight_goals", { length: 20 }), // 'lose_weight', 'maintain_weight', 'gain_weight', 'build_muscle'
+  targetWeight: real("target_weight"), // in kg
+  healthGoals: text("health_goals").array(), // ['lower_cholesterol', 'control_blood_sugar', 'reduce_blood_pressure', 'increase_energy', 'improve_digestion']
+  
+  // Eating Habits
+  mealsPerDay: integer("meals_per_day").default(3), // Number of main meals
+  snacksPerDay: integer("snacks_per_day").default(2), // Number of snacks
+  cookingSkill: varchar("cooking_skill", { length: 20 }), // 'beginner', 'intermediate', 'advanced', 'expert'
+  cookingFrequency: varchar("cooking_frequency", { length: 20 }), // 'never', 'rarely', 'sometimes', 'often', 'always'
+  
+  // Support System
+  familySupport: boolean("family_support").default(false), // Has family support for diet goals
+  friendsSupport: boolean("friends_support").default(false), // Has friends support for diet goals
+  professionalSupport: boolean("professional_support").default(false), // Working with nutritionist/dietitian
+  
+  // Additional Information
+  sleepHours: real("sleep_hours"), // Average hours of sleep per night
+  stressLevel: varchar("stress_level", { length: 20 }), // 'very_low', 'low', 'moderate', 'high', 'very_high'
+  waterIntake: real("water_intake"), // Glasses of water per day
+  alcoholConsumption: varchar("alcohol_consumption", { length: 20 }), // 'never', 'rarely', 'occasionally', 'regularly', 'frequently'
+  smokingStatus: varchar("smoking_status", { length: 20 }), // 'never', 'former', 'current'
+  
+  // Completion and tracking
+  isCompleted: boolean("is_completed").default(false),
+  completedAt: timestamp("completed_at"),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("onboarding_user_id_idx").on(table.userId),
+}));
+
+export const insertUserOnboardingSchema = createInsertSchema(userOnboarding).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUserOnboarding = z.infer<typeof insertUserOnboardingSchema>;
+export type UserOnboarding = typeof userOnboarding.$inferSelect;

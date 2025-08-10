@@ -205,7 +205,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log("Registration successful for user:", user.id, "Session saved:", req.session.id);
         res.status(201).json({
           message: "Registration successful",
-          user: sanitizeUser(user)
+          user: sanitizeUser(user),
+          redirectTo: "/onboarding" // Direct new users to onboarding
         });
       });
     } catch (error: any) {
@@ -2844,6 +2845,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: `Connection test failed: ${error.message || 'Unknown error'}`,
         status: 'error'
       });
+    }
+  });
+
+  // Onboarding endpoints
+  // Get user onboarding data
+  app.get("/api/onboarding", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const onboarding = await storage.getUserOnboarding(userId);
+      res.json(onboarding || {});
+    } catch (error) {
+      console.error("Error fetching onboarding:", error);
+      res.status(500).json({ message: "Failed to fetch onboarding data" });
+    }
+  });
+
+  // Create or update onboarding data
+  app.post("/api/onboarding", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const { insertUserOnboardingSchema } = await import("@shared/schema");
+      const validatedData = insertUserOnboardingSchema.parse(req.body);
+
+      // Check if onboarding already exists
+      const existing = await storage.getUserOnboarding(userId);
+
+      let result;
+      if (existing) {
+        // Update existing onboarding
+        result = await storage.updateUserOnboarding(userId, validatedData);
+      } else {
+        // Create new onboarding
+        result = await storage.createUserOnboarding({ ...validatedData, userId });
+      }
+
+      // If this is the completion request, mark as complete
+      if (req.body.isCompleted) {
+        await storage.markOnboardingComplete(userId);
+      }
+
+      res.json(result);
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors
+        });
+      }
+      console.error("Error saving onboarding:", error);
+      res.status(500).json({ message: "Failed to save onboarding data" });
     }
   });
 
