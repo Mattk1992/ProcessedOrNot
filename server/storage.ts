@@ -100,6 +100,10 @@ export interface IStorage {
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(barcode: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
   getProductsWithoutGlycemicIndex(): Promise<Product[]>;
+  getAllProducts(limit?: number, offset?: number): Promise<Product[]>;
+  searchProducts(query: string, limit?: number): Promise<Product[]>;
+  deleteProduct(barcode: string): Promise<boolean>;
+  getProductCount(): Promise<number>;
   
   // Search history methods
   createSearchHistory(searchHistory: InsertSearchHistory): Promise<SearchHistory>;
@@ -624,6 +628,38 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .limit(50); // Limit to 50 products to avoid overwhelming the API
+  }
+
+  async getAllProducts(limit = 50, offset = 0): Promise<Product[]> {
+    return await db.select().from(products)
+      .orderBy(desc(products.id))
+      .limit(limit)
+      .offset(offset);
+  }
+
+  async searchProducts(query: string, limit = 50): Promise<Product[]> {
+    const searchTerm = `%${query}%`;
+    return await db.select().from(products)
+      .where(
+        or(
+          sql`${products.productName} ILIKE ${searchTerm}`,
+          sql`${products.brands} ILIKE ${searchTerm}`,
+          sql`${products.barcode} ILIKE ${searchTerm}`,
+          sql`${products.ingredientsText} ILIKE ${searchTerm}`
+        )
+      )
+      .orderBy(desc(products.id))
+      .limit(limit);
+  }
+
+  async deleteProduct(barcode: string): Promise<boolean> {
+    const result = await db.delete(products).where(eq(products.barcode, barcode));
+    return result.rowCount !== null && result.rowCount > 0;
+  }
+
+  async getProductCount(): Promise<number> {
+    const result = await db.select({ count: sql`count(*)` }).from(products);
+    return Number(result[0]?.count || 0);
   }
 
   // Search history methods

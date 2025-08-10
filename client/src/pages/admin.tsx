@@ -16,6 +16,7 @@ import { Link, useLocation } from "wouter";
 import AdminSettings from "@/components/admin-settings";
 import DebugCascadingDB from "@/components/debug-cascading-db";
 import SpeechSettings from "@/components/speech-settings";
+import ProductManagement from "@/components/product-management";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface User {
@@ -267,7 +268,7 @@ export default function AdminPanel() {
         <div className="mb-6 md:mb-8">
           <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
             <Tabs defaultValue="debug-db" className="w-full">
-              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 p-1 m-4 mb-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-slate-200/50 dark:border-gray-600/50 shadow-inner">
+              <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 p-1 m-4 mb-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-slate-200/50 dark:border-gray-600/50 shadow-inner">
                 <TabsTrigger 
                   value="debug-db" 
                   className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/25 font-medium"
@@ -291,6 +292,14 @@ export default function AdminPanel() {
                   <Mic className="w-4 h-4 flex-shrink-0" />
                   <span className="hidden sm:inline text-sm">Speech</span>
                   <span className="sm:hidden text-xs">Mic</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="product-management" 
+                  className="flex items-center justify-center gap-2 py-3 px-4 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 font-medium"
+                >
+                  <BarChart3 className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">Products</span>
+                  <span className="sm:hidden text-xs">Prod</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="user-management" 
@@ -353,6 +362,24 @@ export default function AdminPanel() {
                         </div>
                       </div>
                       <SpeechSettings />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Product Management Tab */}
+                <TabsContent value="product-management" className="mt-0 animate-in fade-in-50 duration-200">
+                  <div className="bg-gradient-to-br from-amber-50/50 to-yellow-50/30 dark:from-amber-900/20 dark:to-yellow-900/10 rounded-xl p-1 border border-amber-200/30 dark:border-amber-700/30">
+                    <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 backdrop-blur-sm">
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-600 text-white">
+                          <BarChart3 className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Product Management</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Manage products database, search, edit, and delete products</p>
+                        </div>
+                      </div>
+                      <ProductManagement />
                     </div>
                   </div>
                 </TabsContent>

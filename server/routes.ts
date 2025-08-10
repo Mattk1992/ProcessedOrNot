@@ -514,6 +514,142 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Product Management endpoints
+  app.get("/api/admin/products", requireAuth, async (req: any, res) => {
+    try {
+      // Check if current user is admin
+      const currentUser = await storage.getUserById(req.session.userId!);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 50;
+      const offset = (page - 1) * limit;
+      const search = req.query.search as string;
+
+      let products;
+      if (search && search.trim()) {
+        products = await storage.searchProducts(search.trim(), limit);
+      } else {
+        products = await storage.getAllProducts(limit, offset);
+      }
+
+      const totalCount = await storage.getProductCount();
+      
+      res.json({
+        products,
+        pagination: {
+          page,
+          limit,
+          total: totalCount,
+          totalPages: Math.ceil(totalCount / limit)
+        }
+      });
+    } catch (error) {
+      console.error("Get admin products error:", error);
+      res.status(500).json({ message: "Failed to fetch products" });
+    }
+  });
+
+  app.get("/api/admin/products/:barcode", requireAuth, async (req: any, res) => {
+    try {
+      // Check if current user is admin
+      const currentUser = await storage.getUserById(req.session.userId!);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const barcode = req.params.barcode;
+      const product = await storage.getProductByBarcode(barcode);
+      
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      res.json({ product });
+    } catch (error) {
+      console.error("Get admin product error:", error);
+      res.status(500).json({ message: "Failed to fetch product" });
+    }
+  });
+
+  app.put("/api/admin/products/:barcode", requireAuth, async (req: any, res) => {
+    try {
+      // Check if current user is admin
+      const currentUser = await storage.getUserById(req.session.userId!);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const barcode = req.params.barcode;
+      const updates = req.body;
+
+      // Validate the updates using insertProductSchema (partial)
+      const partialSchema = insertProductSchema.partial();
+      const validatedUpdates = partialSchema.parse(updates);
+
+      const updatedProduct = await storage.updateProduct(barcode, validatedUpdates);
+      
+      if (!updatedProduct) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      res.json({ 
+        message: "Product updated successfully",
+        product: updatedProduct 
+      });
+    } catch (error) {
+      console.error("Update admin product error:", error);
+      res.status(500).json({ message: "Failed to update product" });
+    }
+  });
+
+  app.delete("/api/admin/products/:barcode", requireAuth, async (req: any, res) => {
+    try {
+      // Check if current user is admin
+      const currentUser = await storage.getUserById(req.session.userId!);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const barcode = req.params.barcode;
+      const deleted = await storage.deleteProduct(barcode);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      res.json({ message: "Product deleted successfully" });
+    } catch (error) {
+      console.error("Delete admin product error:", error);
+      res.status(500).json({ message: "Failed to delete product" });
+    }
+  });
+
+  app.post("/api/admin/products", requireAuth, async (req: any, res) => {
+    try {
+      // Check if current user is admin
+      const currentUser = await storage.getUserById(req.session.userId!);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Validate the product data
+      const validatedProduct = insertProductSchema.parse(req.body);
+
+      const newProduct = await storage.createProduct(validatedProduct);
+      
+      res.status(201).json({ 
+        message: "Product created successfully",
+        product: newProduct 
+      });
+    } catch (error) {
+      console.error("Create admin product error:", error);
+      res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+
   // Search products with filters (for text searches)
   app.post("/api/products/search", ensureSession, async (req: any, res) => {
     try {
