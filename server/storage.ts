@@ -46,6 +46,9 @@ import {
   cameraSettings,
   type CameraSettings,
   type InsertCameraSettings,
+  userCameraSettings,
+  type UserCameraSettings,
+  type InsertUserCameraSettings,
   menuItems,
   type MenuItem,
   type InsertMenuItem,
@@ -216,10 +219,16 @@ export interface IStorage {
   updateDeviceLastSeen(identifierHash: string): Promise<void>;
   getDeviceAnalytics(): Promise<any>;
 
-  // Camera Settings methods
+  // Camera Settings methods (admin-only)
   getCameraSettings(): Promise<CameraSettings>;
   updateCameraSettings(settings: Partial<InsertCameraSettings>): Promise<CameraSettings>;
   resetCameraSettingsToDefaults(): Promise<CameraSettings>;
+
+  // User Camera Settings methods
+  getUserCameraSettings(userId: number): Promise<UserCameraSettings>;
+  updateUserCameraSettings(userId: number, settings: Partial<InsertUserCameraSettings>): Promise<UserCameraSettings>;
+  createUserCameraSettings(userId: number, settings?: Partial<InsertUserCameraSettings>): Promise<UserCameraSettings>;
+  resetUserCameraSettingsToDefaults(userId: number): Promise<UserCameraSettings>;
 
   // Menu Items methods
   getAllMenuItems(): Promise<MenuItem[]>;
@@ -1885,6 +1894,142 @@ export class DatabaseStorage implements IStorage {
       return updated;
     } catch (error) {
       console.error('Error resetting camera settings:', error);
+      throw error;
+    }
+  }
+
+  // ==================== User Camera Settings Methods ====================
+
+  async getUserCameraSettings(userId: number): Promise<UserCameraSettings> {
+    try {
+      const [settings] = await db.select().from(userCameraSettings)
+        .where(eq(userCameraSettings.userId, userId))
+        .limit(1);
+      
+      if (!settings) {
+        // Create default settings for the user if none exist
+        return await this.createUserCameraSettings(userId);
+      }
+      
+      return settings;
+    } catch (error) {
+      console.error('Error fetching user camera settings:', error);
+      throw error;
+    }
+  }
+
+  async createUserCameraSettings(userId: number, settings?: Partial<InsertUserCameraSettings>): Promise<UserCameraSettings> {
+    try {
+      const defaultSettings = {
+        userId,
+        timeout: 30,
+        autoStopEnabled: true,
+        maxZoomLevel: 3.0,
+        minZoomLevel: 1.0,
+        defaultZoomLevel: 1.0,
+        focusMode: 'continuous',
+        flashMode: 'auto',
+        scanFrequency: 10,
+        enableBeepSound: true,
+        enableVibration: true,
+        overlayOpacity: 0.70,
+        scanAreaSize: 0.60,
+        optimizeForCloseRange: true,
+        enhanceContrast: true,
+        adjustBrightness: 1.0,
+        scanIntervalMs: 100,
+        torchEnabled: false,
+        videoConstraints: '{}',
+        preferredCameraId: '',
+        enableAutoFocus: true,
+        qualityPreset: 'balanced',
+        performanceMode: 'balanced',
+        errorRecoveryEnabled: true,
+        debugMode: false,
+        ...settings
+      };
+
+      const [created] = await db.insert(userCameraSettings)
+        .values(defaultSettings)
+        .returning();
+      
+      return created;
+    } catch (error) {
+      console.error('Error creating user camera settings:', error);
+      throw error;
+    }
+  }
+
+  async updateUserCameraSettings(userId: number, settings: Partial<InsertUserCameraSettings>): Promise<UserCameraSettings> {
+    try {
+      // Filter out timestamp fields that should be handled by the database
+      const { createdAt, updatedAt, userId: _, ...updateData } = settings as any;
+      
+      const [updated] = await db
+        .update(userCameraSettings)
+        .set({
+          ...updateData,
+          updatedAt: new Date()
+        })
+        .where(eq(userCameraSettings.userId, userId))
+        .returning();
+      
+      if (!updated) {
+        // If no settings exist for the user, create them with the provided updates
+        return await this.createUserCameraSettings(userId, settings);
+      }
+      
+      return updated;
+    } catch (error) {
+      console.error('Error updating user camera settings:', error);
+      throw error;
+    }
+  }
+
+  async resetUserCameraSettingsToDefaults(userId: number): Promise<UserCameraSettings> {
+    try {
+      const defaultSettings = {
+        timeout: 30,
+        autoStopEnabled: true,
+        maxZoomLevel: 3.0,
+        minZoomLevel: 1.0,
+        defaultZoomLevel: 1.0,
+        focusMode: 'continuous',
+        flashMode: 'auto',
+        scanFrequency: 10,
+        enableBeepSound: true,
+        enableVibration: true,
+        overlayOpacity: 0.70,
+        scanAreaSize: 0.60,
+        optimizeForCloseRange: true,
+        enhanceContrast: true,
+        adjustBrightness: 1.0,
+        scanIntervalMs: 100,
+        torchEnabled: false,
+        videoConstraints: '{}',
+        preferredCameraId: '',
+        enableAutoFocus: true,
+        qualityPreset: 'balanced',
+        performanceMode: 'balanced',
+        errorRecoveryEnabled: true,
+        debugMode: false,
+        updatedAt: new Date()
+      };
+
+      const [updated] = await db
+        .update(userCameraSettings)
+        .set(defaultSettings)
+        .where(eq(userCameraSettings.userId, userId))
+        .returning();
+      
+      if (!updated) {
+        // If no settings exist for the user, create them with defaults
+        return await this.createUserCameraSettings(userId, defaultSettings);
+      }
+      
+      return updated;
+    } catch (error) {
+      console.error('Error resetting user camera settings to defaults:', error);
       throw error;
     }
   }

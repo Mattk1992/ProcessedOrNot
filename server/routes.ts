@@ -2418,6 +2418,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== USER CAMERA SETTINGS ROUTES ====================
+  
+  // Get user-specific camera settings
+  app.get("/api/user/camera-settings", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const settings = await storage.getUserCameraSettings(userId);
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching user camera settings:", error);
+      res.status(500).json({ message: "Failed to fetch camera settings" });
+    }
+  });
+
+  // Update user-specific camera settings
+  app.put("/api/user/camera-settings", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const settings = req.body;
+      const updatedSettings = await storage.updateUserCameraSettings(userId, settings);
+      res.json(updatedSettings);
+    } catch (error) {
+      console.error("Error updating user camera settings:", error);
+      res.status(500).json({ message: "Failed to update camera settings" });
+    }
+  });
+
+  // Reset user-specific camera settings to defaults
+  app.post("/api/user/camera-settings/reset", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const defaultSettings = await storage.resetUserCameraSettingsToDefaults(userId);
+      res.json(defaultSettings);
+    } catch (error) {
+      console.error("Error resetting user camera settings:", error);
+      res.status(500).json({ message: "Failed to reset camera settings" });
+    }
+  });
+
   // ==================== DEBUG ROUTES ====================
   
   // Debug Routes for cascading database testing

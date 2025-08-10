@@ -49,9 +49,9 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
   const [isOpen, setIsOpen] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  // Fetch camera settings
+  // Fetch user camera settings
   const { data: settings, isLoading } = useQuery({
-    queryKey: ['/api/settings/camera-timeout'],
+    queryKey: ['/api/user/camera-settings'],
     enabled: isOpen,
   });
 
@@ -116,7 +116,7 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
   // Save settings mutation
   const saveSettingsMutation = useMutation({
     mutationFn: async (data: Partial<CameraSettings>) => {
-      const response = await fetch('/api/admin/camera-settings', {
+      const response = await fetch('/api/user/camera-settings', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -133,12 +133,11 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
     onSuccess: () => {
       toast({
         title: "Settings Saved",
-        description: "Camera settings have been updated successfully.",
+        description: "Your camera settings have been updated successfully.",
       });
       setHasUnsavedChanges(false);
       // Invalidate and refetch relevant queries
-      queryClient.invalidateQueries({ queryKey: ['/api/settings/camera-timeout'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/camera-settings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/camera-settings'] });
     },
     onError: (error) => {
       toast({

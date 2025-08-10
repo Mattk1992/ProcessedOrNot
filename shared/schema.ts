@@ -68,7 +68,41 @@ export const insertSearchHistorySchema = createInsertSchema(searchHistory).omit(
 export type InsertSearchHistory = z.infer<typeof insertSearchHistorySchema>;
 export type SearchHistory = typeof searchHistory.$inferSelect;
 
-// Camera Settings table - for barcode scanner camera configuration
+// User Camera Settings table - for user-specific barcode scanner camera configuration
+export const userCameraSettings = pgTable("user_camera_settings", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(), // Foreign key to users table
+  timeout: integer("timeout").notNull().default(30),
+  autoStopEnabled: boolean("auto_stop_enabled").notNull().default(true),
+  maxZoomLevel: real("max_zoom_level").notNull().default(3.0),
+  minZoomLevel: real("min_zoom_level").notNull().default(1.0),
+  defaultZoomLevel: real("default_zoom_level").notNull().default(1.0),
+  focusMode: varchar("focus_mode", { length: 50 }).notNull().default('continuous'),
+  flashMode: varchar("flash_mode", { length: 50 }).notNull().default('auto'),
+  scanFrequency: integer("scan_frequency").notNull().default(10),
+  enableBeepSound: boolean("enable_beep_sound").notNull().default(true),
+  enableVibration: boolean("enable_vibration").notNull().default(true),
+  overlayOpacity: real("overlay_opacity").notNull().default(0.70),
+  scanAreaSize: real("scan_area_size").notNull().default(0.60),
+  optimizeForCloseRange: boolean("optimize_for_close_range").notNull().default(true),
+  enhanceContrast: boolean("enhance_contrast").notNull().default(true),
+  adjustBrightness: real("adjust_brightness").notNull().default(1.0),
+  scanIntervalMs: integer("scan_interval_ms").notNull().default(100),
+  torchEnabled: boolean("torch_enabled").notNull().default(false),
+  videoConstraints: text("video_constraints").default('{}'),
+  preferredCameraId: varchar("preferred_camera_id", { length: 255 }).default(''),
+  enableAutoFocus: boolean("enable_auto_focus").notNull().default(true),
+  qualityPreset: varchar("quality_preset", { length: 50 }).notNull().default('balanced'),
+  performanceMode: varchar("performance_mode", { length: 50 }).notNull().default('balanced'),
+  errorRecoveryEnabled: boolean("error_recovery_enabled").notNull().default(true),
+  debugMode: boolean("debug_mode").notNull().default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdx: index("user_camera_settings_user_idx").on(table.userId),
+}));
+
+// Keep the old admin-only camera settings table for backward compatibility
 export const cameraSettings = pgTable("camera_settings", {
   id: serial("id").primaryKey(),
   timeout: integer("timeout").notNull().default(30),
@@ -99,12 +133,20 @@ export const cameraSettings = pgTable("camera_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const insertUserCameraSettingsSchema = createInsertSchema(userCameraSettings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertCameraSettingsSchema = createInsertSchema(cameraSettings).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
 });
 
+export type InsertUserCameraSettings = z.infer<typeof insertUserCameraSettingsSchema>;
+export type UserCameraSettings = typeof userCameraSettings.$inferSelect;
 export type InsertCameraSettings = z.infer<typeof insertCameraSettingsSchema>;
 export type CameraSettings = typeof cameraSettings.$inferSelect;
 
