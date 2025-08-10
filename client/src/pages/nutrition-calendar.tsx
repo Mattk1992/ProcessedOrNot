@@ -4,7 +4,11 @@ import { useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Clock, TrendingUp, ArrowLeft } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { Calendar, Clock, TrendingUp, ArrowLeft, Download, Copy, ExternalLink, Smartphone, Monitor } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays, subDays } from "date-fns";
 
 type CalendarView = "monthly" | "weekly" | "daily";
@@ -14,6 +18,18 @@ export default function NutritionCalendar() {
   const [, setLocation] = useLocation();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>("monthly");
+  const [isWebcalDialogOpen, setIsWebcalDialogOpen] = useState(false);
+  const [webcalUrls, setWebcalUrls] = useState<{
+    webcalUrl: string;
+    httpsUrl: string;
+    instructions: {
+      ios: string;
+      android: string;
+      desktop: string;
+    };
+  } | null>(null);
+  const [isLoadingWebcal, setIsLoadingWebcal] = useState(false);
+  const { toast } = useToast();
 
   // Redirect if not authenticated
   if (!isAuthenticated) {
@@ -76,6 +92,51 @@ export default function NutritionCalendar() {
 
   const days = getDaysToShow();
 
+  const fetchWebcalUrls = async () => {
+    setIsLoadingWebcal(true);
+    try {
+      const response = await fetch('/api/webcal/url');
+      if (!response.ok) {
+        throw new Error('Failed to generate webcal URLs');
+      }
+      const data = await response.json();
+      setWebcalUrls(data);
+    } catch (error) {
+      console.error('Error fetching webcal URLs:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate calendar export links. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingWebcal(false);
+    }
+  };
+
+  const openWebcalDialog = () => {
+    setIsWebcalDialogOpen(true);
+    if (!webcalUrls) {
+      fetchWebcalUrls();
+    }
+  };
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied!",
+        description: `${label} copied to clipboard`,
+      });
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+      toast({
+        title: "Error",
+        description: "Failed to copy to clipboard",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90 p-4">
       <div className="max-w-7xl mx-auto">
@@ -96,28 +157,42 @@ export default function NutritionCalendar() {
               <p className="text-muted-foreground mt-1">Track your daily nutrition and meal patterns</p>
             </div>
             
-            {/* View Toggle Buttons */}
-            <div className="flex gap-2">
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-2">
+              {/* View Toggle Buttons */}
+              <div className="flex gap-2">
+                <Button
+                  variant={view === "monthly" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setView("monthly")}
+                >
+                  Monthly
+                </Button>
+                <Button
+                  variant={view === "weekly" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setView("weekly")}
+                >
+                  Weekly
+                </Button>
+                <Button
+                  variant={view === "daily" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setView("daily")}
+                >
+                  Daily
+                </Button>
+              </div>
+              
+              {/* Webcal Export Button */}
               <Button
-                variant={view === "monthly" ? "default" : "outline"}
+                variant="outline"
                 size="sm"
-                onClick={() => setView("monthly")}
+                onClick={openWebcalDialog}
+                className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 hover:from-blue-600 hover:to-purple-700"
               >
-                Monthly
-              </Button>
-              <Button
-                variant={view === "weekly" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setView("weekly")}
-              >
-                Weekly
-              </Button>
-              <Button
-                variant={view === "daily" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setView("daily")}
-              >
-                Daily
+                <Calendar className="w-4 h-4 mr-2" />
+                Export Calendar
               </Button>
             </div>
           </div>
@@ -282,6 +357,144 @@ export default function NutritionCalendar() {
             </CardContent>
           </Card>
         )}
+
+        {/* Webcal Export Dialog */}
+        <Dialog open={isWebcalDialogOpen} onOpenChange={setIsWebcalDialogOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-blue-500" />
+                Export Nutrition Calendar
+              </DialogTitle>
+              <DialogDescription>
+                Export your nutrition calendar to sync with your favorite calendar apps
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 py-4">
+              {isLoadingWebcal ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <Download className="w-8 h-8 animate-bounce mx-auto text-blue-500 mb-2" />
+                    <p className="text-sm text-muted-foreground">Generating calendar links...</p>
+                  </div>
+                </div>
+              ) : webcalUrls ? (
+                <>
+                  {/* iOS/macOS Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-5 h-5 text-gray-600" />
+                      <Label className="text-base font-semibold">iOS & macOS</Label>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {webcalUrls.instructions.ios}
+                    </p>
+                    <div className="flex gap-2">
+                      <Input
+                        value={webcalUrls.webcalUrl}
+                        readOnly
+                        className="flex-1 font-mono text-xs"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(webcalUrls.webcalUrl, "Webcal URL")}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(webcalUrls.webcalUrl, '_blank')}
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Android/Google Calendar Section */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2">
+                      <Monitor className="w-5 h-5 text-gray-600" />
+                      <Label className="text-base font-semibold">Android & Desktop</Label>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {webcalUrls.instructions.android}
+                    </p>
+                    <div className="flex gap-2">
+                      <Input
+                        value={webcalUrls.httpsUrl}
+                        readOnly
+                        className="flex-1 font-mono text-xs"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(webcalUrls.httpsUrl, "HTTPS URL")}
+                      >
+                        <Copy className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => window.open(webcalUrls.httpsUrl, '_blank')}
+                      >
+                        <Download className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Desktop Instructions */}
+                  <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Monitor className="w-4 h-4 text-blue-600" />
+                      <Label className="text-sm font-semibold text-blue-700 dark:text-blue-400">
+                        Desktop Calendar Apps
+                      </Label>
+                    </div>
+                    <p className="text-xs text-blue-600 dark:text-blue-300">
+                      {webcalUrls.instructions.desktop}
+                    </p>
+                  </div>
+
+                  {/* What gets exported */}
+                  <div className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
+                    <Label className="text-sm font-semibold mb-2 block">What's included:</Label>
+                    <ul className="text-xs text-muted-foreground space-y-1">
+                      <li>• Daily nutrition summaries (calories, protein, carbs, fat)</li>
+                      <li>• Individual meal entries with timestamps</li>
+                      <li>• Food scan counts and meal types</li>
+                      <li>• Automatic updates when you log new meals</li>
+                    </ul>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-sm text-muted-foreground">
+                    Failed to generate calendar links. Please try again.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={fetchWebcalUrls}
+                    className="mt-2"
+                  >
+                    Retry
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setIsWebcalDialogOpen(false)}
+              >
+                Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -2848,6 +2848,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Webcal (iCal) endpoints
+  app.get("/api/webcal/:userId/:token.ics", async (req, res) => {
+    try {
+      const { userId, token } = req.params;
+      
+      // Basic token validation (in production, use proper JWT or similar)
+      if (!userId || !token) {
+        return res.status(400).json({ message: 'Invalid webcal URL' });
+      }
+
+      // Get nutrition data for the user (using sample data for now)
+      // In production, fetch from diary_entries table
+      const nutritionEntries = [
+        {
+          date: '2025-01-10',
+          calories: 2150,
+          protein: 120,
+          carbohydrates: 280,
+          fat: 75,
+          meals: [
+            { name: 'Oatmeal with Berries', type: 'breakfast', time: '08:00', calories: 350 },
+            { name: 'Grilled Chicken Salad', type: 'lunch', time: '12:30', calories: 450 },
+            { name: 'Salmon with Quinoa', type: 'dinner', time: '19:00', calories: 650 },
+            { name: 'Greek Yogurt', type: 'snack', time: '15:30', calories: 150 }
+          ]
+        },
+        {
+          date: '2025-01-09',
+          calories: 1980,
+          protein: 110,
+          carbohydrates: 240,
+          fat: 68,
+          meals: [
+            { name: 'Smoothie Bowl', type: 'breakfast', time: '08:15', calories: 320 },
+            { name: 'Turkey Sandwich', type: 'lunch', time: '13:00', calories: 420 },
+            { name: 'Pasta with Vegetables', type: 'dinner', time: '18:30', calories: 580 },
+            { name: 'Apple with Almonds', type: 'snack', time: '16:00', calories: 180 }
+          ]
+        }
+      ];
+
+      const { generateWebcalFeed } = await import('./lib/webcal');
+      const icalContent = generateWebcalFeed(nutritionEntries, parseInt(userId));
+
+      res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+      res.setHeader('Content-Disposition', 'attachment; filename="nutrition-calendar.ics"');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      
+      res.send(icalContent);
+    } catch (error) {
+      console.error('Error generating webcal feed:', error);
+      res.status(500).json({ message: 'Failed to generate calendar feed' });
+    }
+  });
+
+  // Get webcal URL for authenticated user
+  app.get("/api/webcal/url", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session.userId;
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      
+      const { generateWebcalUrl, generateHttpsWebcalUrl } = await import('./lib/webcal');
+      
+      res.json({
+        webcalUrl: generateWebcalUrl(userId, baseUrl),
+        httpsUrl: generateHttpsWebcalUrl(userId, baseUrl),
+        instructions: {
+          ios: 'Tap the webcal link to automatically add to your iOS Calendar app',
+          android: 'Copy the HTTPS URL and import it into Google Calendar or your preferred calendar app',
+          desktop: 'Copy the webcal link and add it as a calendar subscription in your calendar application'
+        }
+      });
+    } catch (error) {
+      console.error('Error generating webcal URL:', error);
+      res.status(500).json({ message: 'Failed to generate webcal URL' });
+    }
+  });
+
   // NutriBot Report endpoints
   app.post("/api/nutribot/report", requireAuth, async (req: any, res) => {
     try {
