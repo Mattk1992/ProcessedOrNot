@@ -4,7 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles, X, Info, BarChart3, Zap, TrendingUp, Activity } from "lucide-react";
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
 import NutritionSpotlight from "./nutrition-spotlight";
@@ -23,6 +26,7 @@ interface ProductResultsProps {
 export default function ProductResults({ barcode, filters, onProductFound }: ProductResultsProps) {
   const [showManualForm, setShowManualForm] = useState(false);
   const [showNutritionPopup, setShowNutritionPopup] = useState(false);
+  const [showProductAnalysis, setShowProductAnalysis] = useState(false);
   const { t, language } = useLanguage();
 
   // Determine if this is a text search with filters
@@ -78,10 +82,11 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
     enabled: !!product,
   });
 
-  // Trigger nutrition popup when product is found
+  // Trigger both popups when product is found
   useEffect(() => {
     if (product && !isLoadingProduct && !productError) {
       setShowNutritionPopup(true);
+      setShowProductAnalysis(true);
       onProductFound?.(product);
     }
   }, [product, isLoadingProduct, productError, onProductFound]);
@@ -726,6 +731,268 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
         onClose={() => setShowNutritionPopup(false)}
         onComplete={() => setShowNutritionPopup(false)}
       />
+
+      {/* Product Analysis & Information Hovering Screen */}
+      <Dialog open={showProductAnalysis} onOpenChange={setShowProductAnalysis}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3 text-2xl">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Info className="w-5 h-5 text-white" />
+              </div>
+              Product Analysis & Information
+            </DialogTitle>
+            <DialogDescription>
+              Comprehensive analysis and detailed information for {product?.productName || "this product"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <ScrollArea className="h-[70vh] pr-4">
+            <div className="space-y-6">
+              {/* Product Overview Section */}
+              <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/20 dark:to-purple-950/20">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <BarChart3 className="w-5 h-5 text-blue-600" />
+                    Product Overview
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-4">
+                      {product?.imageUrl ? (
+                        <img 
+                          src={product.imageUrl} 
+                          alt={product.productName || "Product"} 
+                          className="w-16 h-20 object-cover rounded-lg border-2 border-border/20"
+                        />
+                      ) : (
+                        <div className="w-16 h-20 bg-muted rounded-lg flex items-center justify-center">
+                          <Database className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div>
+                        <h3 className="font-semibold text-lg">{product?.productName || "Unknown Product"}</h3>
+                        {product?.brands && <p className="text-muted-foreground">{String(product.brands)}</p>}
+                        <Badge variant="outline" className="mt-1 font-mono text-xs">
+                          {product?.barcode}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm font-medium">Data Source:</span>
+                        <Badge variant="secondary" className="text-xs">
+                          <Database className="h-3 w-3 mr-1" />
+                          {product?.dataSource || product?.lookupSource || "Database"}
+                        </Badge>
+                      </div>
+                      {product?.processingScore !== null && (
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium">Processing Score:</span>
+                          <span className={`font-bold ${getScoreColor(product.processingScore)}`}>
+                            {product.processingScore}/10
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Processing Analysis Section */}
+              {product?.processingScore !== null && (
+                <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50 dark:from-orange-950/20 dark:to-yellow-950/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Zap className="w-5 h-5 text-orange-600" />
+                      Processing Analysis
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Processing Level</p>
+                        <p className={`text-xl font-bold ${getScoreColor(product.processingScore)}`}>
+                          {getScoreLabel(product.processingScore)}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-muted-foreground">Score</p>
+                        <p className={`text-3xl font-bold ${getScoreColor(product.processingScore)}`}>
+                          {product.processingScore}<span className="text-muted-foreground">/10</span>
+                        </p>
+                      </div>
+                    </div>
+                    {product.processingExplanation && (
+                      <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
+                        <p className="text-sm leading-relaxed">{product.processingExplanation}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Nutrition Information Section */}
+              {product?.nutriments && (
+                <Card className="border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <TrendingUp className="w-5 h-5 text-green-600" />
+                      Nutrition Facts (per 100g)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-3 bg-white/50 dark:bg-black/20 rounded-lg">
+                        <p className="text-2xl font-bold text-primary">
+                          {(() => {
+                            const nutrients = product.nutriments as Record<string, any>;
+                            return nutrients?.energy_100g ? String(nutrients.energy_100g) : "N/A";
+                          })()}
+                        </p>
+                        <p className="text-xs text-muted-foreground font-medium">Calories</p>
+                      </div>
+                      <div className="text-center p-3 bg-white/50 dark:bg-black/20 rounded-lg">
+                        <p className="text-2xl font-bold text-green-600">
+                          {(() => {
+                            const nutrients = product.nutriments as any;
+                            return nutrients?.proteins_100g ? `${nutrients.proteins_100g}g` : "N/A";
+                          })()}
+                        </p>
+                        <p className="text-xs text-muted-foreground font-medium">Protein</p>
+                      </div>
+                      <div className="text-center p-3 bg-white/50 dark:bg-black/20 rounded-lg">
+                        <p className="text-2xl font-bold text-orange-600">
+                          {(() => {
+                            const nutrients = product.nutriments as any;
+                            return nutrients?.carbohydrates_100g ? `${nutrients.carbohydrates_100g}g` : "N/A";
+                          })()}
+                        </p>
+                        <p className="text-xs text-muted-foreground font-medium">Carbs</p>
+                      </div>
+                      <div className="text-center p-3 bg-white/50 dark:bg-black/20 rounded-lg">
+                        <p className="text-2xl font-bold text-purple-600">
+                          {(() => {
+                            const nutrients = product.nutriments as any;
+                            return nutrients?.fat_100g ? `${nutrients.fat_100g}g` : "N/A";
+                          })()}
+                        </p>
+                        <p className="text-xs text-muted-foreground font-medium">Fat</p>
+                      </div>
+                    </div>
+                    
+                    {/* Detailed Nutrition Table */}
+                    <Separator className="my-4" />
+                    <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4">
+                      <h4 className="font-semibold mb-3 text-sm">Detailed Breakdown</h4>
+                      <div className="space-y-2 text-sm">
+                        {(product.nutriments as any).sugars_100g && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Sugars</span>
+                            <span className="font-mono">{(product.nutriments as any).sugars_100g}g</span>
+                          </div>
+                        )}
+                        {(product.nutriments as any).saturated_fat_100g && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Saturated Fat</span>
+                            <span className="font-mono">{(product.nutriments as any).saturated_fat_100g}g</span>
+                          </div>
+                        )}
+                        {(product.nutriments as any).salt_100g && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Salt</span>
+                            <span className="font-mono">{(product.nutriments as any).salt_100g}g</span>
+                          </div>
+                        )}
+                        {(product.nutriments as any).fiber_100g && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Fiber</span>
+                            <span className="font-mono">{(product.nutriments as any).fiber_100g}g</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Glycemic Information Section */}
+              {(product?.glycemicIndex || product?.glycemicLoad) && (
+                <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Activity className="w-5 h-5 text-purple-600" />
+                      Glycemic Impact
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      {product.glycemicIndex && (
+                        <div className="text-center p-3 bg-white/50 dark:bg-black/20 rounded-lg">
+                          <p className="text-2xl font-bold text-purple-600">{product.glycemicIndex}</p>
+                          <p className="text-xs text-muted-foreground font-medium">Glycemic Index</p>
+                        </div>
+                      )}
+                      {product.glycemicLoad && (
+                        <div className="text-center p-3 bg-white/50 dark:bg-black/20 rounded-lg">
+                          <p className="text-2xl font-bold text-pink-600">{product.glycemicLoad}</p>
+                          <p className="text-xs text-muted-foreground font-medium">Glycemic Load</p>
+                        </div>
+                      )}
+                    </div>
+                    {product.glycemicExplanation && (
+                      <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
+                        <p className="text-sm leading-relaxed">{product.glycemicExplanation}</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Ingredients Section */}
+              {product?.ingredientsText && (
+                <Card className="border-gray-200 bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-950/20 dark:to-slate-950/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Database className="w-5 h-5 text-gray-600" />
+                      Ingredients List
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
+                      <p className="text-sm leading-relaxed">{String(product.ingredientsText)}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* NutriBot Insight Section */}
+              {nutriBotInsight && (
+                <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Bot className="w-5 h-5 text-blue-600" />
+                      NutriBot AI Insight
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
+                      <p className="text-sm leading-relaxed">{nutriBotInsight.insight}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          </ScrollArea>
+
+          <div className="flex justify-end pt-4 border-t">
+            <Button variant="outline" onClick={() => setShowProductAnalysis(false)}>
+              Close Analysis
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
