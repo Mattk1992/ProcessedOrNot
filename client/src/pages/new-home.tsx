@@ -21,8 +21,11 @@ import {
 } from "lucide-react";
 import { Link } from "wouter";
 import { useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function HomePage() {
+  const { isAuthenticated, isLoading } = useAuth();
+  
   // Set page title and meta description for SEO
   useEffect(() => {
     document.title = "ProcessedOrNot - AI-Powered Food Analysis & Nutrition Scanner";
@@ -147,6 +150,14 @@ export default function HomePage() {
                 Start Scanning Now
               </Button>
             </Link>
+            {!isAuthenticated && !isLoading && (
+              <Link href="/auth/login">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                  <User className="w-5 h-5 mr-2" />
+                  Login or Register
+                </Button>
+              </Link>
+            )}
             <Button variant="outline" size="lg" className="text-lg px-8 py-6">
               <Smartphone className="w-5 h-5 mr-2" />
               Download Mobile App
