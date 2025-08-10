@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Settings, Save, RotateCcw, X, Monitor, ScanLine, Eye, BarChart3, Camera, Volume2, Smartphone } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
 interface CameraSettings {
   id: number;
@@ -53,15 +54,6 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
   const { data: settings, isLoading } = useQuery({
     queryKey: ['/api/user/camera-settings'],
     enabled: isOpen,
-    queryFn: async () => {
-      const response = await fetch('/api/user/camera-settings', {
-        credentials: 'include',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch camera settings');
-      }
-      return response.json();
-    },
   });
 
   // Local state for form
@@ -125,19 +117,7 @@ export default function QuickCameraSettings({ children }: QuickCameraSettingsPro
   // Save settings mutation
   const saveSettingsMutation = useMutation({
     mutationFn: async (data: Partial<CameraSettings>) => {
-      const response = await fetch('/api/user/camera-settings', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include', // Ensure cookies/session are sent
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to save camera settings');
-      }
-      
+      const response = await apiRequest('PUT', '/api/user/camera-settings', data);
       return response.json();
     },
     onSuccess: () => {
