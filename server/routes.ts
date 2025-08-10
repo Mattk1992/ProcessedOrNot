@@ -3107,10 +3107,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
 
-      // Validate request body
+      // Validate request body with proper timestamp conversion
       const validatedData = insertDiaryEntrySchema.parse({
         ...req.body,
         userId: userId,
+        consumedAt: req.body.consumedAt ? new Date(req.body.consumedAt) : new Date(),
       });
 
       const diaryEntry = await storage.createDiaryEntry(validatedData);
@@ -3121,9 +3122,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error: any) {
       if (error.name === 'ZodError') {
+        console.error("Diary entry validation error:", error.errors);
+        console.error("Request body:", req.body);
         return res.status(400).json({ 
           message: "Validation error",
-          errors: error.errors
+          errors: error.errors,
+          receivedData: req.body
         });
       }
       console.error("Add to diary error:", error);
