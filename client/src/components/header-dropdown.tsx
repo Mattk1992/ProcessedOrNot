@@ -46,12 +46,6 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       group: 'Main Navigation'
     },
     {
-      label: 'Marketing',
-      icon: <TrendingUp className="w-4 h-4" />,
-      action: () => setLocation('/marketing'),
-      group: 'Main Navigation'
-    },
-    {
       label: 'Product Scanner',
       icon: <Camera className="w-4 h-4" />,
       action: () => setLocation('/product-lookup'),
@@ -119,12 +113,6 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       label: 'Home',
       icon: <Home className="w-4 h-4" />,
       action: () => setLocation('/'),
-      group: 'Main Navigation'
-    },
-    {
-      label: 'Marketing',
-      icon: <TrendingUp className="w-4 h-4" />,
-      action: () => setLocation('/marketing'),
       group: 'Main Navigation'
     },
     {
