@@ -3,7 +3,6 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
-    console.error(`API request failed: ${res.status} ${res.statusText}`, text);
     throw new Error(`${res.status}: ${text}`);
   }
 }
@@ -45,15 +44,11 @@ export const getQueryFn: <T>(options: {
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      queryFn: getQueryFn({ on401: "returnNull" }),
+      queryFn: getQueryFn({ on401: "throw" }),
       refetchInterval: false,
-      refetchOnWindowFocus: true,
-      staleTime: 2 * 60 * 1000, // 2 minutes
-      retry: (failureCount, error: any) => {
-        // Don't retry on 401 errors
-        if (error?.message?.includes('401')) return false;
-        return failureCount < 2;
-      },
+      refetchOnWindowFocus: false,
+      staleTime: Infinity,
+      retry: false,
     },
     mutations: {
       retry: false,

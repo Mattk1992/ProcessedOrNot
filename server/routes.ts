@@ -4,7 +4,7 @@ import multer from "multer";
 import { storage } from "./storage";
 import { transcribeAudio, isVoiceTranscriptionAvailable } from "./lib/voice-transcription";
 import { smartProductLookup, cascadingProductLookup } from "./lib/product-lookup";
-import { analyzeIngredients, analyzeGlycemicIndex } from "./lib/openai";
+import { analyzeIngredients, analyzeGlycemicIndex, getUserAIProvider } from "./lib/openai";
 import { getNutriBotResponse, generateProductNutritionInsight, generateFunFacts, generateNutritionSpotlightInsights } from "./lib/nutribot";
 import { 
   insertProductSchema,
@@ -16,9 +16,7 @@ import {
   type LoginUser,
   type ForgotPassword,
   type ResetPassword,
-  type InsertSearchHistory,
-  purchaseStatusUpdateSchema,
-  type PurchaseStatusUpdate
+  type InsertSearchHistory
 } from "@shared/schema";
 import { generatePasswordResetToken, sendPasswordResetEmail, sendEmailVerification, sanitizeUser, generateSearchId } from "./lib/auth";
 import session from "express-session";
@@ -36,54 +34,22 @@ const barcodeSchema = z.object({
   barcode: z.string().min(1, "Input cannot be empty"),
 });
 
-// Helper functions for mapping store-specific status codes
-function mapAppStoreStatus(notificationType: string, receiptInfo: any): string {
-  switch (notificationType) {
-    case 'INITIAL_BUY':
-    case 'DID_RENEW':
-      return 'active';
-    case 'CANCEL':
-    case 'DID_FAIL_TO_RENEW':
-      return 'cancelled';
-    case 'REFUND':
-      return 'refunded';
-    case 'DID_CHANGE_RENEWAL_PREF':
-      return receiptInfo.auto_renew_status === '1' ? 'active' : 'cancelled';
-    case 'DID_CHANGE_RENEWAL_STATUS':
-      return receiptInfo.auto_renew_status === '1' ? 'active' : 'cancelled';
-    default:
-      return 'pending';
-  }
-}
-
-function mapGooglePlayStatus(notificationType: number): string {
-  switch (notificationType) {
-    case 1: // SUBSCRIPTION_RECOVERED
-    case 2: // SUBSCRIPTION_RENEWED
-    case 4: // SUBSCRIPTION_PURCHASED
-      return 'active';
-    case 3: // SUBSCRIPTION_CANCELED
-    case 13: // SUBSCRIPTION_EXPIRED
-      return 'cancelled';
-    case 5: // SUBSCRIPTION_ON_HOLD
-    case 6: // SUBSCRIPTION_IN_GRACE_PERIOD
-      return 'pending';
-    case 12: // SUBSCRIPTION_REVOKED
-      return 'refunded';
-    default:
-      return 'pending';
-  }
-}
-
 // Configure session middleware
 declare module 'express-session' {
   interface SessionData {
     userId?: number;
     user?: any;
+    reward_count?: number;
   }
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve ads.txt file for Google AdSense verification
+  app.get('/ads.txt', (req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
+    res.sendFile('ads.txt', { root: '.' });
+  });
+
   // Initialize PostgreSQL session store
   const PgSession = pgSession(session);
   
@@ -96,15 +62,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }),
     secret: process.env.SESSION_SECRET || 'secure-session-key-change-in-production-2024',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: false, // Don't create sessions for anonymous users unless needed
     name: 'sessionId', // Change default session name for security
+    rolling: true, // Refresh session expiry on activity
     cookie: {
-      secure: process.env.NODE_ENV === 'production',
+      secure: false, // Set to false for development, should be true in production with HTTPS
       httpOnly: true,
-      sameSite: 'strict',
+      sameSite: 'lax', // Better compatibility than 'strict'
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days default
     },
   }));
+
+  // Helper functions for reward tracking (works for both logged-in and anonymous users)
+  function incrementRewardCount(req: any): number {
+    // Ensure session exists for tracking (creates anonymous session if needed)
+    if (!req.session) {
+      req.session = {};
+    }
+    if (!req.session.reward_count) {
+      req.session.reward_count = 0;
+    }
+    req.session.reward_count++;
+    
+    // Save session to database immediately for persistence
+    req.session.save((err: any) => {
+      if (err) {
+        console.warn("Failed to save session for reward tracking:", err);
+      }
+    });
+    
+    return req.session.reward_count;
+  }
+
+  function resetRewardCount(req: any): void {
+    // Ensure session exists
+    if (!req.session) {
+      req.session = {};
+    }
+    req.session.reward_count = 0;
+    
+    // Save session to database immediately
+    req.session.save((err: any) => {
+      if (err) {
+        console.warn("Failed to save session for reward reset:", err);
+      }
+    });
+  }
+
+  function getRewardCount(req: any): number {
+    return (req.session && req.session.reward_count) || 0;
+  }
 
   // Configure multer for voice file uploads
   const upload = multer({
@@ -122,12 +129,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   });
 
+  // Middleware to ensure session exists for anonymous users
+  const ensureSession = (req: any, res: any, next: any) => {
+    // This middleware ensures that anonymous users get a session for reward tracking
+    if (!req.session) {
+      req.session = {};
+    }
+    next();
+  };
+
   // Authentication middleware
   const requireAuth = (req: any, res: any, next: any) => {
     if (!req.session.userId) {
       return res.status(401).json({ message: "Authentication required" });
     }
     next();
+  };
+
+  // Admin access middleware
+  const requireAdmin = async (req: any, res: any, next: any) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      next();
+    } catch (error) {
+      return res.status(500).json({ message: "Authentication check failed" });
+    }
   };
 
   // User registration endpoint
@@ -164,9 +193,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.session.userId = user.id;
       req.session.user = sanitizeUser(user);
 
-      res.status(201).json({
-        message: "Registration successful",
-        user: sanitizeUser(user)
+      // Force session save to ensure persistence
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error after registration:", err);
+          return res.status(500).json({ message: "Registration session creation failed" });
+        }
+        
+        console.log("Registration successful for user:", user.id, "Session saved:", req.session.id);
+        res.status(201).json({
+          message: "Registration successful",
+          user: sanitizeUser(user)
+        });
       });
     } catch (error: any) {
       if (error.name === 'ZodError') {
@@ -184,8 +222,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const validatedData = loginUserSchema.parse(req.body);
+      console.log("Login attempt for username:", validatedData.username);
       
       const user = await storage.verifyUserCredentials(validatedData.username, validatedData.password);
+      console.log("User verification result:", user ? `User ${user.id} found` : "User not found or invalid password");
+      
       if (!user) {
         return res.status(401).json({ 
           message: "Invalid username or password"
@@ -198,16 +239,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Set session duration based on "Keep logged in" checkbox
       if (validatedData.keepLoggedIn) {
-        // Keep logged in for 30 days
-        req.session.cookie.maxAge = 30 * 24 * 60 * 60 * 1000;
+        // Keep logged in indefinitely (10 years)
+        req.session.cookie.maxAge = 10 * 365 * 24 * 60 * 60 * 1000;
       } else {
         // Standard session duration (24 hours)
         req.session.cookie.maxAge = 24 * 60 * 60 * 1000;
       }
 
-      res.json({
-        message: "Login successful",
-        user: sanitizeUser(user)
+      // Force session save to ensure persistence
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error after login:", err);
+          return res.status(500).json({ message: "Login session creation failed" });
+        }
+        
+        console.log("Login successful for user:", user.id, "Session saved:", req.session.id);
+        res.json({
+          message: "Login successful",
+          user: sanitizeUser(user)
+        });
       });
     } catch (error: any) {
       if (error.name === 'ZodError') {
@@ -221,43 +271,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // User logout endpoint with secure cleanup (both GET and POST for browser compatibility)
-  const handleLogout = (req: any, res: any) => {
-    req.session.destroy((err: any) => {
+  // User logout endpoint with secure cleanup (POST)
+  app.post("/api/auth/logout", (req, res) => {
+    console.log("Logout request - Session ID:", req.session.id, "User ID:", req.session.userId);
+    req.session.destroy((err) => {
       if (err) {
-        console.error("Logout error:", err);
+        console.error("Session destroy error:", err);
         return res.status(500).json({ message: "Logout failed" });
       }
-      // Clear both default and custom session cookies
-      res.clearCookie('connect.sid');
-      res.clearCookie('sessionId');
-      
-      // For GET requests (browser redirects), redirect to home page
-      if (req.method === 'GET') {
-        return res.redirect('/');
-      }
-      
-      // For POST requests (API calls), return JSON
+      // Clear session cookies with proper path and domain settings
+      res.clearCookie('connect.sid', { path: '/', httpOnly: true });
+      res.clearCookie('sessionId', { path: '/', httpOnly: true });
+      console.log("Logout successful - Session destroyed and cookies cleared");
       res.json({ message: "Logout successful" });
     });
-  };
+  });
 
-  app.post("/api/auth/logout", handleLogout);
-  app.get("/api/auth/logout", handleLogout);
+  // User logout endpoint with secure cleanup (GET) - for browser redirects
+  app.get("/api/logout", (req, res) => {
+    console.log("Logout GET request - Session ID:", req.session.id, "User ID:", req.session.userId);
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Session destroy error (GET):", err);
+        return res.status(500).send("Logout failed");
+      }
+      // Clear session cookies with proper path and domain settings
+      res.clearCookie('connect.sid', { path: '/', httpOnly: true });
+      res.clearCookie('sessionId', { path: '/', httpOnly: true });
+      console.log("Logout GET successful - Session destroyed and redirecting to home");
+      // Redirect to home page after logout
+      res.redirect('/');
+    });
+  });
 
   // Get current user endpoint
   app.get("/api/auth/me", async (req, res) => {
+    console.log("Auth check - Session ID:", req.session.id, "User ID:", req.session.userId);
+    
     if (!req.session.userId) {
+      console.log("Auth check failed - No userId in session");
       return res.status(401).json({ message: "Not authenticated" });
     }
 
     try {
       const user = await storage.getUserById(req.session.userId);
       if (!user) {
+        console.log("Auth check failed - User not found in database:", req.session.userId);
         req.session.destroy(() => {});
         return res.status(401).json({ message: "User not found" });
       }
+      
+      // Update user's last login time to maintain session activity
+      await storage.updateUser(user.id, { lastLoginAt: new Date() });
 
+      console.log("Auth check successful for user:", user.id);
       res.json({
         user: sanitizeUser(user)
       });
@@ -266,6 +333,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to get user" });
     }
   });
+
+  // Session debug endpoint (development only)
+  if (process.env.NODE_ENV === 'development') {
+    app.get("/api/debug/session", (req, res) => {
+      res.json({
+        sessionId: req.session.id,
+        userId: req.session.userId,
+        user: req.session.user ? sanitizeUser(req.session.user) : null,
+        cookie: req.session.cookie,
+        rewardCount: req.session.reward_count || 0
+      });
+    });
+  }
 
   // Forgot password endpoint
   app.post("/api/auth/forgot-password", async (req, res) => {
@@ -323,143 +403,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Reset password error:", error);
       res.status(500).json({ message: "Password reset failed" });
-    }
-  });
-
-  // Security API routes - Industry Standard Compliance Monitoring  
-  app.get("/api/security/status", (req, res) => {
-    try {
-      const status = {
-        initialized: true,
-        compliance: {
-          'NIST FIPS 140-3': true,
-          'IEEE P1363': true,
-          'TLS 1.3 RFC 8446': process.env.ENABLE_TLS === 'true',
-          'ISO/IEC 27001:2022': true,
-          'GDPR Article 32': true,
-        },
-        features: {
-          encryptionAtRest: 'AES-256-GCM',
-          encryptionInTransit: 'TLS 1.3',
-          passwordHashing: 'Argon2id',
-          keyManagement: 'Automated 90-day rotation',
-          hsmIntegration: process.env.ENABLE_HSM === 'true',
-          postQuantumReady: process.env.ENABLE_POST_QUANTUM === 'true',
-          auditLogging: true,
-        },
-        lastAudit: new Date(),
-      };
-      
-      res.json({
-        success: true,
-        data: status,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      console.error('Security status error:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to retrieve security status',
-      });
-    }
-  });
-
-  app.get("/api/security/health", (req, res) => {
-    try {
-      const checks = [
-        {
-          name: 'Encryption Key Available',
-          status: Boolean(process.env.ENCRYPTION_KEY),
-          message: process.env.ENCRYPTION_KEY ? 'Master encryption key configured' : 'Master encryption key missing'
-        },
-        {
-          name: 'Session Secret Configured',
-          status: Boolean(process.env.SESSION_SECRET),
-          message: process.env.SESSION_SECRET ? 'Session secret configured' : 'Session secret missing'
-        },
-        {
-          name: 'HTTPS Enabled',
-          status: process.env.NODE_ENV === 'production' ? Boolean(process.env.ENABLE_TLS) : true,
-          message: 'TLS/HTTPS configuration'
-        },
-        {
-          name: 'FIPS Mode',
-          status: process.env.NODE_ENV === 'production',
-          message: process.env.NODE_ENV === 'production' ? 'FIPS mode enabled' : 'Development mode'
-        }
-      ];
-      
-      const failedChecks = checks.filter(check => !check.status);
-      
-      let status = 'healthy';
-      if (failedChecks.length > 0) {
-        status = failedChecks.some(check => 
-          check.name.includes('Encryption') || check.name.includes('Session')
-        ) ? 'critical' : 'warning';
-      }
-      
-      const healthCheck = { status, checks };
-      const statusCode = healthCheck.status === 'healthy' ? 200 : 
-                        healthCheck.status === 'warning' ? 200 : 503;
-      
-      res.status(statusCode).json({
-        success: true,
-        data: healthCheck,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      console.error('Security health check error:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Security health check failed',
-      });
-    }
-  });
-
-  app.get("/api/security/compliance", (req, res) => {
-    try {
-      const compliance = {
-        standards: {
-          'NIST FIPS 140-3': {
-            description: 'Federal Information Processing Standard for cryptographic modules',
-            algorithms: ['AES-256-GCM', 'RSA-4096', 'ECC P-384', 'SHA-384'],
-            status: 'compliant',
-          },
-          'IEEE P1363': {
-            description: 'Standard Specifications for Public Key Cryptography',
-            features: ['RSA encryption', 'Elliptic Curve Cryptography', 'Digital signatures'],
-            status: 'compliant',
-          },
-          'TLS 1.3 (RFC 8446)': {
-            description: 'Transport Layer Security Protocol Version 1.3',
-            features: ['Perfect Forward Secrecy', 'Strong cipher suites', 'Certificate pinning'],
-            status: process.env.ENABLE_TLS === 'true' ? 'enabled' : 'available',
-          },
-          'ISO/IEC 27001:2022': {
-            description: 'Information security management systems',
-            measures: ['Data encryption', 'Access controls', 'Audit logging', 'Risk management'],
-            status: 'compliant',
-          },
-          'GDPR Article 32': {
-            description: 'Security of processing - Technical and organisational measures',
-            measures: ['Encryption at rest', 'Encryption in transit', 'Regular testing', 'Data integrity'],
-            status: 'compliant',
-          },
-        },
-        lastUpdated: new Date().toISOString(),
-      };
-      
-      res.json({
-        success: true,
-        data: compliance,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      console.error('Compliance information error:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to retrieve compliance information',
-      });
     }
   });
 
@@ -570,12 +513,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Search products with filters (for text searches)
-  app.post("/api/products/search", async (req, res) => {
+  app.post("/api/products/search", ensureSession, async (req: any, res) => {
     try {
       const { query, filters } = req.body;
       
       if (!query || typeof query !== 'string') {
         return res.status(400).json({ message: "Query is required" });
+      }
+
+      // Increment reward count for search attempts
+      const currentCount = incrementRewardCount(req);
+      
+      // Check if user needs to visit reward URL
+      if (currentCount >= 6) {
+        return res.status(428).json({ 
+          message: "Please visit the reward URL to continue searching",
+          rewardUrl: "https://ProcessedOrNot.replit.app/?reward=product-search",
+          currentCount: currentCount
+        });
       }
 
       // Check if we have cached product data
@@ -585,7 +540,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const isBarcode = /^[0-9]{8,14}$/.test(query.trim());
         const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
         try {
-          await storage.createSearchHistoryWithResult(query, searchInputType, cachedProduct, undefined, 'Cached');
+          await storage.createSearchHistoryWithResult(query, searchInputType, cachedProduct, undefined, 'Cached', req.session.userId);
         } catch (historyError) {
           console.warn("Failed to track search history for cached product:", historyError);
         }
@@ -593,7 +548,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Use smart lookup system with filters
-      const lookupResult = await smartProductLookup(query, filters);
+      const user = (req.session as any).user;
+      const lookupResult = await smartProductLookup(query, filters, user?.id);
       
       // Determine search input type
       const isBarcode = /^[0-9]{8,14}$/.test(query.trim());
@@ -607,7 +563,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             searchInputType, 
             null, 
             lookupResult.error || "Product not found",
-            lookupResult.source
+            lookupResult.source,
+            req.session.userId
           );
         } catch (historyError) {
           console.warn("Failed to track search history for failed lookup:", historyError);
@@ -635,7 +592,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           searchInputType, 
           savedProduct, 
           undefined,
-          lookupResult.source
+          lookupResult.source,
+          req.session.userId
         );
       } catch (historyError) {
         console.warn("Failed to track search history for successful lookup:", historyError);
@@ -656,9 +614,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get product by barcode
-  app.get("/api/products/:barcode", async (req, res) => {
+  app.get("/api/products/:barcode", ensureSession, async (req: any, res) => {
     try {
       const { barcode } = barcodeSchema.parse({ barcode: req.params.barcode });
+
+      // Increment reward count for barcode scans
+      const currentCount = incrementRewardCount(req);
+      
+      // Check if user needs to visit reward URL
+      if (currentCount >= 6) {
+        return res.status(428).json({ 
+          message: "Please visit the reward URL to continue scanning",
+          rewardUrl: "https://ProcessedOrNot.replit.app/?reward=product-search",
+          currentCount: currentCount
+        });
+      }
 
       // Check if we have cached product data
       const cachedProduct = await storage.getProductByBarcode(barcode);
@@ -667,7 +637,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const isBarcode = /^[0-9]{8,14}$/.test(barcode.trim());
         const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
         try {
-          await storage.createSearchHistoryWithResult(barcode, searchInputType, cachedProduct, undefined, 'Cached');
+          await storage.createSearchHistoryWithResult(barcode, searchInputType, cachedProduct, undefined, 'Cached', req.session.userId);
         } catch (historyError) {
           console.warn("Failed to track search history for cached product:", historyError);
         }
@@ -675,7 +645,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Use smart lookup system (auto-detects barcode vs text)
-      const lookupResult = await smartProductLookup(barcode);
+      const user = (req.session as any).user;
+      const lookupResult = await smartProductLookup(barcode, undefined, user?.id);
       
       // Determine search input type
       const isBarcode = /^[0-9]{8,14}$/.test(barcode.trim());
@@ -689,7 +660,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             searchInputType, 
             null, 
             lookupResult.error || "Product not found in any database",
-            lookupResult.source
+            lookupResult.source,
+            req.session.userId
           );
         } catch (historyError) {
           console.warn("Failed to track search history for failed lookup:", historyError);
@@ -717,7 +689,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           searchInputType, 
           savedProduct, 
           undefined,
-          lookupResult.source
+          lookupResult.source,
+          req.session.userId
         );
       } catch (historyError) {
         console.warn("Failed to track search history for successful lookup:", historyError);
@@ -757,13 +730,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Get user's AI provider setting
+      const user = (req.session as any).user;
+      const userAIProvider = await getUserAIProvider(user?.id);
+
       // Analyze ingredients if provided
       if (productData.ingredientsText) {
         try {
           const analysis = await analyzeIngredients(
             productData.ingredientsText,
             productData.productName || "Unknown Product",
-            language || 'en'
+            language || 'en',
+            userAIProvider
           );
           productData.processingScore = analysis.score;
           productData.processingExplanation = analysis.explanation;
@@ -779,7 +757,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               productData.ingredientsText,
               productData.productName || "Unknown Product",
               productData.nutriments,
-              language || 'en'
+              language || 'en',
+              userAIProvider
             );
             productData.glycemicIndex = glycemicAnalysis.glycemicIndex;
             productData.glycemicLoad = glycemicAnalysis.glycemicLoad;
@@ -990,14 +969,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Search History API Routes
   
-  // Get all search history
+  // Get search history for authenticated user
   app.get("/api/search-history", async (req, res) => {
     try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 50;
-      const searchHistory = await storage.getRecentSearchHistory(limit);
+      const searchHistory = await storage.getUserSearchHistory(userId, limit);
       res.json(searchHistory);
     } catch (error) {
-      console.error("Error fetching search history:", error);
+      console.error("Error fetching user search history:", error);
       res.status(500).json({ 
         message: "Failed to fetch search history" 
       });
@@ -1011,19 +995,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const barcodeSearches = allHistory.filter(record => record.searchInputType === 'BarcodeInput');
       const textSearches = allHistory.filter(record => record.searchInputType === 'TextInput');
       
-      // Calculate searches per day for the last 7 days
-      const last7Days = new Date();
-      last7Days.setDate(last7Days.getDate() - 7);
-      const recentSearches = allHistory.filter(s => new Date(s.createdAt) >= last7Days);
-      const searchesPerDay = recentSearches.length / 7;
-      
       const stats = {
         totalSearches: allHistory.length,
         barcodeSearches: barcodeSearches.length,
         textSearches: textSearches.length,
-        recentSearches: allHistory.slice(0, 10), // Last 10 searches
-        searchesPerDay: Math.round(searchesPerDay * 10) / 10, // Round to 1 decimal
-        rewardTriggersEstimated: Math.floor(allHistory.length / 6) // Estimate how many times reward requirement was triggered
+        recentSearches: allHistory.slice(0, 10) // Last 10 searches
       };
       
       res.json(stats);
@@ -1398,90 +1374,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin endpoint for updating camera settings
-  app.put("/api/admin/camera-settings", async (req, res) => {
-    try {
-      const user = (req.session as any).user;
-      if (!user || user.accountType !== 'Admin') {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
-      const { timeout, autoStopEnabled, maxZoomLevel, minZoomLevel, defaultZoomLevel } = req.body;
-
-      // Update individual camera settings
-      const results = [];
-      
-      if (timeout !== undefined) {
-        const timeoutSetting = await storage.updateAdminSetting('camera_timeout', timeout.toString()) ||
-                              await storage.createAdminSetting({
-                                settingKey: 'camera_timeout',
-                                settingValue: timeout.toString(),
-                                settingType: 'number',
-                                description: 'Camera timeout in seconds',
-                                category: 'camera'
-                              });
-        results.push({ key: 'camera_timeout', value: timeout, updated: true });
-      }
-
-      if (autoStopEnabled !== undefined) {
-        const autoStopSetting = await storage.updateAdminSetting('camera_auto_stop', autoStopEnabled.toString()) ||
-                                await storage.createAdminSetting({
-                                  settingKey: 'camera_auto_stop',
-                                  settingValue: autoStopEnabled.toString(),
-                                  settingType: 'boolean',
-                                  description: 'Auto-stop camera after timeout',
-                                  category: 'camera'
-                                });
-        results.push({ key: 'camera_auto_stop', value: autoStopEnabled, updated: true });
-      }
-
-      if (maxZoomLevel !== undefined) {
-        const maxZoomSetting = await storage.updateAdminSetting('camera_max_zoom', maxZoomLevel.toString()) ||
-                              await storage.createAdminSetting({
-                                settingKey: 'camera_max_zoom',
-                                settingValue: maxZoomLevel.toString(),
-                                settingType: 'number',
-                                description: 'Maximum camera zoom level',
-                                category: 'camera'
-                              });
-        results.push({ key: 'camera_max_zoom', value: maxZoomLevel, updated: true });
-      }
-
-      if (minZoomLevel !== undefined) {
-        const minZoomSetting = await storage.updateAdminSetting('camera_min_zoom', minZoomLevel.toString()) ||
-                              await storage.createAdminSetting({
-                                settingKey: 'camera_min_zoom',
-                                settingValue: minZoomLevel.toString(),
-                                settingType: 'number',
-                                description: 'Minimum camera zoom level',
-                                category: 'camera'
-                              });
-        results.push({ key: 'camera_min_zoom', value: minZoomLevel, updated: true });
-      }
-
-      if (defaultZoomLevel !== undefined) {
-        const defaultZoomSetting = await storage.updateAdminSetting('camera_default_zoom', defaultZoomLevel.toString()) ||
-                                  await storage.createAdminSetting({
-                                    settingKey: 'camera_default_zoom',
-                                    settingValue: defaultZoomLevel.toString(),
-                                    settingType: 'number',
-                                    description: 'Default camera zoom level',
-                                    category: 'camera'
-                                  });
-        results.push({ key: 'camera_default_zoom', value: defaultZoomLevel, updated: true });
-      }
-
-      res.json({ 
-        message: "Camera settings updated successfully",
-        settings: results,
-        updatedAt: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error("Error updating camera settings:", error);
-      res.status(500).json({ message: "Failed to update camera settings" });
-    }
-  });
-
   // Public endpoint for tutorial overlay setting (no auth required)
   app.get("/api/settings/tutorial-overlay", async (req, res) => {
     try {
@@ -1500,7 +1392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public endpoint for Google Ads enabled setting (no auth required)
+  // Public endpoint for Google Ads setting (no auth required)
   app.get("/api/settings/google-ads-enabled", async (req, res) => {
     try {
       const setting = await storage.getAdminSetting('google_ads_enabled');
@@ -2028,10 +1920,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Voice transcription endpoint
   app.post("/api/voice/transcribe", upload.single('audio'), async (req, res) => {
     try {
-      if (!isVoiceTranscriptionAvailable()) {
+      const available = await isVoiceTranscriptionAvailable();
+      if (!available) {
         return res.status(503).json({ 
           message: "Voice transcription service is not available",
-          error: "ASSEMBLYAI_API_KEY not configured"
+          error: "Speech-to-Text service disabled or ASSEMBLYAI_API_KEY not configured"
         });
       }
 
@@ -2058,550 +1951,683 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Voice availability check endpoint
-  app.get("/api/voice/status", async (req, res) => {
-    try {
-      const available = await isVoiceTranscriptionAvailable();
-      res.json({
-        available,
-        message: available 
-          ? "Voice transcription is available"
-          : "Voice transcription requires ASSEMBLYAI_API_KEY configuration"
+  app.get("/api/voice/status", (req, res) => {
+    res.json({
+      available: isVoiceTranscriptionAvailable(),
+      message: isVoiceTranscriptionAvailable() 
+        ? "Voice transcription is available"
+        : "Voice transcription requires ASSEMBLYAI_API_KEY configuration"
+    });
+  });
+
+  // Reward system endpoints
+  // Get current reward count
+  app.get("/api/rewards/count", ensureSession, (req: any, res) => {
+    const count = getRewardCount(req);
+    res.json({ 
+      rewardCount: count,
+      maxCount: 6,
+      needsReward: count >= 6 
+    });
+  });
+
+  // Reset reward count when reward URL is visited
+  app.post("/api/rewards/reset", ensureSession, (req: any, res) => {
+    const { rewardParam } = req.body;
+    
+    // Verify the reward parameter matches expected value
+    if (rewardParam === "product-search") {
+      resetRewardCount(req);
+      res.json({ 
+        message: "Reward count reset successfully",
+        newCount: 0
       });
-    } catch (error) {
-      res.json({
-        available: false,
-        message: "Error checking voice transcription availability"
+    } else {
+      res.status(400).json({ 
+        message: "Invalid reward parameter" 
       });
     }
   });
 
-  // ==================== In-App Purchase Webhook Routes ====================
-
-  // Webhook endpoint for App Store server-to-server notifications
-  app.post("/api/webhooks/app-store", async (req, res) => {
-    try {
-      console.log("App Store webhook received:", JSON.stringify(req.body, null, 2));
-      
-      // Extract notification data from App Store format
-      const { notification_type, unified_receipt, latest_receipt_info } = req.body;
-      
-      if (!unified_receipt || !latest_receipt_info) {
-        return res.status(400).json({ 
-          message: "Invalid App Store notification format" 
-        });
-      }
-
-      // Process each transaction in the receipt
-      for (const receiptInfo of latest_receipt_info) {
-        const purchaseData = {
-          store: 'app_store' as const,
-          transactionId: receiptInfo.transaction_id,
-          originalTransactionId: receiptInfo.original_transaction_id,
-          productId: receiptInfo.product_id,
-          status: mapAppStoreStatus(notification_type, receiptInfo) as 'active' | 'cancelled' | 'refunded' | 'pending' | 'expired' | 'failed',
-          purchaseDate: new Date(parseInt(receiptInfo.purchase_date_ms)),
-          expirationDate: receiptInfo.expires_date_ms ? 
-            new Date(parseInt(receiptInfo.expires_date_ms)) : undefined,
-          cancellationDate: receiptInfo.cancellation_date_ms ?
-            new Date(parseInt(receiptInfo.cancellation_date_ms)) : undefined,
-          environment: unified_receipt.environment || 'production',
-          webhookData: req.body,
-          verificationData: receiptInfo
-        };
-
-        await storage.processWebhookPurchaseUpdate(
-          receiptInfo.transaction_id,
-          purchaseData
-        );
-      }
-
-      res.status(200).json({ message: "Webhook processed successfully" });
-    } catch (error) {
-      console.error("App Store webhook error:", error);
-      res.status(500).json({ message: "Webhook processing failed" });
-    }
+  // Check if reward is needed (for frontend to check without incrementing)
+  app.get("/api/rewards/status", ensureSession, (req: any, res) => {
+    const count = getRewardCount(req);
+    const needsReward = count >= 6;
+    
+    res.json({
+      currentCount: count,
+      maxCount: 6,
+      needsReward: needsReward,
+      rewardUrl: needsReward ? "https://ProcessedOrNot.replit.app/?reward=product-search" : null
+    });
   });
 
-  // Webhook endpoint for Google Play Developer API notifications
-  app.post("/api/webhooks/google-play", async (req, res) => {
-    try {
-      console.log("Google Play webhook received:", JSON.stringify(req.body, null, 2));
-      
-      // Google Play sends notifications in different format
-      const { message } = req.body;
-      if (!message || !message.data) {
-        return res.status(400).json({ 
-          message: "Invalid Google Play notification format" 
-        });
-      }
+  // ===== NUTRITION TRACKING API ROUTES =====
 
-      // Decode the base64 message data
-      const decodedData = JSON.parse(Buffer.from(message.data, 'base64').toString());
-      const { subscriptionNotification, oneTimeProductNotification } = decodedData;
-      
-      let purchaseData: any;
-      
-      if (subscriptionNotification) {
-        purchaseData = {
-          store: 'google_play' as const,
-          transactionId: subscriptionNotification.purchaseToken,
-          productId: subscriptionNotification.subscriptionId,
-          status: mapGooglePlayStatus(subscriptionNotification.notificationType) as 'active' | 'cancelled' | 'refunded' | 'pending' | 'expired' | 'failed',
-          purchaseType: 'subscription',
-          purchaseDate: new Date(),
-          environment: 'production',
-          webhookData: req.body,
-          verificationData: decodedData
-        };
-      } else if (oneTimeProductNotification) {
-        purchaseData = {
-          store: 'google_play' as const,
-          transactionId: oneTimeProductNotification.purchaseToken,
-          productId: oneTimeProductNotification.sku,
-          status: mapGooglePlayStatus(oneTimeProductNotification.notificationType) as 'active' | 'cancelled' | 'refunded' | 'pending' | 'expired' | 'failed',
-          purchaseType: 'consumable',
-          purchaseDate: new Date(),
-          environment: 'production',
-          webhookData: req.body,
-          verificationData: decodedData
-        };
+  // Diary entries
+  app.get("/api/nutrition/diary", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const { date } = req.query;
+      const userId = req.session.userId;
+
+      if (date) {
+        const entries = await storage.getDiaryEntriesByUserAndDate(userId, date as string);
+        res.json(entries);
       } else {
-        return res.status(400).json({ 
-          message: "Unknown Google Play notification type" 
-        });
+        const entries = await storage.getDiaryEntriesByUser(userId);
+        res.json(entries);
       }
-
-      await storage.processWebhookPurchaseUpdate(
-        purchaseData.transactionId,
-        purchaseData
-      );
-
-      res.status(200).json({ message: "Webhook processed successfully" });
     } catch (error) {
-      console.error("Google Play webhook error:", error);
-      res.status(500).json({ message: "Webhook processing failed" });
+      console.error("Error fetching diary entries:", error);
+      res.status(500).json({ message: "Failed to fetch diary entries" });
     }
   });
 
-  // ==================== App Shared Secrets Management Routes ====================
-  
-  // Get all active shared secrets (admin only)
-  app.get("/api/admin/secrets", requireAuth, async (req, res) => {
-    try {
-      const secrets = await storage.getAllActiveSharedSecrets();
-      
-      // Remove secret values from response for security
-      const sanitizedSecrets = secrets.map(secret => ({
-        ...secret,
-        secretValue: '***HIDDEN***'
-      }));
-      
-      res.json(sanitizedSecrets);
-    } catch (error) {
-      console.error('Error fetching shared secrets:', error);
-      res.status(500).json({ error: 'Failed to fetch shared secrets' });
+  app.post("/api/nutrition/diary", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
     }
-  });
 
-  // Create a new shared secret (admin only)
-  app.post("/api/admin/secrets", requireAuth, async (req, res) => {
     try {
-      const { secretName, secretType, description, scope } = req.body;
+      const userId = req.session.userId;
+      const entry = { ...req.body, userId };
       
-      if (!secretName || !secretType) {
-        return res.status(400).json({ error: 'Secret name and type are required' });
-      }
-      
-      const secret = await storage.generateNewSharedSecret(
-        secretName,
-        secretType,
-        description,
-        scope
-      );
-      
-      res.status(201).json({
-        ...secret,
-        // Return the actual secret value only on creation for setup purposes
-        secretValue: secret.secretValue
-      });
-    } catch (error) {
-      console.error('Error creating shared secret:', error);
-      res.status(500).json({ error: 'Failed to create shared secret' });
-    }
-  });
-
-  // Rotate a shared secret (admin only)
-  app.post("/api/admin/secrets/:secretName/rotate", requireAuth, async (req, res) => {
-    try {
-      const { secretName } = req.params;
-      const rotated = await storage.rotateSharedSecret(secretName);
-      
-      if (!rotated) {
-        return res.status(404).json({ error: 'Secret not found' });
-      }
-      
-      res.json({
-        ...rotated,
-        // Return new secret value on rotation for setup purposes
-        secretValue: rotated.secretValue
-      });
-    } catch (error) {
-      console.error('Error rotating shared secret:', error);
-      res.status(500).json({ error: 'Failed to rotate shared secret' });
-    }
-  });
-
-  // Deactivate a shared secret (admin only)
-  app.delete("/api/admin/secrets/:secretName", requireAuth, async (req, res) => {
-    try {
-      const { secretName } = req.params;
-      const deactivated = await storage.deactivateSharedSecret(secretName);
-      
-      if (!deactivated) {
-        return res.status(404).json({ error: 'Secret not found' });
-      }
-      
-      res.json({ message: 'Secret deactivated successfully' });
-    } catch (error) {
-      console.error('Error deactivating shared secret:', error);
-      res.status(500).json({ error: 'Failed to deactivate shared secret' });
-    }
-  });
-
-  // Webhook signature verification endpoint
-  app.post("/api/webhooks/verify", async (req, res) => {
-    try {
-      const { signature, payload, secretName } = req.body;
-      
-      if (!signature || !payload || !secretName) {
-        return res.status(400).json({ error: 'Missing required fields' });
-      }
-      
-      const isValid = await storage.verifyWebhookSignature(
-        signature,
-        typeof payload === 'string' ? payload : JSON.stringify(payload),
-        secretName
-      );
-      
-      res.json({ valid: isValid });
-    } catch (error) {
-      console.error('Error verifying webhook signature:', error);
-      res.status(500).json({ error: 'Failed to verify signature' });
-    }
-  });
-
-  // Generate default shared secrets on first run
-  app.post("/api/admin/secrets/init-defaults", requireAuth, async (req, res) => {
-    try {
-      const defaultSecrets = [
-        {
-          secretName: 'app-store-webhook',
-          secretType: 'webhook',
-          description: 'Shared secret for App Store Server-to-Server notifications',
-          scope: 'app_store'
-        },
-        {
-          secretName: 'google-play-webhook',
-          secretType: 'webhook',
-          description: 'Shared secret for Google Play Developer API notifications',
-          scope: 'google_play'
-        },
-        {
-          secretName: 'purchase-webhook',
-          secretType: 'webhook',
-          description: 'Shared secret for generic purchase status webhooks',
-          scope: 'web'
-        },
-        {
-          secretName: 'api-key-main',
-          secretType: 'api_key',
-          description: 'Main API key for external integrations',
-          scope: 'global'
-        }
-      ];
-
-      const createdSecrets = [];
-      for (const secretData of defaultSecrets) {
-        try {
-          // Check if secret already exists
-          const existing = await storage.getSharedSecretByName(secretData.secretName);
-          if (!existing) {
-            const created = await storage.generateNewSharedSecret(
-              secretData.secretName,
-              secretData.secretType,
-              secretData.description,
-              secretData.scope
-            );
-            createdSecrets.push({
-              ...created,
-              secretValue: '***CREATED***' // Hide value in response
-            });
-          }
-        } catch (error) {
-          console.warn(`Failed to create secret ${secretData.secretName}:`, error);
-        }
-      }
-
-      res.json({
-        message: 'Default secrets initialized',
-        created: createdSecrets.length,
-        secrets: createdSecrets
-      });
-    } catch (error) {
-      console.error('Error initializing default secrets:', error);
-      res.status(500).json({ error: 'Failed to initialize default secrets' });
-    }
-  });
-
-  // ==================== Content Rights Management Routes ====================
-  
-  // Get all content rights (admin only)
-  app.get("/api/admin/content-rights", requireAuth, async (req, res) => {
-    try {
-      const contentRights = await storage.getAllContentRights();
-      res.json(contentRights);
-    } catch (error) {
-      console.error('Error fetching content rights:', error);
-      res.status(500).json({ error: 'Failed to fetch content rights' });
-    }
-  });
-
-  // Create new content rights entry (admin only)
-  app.post("/api/admin/content-rights", requireAuth, async (req, res) => {
-    try {
-      const rightsData = req.body;
-      const created = await storage.createContentRights(rightsData);
+      const created = await storage.createDiaryEntry(entry);
       res.status(201).json(created);
     } catch (error) {
-      console.error('Error creating content rights:', error);
-      res.status(500).json({ error: 'Failed to create content rights' });
+      console.error("Error creating diary entry:", error);
+      res.status(500).json({ message: "Failed to create diary entry" });
     }
   });
 
-  // Update content rights (admin only)
-  app.put("/api/admin/content-rights/:id", requireAuth, async (req, res) => {
+  app.put("/api/nutrition/diary/:id", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     try {
-      const { id } = req.params;
-      const updates = req.body;
-      const updated = await storage.updateContentRights(parseInt(id), updates);
+      const id = parseInt(req.params.id);
+      const updated = await storage.updateDiaryEntry(id, req.body);
       
       if (!updated) {
-        return res.status(404).json({ error: 'Content rights not found' });
+        return res.status(404).json({ message: "Entry not found" });
       }
       
       res.json(updated);
     } catch (error) {
-      console.error('Error updating content rights:', error);
-      res.status(500).json({ error: 'Failed to update content rights' });
+      console.error("Error updating diary entry:", error);
+      res.status(500).json({ message: "Failed to update diary entry" });
     }
   });
 
-  // Delete content rights (admin only)
-  app.delete("/api/admin/content-rights/:id", requireAuth, async (req, res) => {
+  app.delete("/api/nutrition/diary/:id", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     try {
-      const { id } = req.params;
-      const deleted = await storage.deleteContentRights(parseInt(id));
+      const id = parseInt(req.params.id);
+      const deleted = await storage.deleteDiaryEntry(id);
       
       if (!deleted) {
-        return res.status(404).json({ error: 'Content rights not found' });
+        return res.status(404).json({ message: "Entry not found" });
       }
       
-      res.json({ message: 'Content rights deleted successfully' });
+      res.json({ success: true });
     } catch (error) {
-      console.error('Error deleting content rights:', error);
-      res.status(500).json({ error: 'Failed to delete content rights' });
+      console.error("Error deleting diary entry:", error);
+      res.status(500).json({ message: "Failed to delete diary entry" });
     }
   });
 
-  // Verify content rights (public)
-  app.get("/api/content-rights/verify/:identifier", async (req, res) => {
-    try {
-      const { identifier } = req.params;
-      const isValid = await storage.verifyContentRights(decodeURIComponent(identifier));
-      res.json({ valid: isValid });
-    } catch (error) {
-      console.error('Error verifying content rights:', error);
-      res.status(500).json({ error: 'Failed to verify content rights' });
+  // User goals
+  app.get("/api/nutrition/goals", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
     }
-  });
 
-  // Get all content rights (public, for copyright page)
-  app.get("/api/content-rights/public", async (req, res) => {
     try {
-      const contentRights = await storage.getAllContentRights();
-      res.json(contentRights);
-    } catch (error) {
-      console.error('Error fetching public content rights:', error);
-      res.status(500).json({ error: 'Failed to fetch content rights' });
-    }
-  });
-
-  // Get content rights by identifier (public)
-  app.get("/api/content-rights/:identifier", async (req, res) => {
-    try {
-      const { identifier } = req.params;
-      const rights = await storage.getContentRightsByIdentifier(decodeURIComponent(identifier));
+      const userId = req.session.userId;
+      const goals = await storage.getUserGoals(userId);
       
-      if (!rights) {
-        return res.status(404).json({ error: 'Content rights not found' });
+      if (!goals) {
+        // Return default goals if none exist
+        return res.json({
+          dailyCalories: 2000,
+          dailyFat: 65,
+          dailyCarbs: 300,
+          dailyProteins: 50,
+          dailySalt: 6,
+          dailyFiber: 25,
+          maxProcessingScore: 5,
+          activityLevel: 'moderate',
+          weightGoal: 'maintain'
+        });
       }
       
-      res.json(rights);
+      res.json(goals);
     } catch (error) {
-      console.error('Error fetching content rights:', error);
-      res.status(500).json({ error: 'Failed to fetch content rights' });
+      console.error("Error fetching user goals:", error);
+      res.status(500).json({ message: "Failed to fetch user goals" });
     }
   });
 
-  // ==================== Legal Notices Management Routes ====================
-  
-  // Get all legal notices (admin only)
-  app.get("/api/admin/legal-notices", requireAuth, async (req, res) => {
-    try {
-      const notices = await storage.getActiveLegalNotices();
-      res.json(notices);
-    } catch (error) {
-      console.error('Error fetching legal notices:', error);
-      res.status(500).json({ error: 'Failed to fetch legal notices' });
+  app.post("/api/nutrition/goals", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
     }
-  });
 
-  // Create new legal notice (admin only)
-  app.post("/api/admin/legal-notices", requireAuth, async (req, res) => {
     try {
-      const noticeData = req.body;
-      const created = await storage.createLegalNotice(noticeData);
+      const userId = req.session.userId;
+      const goals = { ...req.body, userId };
+      
+      const created = await storage.createUserGoals(goals);
       res.status(201).json(created);
     } catch (error) {
-      console.error('Error creating legal notice:', error);
-      res.status(500).json({ error: 'Failed to create legal notice' });
+      console.error("Error creating user goals:", error);
+      res.status(500).json({ message: "Failed to create user goals" });
     }
   });
 
-  // Update legal notice (admin only)
-  app.put("/api/admin/legal-notices/:id", requireAuth, async (req, res) => {
+  app.put("/api/nutrition/goals", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     try {
-      const { id } = req.params;
-      const updates = req.body;
-      const updated = await storage.updateLegalNotice(parseInt(id), updates);
+      const userId = req.session.userId;
+      const updated = await storage.updateUserGoals(userId, req.body);
       
       if (!updated) {
-        return res.status(404).json({ error: 'Legal notice not found' });
+        return res.status(404).json({ message: "Goals not found" });
       }
       
       res.json(updated);
     } catch (error) {
-      console.error('Error updating legal notice:', error);
-      res.status(500).json({ error: 'Failed to update legal notice' });
+      console.error("Error updating user goals:", error);
+      res.status(500).json({ message: "Failed to update user goals" });
     }
   });
 
-  // Deactivate legal notice (admin only)
-  app.delete("/api/admin/legal-notices/:id", requireAuth, async (req, res) => {
+  // User profile
+  app.get("/api/nutrition/profile", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     try {
-      const { id } = req.params;
-      const deactivated = await storage.deactivateLegalNotice(parseInt(id));
+      const userId = req.session.userId;
+      const profile = await storage.getUserProfile(userId);
+      res.json(profile || {});
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      res.status(500).json({ message: "Failed to fetch user profile" });
+    }
+  });
+
+  app.post("/api/nutrition/profile", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const profile = { ...req.body, userId };
       
-      if (!deactivated) {
-        return res.status(404).json({ error: 'Legal notice not found' });
+      const created = await storage.createUserProfile(profile);
+      res.status(201).json(created);
+    } catch (error) {
+      console.error("Error creating user profile:", error);
+      res.status(500).json({ message: "Failed to create user profile" });
+    }
+  });
+
+  app.put("/api/nutrition/profile", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const updated = await storage.updateUserProfile(userId, req.body);
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Profile not found" });
       }
       
-      res.json({ message: 'Legal notice deactivated successfully' });
+      res.json(updated);
     } catch (error) {
-      console.error('Error deactivating legal notice:', error);
-      res.status(500).json({ error: 'Failed to deactivate legal notice' });
+      console.error("Error updating user profile:", error);
+      res.status(500).json({ message: "Failed to update user profile" });
     }
   });
 
-  // Get active legal notices by type (public)
-  app.get("/api/legal-notices/:type", async (req, res) => {
-    try {
-      const { type } = req.params;
-      const { language = 'en' } = req.query;
-      const notices = await storage.getLegalNoticesByType(type);
-      res.json(notices);
-    } catch (error) {
-      console.error('Error fetching legal notices by type:', error);
-      res.status(500).json({ error: 'Failed to fetch legal notices' });
+  // Weight entries
+  app.get("/api/nutrition/weight", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
     }
-  });
 
-  // Get all active legal notices (public)
-  app.get("/api/legal-notices", async (req, res) => {
     try {
-      const { language = 'en' } = req.query;
-      const notices = await storage.getActiveLegalNotices(language as string);
-      res.json(notices);
-    } catch (error) {
-      console.error('Error fetching legal notices:', error);
-      res.status(500).json({ error: 'Failed to fetch legal notices' });
-    }
-  });
-
-  // ==================== In-App Purchase Webhook Routes ====================
-
-  // Generic webhook endpoint for other payment providers
-  app.post("/api/webhooks/purchase-status", async (req, res) => {
-    try {
-      console.log("Generic purchase webhook received:", JSON.stringify(req.body, null, 2));
+      const userId = req.session.userId;
+      const { limit } = req.query;
       
-      // Validate the incoming data
-      const validatedData = purchaseStatusUpdateSchema.parse(req.body);
-      
-      await storage.processWebhookPurchaseUpdate(
-        validatedData.transactionId,
-        {
-          ...validatedData,
-          purchaseDate: new Date(validatedData.purchaseDate),
-          expirationDate: validatedData.expirationDate ? 
-            new Date(validatedData.expirationDate) : undefined,
-          cancellationDate: validatedData.cancellationDate ?
-            new Date(validatedData.cancellationDate) : undefined,
-          refundDate: validatedData.refundDate ?
-            new Date(validatedData.refundDate) : undefined,
-          webhookData: req.body
-        }
-      );
-
-      res.status(200).json({ 
-        message: "Purchase status updated successfully",
-        transactionId: validatedData.transactionId
-      });
-    } catch (error) {
-      console.error("Purchase webhook error:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid webhook data format",
-          errors: error.errors
-        });
+      if (limit) {
+        const entries = await storage.getRecentWeightEntries(userId, parseInt(limit as string));
+        res.json(entries);
+      } else {
+        const entries = await storage.getWeightEntriesByUser(userId);
+        res.json(entries);
       }
-      res.status(500).json({ message: "Webhook processing failed" });
+    } catch (error) {
+      console.error("Error fetching weight entries:", error);
+      res.status(500).json({ message: "Failed to fetch weight entries" });
     }
   });
 
-  // API routes for managing user purchases (authenticated)
-  app.get("/api/user/purchases", requireAuth, async (req, res) => {
+  app.post("/api/nutrition/weight", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     try {
-      const userId = req.session.userId!;
-      const purchases = await storage.getInAppPurchasesByUserId(userId);
-      res.json(purchases);
+      const userId = req.session.userId;
+      const entry = { ...req.body, userId };
+      
+      const created = await storage.createWeightEntry(entry);
+      res.status(201).json(created);
     } catch (error) {
-      console.error("Error fetching user purchases:", error);
-      res.status(500).json({ message: "Failed to fetch purchases" });
+      console.error("Error creating weight entry:", error);
+      res.status(500).json({ message: "Failed to create weight entry" });
     }
   });
 
-  app.get("/api/user/subscriptions", requireAuth, async (req, res) => {
+  // Nutrition progress
+  app.get("/api/nutrition/progress", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
     try {
-      const userId = req.session.userId!;
-      const subscriptions = await storage.getUserActiveSubscriptions(userId);
-      res.json(subscriptions);
+      const userId = req.session.userId;
+      const { date } = req.query;
+      const targetDate = date ? date as string : new Date().toISOString().split('T')[0];
+      
+      const progress = await storage.getDailyNutritionProgress(userId, targetDate);
+      res.json(progress);
     } catch (error) {
-      console.error("Error fetching user subscriptions:", error);
-      res.status(500).json({ message: "Failed to fetch subscriptions" });
+      console.error("Error fetching nutrition progress:", error);
+      res.status(500).json({ message: "Failed to fetch nutrition progress" });
+    }
+  });
+
+  // Recent entries for dashboard
+  app.get("/api/nutrition/recent", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const limit = parseInt(req.query.limit as string) || 5;
+      
+      const entries = await storage.getRecentDiaryEntries(userId, limit);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching recent entries:", error);
+      res.status(500).json({ message: "Failed to fetch recent entries" });
     }
   });
 
   const httpServer = createServer(app);
+  // ==================== PRODUCT DATABASE MANAGEMENT ROUTES ====================
+
+  // Get all product databases
+  app.get("/api/admin/product-databases", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const databases = await storage.getAllProductDatabases();
+      res.json(databases);
+    } catch (error) {
+      console.error("Error fetching product databases:", error);
+      res.status(500).json({ message: "Failed to fetch product databases" });
+    }
+  });
+
+  // Update product database configuration
+  app.put("/api/admin/product-databases/:id", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const updatedDatabase = await storage.updateProductDatabase(parseInt(id), req.body);
+      res.json(updatedDatabase);
+    } catch (error) {
+      console.error("Error updating product database:", error);
+      res.status(500).json({ message: "Failed to update product database" });
+    }
+  });
+
+  // Reorder product databases (update priorities)
+  app.put("/api/admin/product-databases/reorder", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { databases } = req.body; // Array of { id, priority } objects
+      const updatedDatabases = await storage.reorderProductDatabases(databases);
+      res.json(updatedDatabases);
+    } catch (error) {
+      console.error("Error reordering product databases:", error);
+      res.status(500).json({ message: "Failed to reorder product databases" });
+    }
+  });
+
+  // Test a specific database
+  app.post("/api/admin/product-databases/:id/test", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { testBarcode } = req.body;
+      const testResult = await storage.testProductDatabase(parseInt(id), testBarcode || "7622210995292");
+      res.json(testResult);
+    } catch (error) {
+      console.error("Error testing product database:", error);
+      res.status(500).json({ message: "Failed to test product database" });
+    }
+  });
+
+  // Test all databases
+  app.post("/api/admin/product-databases/test-all", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { testBarcode } = req.body;
+      const testResults = await storage.testAllProductDatabases(testBarcode || "7622210995292");
+      res.json(testResults);
+    } catch (error) {
+      console.error("Error testing all product databases:", error);
+      res.status(500).json({ message: "Failed to test all product databases" });
+    }
+  });
+
+  // Initialize default database configurations
+  app.post("/api/admin/product-databases/initialize", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const initializedDatabases = await storage.initializeDefaultProductDatabases();
+      res.json(initializedDatabases);
+    } catch (error) {
+      console.error("Error initializing product databases:", error);
+      res.status(500).json({ message: "Failed to initialize product databases" });
+    }
+  });
+
+  // ==================== DEVICE IDENTIFIER ROUTES ====================
+
+  // Log device identifier
+  app.post("/api/device/identify", async (req: any, res) => {
+    try {
+      const deviceData = req.body;
+      const deviceIdentifier = await storage.logDeviceIdentifier(deviceData);
+      res.json({ success: true, deviceId: deviceIdentifier.id });
+    } catch (error) {
+      console.error("Error logging device identifier:", error);
+      res.status(500).json({ message: "Failed to log device identifier" });
+    }
+  });
+
+  // Get device analytics (admin only)
+  app.get("/api/admin/device-analytics", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const analytics = await storage.getDeviceAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching device analytics:", error);
+      res.status(500).json({ message: "Failed to fetch device analytics" });
+    }
+  });
+
+  // ==================== CAMERA SETTINGS ROUTES ====================
+  
+  // Get camera settings
+  app.get("/api/admin/camera-settings", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getCameraSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching camera settings:", error);
+      res.status(500).json({ message: "Failed to fetch camera settings" });
+    }
+  });
+
+  // Update camera settings
+  app.put("/api/admin/camera-settings", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = req.body;
+      const updatedSettings = await storage.updateCameraSettings(settings);
+      res.json(updatedSettings);
+    } catch (error) {
+      console.error("Error updating camera settings:", error);
+      res.status(500).json({ message: "Failed to update camera settings" });
+    }
+  });
+
+  // Reset camera settings to defaults
+  app.post("/api/admin/camera-settings/reset", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const defaultSettings = await storage.resetCameraSettingsToDefaults();
+      res.json(defaultSettings);
+    } catch (error) {
+      console.error("Error resetting camera settings:", error);
+      res.status(500).json({ message: "Failed to reset camera settings" });
+    }
+  });
+
+  // ==================== DEBUG ROUTES ====================
+  
+  // Debug Routes for cascading database testing
+  app.post("/api/debug/cascading-test", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { barcode } = req.body;
+
+      if (!barcode) {
+        return res.status(400).json({ message: "Barcode is required" });
+      }
+
+      const result = await storage.testAllProductDatabases(barcode);
+      res.json(result);
+    } catch (error) {
+      console.error("Error testing cascading system:", error);
+      res.status(500).json({ message: "Failed to test cascading system" });
+    }
+  });
+
+  // ==================== MENU ITEMS MANAGEMENT ROUTES ====================
+
+  // Get all menu items
+  app.get("/api/admin/menu-items", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const menuItems = await storage.getAllMenuItems();
+      res.json(menuItems);
+    } catch (error: any) {
+      console.error('Error fetching menu items:', error);
+      res.status(500).json({ message: "Failed to fetch menu items", error: error.message });
+    }
+  });
+
+  // Create new menu item
+  app.post("/api/admin/menu-items", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const menuItem = await storage.createMenuItem(req.body);
+      res.json(menuItem);
+    } catch (error: any) {
+      console.error('Error creating menu item:', error);
+      res.status(500).json({ message: "Failed to create menu item", error: error.message });
+    }
+  });
+
+  // Update menu item
+  app.put("/api/admin/menu-items/:id", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const menuItem = await storage.updateMenuItem(id, req.body);
+      
+      if (!menuItem) {
+        return res.status(404).json({ message: "Menu item not found" });
+      }
+      
+      res.json(menuItem);
+    } catch (error: any) {
+      console.error('Error updating menu item:', error);
+      res.status(500).json({ message: "Failed to update menu item", error: error.message });
+    }
+  });
+
+  // Delete menu item
+  app.delete("/api/admin/menu-items/:id", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      await storage.deleteMenuItem(id);
+      res.json({ message: "Menu item deleted successfully" });
+    } catch (error: any) {
+      console.error('Error deleting menu item:', error);
+      res.status(500).json({ message: "Failed to delete menu item", error: error.message });
+    }
+  });
+
+  // Reorder menu items
+  app.put("/api/admin/menu-items/reorder", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const { items } = req.body;
+      const reorderedItems = await storage.reorderMenuItems(items);
+      res.json(reorderedItems);
+    } catch (error: any) {
+      console.error('Error reordering menu items:', error);
+      res.status(500).json({ message: "Failed to reorder menu items", error: error.message });
+    }
+  });
+
+  // ==================== WEBSITE SETTINGS ROUTES ====================
+
+  // Get website settings
+  app.get("/api/admin/website-settings", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getWebsiteSettings();
+      res.json(settings);
+    } catch (error: any) {
+      console.error('Error fetching website settings:', error);
+      res.status(500).json({ message: "Failed to fetch website settings", error: error.message });
+    }
+  });
+
+  // Update website settings
+  app.put("/api/admin/website-settings", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.updateWebsiteSettings(req.body);
+      res.json(settings);
+    } catch (error: any) {
+      console.error('Error updating website settings:', error);
+      res.status(500).json({ message: "Failed to update website settings", error: error.message });
+    }
+  });
+
+  // Speech-to-Text Settings API routes
+  app.get("/api/admin/speech-settings", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getSpeechSettings();
+      res.json(settings);
+    } catch (error: any) {
+      console.error("Error fetching speech settings:", error);
+      res.status(500).json({ message: "Failed to fetch speech settings", error: error.message });
+    }
+  });
+
+  app.put("/api/admin/speech-settings", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const updates = req.body;
+      const settings = await storage.updateSpeechSettings(updates);
+      res.json(settings);
+    } catch (error: any) {
+      console.error("Error updating speech settings:", error);
+      res.status(500).json({ message: "Failed to update speech settings", error: error.message });
+    }
+  });
+
+  app.get("/api/admin/speech-status", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getSpeechSettings();
+      
+      let status = 'error';
+      let message = 'Service unavailable';
+      
+      if (settings.enabled && settings.apiKey) {
+        try {
+          // Simple check if AssemblyAI service is available
+          const available = await isVoiceTranscriptionAvailable();
+          if (available) {
+            status = 'healthy';
+            message = 'AssemblyAI service is operational';
+          } else {
+            status = 'degraded';
+            message = 'AssemblyAI API key not configured or invalid';
+          }
+        } catch (error) {
+          status = 'error';
+          message = 'Failed to connect to AssemblyAI service';
+        }
+      } else if (!settings.enabled) {
+        status = 'degraded';
+        message = 'Speech-to-Text service is disabled';
+      } else {
+        status = 'error';
+        message = 'AssemblyAI API key is required';
+      }
+
+      res.json({
+        status,
+        message,
+        lastChecked: new Date().toISOString(),
+      });
+    } catch (error: any) {
+      console.error("Error checking speech status:", error);
+      res.status(500).json({ 
+        status: 'error',
+        message: 'Failed to check service status',
+        lastChecked: new Date().toISOString(),
+        error: error.message
+      });
+    }
+  });
+
+  app.post("/api/admin/speech-test", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      const settings = await storage.getSpeechSettings();
+      
+      if (!settings.enabled) {
+        return res.status(400).json({ message: "Speech-to-Text service is disabled" });
+      }
+
+      if (!settings.apiKey) {
+        return res.status(400).json({ message: "AssemblyAI API key is required" });
+      }
+
+      // Test the connection
+      const available = await isVoiceTranscriptionAvailable();
+      
+      if (available) {
+        res.json({ 
+          message: "Connection test successful! AssemblyAI service is working correctly.",
+          status: 'healthy'
+        });
+      } else {
+        res.status(500).json({ 
+          message: "Connection test failed. Please check your API key.",
+          status: 'error'
+        });
+      }
+    } catch (error: any) {
+      console.error("Error testing speech connection:", error);
+      res.status(500).json({ 
+        message: `Connection test failed: ${error.message || 'Unknown error'}`,
+        status: 'error'
+      });
+    }
+  });
+
   return httpServer;
 }

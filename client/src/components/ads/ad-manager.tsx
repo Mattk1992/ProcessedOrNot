@@ -26,8 +26,7 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
   // Check if Google Ads are globally enabled via admin setting
   const { data: adsEnabledData, isLoading: adsEnabledLoading } = useQuery({
     queryKey: ["/api/settings/google-ads-enabled"],
-    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
-    refetchInterval: 5 * 60 * 1000, // Check every 5 minutes instead of 30 seconds
+    refetchInterval: 30000, // Check every 30 seconds
   });
 
   const [config, setConfig] = useState<AdConfig>({
@@ -86,16 +85,8 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
         if (!isBlocked) {
           console.log('Ad blocker not detected');
         } else {
-          console.log('Ad blocker detected - ads will not be shown');
+          console.log('Ad blocker detected');
         }
-        
-        // Additional debug info
-        console.log('Ad manager state:', {
-          isAdBlocked: isBlocked,
-          globallyEnabled: config.globallyEnabled,
-          consentGiven: config.consentGiven,
-          canShowAds: config.consentGiven && config.globallyEnabled && !isBlocked
-        });
       }, 100);
     };
 
@@ -126,13 +117,10 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
     console.log(`Showing ${type} ad${position ? ` at ${position}` : ''}`);
     
     if (config.platform === 'web') {
-      // Trigger AdSense ad refresh only if AdSense is properly initialized
+      // Trigger AdSense ad refresh
       try {
-        if ((window as any).__adSenseInitialized && (window as any).adsbygoogle) {
-          (window as any).adsbygoogle.push({});
-        } else {
-          console.log('AdSense not yet initialized, ad display skipped');
-        }
+        (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+        (window as any).adsbygoogle.push({});
       } catch (error) {
         console.error('Error showing ad:', error);
       }

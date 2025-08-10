@@ -29,24 +29,24 @@ class ConsentIntegration {
   }
 
   private initializeGoogleConsent() {
-    // Initialize Google Consent Mode v2 - Non-blocking for authentication
-    if (typeof window !== 'undefined' && !(window as any).__consentInitialized) {
+    // Initialize Google Consent Mode v2
+    if (typeof window !== 'undefined') {
       window.dataLayer = window.dataLayer || [];
       window.gtag = function() {
         window.dataLayer?.push(arguments);
       };
 
       // Set default consent state (before user interaction)
-      // Ensure authentication and core functionality always work
       window.gtag('consent', 'default', {
         ad_storage: 'denied',
         ad_user_data: 'denied',
         ad_personalization: 'denied',
         analytics_storage: 'denied',
-        functionality_storage: 'granted', // Required for authentication
+        functionality_storage: 'granted',
         personalization_storage: 'denied',
-        security_storage: 'granted', // Required for authentication
-        // Remove wait_for_update to prevent blocking
+        security_storage: 'granted',
+        // New 2025 consent types
+        wait_for_update: 500 // Wait for CMP
       });
 
       // Enhanced measurement for better analytics
@@ -56,8 +56,6 @@ class ConsentIntegration {
         restricted_data_processing: true
       });
 
-      // Mark as initialized to prevent duplicates
-      (window as any).__consentInitialized = true;
       this.initialized = true;
     }
   }
@@ -178,13 +176,7 @@ class ConsentIntegration {
     }
 
     // Prevent multiple initializations
-    if (!this.initialized || (window as any).__adSenseInitialized || (window as any).__adSenseConfigured || (window as any).__adSensePageLevelEnabled) {
-      console.log('AdSense initialization skipped:', {
-        initialized: this.initialized,
-        adSenseInitialized: !!(window as any).__adSenseInitialized,
-        adSenseConfigured: !!(window as any).__adSenseConfigured,
-        pageLevelEnabled: !!(window as any).__adSensePageLevelEnabled
-      });
+    if (!this.initialized || (window as any).__adSenseInitialized || (window as any).__adSenseConfigured) {
       return;
     }
 
@@ -210,26 +202,15 @@ class ConsentIntegration {
       try {
         // Only push enable_page_level_ads once per page load
         if (!(window as any).__adSenseConfigured && !(window as any).__adSensePageLevelEnabled) {
-          // Check if enable_page_level_ads was already pushed
-          const adSenseArray = (window as any).adsbygoogle || [];
-          const hasPageLevelAds = Array.isArray(adSenseArray) && adSenseArray.some((config: any) => 
-            config && typeof config === 'object' && config.enable_page_level_ads === true
-          );
-          
-          if (!hasPageLevelAds) {
-            (window as any).adsbygoogle.push({
-              google_ad_client: `ca-pub-${publisherId}`,
-              enable_page_level_ads: true,
-              privacy_compliance: {
-                gdpr: consentManager.getSettings().region === 'EU',
-                ccpa: consentManager.getSettings().enableRDP,
-                restricted_data_processing: !consent.personalization
-              }
-            });
-            console.log('AdSense page-level ads enabled successfully');
-          } else {
-            console.log('AdSense page-level ads already enabled');
-          }
+          (window as any).adsbygoogle.push({
+            google_ad_client: `ca-pub-${publisherId}`,
+            enable_page_level_ads: true,
+            privacy_compliance: {
+              gdpr: consentManager.getSettings().region === 'EU',
+              ccpa: consentManager.getSettings().enableRDP,
+              restricted_data_processing: !consent.personalization
+            }
+          });
           
           (window as any).__adSenseConfigured = true;
           (window as any).__adSenseInitialized = true;
@@ -241,17 +222,7 @@ class ConsentIntegration {
           console.log('AdSense initialization skipped: Already configured');
         }
       } catch (error) {
-        console.error('AdSense initialization error:', {
-          error: error instanceof Error ? error.message : String(error),
-          stack: error instanceof Error ? error.stack : undefined,
-          publisherId,
-          consent: !!consent?.advertising,
-          windowAdSenseState: {
-            initialized: !!(window as any).__adSenseInitialized,
-            configured: !!(window as any).__adSenseConfigured,
-            pageLevel: !!(window as any).__adSensePageLevelEnabled
-          }
-        });
+        console.error('AdSense initialization error:', error);
         // Reset configuration flags on error to allow retry
         (window as any).__adSenseConfigured = false;
         (window as any).__adSenseInitialized = false;

@@ -11,10 +11,7 @@ import {
   Sun, 
   Sunset, 
   Moon,
-  AlertCircle,
-  X,
-  Camera,
-  Settings
+  AlertCircle
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,7 +46,6 @@ const diaryEntrySchema = z.object({
   mealType: z.enum(["breakfast", "lunch", "dinner", "snack"]),
   consumedAt: z.string(),
   notes: z.string().optional(),
-  productLookup: z.string().optional(),
 });
 
 type DiaryEntryForm = z.infer<typeof diaryEntrySchema>;
@@ -80,8 +76,6 @@ export default function NutriDiary() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isScanning, setIsScanning] = useState(false);
-  const [showQuickSettings, setShowQuickSettings] = useState(false);
 
   const form = useForm<DiaryEntryForm>({
     resolver: zodResolver(diaryEntrySchema),
@@ -99,7 +93,6 @@ export default function NutriDiary() {
       mealType: "breakfast",
       consumedAt: new Date().toISOString().slice(0, 16),
       notes: "",
-      productLookup: "",
     },
   });
 
@@ -226,56 +219,6 @@ export default function NutriDiary() {
     addEntryMutation.mutate(data);
   };
 
-  const handleScanBarcode = () => {
-    setIsScanning(true);
-    toast({
-      title: "Barcode Scanner",
-      description: "Opening barcode scanner...",
-    });
-    // TODO: Implement actual barcode scanning logic
-    setTimeout(() => {
-      setIsScanning(false);
-      // Mock barcode scan result
-      const mockBarcode = "1234567890123";
-      form.setValue("productLookup", mockBarcode);
-      toast({
-        title: "Barcode Scanned",
-        description: `Found barcode: ${mockBarcode}`,
-      });
-    }, 2000);
-  };
-
-  const handleQuickSettings = () => {
-    setShowQuickSettings(!showQuickSettings);
-    toast({
-      title: "Quick Settings",
-      description: showQuickSettings ? "Settings closed" : "Settings opened",
-    });
-  };
-
-  const handleProductLookup = async (barcode: string) => {
-    if (!barcode.trim()) return;
-    
-    toast({
-      title: "Looking up product",
-      description: "Searching for product information...",
-    });
-    
-    // TODO: Implement actual product lookup API call
-    setTimeout(() => {
-      form.setValue("productName", "Sample Product");
-      form.setValue("productBrands", "Sample Brand");
-      form.setValue("calories", 150);
-      form.setValue("proteins", 8);
-      form.setValue("carbohydrates", 12);
-      form.setValue("fat", 6);
-      toast({
-        title: "Product Found",
-        description: "Product information has been populated",
-      });
-    }, 1500);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
       {/* Header */}
@@ -324,360 +267,240 @@ export default function NutriDiary() {
             
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={() => {
-                  console.log("Add Food button clicked");
-                  setIsAddDialogOpen(true);
-                }}>
+                <Button>
                   <Plus className="w-4 h-4 mr-2" />
                   Add Food
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-w-md">
                 <DialogHeader>
                   <DialogTitle>Add Food Entry</DialogTitle>
                   <DialogDescription>
-                    Track your nutrition intake with barcode scanning or manual entry
+                    Add a new food item to your diary
                   </DialogDescription>
                 </DialogHeader>
+                
                 <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {/* Barcode Scanning Section */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Quick Add</h3>
-                      {/* Scan Barcode & Quick Settings */}
-                      <div className="grid grid-cols-2 gap-3">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleScanBarcode}
-                          disabled={isScanning}
-                          className="h-12 text-base font-medium"
-                        >
-                          <Camera className="w-5 h-5 mr-2" />
-                          {isScanning ? "Scanning..." : "Scan Barcode"}
-                        </Button>
-                        
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleQuickSettings}
-                          className="h-12 text-base font-medium"
-                        >
-                          <Settings className="w-5 h-5 mr-2" />
-                          Quick Settings
-                        </Button>
-                      </div>
-                      {/* Product Lookup Field */}
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <FormField
+                      control={form.control}
+                      name="productName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Product Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Greek Yogurt" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="productBrands"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Brand (optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Chobani" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}
-                        name="productLookup"
+                        name="servingSize"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-base font-medium">Product Lookup</FormLabel>
-                            <div className="flex space-x-2">
-                              <FormControl>
-                                <Input 
-                                  placeholder="Enter barcode or product code" 
-                                  {...field} 
-                                  className="h-12 text-base flex-1"
-                                />
-                              </FormControl>
-                              <Button
-                                type="button"
-                                onClick={() => handleProductLookup(field.value || "")}
-                                disabled={!field.value?.trim()}
-                                className="h-12 px-4"
-                              >
-                                <Search className="w-4 h-4" />
-                              </Button>
-                            </div>
+                            <FormLabel>Serving Size</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                step="0.1" 
+                                min="0.1"
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                              />
+                            </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      {showQuickSettings && (
-                        <div className="bg-muted/30 rounded-lg p-4 space-y-3">
-                          <h4 className="font-medium text-sm">Quick Settings</h4>
-                          <div className="grid grid-cols-2 gap-2 text-sm">
-                            <Button variant="ghost" size="sm">Auto-fill nutrition</Button>
-                            <Button variant="ghost" size="sm">Camera settings</Button>
-                            <Button variant="ghost" size="sm">Default portion</Button>
-                            <Button variant="ghost" size="sm">Favorites</Button>
-                          </div>
-                        </div>
-                      )}
+                      
+                      <FormField
+                        control={form.control}
+                        name="servingUnit"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Unit</FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="serving">serving</SelectItem>
+                                <SelectItem value="cup">cup</SelectItem>
+                                <SelectItem value="piece">piece</SelectItem>
+                                <SelectItem value="g">grams</SelectItem>
+                                <SelectItem value="ml">ml</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
-
-                    {/* Basic Information Section */}
-                    <div className="space-y-4">
-                          <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Basic Information</h3>
-                          
-                          <FormField
-                            control={form.control}
-                            name="productName"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium">Product Name *</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    placeholder="e.g., Greek Yogurt" 
-                                    {...field} 
-                                    className="h-12 text-base"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="productBrands"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium">Brand</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    placeholder="e.g., Chobani" 
-                                    {...field} 
-                                    className="h-12 text-base"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
                     
-                        {/* Serving Information Section */}
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Serving Information</h3>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="servingSize"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-base font-medium">Amount *</FormLabel>
-                                  <FormControl>
-                                    <Input 
-                                      type="number" 
-                                      step="0.1" 
-                                      min="0.1"
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                                      className="h-12 text-base text-center"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="servingUnit"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-base font-medium">Unit *</FormLabel>
-                                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                      <SelectTrigger className="h-12 text-base">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="serving">serving</SelectItem>
-                                      <SelectItem value="cup">cup</SelectItem>
-                                      <SelectItem value="piece">piece</SelectItem>
-                                      <SelectItem value="g">grams</SelectItem>
-                                      <SelectItem value="ml">ml</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="calories"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Calories</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                min="0"
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="fat"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Fat (g)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                step="0.1" 
+                                min="0"
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     
-                        {/* Nutrition Facts Section */}
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Nutrition Facts</h3>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="calories"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-base font-medium">Calories</FormLabel>
-                                  <FormControl>
-                                    <Input 
-                                      type="number" 
-                                      min="0"
-                                      placeholder="0"
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                      className="h-12 text-base text-center"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="proteins"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-base font-medium">Protein (g)</FormLabel>
-                                  <FormControl>
-                                    <Input 
-                                      type="number" 
-                                      step="0.1" 
-                                      min="0"
-                                      placeholder="0"
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                      className="h-12 text-base text-center"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                              control={form.control}
-                              name="carbohydrates"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-base font-medium">Carbs (g)</FormLabel>
-                                  <FormControl>
-                                    <Input 
-                                      type="number" 
-                                      step="0.1" 
-                                      min="0"
-                                      placeholder="0"
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                      className="h-12 text-base text-center"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={form.control}
-                              name="fat"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel className="text-base font-medium">Fat (g)</FormLabel>
-                                  <FormControl>
-                                    <Input 
-                                      type="number" 
-                                      step="0.1" 
-                                      min="0"
-                                      placeholder="0"
-                                      {...field}
-                                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                                      className="h-12 text-base text-center"
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                        </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="carbohydrates"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Carbs (g)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                step="0.1" 
+                                min="0"
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="proteins"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Protein (g)</FormLabel>
+                            <FormControl>
+                              <Input 
+                                type="number" 
+                                step="0.1" 
+                                min="0"
+                                {...field}
+                                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     
-                        {/* Meal Details Section */}
-                        <div className="space-y-4">
-                          <h3 className="text-lg font-medium text-foreground border-b border-border pb-2">Meal Details</h3>
-                          
-                          <FormField
-                            control={form.control}
-                            name="mealType"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium">Meal Type *</FormLabel>
-                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger className="h-12 text-base">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="breakfast">🥞 Breakfast</SelectItem>
-                                    <SelectItem value="lunch">🥗 Lunch</SelectItem>
-                                    <SelectItem value="dinner">🍽️ Dinner</SelectItem>
-                                    <SelectItem value="snack">🍿 Snack</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="consumedAt"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium">When did you eat this?</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    type="datetime-local" 
-                                    {...field} 
-                                    className="h-12 text-base"
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="notes"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel className="text-base font-medium">Notes</FormLabel>
-                                <FormControl>
-                                  <Textarea 
-                                    placeholder="Any additional notes about this food..." 
-                                    {...field} 
-                                    className="min-h-[100px] text-base resize-none"
-                                    rows={4}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-
-                    <div className="flex space-x-3 pt-6">
+                    <FormField
+                      control={form.control}
+                      name="mealType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Meal Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="breakfast">Breakfast</SelectItem>
+                              <SelectItem value="lunch">Lunch</SelectItem>
+                              <SelectItem value="dinner">Dinner</SelectItem>
+                              <SelectItem value="snack">Snack</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="consumedAt"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Consumed At</FormLabel>
+                          <FormControl>
+                            <Input type="datetime-local" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Notes (optional)</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Any additional notes..." {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <div className="flex justify-end space-x-2">
                       <Button 
                         type="button" 
                         variant="outline" 
                         onClick={() => setIsAddDialogOpen(false)}
-                        className="flex-1"
                       >
                         Cancel
                       </Button>
-                      <Button 
-                        type="submit" 
-                        className="flex-1"
-                        disabled={addEntryMutation.isPending}
-                      >
+                      <Button type="submit" disabled={addEntryMutation.isPending}>
                         {addEntryMutation.isPending ? "Adding..." : "Add Entry"}
                       </Button>
                     </div>

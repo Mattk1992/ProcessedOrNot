@@ -32,7 +32,7 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
 
   const handleLogout = () => {
     // Redirect to logout endpoint
-    window.location.href = '/api/auth/logout';
+    window.location.href = '/api/logout';
   };
 
   // Menu items for non-authenticated users
@@ -46,6 +46,12 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       group: 'Main Navigation'
     },
     {
+      label: 'Marketing',
+      icon: <TrendingUp className="w-4 h-4" />,
+      action: () => setLocation('/marketing'),
+      group: 'Main Navigation'
+    },
+    {
       label: 'Product Scanner',
       icon: <Camera className="w-4 h-4" />,
       action: () => setLocation('/product-lookup'),
@@ -56,6 +62,14 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       icon: <History className="w-4 h-4" />,
       action: () => setLocation('/lookup-history'),
       group: 'Main Navigation'
+    },
+    { type: 'divider' },
+    
+    // Authentication
+    {
+      label: 'Sign In / Register',
+      icon: <LogIn className="w-4 h-4" />,
+      action: () => setLocation('/login')
     },
     { type: 'divider' },
     
@@ -107,7 +121,12 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
       action: () => setLocation('/'),
       group: 'Main Navigation'
     },
-
+    {
+      label: 'Marketing',
+      icon: <TrendingUp className="w-4 h-4" />,
+      action: () => setLocation('/marketing'),
+      group: 'Main Navigation'
+    },
     {
       label: 'Product Scanner',
       icon: <Camera className="w-4 h-4" />,

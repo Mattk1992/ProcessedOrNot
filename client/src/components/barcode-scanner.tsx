@@ -10,7 +10,10 @@ import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
 import { useLanguage } from "@/contexts/LanguageContext";
 import SearchFilter from "./search-filter";
 import { VoiceSearchButton } from "./voice-search-button";
+import { useGPTRewards } from "@/hooks/useGPTRewards";
+import { GPTRewardModal } from "./gpt-reward-modal";
 import QuickCameraSettings from "./quick-camera-settings";
+import { trackEvent } from "@/lib/analytics";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
@@ -46,6 +49,19 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     includeBrands: [],
     excludeBrands: []
   });
+  
+  // GPT Reward system integration
+  const { 
+    clickCount,
+    maxClicks,
+    needsRewardAd,
+    isShowingAd,
+    isAdAvailable,
+    showRewardAd,
+    resetClickCount,
+    checkRewardBeforeAction,
+    remainingClicks
+  } = useGPTRewards(5);
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -69,25 +85,46 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
   // Check if the input is likely a text search (contains non-numeric characters)
   const isTextSearch = barcode.trim().length > 0 && !/^[0-9\s]*$/.test(barcode.trim());
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (barcode.trim()) {
+      // Check reward system before proceeding
+      const canProceed = await checkRewardBeforeAction();
+      if (!canProceed) {
+        return; // Reward modal will be shown automatically
+      }
+      
       if (isTextSearch) {
+        // Track text search event
+        trackEvent('text_search', 'product_search', 'manual_input', barcode.trim().length);
         // For text searches, include filters
         onScan(barcode.trim(), filters);
       } else {
+        // Track barcode manual input event
+        trackEvent('barcode_manual', 'product_search', 'manual_input', barcode.trim().length);
         // For barcode searches, no filters needed
         onScan(barcode.trim());
       }
     }
   };
 
-  const handleSampleClick = (sampleBarcode: string) => {
+  const handleSampleClick = async (sampleBarcode: string) => {
     setBarcode(sampleBarcode);
+    
+    // Check reward system before proceeding
+    const canProceed = await checkRewardBeforeAction();
+    if (!canProceed) {
+      return; // Reward modal will be shown automatically
+    }
+    
     const isTextSample = !/^[0-9\s]*$/.test(sampleBarcode);
     if (isTextSample) {
+      // Track sample text search event
+      trackEvent('sample_search', 'product_search', 'text_sample', sampleBarcode.length);
       onScan(sampleBarcode, filters);
     } else {
+      // Track sample barcode search event
+      trackEvent('sample_search', 'product_search', 'barcode_sample', sampleBarcode.length);
       onScan(sampleBarcode);
     }
   };
@@ -192,6 +229,15 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
   const startCamera = useCallback(async () => {
     try {
+      // Check GPT reward system before starting camera
+      const canProceed = await checkRewardBeforeAction();
+      if (!canProceed) {
+        return; // GPT reward ad will be shown automatically
+      }
+
+      // Track camera start event
+      trackEvent('camera_start', 'user_interaction', 'barcode_scanner');
+      
       setCameraError("");
       setIsScanning(true);
       
@@ -309,13 +355,23 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         await codeReaderRef.current.decodeFromVideoDevice(
           selectedDeviceId,
           finalVideoElement,
-          (result, error) => {
+          async (result, error) => {
             if (result) {
               const scannedCode = result.getText();
               console.log("Scanned barcode:", scannedCode);
               
               // Validate barcode format before processing
               if (scannedCode && /^[0-9]{8,14}$/.test(scannedCode)) {
+                // Check reward system before processing scanned barcode
+                const canProceed = await checkRewardBeforeAction();
+                if (!canProceed) {
+                  stopCamera();
+                  return; // Reward modal will be shown automatically
+                }
+                
+                // Track barcode scan event
+                trackEvent('barcode_scan', 'product_search', 'camera_scan', scannedCode.length);
+                
                 stopCamera();
                 onScan(scannedCode);
               } else if (scannedCode) {
@@ -379,13 +435,23 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
         await codeReaderRef.current.decodeFromVideoDevice(
           selectedDeviceId,
           finalVideoElement,
-          (result, error) => {
+          async (result, error) => {
             if (result) {
               const scannedCode = result.getText();
               console.log("Scanned barcode (fallback):", scannedCode);
               
               // Validate barcode format before processing
               if (scannedCode && /^[0-9]{8,14}$/.test(scannedCode)) {
+                // Check reward system before processing scanned barcode
+                const canProceed = await checkRewardBeforeAction();
+                if (!canProceed) {
+                  stopCamera();
+                  return; // Reward modal will be shown automatically
+                }
+                
+                // Track barcode scan event
+                trackEvent('barcode_scan', 'product_search', 'camera_scan_fallback', scannedCode.length);
+                
                 stopCamera();
                 onScan(scannedCode);
               } else if (scannedCode) {
@@ -570,22 +636,55 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     currentLocationRef.current = location;
   }, [location, isCameraActive, stopCamera]);
 
-  // Focus on input field when URL contains #manual-input anchor
-  useEffect(() => {
-    if (window.location.hash === '#manual-input') {
-      const inputElement = document.getElementById('manual-barcode-input');
-      if (inputElement) {
-        inputElement.focus();
-        inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  }, []);
-
-  // Auto-start camera when URL contains scan parameter
+  // Focus on input field when URL contains #manual-input anchor or focus parameter
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('scan') === 'camera' && !isCameraActive && !isScanning) {
-      startCamera();
+    const focusParam = urlParams.get('focus');
+    const focusInput = urlParams.get('focusInput');
+    const autoFocus = urlParams.get('autoFocus');
+    
+    // Focus on manual input if hash or URL parameters indicate it
+    const shouldFocusInput = 
+      window.location.hash === '#manual-input' ||
+      focusParam === 'input' ||
+      focusParam === 'manual' ||
+      focusInput === 'true' ||
+      autoFocus === 'true' ||
+      autoFocus === 'input';
+    
+    if (shouldFocusInput) {
+      console.log('Auto-focusing on manual input from URL parameter');
+      // Small delay to ensure component is rendered and camera is not active
+      setTimeout(() => {
+        const inputElement = document.getElementById('manual-barcode-input');
+        if (inputElement && !isCameraActive) {
+          inputElement.focus();
+          inputElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 300);
+    }
+  }, [isCameraActive]);
+
+  // Auto-start camera when URL contains scan parameters
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const scanParam = urlParams.get('scan');
+    const autoCameraParam = urlParams.get('autoCamera');
+    const autoStartParam = urlParams.get('autoStart');
+    
+    // Auto-start camera if any of these parameters indicate camera should start
+    const shouldStartCamera = 
+      scanParam === 'camera' || 
+      autoCameraParam === 'true' || 
+      autoStartParam === 'true' ||
+      autoStartParam === 'camera';
+    
+    if (shouldStartCamera && !isCameraActive && !isScanning) {
+      console.log('Auto-starting camera from URL parameter');
+      // Small delay to ensure component is fully mounted
+      setTimeout(() => {
+        startCamera();
+      }, 300);
     }
   }, [startCamera, isCameraActive, isScanning]);
 
@@ -763,9 +862,6 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   <span className="hidden sm:inline">Stop Camera</span>
                   <span className="sm:hidden">Stop</span>
                 </Button>
-                
-
-                
                 <Button
                   onClick={() => {
                     console.log('Reset zoom button clicked');
@@ -806,7 +902,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
             </div>
           ) : (
             <div className="mb-8">
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <div className="flex gap-2 mb-6">
                 <Button
                   onClick={startCamera}
                   disabled={isLoading || isScanning}
@@ -829,10 +925,10 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 <QuickCameraSettings>
                   <Button
                     variant="outline"
-                    className="flex-1 sm:flex-none border-2 border-primary/20 text-primary hover:bg-primary/10 mobile-button-full touch-action-manipulation py-3 sm:py-4 px-4 sm:px-6 rounded-2xl"
+                    className="border-2 border-primary/20 text-primary hover:bg-primary/10 py-3 sm:py-4 px-3 sm:px-4 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
+                    title="Quick Camera Settings"
                   >
-                    <Settings className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-2" />
-                    <span className="hidden sm:inline">Quick Settings</span>
+                    <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Button>
                 </QuickCameraSettings>
               </div>
@@ -880,11 +976,20 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 
                 {/* Voice Search Button */}
                 <VoiceSearchButton
-                  onVoiceResult={(transcript) => {
+                  onVoiceResult={async (transcript) => {
                     setBarcode(transcript);
                     // Auto-submit if we get a voice result
-                    setTimeout(() => {
+                    setTimeout(async () => {
                       if (transcript.trim()) {
+                        // Check reward system before processing voice input
+                        const canProceed = await checkRewardBeforeAction();
+                        if (!canProceed) {
+                          return; // Reward modal will be shown automatically
+                        }
+                        
+                        // Track voice search event
+                        trackEvent('voice_search', 'product_search', 'voice_input', transcript.trim().length);
+                        
                         onScan(transcript.trim(), isTextSearch ? filters : undefined);
                       }
                     }, 100);
@@ -973,6 +1078,28 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
           </div>
         </CardContent>
       </Card>
+
+      {/* GPT Reward Status Display */}
+      {isAdAvailable && (
+        <div className="text-center mt-4 p-3 bg-muted/30 rounded-lg border">
+          <p className="text-sm text-muted-foreground">
+            Camera scans: {clickCount}/{maxClicks} 
+            {remainingClicks > 0 && (
+              <span className="ml-2 text-xs">({remainingClicks} remaining until ad)</span>
+            )}
+          </p>
+          {isShowingAd && (
+            <p className="text-xs text-primary mt-1">Showing reward ad...</p>
+          )}
+        </div>
+      )}
+
+      {/* GPT Reward Modal */}
+      <GPTRewardModal
+        isVisible={isShowingAd}
+        onClose={() => {}}
+        adDuration={5000}
+      />
     </div>
   );
 }

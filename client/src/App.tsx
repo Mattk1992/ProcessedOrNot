@@ -12,11 +12,11 @@ import { initGA } from "./lib/analytics";
 import { useAnalytics } from "./hooks/use-analytics";
 import Home from "@/pages/home";
 import ProductLookup from "@/pages/product-lookup";
-
+import Marketing from "@/pages/marketing";
 import About from "@/pages/about";
 import Features from "@/pages/features";
 import Help from "@/pages/help";
-
+import Auth from "@/pages/auth";
 import Settings from "@/pages/settings";
 import Admin from "@/pages/admin";
 import AdminSearchHistory from "@/pages/admin-search-history";
@@ -29,7 +29,7 @@ import BlogPost from "@/pages/blog-post";
 import Contact from "@/pages/contact";
 import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
-import { Copyright } from "@/pages/copyright";
+import Copyright from "@/pages/copyright";
 import SocialMedia from "@/pages/social-media";
 import NotFound from "@/pages/not-found";
 import NutriDashboard from "@/pages/nutri-dashboard";
@@ -47,6 +47,7 @@ import UserConsentCollectionPage from "@/pages/user-consent-collection";
 import AdComplianceDashboard from "@/pages/ad-compliance-dashboard";
 import GPTConfigPage from "@/pages/gpt-config";
 import ConsentBanner from "@/components/consent-banner";
+import { consentIntegration } from "@/lib/consent-integration";
 
 function Router() {
   // Track page views when routes change
@@ -62,14 +63,18 @@ function Router() {
 
   return (
     <Layout onStartTutorial={handleStartTutorial}>
-      {/* ConsentBanner temporarily disabled to prevent authentication interference */}
+      <ConsentBanner />
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/marketing" component={Marketing} />
         <Route path="/product-lookup" component={ProductLookup} />
         <Route path="/scan" component={ProductLookup} />
         <Route path="/about" component={About} />
         <Route path="/features" component={Features} />
         <Route path="/help" component={Help} />
+        <Route path="/login" component={Auth} />
+        <Route path="/register" component={Auth} />
+        <Route path="/auth" component={Auth} />
         <Route path="/nutri-dashboard/settings" component={Settings} />
         <Route path="/nutri-dashboard/site-info" component={SiteInfo} />
         <Route path="/consent-settings" component={ConsentSettings} />
@@ -123,22 +128,25 @@ function App() {
     } else {
       initGA();
     }
-    // Consent integration will be initialized later, not blocking authentication
+    // Initialize consent integration for Google services (only if not already done)
+    if (!(window as any).__globalAdInitialized) {
+      consentIntegration.initializeGoogleAds('1163701043339821');
+      (window as any).__globalAdInitialized = true;
+    }
   }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <LanguageProvider>
-          {/* AdManagerProvider temporarily disabled to prevent consent interference */}
-          <div>
+          <AdManagerProvider>
             <TooltipProvider>
               <Toaster />
               <Router />
               <ThemeToggle />
-              {/* AdConsentBanner temporarily disabled to prevent consent interference */}
+              <AdConsentBanner />
             </TooltipProvider>
-          </div>
+          </AdManagerProvider>
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>

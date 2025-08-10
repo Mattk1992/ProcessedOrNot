@@ -2,16 +2,9 @@ import express, { type Request, Response, NextFunction } from "express";
 import { config } from "dotenv";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { initializeSecuritySystems } from "./lib/securityInit";
 
 // Load environment variables
 config();
-
-// Initialize industry-standard security systems
-initializeSecuritySystems().catch(error => {
-  console.error('Security initialization failed:', error);
-  process.exit(1);
-});
 
 const app = express();
 app.use(express.json());
