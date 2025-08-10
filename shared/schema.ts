@@ -526,6 +526,55 @@ export const insertNotificationSchema = createInsertSchema(notifications).omit({
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 export type Notification = typeof notifications.$inferSelect;
 
+// Data Change Requests table - for product data corrections and additions
+export const dataChangeRequests = pgTable("data_change_requests", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id).notNull(),
+  requestType: varchar("request_type", { length: 50 }).notNull(), // 'report_error', 'add_missing_data', 'correction'
+  productBarcode: text("product_barcode"),
+  productName: text("product_name"),
+  
+  // Current product data (for reference)
+  currentData: jsonb("current_data"),
+  
+  // Proposed changes
+  proposedChanges: jsonb("proposed_changes").notNull(),
+  
+  // Request details
+  description: text("description").notNull(),
+  issueType: varchar("issue_type", { length: 100 }), // 'wrong_ingredients', 'missing_nutrition', 'incorrect_name', etc.
+  priority: varchar("priority", { length: 20 }).notNull().default('medium'), // 'low', 'medium', 'high', 'urgent'
+  
+  // Admin review
+  status: varchar("status", { length: 20 }).notNull().default('pending'), // 'pending', 'approved', 'rejected', 'in_review'
+  reviewedBy: integer("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewComments: text("review_comments"),
+  
+  // Change tracking
+  appliedAt: timestamp("applied_at"),
+  appliedChanges: jsonb("applied_changes"), // What changes were actually applied
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  statusIdx: index("data_change_requests_status_idx").on(table.status),
+  typeIdx: index("data_change_requests_type_idx").on(table.requestType),
+  userIdx: index("data_change_requests_user_idx").on(table.userId),
+  barcodeIdx: index("data_change_requests_barcode_idx").on(table.productBarcode),
+}));
+
+export const insertDataChangeRequestSchema = createInsertSchema(dataChangeRequests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  reviewedAt: true,
+  appliedAt: true,
+});
+
+export type InsertDataChangeRequest = z.infer<typeof insertDataChangeRequestSchema>;
+export type DataChangeRequest = typeof dataChangeRequests.$inferSelect;
+
 // Blog posts table
 export const blogPosts = pgTable("blog_posts", {
   id: serial("id").primaryKey(),

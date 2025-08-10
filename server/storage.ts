@@ -37,6 +37,9 @@ import {
   weightEntries,
   type WeightEntry,
   type InsertWeightEntry,
+  dataChangeRequests,
+  type DataChangeRequest,
+  type InsertDataChangeRequest,
   productDatabases,
   type ProductDatabase,
   type InsertProductDatabase,
@@ -181,6 +184,15 @@ export interface IStorage {
   getDiaryEntriesByUserAndDate(userId: number, date: string): Promise<DiaryEntry[]>;
   getRecentDiaryEntries(userId: number, limit: number): Promise<DiaryEntry[]>;
   getDiaryEntries(userId: number, date?: string, limit?: number): Promise<DiaryEntry[]>;
+  
+  // Data change requests
+  createDataChangeRequest(request: InsertDataChangeRequest): Promise<DataChangeRequest>;
+  getDataChangeRequestsByUser(userId: number): Promise<DataChangeRequest[]>;
+  getDataChangeRequestsByStatus(status: string): Promise<DataChangeRequest[]>;
+  getDataChangeRequestById(id: number): Promise<DataChangeRequest | undefined>;
+  updateDataChangeRequest(id: number, updates: Partial<InsertDataChangeRequest>): Promise<DataChangeRequest | undefined>;
+  approveDataChangeRequest(id: number, reviewedBy: number, reviewComments?: string): Promise<DataChangeRequest | undefined>;
+  rejectDataChangeRequest(id: number, reviewedBy: number, reviewComments?: string): Promise<DataChangeRequest | undefined>;
 
   // User goals
   createUserGoals(goals: InsertUserGoals): Promise<UserGoals>;
@@ -220,6 +232,10 @@ export interface IStorage {
   testProductDatabase(id: number, testBarcode: string): Promise<any>;
   testAllProductDatabases(testBarcode: string): Promise<any[]>;
   initializeDefaultProductDatabases(): Promise<ProductDatabase[]>;
+  
+  // Helper methods for data change requests
+  getAdminUsers(): Promise<User[]>;
+  updateProductByBarcode(barcode: string, updates: Partial<InsertProduct>): Promise<Product | undefined>;
 
   // Device Identifier methods
   logDeviceIdentifier(deviceData: any): Promise<DeviceIdentifier>;
@@ -1289,6 +1305,81 @@ export class DatabaseStorage implements IStorage {
       // If no date, get recent entries with limit
       return await this.getRecentDiaryEntries(userId, limit);
     }
+  }
+
+  // Data change requests implementation
+  async createDataChangeRequest(request: InsertDataChangeRequest): Promise<DataChangeRequest> {
+    const [created] = await db.insert(dataChangeRequests).values(request).returning();
+    return created;
+  }
+
+  async getDataChangeRequestsByUser(userId: number): Promise<DataChangeRequest[]> {
+    return await db.select().from(dataChangeRequests)
+      .where(eq(dataChangeRequests.userId, userId))
+      .orderBy(desc(dataChangeRequests.createdAt));
+  }
+
+  async getDataChangeRequestsByStatus(status: string): Promise<DataChangeRequest[]> {
+    return await db.select().from(dataChangeRequests)
+      .where(eq(dataChangeRequests.status, status))
+      .orderBy(desc(dataChangeRequests.createdAt));
+  }
+
+  async getDataChangeRequestById(id: number): Promise<DataChangeRequest | undefined> {
+    const [request] = await db.select().from(dataChangeRequests).where(eq(dataChangeRequests.id, id));
+    return request || undefined;
+  }
+
+  async updateDataChangeRequest(id: number, updates: Partial<InsertDataChangeRequest>): Promise<DataChangeRequest | undefined> {
+    const [updated] = await db
+      .update(dataChangeRequests)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(dataChangeRequests.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async approveDataChangeRequest(id: number, reviewedBy: number, reviewComments?: string): Promise<DataChangeRequest | undefined> {
+    const [updated] = await db
+      .update(dataChangeRequests)
+      .set({ 
+        status: 'approved',
+        reviewedBy,
+        reviewedAt: new Date(),
+        reviewComments,
+        updatedAt: new Date()
+      })
+      .where(eq(dataChangeRequests.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async rejectDataChangeRequest(id: number, reviewedBy: number, reviewComments?: string): Promise<DataChangeRequest | undefined> {
+    const [updated] = await db
+      .update(dataChangeRequests)
+      .set({ 
+        status: 'rejected',
+        reviewedBy,
+        reviewedAt: new Date(),
+        reviewComments,
+        updatedAt: new Date()
+      })
+      .where(eq(dataChangeRequests.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getAdminUsers(): Promise<User[]> {
+    return await db.select().from(users).where(eq(users.accountType, 'Admin'));
+  }
+
+  async updateProductByBarcode(barcode: string, updates: Partial<InsertProduct>): Promise<Product | undefined> {
+    const [updated] = await db
+      .update(products)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(products.barcode, barcode))
+      .returning();
+    return updated || undefined;
   }
 
   async createUserGoals(goals: InsertUserGoals): Promise<UserGoals> {

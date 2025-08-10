@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles, X, Info, BarChart3, Zap, TrendingUp, Activity, Calendar, Apple } from "lucide-react";
+import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles, X, Info, BarChart3, Zap, TrendingUp, Activity, Calendar, Apple, Flag, Edit } from "lucide-react";
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
 import NutritionSpotlight from "./nutrition-spotlight";
@@ -35,6 +35,13 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
     new Date().toISOString().slice(0, 16) // Format: YYYY-MM-DDTHH:MM
   );
   const [isAddingToDiary, setIsAddingToDiary] = useState(false);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [showEditProductModal, setShowEditProductModal] = useState(false);
+  const [reportDescription, setReportDescription] = useState("");
+  const [reportIssueType, setReportIssueType] = useState("");
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+  const [editedProduct, setEditedProduct] = useState<any>(null);
   const { t, language } = useLanguage();
 
   // Function to handle adding product to diary
@@ -104,6 +111,102 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       alert("Failed to add product to diary. Please try again.");
     } finally {
       setIsAddingToDiary(false);
+    }
+  };
+
+  const handleSubmitReport = async () => {
+    if (!reportDescription.trim() || !reportIssueType) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    setIsSubmittingReport(true);
+    try {
+      const reportData = {
+        requestType: 'report_error',
+        productBarcode: product?.barcode,
+        productName: product?.productName || 'Unknown Product',
+        currentData: product,
+        proposedChanges: {}, // Empty for reports, user just identifies issues
+        description: reportDescription,
+        issueType: reportIssueType,
+        priority: 'medium'
+      };
+
+      const response = await fetch('/api/data-change-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reportData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit report');
+      }
+
+      setShowReportModal(false);
+      setReportDescription("");
+      setReportIssueType("");
+      alert("Thank you for reporting this issue! Our team will review it soon.");
+      
+    } catch (error) {
+      console.error('Error submitting report:', error);
+      alert('Failed to submit report. Please try again.');
+    } finally {
+      setIsSubmittingReport(false);
+    }
+  };
+
+  const handleEditProduct = () => {
+    setEditedProduct({
+      barcode: product?.barcode || '',
+      productName: product?.productName || '',
+      brands: product?.brands || '',
+      ingredientsText: product?.ingredientsText || '',
+      nutriments: product?.nutriments || {},
+      imageUrl: product?.imageUrl || ''
+    });
+    setShowEditProductModal(true);
+  };
+
+  const handleSubmitEditRequest = async () => {
+    if (!editedProduct) return;
+
+    setIsSubmittingEdit(true);
+    try {
+      const editData = {
+        requestType: 'add_missing_data',
+        productBarcode: product?.barcode,
+        productName: product?.productName || 'Unknown Product',
+        currentData: product,
+        proposedChanges: editedProduct,
+        description: 'User provided additional/corrected product information',
+        issueType: 'missing_data',
+        priority: 'medium'
+      };
+
+      const response = await fetch('/api/data-change-requests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit edit request');
+      }
+
+      setShowEditProductModal(false);
+      setEditedProduct(null);
+      alert("Thank you for providing additional data! Your request has been sent to our team for review.");
+      
+    } catch (error) {
+      console.error('Error submitting edit request:', error);
+      alert('Failed to submit edit request. Please try again.');
+    } finally {
+      setIsSubmittingEdit(false);
     }
   };
 
@@ -989,6 +1092,16 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                         </>
                       )}
                     </Button>
+
+                    {/* Report Button */}
+                    <Button 
+                      onClick={() => setShowReportModal(true)}
+                      variant="outline"
+                      className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/20"
+                    >
+                      <Flag className="w-4 h-4 mr-2" />
+                      Report Wrong Data
+                    </Button>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -1618,11 +1731,253 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
             </div>
           </ScrollArea>
 
-          <div className="flex justify-end pt-4 border-t">
+          <div className="flex justify-between pt-4 border-t">
+            <Button 
+              onClick={handleEditProduct}
+              variant="outline"
+              className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20"
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              Add Missing Data
+            </Button>
             <Button variant="outline" onClick={() => setShowProductAnalysis(false)}>
               Close Analysis
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Report Data Modal */}
+      <Dialog open={showReportModal} onOpenChange={setShowReportModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Flag className="w-5 h-5 text-red-600" />
+              Report Product Data Issue
+            </DialogTitle>
+            <DialogDescription>
+              Help us improve data quality by reporting errors or missing information for {product?.productName || "this product"}.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="issue-type">Issue Type</Label>
+              <select
+                id="issue-type"
+                value={reportIssueType}
+                onChange={(e) => setReportIssueType(e.target.value)}
+                className="w-full px-3 py-2 border border-input rounded-md bg-background"
+              >
+                <option value="">Select issue type...</option>
+                <option value="incorrect_nutrition">Incorrect nutrition data</option>
+                <option value="wrong_ingredients">Wrong ingredients list</option>
+                <option value="incorrect_name">Incorrect product name</option>
+                <option value="wrong_image">Wrong product image</option>
+                <option value="missing_info">Missing information</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <textarea
+                id="description"
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                placeholder="Describe the issue in detail..."
+                className="w-full px-3 py-2 border border-input rounded-md bg-background min-h-[100px] resize-none"
+              />
+            </div>
+
+            <div className="flex gap-2 justify-end">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowReportModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSubmitReport}
+                disabled={isSubmittingReport || !reportDescription.trim() || !reportIssueType}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {isSubmittingReport ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    Submitting...
+                  </>
+                ) : (
+                  "Submit Report"
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Product Modal */}
+      <Dialog open={showEditProductModal} onOpenChange={setShowEditProductModal}>
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="w-5 h-5 text-blue-600" />
+              Add Missing Product Data
+            </DialogTitle>
+            <DialogDescription>
+              Help improve our database by adding missing or corrected information for {product?.productName || "this product"}.
+            </DialogDescription>
+          </DialogHeader>
+
+          {editedProduct && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Product Name</Label>
+                <Input
+                  id="edit-name"
+                  value={editedProduct.productName}
+                  onChange={(e) => setEditedProduct({
+                    ...editedProduct,
+                    productName: e.target.value
+                  })}
+                  placeholder="Product name"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-brands">Brands</Label>
+                <Input
+                  id="edit-brands"
+                  value={editedProduct.brands}
+                  onChange={(e) => setEditedProduct({
+                    ...editedProduct,
+                    brands: e.target.value
+                  })}
+                  placeholder="Brand names (separated by commas)"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-ingredients">Ingredients List</Label>
+                <textarea
+                  id="edit-ingredients"
+                  value={editedProduct.ingredientsText}
+                  onChange={(e) => setEditedProduct({
+                    ...editedProduct,
+                    ingredientsText: e.target.value
+                  })}
+                  placeholder="Complete ingredients list..."
+                  className="w-full px-3 py-2 border border-input rounded-md bg-background min-h-[100px] resize-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="edit-image">Image URL</Label>
+                <Input
+                  id="edit-image"
+                  value={editedProduct.imageUrl}
+                  onChange={(e) => setEditedProduct({
+                    ...editedProduct,
+                    imageUrl: e.target.value
+                  })}
+                  placeholder="Product image URL"
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label>Nutrition Information (per 100g)</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="edit-energy">Energy (kcal)</Label>
+                    <Input
+                      id="edit-energy"
+                      type="number"
+                      value={editedProduct.nutriments?.energy_100g || ""}
+                      onChange={(e) => setEditedProduct({
+                        ...editedProduct,
+                        nutriments: {
+                          ...editedProduct.nutriments,
+                          energy_100g: e.target.value ? parseFloat(e.target.value) : undefined
+                        }
+                      })}
+                      placeholder="Energy"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-proteins">Proteins (g)</Label>
+                    <Input
+                      id="edit-proteins"
+                      type="number"
+                      value={editedProduct.nutriments?.proteins_100g || ""}
+                      onChange={(e) => setEditedProduct({
+                        ...editedProduct,
+                        nutriments: {
+                          ...editedProduct.nutriments,
+                          proteins_100g: e.target.value ? parseFloat(e.target.value) : undefined
+                        }
+                      })}
+                      placeholder="Proteins"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-carbs">Carbohydrates (g)</Label>
+                    <Input
+                      id="edit-carbs"
+                      type="number"
+                      value={editedProduct.nutriments?.carbohydrates_100g || ""}
+                      onChange={(e) => setEditedProduct({
+                        ...editedProduct,
+                        nutriments: {
+                          ...editedProduct.nutriments,
+                          carbohydrates_100g: e.target.value ? parseFloat(e.target.value) : undefined
+                        }
+                      })}
+                      placeholder="Carbohydrates"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-fat">Fat (g)</Label>
+                    <Input
+                      id="edit-fat"
+                      type="number"
+                      value={editedProduct.nutriments?.fat_100g || ""}
+                      onChange={(e) => setEditedProduct({
+                        ...editedProduct,
+                        nutriments: {
+                          ...editedProduct.nutriments,
+                          fat_100g: e.target.value ? parseFloat(e.target.value) : undefined
+                        }
+                      })}
+                      placeholder="Fat"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2 justify-end">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowEditProductModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSubmitEditRequest}
+                  disabled={isSubmittingEdit}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  {isSubmittingEdit ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                      Submitting...
+                    </>
+                  ) : (
+                    "Submit Request"
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

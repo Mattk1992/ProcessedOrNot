@@ -3098,5 +3098,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Data Change Requests API endpoints
+  app.post("/api/data-change-requests", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const request = await storage.createDataChangeRequest({
+        ...req.body,
+        userId: user.id
+      });
+
+      // Send notification to all admin users
+      const adminUsers = await storage.getAdminUsers();
+      for (const admin of adminUsers) {
+        await storage.createNotification({
+          userId: admin.id,
+          type: 'info',
+          title: `New ${req.body.requestType === 'report_error' ? 'Error Report' : 'Data Change Request'}`,
+          message: `User ${user.username} has submitted a ${req.body.requestType === 'report_error' ? 'product error report' : 'data change request'} for ${req.body.productName}`,
+          actionUrl: `/admin/data-requests/${request.id}`,
+          actionText: 'Review Request',
+          metadata: { requestId: request.id, requestType: req.body.requestType },
+          isRead: false,
+          isArchived: false
+        });
+      }
+
+      res.json(request);
+    } catch (error) {
+      console.error("Error creating data change request:", error);
+      res.status(500).json({ message: "Failed to create data change request" });
+    }
+  });
+
+  app.get("/api/data-change-requests", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const requests = await storage.getDataChangeRequestsByUser(user.id);
+      res.json(requests);
+    } catch (error) {
+      console.error("Error fetching data change requests:", error);
+      res.status(500).json({ message: "Failed to fetch data change requests" });
+    }
+  });
+
+  app.put("/api/data-change-requests/:id/approve", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { reviewComments } = req.body;
+      const request = await storage.approveDataChangeRequest(
+        parseInt(req.params.id),
+        user.id,
+        reviewComments
+      );
+
+      if (!request) {
+        return res.status(404).json({ message: "Request not found" });
+      }
+
+      // Apply the changes to the product if approved
+      if (request.proposedChanges && request.productBarcode) {
+        try {
+          await storage.updateProductByBarcode(request.productBarcode, request.proposedChanges as any);
+          await storage.updateDataChangeRequest(request.id, { appliedAt: new Date() });
+        } catch (error) {
+          console.error("Error applying data changes:", error);
+        }
+      }
+
+      res.json(request);
+    } catch (error) {
+      console.error("Error approving data change request:", error);
+      res.status(500).json({ message: "Failed to approve request" });
+    }
+  });
+
+  app.put("/api/data-change-requests/:id/reject", async (req, res) => {
+    try {
+      const user = (req.session as any).user;
+      if (!user || user.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { reviewComments } = req.body;
+      const request = await storage.rejectDataChangeRequest(
+        parseInt(req.params.id),
+        user.id,
+        reviewComments
+      );
+
+      if (!request) {
+        return res.status(404).json({ message: "Request not found" });
+      }
+
+      res.json(request);
+    } catch (error) {
+      console.error("Error rejecting data change request:", error);
+      res.status(500).json({ message: "Failed to reject request" });
+    }
+  });
+
   return httpServer;
 }
