@@ -36,6 +36,7 @@ export default function NutritionCalendar() {
   const [scheduleForm, setScheduleForm] = useState({
     goal: '',
     duration: '7',
+    startDate: new Date().toISOString().split('T')[0], // Add start date field with today as default
     caloriesTarget: '',
     proteinTarget: '',
     carbsTarget: '',
@@ -155,10 +156,10 @@ export default function NutritionCalendar() {
   };
 
   const handleGenerateSchedule = async () => {
-    if (!scheduleForm.goal || !scheduleForm.caloriesTarget || !scheduleForm.activityLevel) {
+    if (!scheduleForm.goal || !scheduleForm.startDate || !scheduleForm.caloriesTarget || !scheduleForm.activityLevel) {
       toast({
         title: "Missing Information",
-        description: "Please fill in at least the goal, calories target, and activity level.",
+        description: "Please fill in at least the goal, start date, calories target, and activity level.",
         variant: "destructive",
       });
       return;
@@ -180,6 +181,7 @@ export default function NutritionCalendar() {
       setScheduleForm({
         goal: '',
         duration: '7',
+        startDate: new Date().toISOString().split('T')[0],
         caloriesTarget: '',
         proteinTarget: '',
         carbsTarget: '',
@@ -589,7 +591,7 @@ export default function NutritionCalendar() {
               <div className="space-y-4">
                 <Label className="text-base font-semibold">Nutrition Goals</Label>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="goal">Primary Goal *</Label>
                     <Select value={scheduleForm.goal} onValueChange={(value) => setScheduleForm({...scheduleForm, goal: value})}>
@@ -604,6 +606,28 @@ export default function NutritionCalendar() {
                         <SelectItem value="general-health">General Health</SelectItem>
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate">Start Date *</Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={scheduleForm.startDate}
+                      onChange={(e) => setScheduleForm({...scheduleForm, startDate: e.target.value})}
+                      min={new Date().toISOString().split('T')[0]} // Prevent selecting past dates
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="startDate">Start Date *</Label>
+                    <Input
+                      id="startDate"
+                      type="date"
+                      value={scheduleForm.startDate}
+                      onChange={(e) => setScheduleForm({...scheduleForm, startDate: e.target.value})}
+                      min={new Date().toISOString().split('T')[0]} // Prevent selecting past dates
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -719,6 +743,7 @@ export default function NutritionCalendar() {
                   Schedule Preview
                 </Label>
                 <div className="text-xs text-green-600 dark:text-green-300 space-y-1">
+                  <p>• Start Date: {scheduleForm.startDate ? new Date(scheduleForm.startDate).toLocaleDateString() : 'Not set'}</p>
                   <p>• Duration: {scheduleForm.duration} days</p>
                   <p>• Daily calories: {scheduleForm.caloriesTarget || 'Not set'}</p>
                   <p>• Goal: {scheduleForm.goal || 'Not selected'}</p>
@@ -737,7 +762,7 @@ export default function NutritionCalendar() {
               </Button>
               <Button
                 onClick={handleGenerateSchedule}
-                disabled={isGeneratingSchedule || !scheduleForm.goal || !scheduleForm.caloriesTarget || !scheduleForm.activityLevel}
+                disabled={isGeneratingSchedule || !scheduleForm.goal || !scheduleForm.startDate || !scheduleForm.caloriesTarget || !scheduleForm.activityLevel}
                 className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
               >
                 {isGeneratingSchedule ? (
