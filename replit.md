@@ -4,6 +4,11 @@
 ProcessedOrNot Scanner is a modern web application designed to analyze food products for processing levels. It leverages barcode scanning, AI-powered ingredient analysis, and an interactive chatbot (NutriBot) to provide comprehensive food product insights. The project aims to provide users with transparent and detailed information about the food they consume, fostering healthier dietary choices. It has significant market potential as a tool for health-conscious consumers and aims to become a leading platform for food transparency.
 
 ## Recent Changes  
+- **Profile Page Integration**: Copied complete user profile functionality to `/nutri-dashboard/profile` route:
+  - Duplicated user-profile.tsx as nutri-dashboard-profile.tsx
+  - Updated App.tsx routing to use NutriDashboardProfile component for nutri-dashboard/profile path
+  - Comprehensive profile management now available within nutrition dashboard section
+  - Includes all tabs: Account, Basic Info, Health, Lifestyle, Nutrition, and Goals
 - **Create Nutrition Schedule Form Simplified**: Streamlined the Create Nutrition Schedule form by removing three fields:
   - Removed "Activity Level" dropdown (sedentary, lightly active, etc.)
   - Removed "Primary Goal" dropdown (weight loss, muscle gain, etc.) - replaced with free-form "Schedule Title" text input
