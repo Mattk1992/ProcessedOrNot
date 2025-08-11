@@ -4,6 +4,11 @@
 ProcessedOrNot Scanner is a modern web application designed to analyze food products for processing levels. It leverages barcode scanning, AI-powered ingredient analysis, and an interactive chatbot (NutriBot) to provide comprehensive food product insights. The project aims to provide users with transparent and detailed information about the food they consume, fostering healthier dietary choices. It has significant market potential as a tool for health-conscious consumers and aims to become a leading platform for food transparency.
 
 ## Recent Changes  
+- **Create Nutrition Schedule Form Simplified**: Streamlined the Create Nutrition Schedule form by removing three fields:
+  - Removed "Activity Level" dropdown (sedentary, lightly active, etc.)
+  - Removed "Primary Goal" dropdown (weight loss, muscle gain, etc.) - replaced with free-form "Schedule Title" text input
+  - Removed "Dietary Preferences & Restrictions" textarea field
+  - Form now focuses on essential nutrition targets and schedule duration for better user experience
 - **Dashboard Real Data Integration**: Verified and confirmed the Dashboard page uses authentic Food Diary data:
   - Today's Summary displays real meal count, fiber, and salt totals from current day diary entries
   - Food Processing Score shows actual average processing score from logged foods

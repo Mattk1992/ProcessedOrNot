@@ -45,9 +45,7 @@ export default function NutritionCalendar() {
     proteinTarget: '',
     carbsTarget: '',
     fatTarget: '',
-    dietaryRestrictions: '',
     mealPreferences: [],
-    activityLevel: '',
     specialNotes: ''
   });
   const [isGeneratingSchedule, setIsGeneratingSchedule] = useState(false);
@@ -211,10 +209,10 @@ export default function NutritionCalendar() {
   };
 
   const handleGenerateSchedule = async () => {
-    if (!scheduleForm.goal || !scheduleForm.startDate || !scheduleForm.caloriesTarget || !scheduleForm.activityLevel) {
+    if (!scheduleForm.goal || !scheduleForm.startDate || !scheduleForm.caloriesTarget) {
       toast({
         title: "Missing Information",
-        description: "Please fill in at least the goal, start date, calories target, and activity level.",
+        description: "Please fill in the schedule title, start date, and calories target.",
         variant: "destructive",
       });
       return;
@@ -661,35 +659,18 @@ export default function NutritionCalendar() {
             </DialogHeader>
 
             <div className="space-y-6 py-4">
-              {/* Basic Goals Section */}
+              {/* Basic Information Section */}
               <div className="space-y-4">
-                <Label className="text-base font-semibold">Nutrition Goals</Label>
+                <Label className="text-base font-semibold">Basic Information</Label>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="goal">Primary Goal *</Label>
-                    <Select value={scheduleForm.goal} onValueChange={(value) => setScheduleForm({...scheduleForm, goal: value})}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select your primary goal" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="weight-loss">Weight Loss</SelectItem>
-                        <SelectItem value="muscle-gain">Muscle Gain</SelectItem>
-                        <SelectItem value="maintenance">Weight Maintenance</SelectItem>
-                        <SelectItem value="athletic-performance">Athletic Performance</SelectItem>
-                        <SelectItem value="general-health">General Health</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="startDate">Start Date *</Label>
+                    <Label htmlFor="title">Schedule Title *</Label>
                     <Input
-                      id="startDate"
-                      type="date"
-                      value={scheduleForm.startDate}
-                      onChange={(e) => setScheduleForm({...scheduleForm, startDate: e.target.value})}
-                      min={new Date().toISOString().split('T')[0]} // Prevent selecting past dates
+                      id="title"
+                      placeholder="e.g. Weekly Meal Plan, Nutrition Schedule"
+                      value={scheduleForm.goal}
+                      onChange={(e) => setScheduleForm({...scheduleForm, goal: e.target.value})}
                     />
                   </div>
 
@@ -772,33 +753,7 @@ export default function NutritionCalendar() {
                 </div>
               </div>
 
-              {/* Activity Level */}
-              <div className="space-y-4">
-                <Label className="text-base font-semibold">Activity Level *</Label>
-                <Select value={scheduleForm.activityLevel} onValueChange={(value) => setScheduleForm({...scheduleForm, activityLevel: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your activity level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sedentary">Sedentary (little to no exercise)</SelectItem>
-                    <SelectItem value="lightly-active">Lightly Active (light exercise 1-3 days/week)</SelectItem>
-                    <SelectItem value="moderately-active">Moderately Active (moderate exercise 3-5 days/week)</SelectItem>
-                    <SelectItem value="very-active">Very Active (hard exercise 6-7 days/week)</SelectItem>
-                    <SelectItem value="super-active">Super Active (very hard exercise, physical job)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
-              {/* Dietary Restrictions */}
-              <div className="space-y-4">
-                <Label className="text-base font-semibold">Dietary Preferences & Restrictions</Label>
-                <Textarea
-                  placeholder="e.g. Vegetarian, gluten-free, lactose intolerant, no nuts, etc."
-                  value={scheduleForm.dietaryRestrictions}
-                  onChange={(e) => setScheduleForm({...scheduleForm, dietaryRestrictions: e.target.value})}
-                  rows={3}
-                />
-              </div>
 
               {/* Special Notes */}
               <div className="space-y-4">
@@ -820,8 +775,7 @@ export default function NutritionCalendar() {
                   <p>• Start Date: {scheduleForm.startDate ? new Date(scheduleForm.startDate).toLocaleDateString() : 'Not set'}</p>
                   <p>• Duration: {scheduleForm.duration} days</p>
                   <p>• Daily calories: {scheduleForm.caloriesTarget || 'Not set'}</p>
-                  <p>• Goal: {scheduleForm.goal || 'Not selected'}</p>
-                  <p>• Activity level: {scheduleForm.activityLevel || 'Not selected'}</p>
+                  <p>• Title: {scheduleForm.goal || 'Not set'}</p>
                 </div>
               </div>
             </div>
