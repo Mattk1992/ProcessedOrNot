@@ -13,7 +13,9 @@ import {
   Moon,
   AlertCircle,
   Scale,
-  Utensils
+  Utensils,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -100,6 +102,42 @@ export default function NutriDiary() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isWeightDialogOpen, setIsWeightDialogOpen] = useState(false);
+
+  // Date navigation functions
+  const goToPreviousDay = () => {
+    const currentDate = new Date(selectedDate);
+    currentDate.setDate(currentDate.getDate() - 1);
+    setSelectedDate(currentDate.toISOString().split('T')[0]);
+  };
+
+  const goToNextDay = () => {
+    const currentDate = new Date(selectedDate);
+    currentDate.setDate(currentDate.getDate() + 1);
+    setSelectedDate(currentDate.toISOString().split('T')[0]);
+  };
+
+  const formatDisplayDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    if (dateString === today.toISOString().split('T')[0]) {
+      return "Today";
+    } else if (dateString === yesterday.toISOString().split('T')[0]) {
+      return "Yesterday";
+    } else if (dateString === tomorrow.toISOString().split('T')[0]) {
+      return "Tomorrow";
+    } else {
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    }
+  };
 
   const form = useForm<DiaryEntryForm>({
     resolver: zodResolver(diaryEntrySchema),
@@ -286,20 +324,13 @@ export default function NutriDiary() {
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
             <h2 className="text-3xl font-bold mb-2">Food Diary</h2>
             <p className="text-muted-foreground">Track your daily food intake and nutrition</p>
           </div>
           
           <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-            <Input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="w-40"
-            />
-            
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
@@ -543,6 +574,44 @@ export default function NutriDiary() {
                 </Form>
               </DialogContent>
             </Dialog>
+          </div>
+        </div>
+
+        {/* Date Navigation */}
+        <div className="mb-6">
+          <div className="flex items-center justify-center">
+            <div className="flex items-center bg-muted/30 rounded-lg p-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={goToPreviousDay}
+                className="flex items-center space-x-2 px-4 py-2"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Previous</span>
+              </Button>
+              
+              <div className="px-6 py-2 text-center min-w-[120px]">
+                <div className="font-semibold text-lg">{formatDisplayDate(selectedDate)}</div>
+                <div className="text-xs text-muted-foreground">
+                  {new Date(selectedDate).toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                  })}
+                </div>
+              </div>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={goToNextDay}
+                className="flex items-center space-x-2 px-4 py-2"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </div>
 
