@@ -27,7 +27,7 @@ function getNutriBotSystemPrompt(language: string, extraInfo?: string): string {
 USER PROFILE INFORMATION:
 ${extraInfo}
 
-Please consider this user information when providing personalized nutrition advice and recommendations. Tailor your responses to their specific health goals, dietary preferences, and lifestyle factors.` : '';
+Please consider this user information when providing personalized nutrition advice and recommendations. Tailor your responses to their specific health goals, dietary preferences, lifestyle factors, and recent eating history when available.` : '';
 
   return `You are NutriBot, a friendly AI nutritionist. ${languageInstruction}
 

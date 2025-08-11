@@ -136,6 +136,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     next();
   };
 
+  // Helper function to detect if a user's message would benefit from nutrition history context
+  function isNutritionHistoryRelevant(message: string): boolean {
+    const lowercaseMessage = message.toLowerCase();
+    const historyKeywords = [
+      'my nutrition', 'my diet', 'my eating', 'my food', 'what i ate', 'what i eat',
+      'my meals', 'my intake', 'analyze my', 'track my', 'my progress', 'my habits',
+      'my history', 'my diary', 'my consumption', 'my calories', 'my daily',
+      'yesterday', 'last week', 'this week', 'recently', 'lately', 'past',
+      'compare', 'trend', 'pattern', 'improvement', 'average', 'typical',
+      'usually eat', 'normally eat', 'been eating', 'eating pattern',
+      'how am i doing', 'am i eating well', 'my eating habits', 'my food choices',
+      'recommend based on', 'suggest based on', 'considering my', 'given my',
+      'nutrition summary', 'food log', 'meal log', 'eating log'
+    ];
+    
+    return historyKeywords.some(keyword => lowercaseMessage.includes(keyword));
+  }
+
   // Admin access middleware
   const requireAdmin = async (req: any, res: any, next: any) => {
     try {
@@ -1018,14 +1036,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.session?.userId) {
         try {
           const userId = req.session.userId;
-          const [userGoals, userProfile, userOnboarding] = await Promise.all([
+          
+          // Check if the user's message indicates they need nutrition history context
+          const needsNutritionHistory = isNutritionHistoryRelevant(message);
+          
+          const dataPromises = [
             storage.getUserGoals(userId),
             storage.getUserProfile(userId),
             storage.getUserOnboarding(userId)
-          ]);
+          ];
+          
+          // Add nutrition diary fetch if relevant
+          if (needsNutritionHistory) {
+            dataPromises.push(storage.getDiaryEntries(userId, undefined, 15));
+          }
+          
+          const [userGoals, userProfile, userOnboarding, nutritionDiary] = await Promise.all(dataPromises);
           
           // Build extra info string from user data (excluding name, username, email, password)
           const infoItems = [];
+          
+          // Add nutrition diary history if relevant and available
+          if (needsNutritionHistory && nutritionDiary && nutritionDiary.length > 0) {
+            const recentEntries = nutritionDiary.slice(0, 10); // Last 10 entries for context
+            const diaryInfo = recentEntries.map(entry => {
+              const serving = entry.servingSize || 1;
+              return `${entry.date}: ${entry.productName} (${serving} serving${serving !== 1 ? 's' : ''}) - ${Math.round((entry.calories || 0) * serving)}cal, ${Math.round((entry.fat || 0) * serving)}g fat, ${Math.round((entry.carbohydrates || 0) * serving)}g carbs, ${Math.round((entry.proteins || 0) * serving)}g protein${entry.processingScore ? `, processing: ${entry.processingScore}/10` : ''}`;
+            }).join('\n');
+            infoItems.push(`RECENT NUTRITION DIARY:\n${diaryInfo}`);
+          }
           
           if (userGoals) {
             infoItems.push(`Health Goals: Daily calories ${userGoals.dailyCalories}, fat ${userGoals.dailyFat}g, carbs ${userGoals.dailyCarbs}g, proteins ${userGoals.dailyProteins}g, salt ${userGoals.dailySalt}g, fiber ${userGoals.dailyFiber}g`);
