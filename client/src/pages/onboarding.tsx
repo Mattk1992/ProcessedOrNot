@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -22,7 +22,8 @@ import {
   ChevronRight, 
   ChevronLeft,
   Check,
-  AlertCircle
+  AlertCircle,
+  Save
 } from "lucide-react";
 
 interface OnboardingData {
@@ -78,6 +79,9 @@ export default function Onboarding() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<OnboardingData>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -120,10 +124,36 @@ export default function Onboarding() {
       return await response.json();
     },
     onSuccess: () => {
+      setIsSaving(false);
+      setLastSaved(new Date());
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding"] });
     },
+    onError: () => {
+      setIsSaving(false);
+    },
   });
+
+  // Auto-save function with debouncing
+  const autoSave = useCallback((data: OnboardingData) => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      setIsSaving(true);
+      saveOnboardingMutation.mutate(data);
+    }, 1500); // Save after 1.5 seconds of inactivity
+  }, [saveOnboardingMutation]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleNext = () => {
     // Save current data
@@ -153,7 +183,10 @@ export default function Onboarding() {
   };
 
   const updateFormData = (field: keyof OnboardingData, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    const newData = { ...formData, [field]: value };
+    setFormData(newData);
+    // Trigger auto-save
+    autoSave(newData);
   };
 
   const handleArrayToggle = (field: keyof OnboardingData, value: string) => {
@@ -789,6 +822,25 @@ export default function Onboarding() {
               </div>
             );
           })}
+        </div>
+
+        {/* Auto-save Status */}
+        <div className="mb-4 flex justify-center">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            {isSaving ? (
+              <>
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+                <span>Saving...</span>
+              </>
+            ) : lastSaved ? (
+              <>
+                <Save className="w-3 h-3 text-green-600" />
+                <span>Saved {lastSaved.toLocaleTimeString()}</span>
+              </>
+            ) : (
+              <span>Changes save automatically</span>
+            )}
+          </div>
         </div>
 
         {/* Current Step Content */}

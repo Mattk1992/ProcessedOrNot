@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -88,12 +88,15 @@ export default function UserProfile() {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingOnboarding, setIsEditingOnboarding] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: ""
   });
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
+  const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -167,15 +170,14 @@ export default function UserProfile() {
       return await response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Health profile updated",
-        description: "Your health and nutrition profile has been updated successfully.",
-      });
+      setIsSaving(false);
+      setLastSaved(new Date());
       setIsEditingOnboarding(false);
       // Invalidate onboarding cache to refresh data
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding"] });
     },
     onError: (error: any) => {
+      setIsSaving(false);
       toast({
         title: "Update failed",
         description: error.message || "Failed to update health profile",
@@ -183,6 +185,27 @@ export default function UserProfile() {
       });
     },
   });
+
+  // Auto-save function with debouncing for profile
+  const autoSaveOnboarding = useCallback((data: OnboardingData) => {
+    if (autoSaveTimeoutRef.current) {
+      clearTimeout(autoSaveTimeoutRef.current);
+    }
+    
+    autoSaveTimeoutRef.current = setTimeout(() => {
+      setIsSaving(true);
+      updateOnboardingMutation.mutate(data);
+    }, 1500); // Save after 1.5 seconds of inactivity
+  }, [updateOnboardingMutation]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (autoSaveTimeoutRef.current) {
+        clearTimeout(autoSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,7 +236,12 @@ export default function UserProfile() {
   };
 
   const updateOnboardingFormData = (field: keyof OnboardingData, value: any) => {
-    setOnboardingData(prev => ({ ...prev, [field]: value }));
+    const newData = { ...onboardingData, [field]: value };
+    setOnboardingData(newData);
+    // Trigger auto-save when not in editing mode (for seamless experience)
+    if (!isEditingOnboarding) {
+      autoSaveOnboarding(newData);
+    }
   };
 
   const handleArrayToggle = (field: keyof OnboardingData, value: string) => {
@@ -263,6 +291,25 @@ export default function UserProfile() {
           <p className="text-lg text-muted-foreground">
             Manage your account information, health profile, and preferences
           </p>
+          
+          {/* Auto-save Status */}
+          <div className="mt-4 flex justify-center">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              {isSaving ? (
+                <>
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+                  <span>Saving...</span>
+                </>
+              ) : lastSaved ? (
+                <>
+                  <Save className="w-3 h-3 text-green-600" />
+                  <span>Saved {lastSaved.toLocaleTimeString()}</span>
+                </>
+              ) : (
+                <span>Changes save automatically</span>
+              )}
+            </div>
+          </div>
         </div>
 
         <Tabs defaultValue="account" className="space-y-6">
