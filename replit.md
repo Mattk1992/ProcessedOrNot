@@ -4,6 +4,13 @@
 ProcessedOrNot Scanner is a modern web application designed to analyze food products for processing levels. It leverages barcode scanning, AI-powered ingredient analysis, and an interactive chatbot (NutriBot) to provide comprehensive food product insights. The project aims to provide users with transparent and detailed information about the food they consume, fostering healthier dietary choices. It has significant market potential as a tool for health-conscious consumers and aims to become a leading platform for food transparency.
 
 ## Recent Changes  
+- **Onboarding Completion Tracking System**: Implemented comprehensive onboarding completion workflow:
+  - Added onboarding_finished boolean field to user database (default: false)
+  - Enhanced onboarding completion logic to set onboarding_finished to true when user completes process
+  - Created OnboardingPopup component with polished UI asking users to "Continue Onboarding" or "Go to Dashboard"
+  - Implemented OnboardingGuard component to show popup on login for users with incomplete onboarding
+  - Integrated popup system into main App component for seamless user experience
+  - Users with incomplete onboarding now receive a helpful prompt after authentication
 - **Dashboard Button Labels Updated**: Renamed quick action buttons on Dashboard page for improved clarity:
   - "Add Food" → "Food Diary" 
   - "Scan Product" → "Product Lookup"

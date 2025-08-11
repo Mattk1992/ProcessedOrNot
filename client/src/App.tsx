@@ -51,6 +51,7 @@ import AdComplianceDashboard from "@/pages/ad-compliance-dashboard";
 import GPTConfigPage from "@/pages/gpt-config";
 import ConsentBanner from "@/components/consent-banner";
 import { consentIntegration } from "@/lib/consent-integration";
+import OnboardingGuard from "@/components/onboarding-guard";
 
 function Router() {
   // Track page views when routes change
@@ -67,6 +68,7 @@ function Router() {
   return (
     <Layout onStartTutorial={handleStartTutorial}>
       <ConsentBanner />
+      <OnboardingGuard />
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/old-home" component={OldHome} />
