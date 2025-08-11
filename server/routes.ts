@@ -2578,6 +2578,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Daily nutrition statistics
+  app.get("/api/nutrition/daily-stats/:date?", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const date = req.params.date || new Date().toISOString().split('T')[0];
+      
+      const dailyStats = await storage.getDailyNutritionStats(userId, date);
+      res.json(dailyStats);
+    } catch (error) {
+      console.error("Error fetching daily stats:", error);
+      res.status(500).json({ message: "Failed to fetch daily statistics" });
+    }
+  });
+
   const httpServer = createServer(app);
   // ==================== PRODUCT DATABASE MANAGEMENT ROUTES ====================
 

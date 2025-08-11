@@ -10,13 +10,16 @@ import {
   Activity,
   BarChart3,
   LineChart,
-  AlertCircle
+  AlertCircle,
+  PieChart,
+  Calculator
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import HeaderDropdown from "@/components/header-dropdown";
 import LanguageSwitcher from "@/components/language-switcher";
 import { useAuth } from "@/hooks/useAuth";
@@ -43,11 +46,23 @@ interface WeightEntry {
   notes?: string;
 }
 
+interface DailyStats {
+  totalCalories: number;
+  totalFat: number;
+  totalCarbs: number;
+  totalProteins: number;
+  totalSalt: number;
+  totalFiber: number;
+  entriesCount: number;
+  averageProcessingScore: number;
+}
+
 export default function NutriProgress() {
   const { user, isAuthenticated } = useAuth();
   const { t } = useLanguage();
   const [timeRange, setTimeRange] = useState("7"); // days
   const [progressType, setProgressType] = useState("weight");
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
 
   // Fetch progress statistics
   const { data: progressStats } = useQuery<ProgressStats>({
@@ -58,6 +73,12 @@ export default function NutriProgress() {
   // Fetch weight entries
   const { data: weightEntries } = useQuery<WeightEntry[]>({
     queryKey: ["/api/nutrition/weight-entries", timeRange],
+    enabled: isAuthenticated,
+  });
+
+  // Fetch daily statistics
+  const { data: dailyStats } = useQuery<DailyStats>({
+    queryKey: ["/api/nutrition/daily-stats", selectedDate],
     enabled: isAuthenticated,
   });
 
@@ -204,6 +225,21 @@ export default function NutriProgress() {
           </div>
         </div>
 
+        {/* Tabs */}
+        <Tabs defaultValue="progress" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="progress" className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" />
+              Progress
+            </TabsTrigger>
+            <TabsTrigger value="stats" className="flex items-center gap-2">
+              <Calculator className="w-4 h-4" />
+              Stats
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Progress Tab Content */}
+          <TabsContent value="progress" className="space-y-6">
         {/* Key Metrics */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
@@ -433,6 +469,142 @@ export default function NutriProgress() {
             </Card>
           </div>
         </div>
+          </TabsContent>
+
+          {/* Stats Tab Content */}
+          <TabsContent value="stats" className="space-y-6">
+            {/* Daily Statistics Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Calories</CardTitle>
+                  <PieChart className="w-4 h-4 text-orange-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {dailyStats?.totalCalories?.toFixed(0) || '0'} kcal
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedDate === new Date().toISOString().split('T')[0] ? 'Today' : selectedDate}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Fat</CardTitle>
+                  <PieChart className="w-4 h-4 text-yellow-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {dailyStats?.totalFat?.toFixed(1) || '0.0'} g
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedDate === new Date().toISOString().split('T')[0] ? 'Today' : selectedDate}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Carbs</CardTitle>
+                  <PieChart className="w-4 h-4 text-blue-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {dailyStats?.totalCarbs?.toFixed(1) || '0.0'} g
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedDate === new Date().toISOString().split('T')[0] ? 'Today' : selectedDate}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Proteins</CardTitle>
+                  <PieChart className="w-4 h-4 text-green-500" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {dailyStats?.totalProteins?.toFixed(1) || '0.0'} g
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedDate === new Date().toISOString().split('T')[0] ? 'Today' : selectedDate}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Date Selector for Stats */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5" />
+                  <span>Daily Statistics</span>
+                </CardTitle>
+                <CardDescription>
+                  View nutrition totals for any specific date
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center space-x-4 mb-6">
+                  <label htmlFor="date-select" className="text-sm font-medium">Select Date:</label>
+                  <input
+                    id="date-select"
+                    type="date"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="px-3 py-2 border border-border rounded-md bg-background"
+                    max={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+                
+                {dailyStats && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="font-medium">Calories</span>
+                        <Badge variant="outline">{dailyStats.totalCalories?.toFixed(0) || '0'} kcal</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="font-medium">Fat</span>
+                        <Badge variant="outline">{dailyStats.totalFat?.toFixed(1) || '0.0'} g</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="font-medium">Carbohydrates</span>
+                        <Badge variant="outline">{dailyStats.totalCarbs?.toFixed(1) || '0.0'} g</Badge>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="font-medium">Proteins</span>
+                        <Badge variant="outline">{dailyStats.totalProteins?.toFixed(1) || '0.0'} g</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="font-medium">Salt</span>
+                        <Badge variant="outline">{dailyStats.totalSalt?.toFixed(1) || '0.0'} g</Badge>
+                      </div>
+                      <div className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                        <span className="font-medium">Fiber</span>
+                        <Badge variant="outline">{dailyStats.totalFiber?.toFixed(1) || '0.0'} g</Badge>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {!dailyStats && (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Calendar className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>No nutrition data found for this date.</p>
+                    <p className="text-sm">Try selecting a different date or log some food entries.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

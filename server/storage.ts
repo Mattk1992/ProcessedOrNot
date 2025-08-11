@@ -1501,6 +1501,58 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  // Get daily nutrition statistics (for Stats tab)
+  async getDailyNutritionStats(userId: number, date: string): Promise<{
+    totalCalories: number;
+    totalFat: number;
+    totalCarbs: number;
+    totalProteins: number;
+    totalSalt: number;
+    totalFiber: number;
+    entriesCount: number;
+    averageProcessingScore: number;
+  }> {
+    const startDate = new Date(date);
+    const endDate = new Date(date);
+    endDate.setDate(endDate.getDate() + 1);
+    
+    const entries = await db.select().from(diaryEntries)
+      .where(and(
+        eq(diaryEntries.userId, userId),
+        sql`${diaryEntries.consumedAt} >= ${startDate}`,
+        sql`${diaryEntries.consumedAt} < ${endDate}`
+      ));
+
+    let calories = 0, fat = 0, carbs = 0, proteins = 0, salt = 0, fiber = 0;
+    let totalProcessingScore = 0, processingEntries = 0;
+
+    for (const entry of entries) {
+      const serving = entry.servingSize || 1;
+      calories += (entry.calories || 0) * serving;
+      fat += (entry.fat || 0) * serving;
+      carbs += (entry.carbohydrates || 0) * serving;
+      proteins += (entry.proteins || 0) * serving;
+      salt += (entry.salt || 0) * serving;
+      fiber += (entry.fiber || 0) * serving;
+      
+      if (entry.processingScore !== null && entry.processingScore !== undefined) {
+        totalProcessingScore += entry.processingScore;
+        processingEntries++;
+      }
+    }
+
+    return {
+      totalCalories: Math.round(calories * 100) / 100,
+      totalFat: Math.round(fat * 100) / 100,
+      totalCarbs: Math.round(carbs * 100) / 100,
+      totalProteins: Math.round(proteins * 100) / 100,
+      totalSalt: Math.round(salt * 100) / 100,
+      totalFiber: Math.round(fiber * 100) / 100,
+      entriesCount: entries.length,
+      averageProcessingScore: processingEntries > 0 ? Math.round((totalProcessingScore / processingEntries) * 100) / 100 : 0,
+    };
+  }
+
   // ==================== Product Database Management Methods ====================
 
   async getAllProductDatabases(): Promise<ProductDatabase[]> {
