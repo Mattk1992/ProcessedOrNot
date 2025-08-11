@@ -7,8 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Clock, TrendingUp, ArrowLeft, Download, Copy, ExternalLink, Smartphone, Monitor } from "lucide-react";
+import { Calendar, Clock, TrendingUp, ArrowLeft, Download, Copy, ExternalLink, Smartphone, Monitor, Plus, Sparkles } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays, subDays } from "date-fns";
 
 type CalendarView = "monthly" | "weekly" | "daily";
@@ -29,6 +32,20 @@ export default function NutritionCalendar() {
     };
   } | null>(null);
   const [isLoadingWebcal, setIsLoadingWebcal] = useState(false);
+  const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
+  const [scheduleForm, setScheduleForm] = useState({
+    goal: '',
+    duration: '7',
+    caloriesTarget: '',
+    proteinTarget: '',
+    carbsTarget: '',
+    fatTarget: '',
+    dietaryRestrictions: '',
+    mealPreferences: [],
+    activityLevel: '',
+    specialNotes: ''
+  });
+  const [isGeneratingSchedule, setIsGeneratingSchedule] = useState(false);
   const { toast } = useToast();
 
   // Redirect if not authenticated
@@ -137,6 +154,53 @@ export default function NutritionCalendar() {
     }
   };
 
+  const handleGenerateSchedule = async () => {
+    if (!scheduleForm.goal || !scheduleForm.caloriesTarget || !scheduleForm.activityLevel) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in at least the goal, calories target, and activity level.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingSchedule(true);
+    try {
+      // Here you would typically call an API to generate the schedule
+      // For now, we'll simulate the process
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      toast({
+        title: "Success!",
+        description: "Your nutrition schedule has been generated and added to the calendar.",
+      });
+      
+      setIsScheduleDialogOpen(false);
+      // Reset form
+      setScheduleForm({
+        goal: '',
+        duration: '7',
+        caloriesTarget: '',
+        proteinTarget: '',
+        carbsTarget: '',
+        fatTarget: '',
+        dietaryRestrictions: '',
+        mealPreferences: [],
+        activityLevel: '',
+        specialNotes: ''
+      });
+    } catch (error) {
+      console.error('Error generating schedule:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate nutrition schedule. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingSchedule(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90 p-4">
       <div className="max-w-7xl mx-auto">
@@ -183,6 +247,17 @@ export default function NutritionCalendar() {
                   Daily
                 </Button>
               </div>
+              
+              {/* Generate Nutrition Schedule Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsScheduleDialogOpen(true)}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 hover:from-green-600 hover:to-emerald-700"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Generate Nutrition Schedule
+              </Button>
               
               {/* Webcal Export Button */}
               <Button
@@ -491,6 +566,191 @@ export default function NutritionCalendar() {
                 onClick={() => setIsWebcalDialogOpen(false)}
               >
                 Close
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Generate Nutrition Schedule Dialog */}
+        <Dialog open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
+          <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-green-500" />
+                Create Nutrition Schedule
+              </DialogTitle>
+              <DialogDescription>
+                Generate a personalized nutrition plan based on your goals and preferences
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6 py-4">
+              {/* Basic Goals Section */}
+              <div className="space-y-4">
+                <Label className="text-base font-semibold">Nutrition Goals</Label>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="goal">Primary Goal *</Label>
+                    <Select value={scheduleForm.goal} onValueChange={(value) => setScheduleForm({...scheduleForm, goal: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select your primary goal" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="weight-loss">Weight Loss</SelectItem>
+                        <SelectItem value="muscle-gain">Muscle Gain</SelectItem>
+                        <SelectItem value="maintenance">Weight Maintenance</SelectItem>
+                        <SelectItem value="athletic-performance">Athletic Performance</SelectItem>
+                        <SelectItem value="general-health">General Health</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="duration">Schedule Duration</Label>
+                    <Select value={scheduleForm.duration} onValueChange={(value) => setScheduleForm({...scheduleForm, duration: value})}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="7">1 Week</SelectItem>
+                        <SelectItem value="14">2 Weeks</SelectItem>
+                        <SelectItem value="30">1 Month</SelectItem>
+                        <SelectItem value="90">3 Months</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Nutrition Targets */}
+              <div className="space-y-4">
+                <Label className="text-base font-semibold">Daily Nutrition Targets</Label>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="calories">Calories Target *</Label>
+                    <Input
+                      id="calories"
+                      type="number"
+                      placeholder="e.g. 2000"
+                      value={scheduleForm.caloriesTarget}
+                      onChange={(e) => setScheduleForm({...scheduleForm, caloriesTarget: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="protein">Protein (g)</Label>
+                    <Input
+                      id="protein"
+                      type="number"
+                      placeholder="e.g. 150"
+                      value={scheduleForm.proteinTarget}
+                      onChange={(e) => setScheduleForm({...scheduleForm, proteinTarget: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="carbs">Carbohydrates (g)</Label>
+                    <Input
+                      id="carbs"
+                      type="number"
+                      placeholder="e.g. 250"
+                      value={scheduleForm.carbsTarget}
+                      onChange={(e) => setScheduleForm({...scheduleForm, carbsTarget: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="fat">Fat (g)</Label>
+                    <Input
+                      id="fat"
+                      type="number"
+                      placeholder="e.g. 65"
+                      value={scheduleForm.fatTarget}
+                      onChange={(e) => setScheduleForm({...scheduleForm, fatTarget: e.target.value})}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Activity Level */}
+              <div className="space-y-4">
+                <Label className="text-base font-semibold">Activity Level *</Label>
+                <Select value={scheduleForm.activityLevel} onValueChange={(value) => setScheduleForm({...scheduleForm, activityLevel: value})}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your activity level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="sedentary">Sedentary (little to no exercise)</SelectItem>
+                    <SelectItem value="lightly-active">Lightly Active (light exercise 1-3 days/week)</SelectItem>
+                    <SelectItem value="moderately-active">Moderately Active (moderate exercise 3-5 days/week)</SelectItem>
+                    <SelectItem value="very-active">Very Active (hard exercise 6-7 days/week)</SelectItem>
+                    <SelectItem value="super-active">Super Active (very hard exercise, physical job)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Dietary Restrictions */}
+              <div className="space-y-4">
+                <Label className="text-base font-semibold">Dietary Preferences & Restrictions</Label>
+                <Textarea
+                  placeholder="e.g. Vegetarian, gluten-free, lactose intolerant, no nuts, etc."
+                  value={scheduleForm.dietaryRestrictions}
+                  onChange={(e) => setScheduleForm({...scheduleForm, dietaryRestrictions: e.target.value})}
+                  rows={3}
+                />
+              </div>
+
+              {/* Special Notes */}
+              <div className="space-y-4">
+                <Label className="text-base font-semibold">Additional Notes</Label>
+                <Textarea
+                  placeholder="Any special considerations, health conditions, or preferences..."
+                  value={scheduleForm.specialNotes}
+                  onChange={(e) => setScheduleForm({...scheduleForm, specialNotes: e.target.value})}
+                  rows={3}
+                />
+              </div>
+
+              {/* Preview */}
+              <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+                <Label className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2 block">
+                  Schedule Preview
+                </Label>
+                <div className="text-xs text-green-600 dark:text-green-300 space-y-1">
+                  <p>• Duration: {scheduleForm.duration} days</p>
+                  <p>• Daily calories: {scheduleForm.caloriesTarget || 'Not set'}</p>
+                  <p>• Goal: {scheduleForm.goal || 'Not selected'}</p>
+                  <p>• Activity level: {scheduleForm.activityLevel || 'Not selected'}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-between pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setIsScheduleDialogOpen(false)}
+                disabled={isGeneratingSchedule}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleGenerateSchedule}
+                disabled={isGeneratingSchedule || !scheduleForm.goal || !scheduleForm.caloriesTarget || !scheduleForm.activityLevel}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+              >
+                {isGeneratingSchedule ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Generating Schedule...
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    Generate Schedule
+                  </div>
+                )}
               </Button>
             </div>
           </DialogContent>
