@@ -751,6 +751,54 @@ export const insertWeightEntrySchema = createInsertSchema(weightEntries).omit({
 export type InsertWeightEntry = z.infer<typeof insertWeightEntrySchema>;
 export type WeightEntry = typeof weightEntries.$inferSelect;
 
+// Calendar Entries table - for nutrition calendar events and schedules
+export const calendarEntries = pgTable("calendar_entries", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  type: varchar("type", { length: 50 }).notNull(), // 'schedule', 'meal_plan', 'nutrition_goal', 'event'
+  
+  // Schedule/Plan data
+  goal: varchar("goal", { length: 100 }),
+  duration: integer("duration"), // days
+  startDate: text("start_date").notNull(), // YYYY-MM-DD format
+  endDate: text("end_date"), // calculated from startDate + duration
+  
+  // Nutrition targets for this schedule
+  dailyCalories: integer("daily_calories"),
+  dailyProtein: real("daily_protein"),
+  dailyCarbs: real("daily_carbs"),
+  dailyFat: real("daily_fat"),
+  
+  // Activity and preferences
+  activityLevel: varchar("activity_level", { length: 50 }),
+  dietaryRestrictions: text("dietary_restrictions"),
+  specialNotes: text("special_notes"),
+  
+  // Status and tracking
+  status: varchar("status", { length: 20 }).default("active").notNull(), // 'active', 'completed', 'paused', 'cancelled'
+  progress: real("progress").default(0), // percentage 0-100
+  
+  // Metadata
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("calendar_entries_user_id_idx").on(table.userId),
+  startDateIdx: index("calendar_entries_start_date_idx").on(table.startDate),
+  typeIdx: index("calendar_entries_type_idx").on(table.type),
+  statusIdx: index("calendar_entries_status_idx").on(table.status),
+}));
+
+export const insertCalendarEntrySchema = createInsertSchema(calendarEntries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertCalendarEntry = z.infer<typeof insertCalendarEntrySchema>;
+export type CalendarEntry = typeof calendarEntries.$inferSelect;
+
 // User Onboarding Information - Comprehensive health and lifestyle data
 export const userOnboarding = pgTable("user_onboarding", {
   id: serial("id").primaryKey(),

@@ -66,7 +66,10 @@ import {
   type InsertUserOnboarding,
   rewardingSystemSettings,
   type RewardingSystemSettings,
-  type InsertRewardingSystemSettings
+  type InsertRewardingSystemSettings,
+  calendarEntries,
+  type CalendarEntry,
+  type InsertCalendarEntry
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -284,6 +287,15 @@ export interface IStorage {
   getRewardingSystemSettings(): Promise<RewardingSystemSettings>;
   updateRewardingSystemSettings(settings: Partial<InsertRewardingSystemSettings>): Promise<RewardingSystemSettings>;
   initializeDefaultRewardingSystemSettings(): Promise<RewardingSystemSettings>;
+
+  // Calendar Entries methods
+  createCalendarEntry(entry: InsertCalendarEntry): Promise<CalendarEntry>;
+  getCalendarEntriesByUser(userId: number): Promise<CalendarEntry[]>;
+  getCalendarEntriesByUserAndDateRange(userId: number, startDate: string, endDate: string): Promise<CalendarEntry[]>;
+  getCalendarEntryById(id: number): Promise<CalendarEntry | undefined>;
+  updateCalendarEntry(id: number, updates: Partial<InsertCalendarEntry>): Promise<CalendarEntry | undefined>;
+  deleteCalendarEntry(id: number, userId?: number): Promise<boolean>;
+  getActiveCalendarEntries(userId: number): Promise<CalendarEntry[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2587,6 +2599,98 @@ export class DatabaseStorage implements IStorage {
       .returning();
 
     return created;
+  }
+
+  // Calendar Entries methods
+  async createCalendarEntry(entry: InsertCalendarEntry): Promise<CalendarEntry> {
+    const [calendarEntry] = await db
+      .insert(calendarEntries)
+      .values({
+        ...entry,
+        // Calculate end date if not provided
+        endDate: entry.endDate || this.calculateEndDate(entry.startDate, entry.duration || 7)
+      })
+      .returning();
+    return calendarEntry;
+  }
+
+  async getCalendarEntriesByUser(userId: number): Promise<CalendarEntry[]> {
+    return db
+      .select()
+      .from(calendarEntries)
+      .where(eq(calendarEntries.userId, userId))
+      .orderBy(desc(calendarEntries.startDate));
+  }
+
+  async getCalendarEntriesByUserAndDateRange(userId: number, startDate: string, endDate: string): Promise<CalendarEntry[]> {
+    return db
+      .select()
+      .from(calendarEntries)
+      .where(
+        and(
+          eq(calendarEntries.userId, userId),
+          sql`${calendarEntries.startDate} <= ${endDate}`,
+          sql`${calendarEntries.endDate} >= ${startDate}`
+        )
+      )
+      .orderBy(calendarEntries.startDate);
+  }
+
+  async getCalendarEntryById(id: number): Promise<CalendarEntry | undefined> {
+    const [entry] = await db
+      .select()
+      .from(calendarEntries)
+      .where(eq(calendarEntries.id, id));
+    return entry;
+  }
+
+  async updateCalendarEntry(id: number, updates: Partial<InsertCalendarEntry>): Promise<CalendarEntry | undefined> {
+    const [updatedEntry] = await db
+      .update(calendarEntries)
+      .set({
+        ...updates,
+        // Recalculate end date if start date or duration changed
+        endDate: updates.startDate || updates.duration 
+          ? this.calculateEndDate(updates.startDate || '', updates.duration || 7)
+          : undefined,
+        updatedAt: new Date()
+      })
+      .where(eq(calendarEntries.id, id))
+      .returning();
+    return updatedEntry;
+  }
+
+  async deleteCalendarEntry(id: number, userId?: number): Promise<boolean> {
+    const conditions = userId 
+      ? and(eq(calendarEntries.id, id), eq(calendarEntries.userId, userId))
+      : eq(calendarEntries.id, id);
+
+    const result = await db
+      .delete(calendarEntries)
+      .where(conditions);
+    
+    return result.rowCount ? result.rowCount > 0 : false;
+  }
+
+  async getActiveCalendarEntries(userId: number): Promise<CalendarEntry[]> {
+    return db
+      .select()
+      .from(calendarEntries)
+      .where(
+        and(
+          eq(calendarEntries.userId, userId),
+          eq(calendarEntries.status, 'active')
+        )
+      )
+      .orderBy(calendarEntries.startDate);
+  }
+
+  // Helper method to calculate end date
+  private calculateEndDate(startDate: string, duration: number): string {
+    if (!startDate) return '';
+    const start = new Date(startDate);
+    start.setDate(start.getDate() + duration - 1); // duration includes start date
+    return start.toISOString().split('T')[0];
   }
 }
 

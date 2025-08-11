@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,12 +14,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Calendar, Clock, TrendingUp, ArrowLeft, Download, Copy, ExternalLink, Smartphone, Monitor, Plus, Sparkles } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays, subDays } from "date-fns";
+import { apiRequest } from "@/lib/queryClient";
+import type { CalendarEntry } from "@shared/schema";
 
 type CalendarView = "monthly" | "weekly" | "daily";
 
 export default function NutritionCalendar() {
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<CalendarView>("monthly");
   const [isWebcalDialogOpen, setIsWebcalDialogOpen] = useState(false);
@@ -49,17 +53,68 @@ export default function NutritionCalendar() {
   const [isGeneratingSchedule, setIsGeneratingSchedule] = useState(false);
   const { toast } = useToast();
 
+  // Fetch calendar entries
+  const { data: calendarEntries = [], isLoading: isLoadingEntries } = useQuery<CalendarEntry[]>({
+    queryKey: ['/api/calendar/entries'],
+    enabled: isAuthenticated,
+  });
+
+  // Create calendar entry mutation
+  const createEntryMutation = useMutation({
+    mutationFn: (entryData: any) => fetch('/api/calendar/entries', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(entryData),
+    }).then(res => res.json()),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/calendar/entries'] });
+      setIsScheduleDialogOpen(false);
+      setScheduleForm({
+        goal: '',
+        duration: '7',
+        startDate: new Date().toISOString().split('T')[0],
+        caloriesTarget: '',
+        proteinTarget: '',
+        carbsTarget: '',
+        fatTarget: '',
+        dietaryRestrictions: '',
+        mealPreferences: [],
+        activityLevel: '',
+        specialNotes: ''
+      });
+      toast({
+        title: "Success!",
+        description: "Nutrition schedule created successfully.",
+      });
+    },
+    onError: (error) => {
+      console.error('Error creating calendar entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create nutrition schedule. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Redirect if not authenticated
   if (!isAuthenticated) {
     setLocation("/login");
     return null;
   }
 
-  // Sample nutrition data (in a real app, this would come from the API)
-  const nutritionData: Record<string, { calories: number; protein: number; carbs: number; fat: number; scans: number }> = {
-    "2025-01-10": { calories: 2150, protein: 120, carbs: 280, fat: 75, scans: 3 },
-    "2025-01-09": { calories: 1980, protein: 110, carbs: 240, fat: 68, scans: 2 },
-    "2025-01-08": { calories: 2300, protein: 135, carbs: 320, fat: 85, scans: 4 },
+  // Helper function to get calendar entries for a specific date
+  const getEntriesForDate = (date: Date): CalendarEntry[] => {
+    const dateKey = formatDateKey(date);
+    return calendarEntries.filter(entry => {
+      // Check if the date falls within the entry's date range
+      const entryStart = new Date(entry.startDate);
+      const entryEnd = entry.endDate ? new Date(entry.endDate) : entryStart;
+      const currentDate = new Date(dateKey);
+      return currentDate >= entryStart && currentDate <= entryEnd;
+    });
   };
 
   const formatDateKey = (date: Date) => format(date, "yyyy-MM-dd");
@@ -166,41 +221,27 @@ export default function NutritionCalendar() {
     }
 
     setIsGeneratingSchedule(true);
-    try {
-      // Here you would typically call an API to generate the schedule
-      // For now, we'll simulate the process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: "Success!",
-        description: "Your nutrition schedule has been generated and added to the calendar.",
-      });
-      
-      setIsScheduleDialogOpen(false);
-      // Reset form
-      setScheduleForm({
-        goal: '',
-        duration: '7',
-        startDate: new Date().toISOString().split('T')[0],
-        caloriesTarget: '',
-        proteinTarget: '',
-        carbsTarget: '',
-        fatTarget: '',
-        dietaryRestrictions: '',
-        mealPreferences: [],
-        activityLevel: '',
-        specialNotes: ''
-      });
-    } catch (error) {
-      console.error('Error generating schedule:', error);
-      toast({
-        title: "Error",
-        description: "Failed to generate nutrition schedule. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingSchedule(false);
-    }
+    
+    // Create calendar entry data
+    const entryData = {
+      title: `${scheduleForm.goal} - ${scheduleForm.duration} days`,
+      description: `Nutrition schedule: ${scheduleForm.goal}`,
+      type: 'schedule',
+      goal: scheduleForm.goal,
+      duration: parseInt(scheduleForm.duration),
+      startDate: scheduleForm.startDate,
+      dailyCalories: scheduleForm.caloriesTarget ? parseInt(scheduleForm.caloriesTarget) : null,
+      dailyProtein: scheduleForm.proteinTarget ? parseFloat(scheduleForm.proteinTarget) : null,
+      dailyCarbs: scheduleForm.carbsTarget ? parseFloat(scheduleForm.carbsTarget) : null,
+      dailyFat: scheduleForm.fatTarget ? parseFloat(scheduleForm.fatTarget) : null,
+      activityLevel: scheduleForm.activityLevel,
+      dietaryRestrictions: scheduleForm.dietaryRestrictions,
+      specialNotes: scheduleForm.specialNotes,
+      status: 'active'
+    };
+
+    createEntryMutation.mutate(entryData);
+    setIsGeneratingSchedule(false);
   };
 
   return (
@@ -306,7 +347,7 @@ export default function NutritionCalendar() {
           {/* Calendar Days */}
           {days.map((day) => {
             const dateKey = formatDateKey(day);
-            const dayData = nutritionData[dateKey];
+            const dayEntries = getEntriesForDate(day);
             const isCurrentMonth = view === "monthly" ? isSameMonth(day, currentDate) : true;
             const isDayToday = isToday(day);
             const isSelected = view === "daily" ? isSameDay(day, currentDate) : false;
@@ -335,36 +376,39 @@ export default function NutritionCalendar() {
                       <span className={`text-sm font-medium ${isDayToday ? "text-primary" : ""}`}>
                         {format(day, "d")}
                       </span>
-                      {dayData && (
+                      {dayEntries.length > 0 && (
                         <Badge variant="secondary" className="text-xs">
-                          {dayData.scans} scans
+                          {dayEntries.length} plan{dayEntries.length > 1 ? 's' : ''}
                         </Badge>
                       )}
                     </div>
 
-                    {/* Nutrition Summary */}
-                    {dayData && (
+                    {/* Calendar Plans Summary */}
+                    {dayEntries.length > 0 && (
                       <div className="flex-1 space-y-1">
                         <div className="text-xs text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3" />
-                            {dayData.calories} cal
-                          </div>
-                          {view === "daily" && (
-                            <>
-                              <div className="mt-1">Protein: {dayData.protein}g</div>
-                              <div>Carbs: {dayData.carbs}g</div>
-                              <div>Fat: {dayData.fat}g</div>
-                            </>
+                          {dayEntries.slice(0, 2).map((entry) => (
+                            <div key={entry.id} className="truncate">
+                              <div className="flex items-center gap-1">
+                                <TrendingUp className="w-3 h-3" />
+                                {entry.title}
+                              </div>
+                              {entry.dailyCalories && (
+                                <div className="text-xs">Target: {entry.dailyCalories} cal</div>
+                              )}
+                            </div>
+                          ))}
+                          {dayEntries.length > 2 && (
+                            <div className="text-xs">+{dayEntries.length - 2} more plans</div>
                           )}
                         </div>
                       </div>
                     )}
 
                     {/* Empty State */}
-                    {!dayData && isCurrentMonth && (
+                    {dayEntries.length === 0 && isCurrentMonth && (
                       <div className="flex-1 flex items-center justify-center text-xs text-muted-foreground">
-                        No data
+                        No plans
                       </div>
                     )}
                   </div>
@@ -384,50 +428,80 @@ export default function NutritionCalendar() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {nutritionData[formatDateKey(currentDate)] ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-primary">
-                        {nutritionData[formatDateKey(currentDate)].calories}
-                      </div>
-                      <div className="text-sm text-muted-foreground">Calories</div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-green-600">
-                        {nutritionData[formatDateKey(currentDate)].protein}g
-                      </div>
-                      <div className="text-sm text-muted-foreground">Protein</div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-orange-600">
-                        {nutritionData[formatDateKey(currentDate)].carbs}g
-                      </div>
-                      <div className="text-sm text-muted-foreground">Carbs</div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardContent className="p-4 text-center">
-                      <div className="text-2xl font-bold text-purple-600">
-                        {nutritionData[formatDateKey(currentDate)].fat}g
-                      </div>
-                      <div className="text-sm text-muted-foreground">Fat</div>
-                    </CardContent>
-                  </Card>
+              {getEntriesForDate(currentDate).length > 0 ? (
+                <div className="space-y-4">
+                  {getEntriesForDate(currentDate).map((entry) => (
+                    <Card key={entry.id}>
+                      <CardContent className="p-4">
+                        <div className="flex flex-col gap-4">
+                          <div>
+                            <h3 className="text-lg font-semibold">{entry.title}</h3>
+                            {entry.description && (
+                              <p className="text-muted-foreground">{entry.description}</p>
+                            )}
+                            <div className="flex items-center gap-2 mt-2">
+                              <Badge variant="outline">{entry.status}</Badge>
+                              <Badge variant="secondary">{entry.type}</Badge>
+                            </div>
+                          </div>
+                          
+                          {(entry.dailyCalories || entry.dailyProtein || entry.dailyCarbs || entry.dailyFat) && (
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                              {entry.dailyCalories && (
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-primary">
+                                    {entry.dailyCalories}
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">Calories</div>
+                                </div>
+                              )}
+                              {entry.dailyProtein && (
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-green-600">
+                                    {entry.dailyProtein}g
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">Protein</div>
+                                </div>
+                              )}
+                              {entry.dailyCarbs && (
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-orange-600">
+                                    {entry.dailyCarbs}g
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">Carbs</div>
+                                </div>
+                              )}
+                              {entry.dailyFat && (
+                                <div className="text-center">
+                                  <div className="text-2xl font-bold text-purple-600">
+                                    {entry.dailyFat}g
+                                  </div>
+                                  <div className="text-sm text-muted-foreground">Fat</div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          {entry.specialNotes && (
+                            <div className="text-sm text-muted-foreground bg-muted p-3 rounded">
+                              <strong>Notes:</strong> {entry.specialNotes}
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               ) : (
                 <div className="text-center py-8">
                   <Clock className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No nutrition data for this day</h3>
+                  <h3 className="text-lg font-semibold mb-2">No nutrition plans for this day</h3>
                   <p className="text-muted-foreground mb-4">
-                    Start scanning products to track your nutrition intake
+                    Create a nutrition schedule to start planning your meals
                   </p>
-                  <Button onClick={() => setLocation("/product-lookup")}>
-                    Scan a Product
+                  <Button onClick={() => setIsScheduleDialogOpen(true)}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Schedule
                   </Button>
                 </div>
               )}

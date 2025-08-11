@@ -3344,5 +3344,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Calendar Entries routes
+  // Get calendar entries for current user
+  app.get('/api/calendar/entries', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const entries = await storage.getCalendarEntriesByUser(req.session.userId);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching calendar entries:", error);
+      res.status(500).json({ message: "Failed to fetch calendar entries" });
+    }
+  });
+
+  // Get calendar entries for a date range
+  app.get('/api/calendar/entries/range', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { startDate, endDate } = req.query;
+      if (!startDate || !endDate) {
+        return res.status(400).json({ message: "Start date and end date are required" });
+      }
+
+      const entries = await storage.getCalendarEntriesByUserAndDateRange(
+        req.session.userId,
+        startDate as string,
+        endDate as string
+      );
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching calendar entries by range:", error);
+      res.status(500).json({ message: "Failed to fetch calendar entries" });
+    }
+  });
+
+  // Create new calendar entry
+  app.post('/api/calendar/entries', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const entryData = {
+        ...req.body,
+        userId: req.session.userId
+      };
+
+      const entry = await storage.createCalendarEntry(entryData);
+      res.json(entry);
+    } catch (error) {
+      console.error("Error creating calendar entry:", error);
+      res.status(500).json({ message: "Failed to create calendar entry" });
+    }
+  });
+
+  // Update calendar entry
+  app.patch('/api/calendar/entries/:id', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const entryId = parseInt(req.params.id);
+      if (isNaN(entryId)) {
+        return res.status(400).json({ message: "Invalid entry ID" });
+      }
+
+      // Verify ownership
+      const existingEntry = await storage.getCalendarEntryById(entryId);
+      if (!existingEntry || existingEntry.userId !== req.session.userId) {
+        return res.status(404).json({ message: "Calendar entry not found" });
+      }
+
+      const updatedEntry = await storage.updateCalendarEntry(entryId, req.body);
+      if (!updatedEntry) {
+        return res.status(404).json({ message: "Failed to update calendar entry" });
+      }
+
+      res.json(updatedEntry);
+    } catch (error) {
+      console.error("Error updating calendar entry:", error);
+      res.status(500).json({ message: "Failed to update calendar entry" });
+    }
+  });
+
+  // Delete calendar entry
+  app.delete('/api/calendar/entries/:id', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const entryId = parseInt(req.params.id);
+      if (isNaN(entryId)) {
+        return res.status(400).json({ message: "Invalid entry ID" });
+      }
+
+      const success = await storage.deleteCalendarEntry(entryId, req.session.userId);
+      if (!success) {
+        return res.status(404).json({ message: "Calendar entry not found" });
+      }
+
+      res.json({ message: "Calendar entry deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting calendar entry:", error);
+      res.status(500).json({ message: "Failed to delete calendar entry" });
+    }
+  });
+
+  // Get active calendar entries for current user
+  app.get('/api/calendar/active', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const entries = await storage.getActiveCalendarEntries(req.session.userId);
+      res.json(entries);
+    } catch (error) {
+      console.error("Error fetching active calendar entries:", error);
+      res.status(500).json({ message: "Failed to fetch active calendar entries" });
+    }
+  });
+
   return httpServer;
 }
