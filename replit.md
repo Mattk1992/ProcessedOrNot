@@ -4,6 +4,19 @@
 ProcessedOrNot Scanner is a modern web application designed to analyze food products for processing levels. It leverages barcode scanning, AI-powered ingredient analysis, and an interactive chatbot (NutriBot) to provide comprehensive food product insights. The project aims to provide users with transparent and detailed information about the food they consume, fostering healthier dietary choices. It has significant market potential as a tool for health-conscious consumers and aims to become a leading platform for food transparency.
 
 ## Recent Changes  
+- **Dashboard Real Data Integration**: Verified and confirmed the Dashboard page uses authentic Food Diary data:
+  - Today's Summary displays real meal count, fiber, and salt totals from current day diary entries
+  - Food Processing Score shows actual average processing score from logged foods
+  - Macronutrients section displays real carbs, proteins, and fat totals from diary entries
+  - Calories section shows authentic daily calorie consumption from food logs
+  - Recent Entries section displays actual logged food items with meal types and calorie counts
+  - All data pulls from `/api/nutrition/daily-progress` and `/api/nutrition/recent-entries` endpoints
+- **Stats Tab Implementation**: Added comprehensive Stats tab to Progress page with Daily Statistics:
+  - Created tabbed interface with "Progress" and "Stats" tabs for better organization
+  - Added Daily Statistics section showing Total Calories, Total Fat, Total Carbs, and Total Proteins
+  - Implemented date selector for viewing historical nutrition data
+  - Created backend API endpoint `/api/nutrition/daily-stats` for data retrieval
+  - Added storage method `getDailyNutritionStats` to calculate daily nutrition totals from diary entries
 - **Onboarding Completion Tracking System**: Implemented comprehensive onboarding completion workflow:
   - Added onboarding_finished boolean field to user database (default: false)
   - Enhanced onboarding completion logic to set onboarding_finished to true when user completes process
