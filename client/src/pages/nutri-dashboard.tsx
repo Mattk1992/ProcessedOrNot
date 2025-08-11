@@ -14,7 +14,8 @@ import {
   AlertCircle,
   Info,
   Shield,
-  User
+  User,
+  Bell
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -249,7 +250,7 @@ export default function NutriDashboard() {
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <Plus className="w-8 h-8 text-primary mx-auto mb-2" />
-                <p className="font-medium">Food Diary</p>
+                <p className="font-medium">Add to Diary</p>
               </CardContent>
             </Card>
           </Link>
@@ -301,13 +302,23 @@ export default function NutriDashboard() {
         </div>
 
         {/* Additional Quick Actions */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <Link href="/profile">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
               <CardContent className="p-4 text-center">
                 <User className="w-8 h-8 text-primary mx-auto mb-2" />
                 <p className="font-medium">User Profile</p>
                 <p className="text-xs text-muted-foreground mt-1">Manage account</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/notifications">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer bg-gradient-to-br from-blue/5 to-blue/10 border-blue/20">
+              <CardContent className="p-4 text-center">
+                <Bell className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+                <p className="font-medium">Notifications</p>
+                <p className="text-xs text-muted-foreground mt-1">Stay updated</p>
               </CardContent>
             </Card>
           </Link>

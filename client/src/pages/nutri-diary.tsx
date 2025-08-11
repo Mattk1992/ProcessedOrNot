@@ -11,7 +11,9 @@ import {
   Sun, 
   Sunset, 
   Moon,
-  AlertCircle
+  AlertCircle,
+  Scale,
+  Utensils
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +23,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -48,7 +51,16 @@ const diaryEntrySchema = z.object({
   notes: z.string().optional(),
 });
 
+const weightEntrySchema = z.object({
+  weight: z.number().min(1, "Weight must be at least 1 kg"),
+  bodyFat: z.number().min(0).max(100).optional(),
+  muscleMass: z.number().min(0).optional(),
+  notes: z.string().optional(),
+  recordedAt: z.string(),
+});
+
 type DiaryEntryForm = z.infer<typeof diaryEntrySchema>;
+type WeightEntryForm = z.infer<typeof weightEntrySchema>;
 
 interface DiaryEntry {
   id: number;
@@ -69,6 +81,17 @@ interface DiaryEntry {
   notes?: string;
 }
 
+interface WeightEntry {
+  id: number;
+  userId: number;
+  weight: number;
+  bodyFat?: number;
+  muscleMass?: number;
+  notes?: string;
+  recordedAt: string;
+  createdAt: string;
+}
+
 export default function NutriDiary() {
   const { user, isAuthenticated } = useAuth();
   const { t } = useLanguage();
@@ -76,6 +99,7 @@ export default function NutriDiary() {
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isWeightDialogOpen, setIsWeightDialogOpen] = useState(false);
 
   const form = useForm<DiaryEntryForm>({
     resolver: zodResolver(diaryEntrySchema),
@@ -93,6 +117,17 @@ export default function NutriDiary() {
       mealType: "breakfast",
       consumedAt: new Date().toISOString().slice(0, 16),
       notes: "",
+    },
+  });
+
+  const weightForm = useForm<WeightEntryForm>({
+    resolver: zodResolver(weightEntrySchema),
+    defaultValues: {
+      weight: 70,
+      bodyFat: undefined,
+      muscleMass: undefined,
+      notes: "",
+      recordedAt: new Date().toISOString().slice(0, 16),
     },
   });
 

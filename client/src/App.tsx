@@ -40,6 +40,7 @@ import NutritionCalendar from "@/pages/nutrition-calendar";
 import UserProfile from "@/pages/user-profile";
 import Onboarding from "@/pages/onboarding";
 import LookupHistory from "@/pages/lookup-history";
+import Notifications from "@/pages/notifications";
 
 import { AdManagerProvider, AdConsentBanner } from "@/components/ads";
 import AdSettings from "@/pages/ad-settings";
@@ -106,6 +107,7 @@ function Router() {
         <Route path="/nutri-dashboard/progress" component={NutriProgress} />
         <Route path="/nutri-dashboard/profile" component={NutriProfile} />
         <Route path="/nutrition-calendar" component={NutritionCalendar} />
+        <Route path="/notifications" component={Notifications} />
         
         {/* Lookup History Page */}
         <Route path="/lookup-history" component={LookupHistory} />
