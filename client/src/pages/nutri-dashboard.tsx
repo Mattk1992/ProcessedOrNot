@@ -249,7 +249,7 @@ export default function NutriDashboard() {
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <Plus className="w-8 h-8 text-primary mx-auto mb-2" />
-                <p className="font-medium">Add Food</p>
+                <p className="font-medium">Food Diary</p>
               </CardContent>
             </Card>
           </Link>
@@ -258,7 +258,7 @@ export default function NutriDashboard() {
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <Utensils className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                <p className="font-medium">Scan Product</p>
+                <p className="font-medium">Product Lookup</p>
               </CardContent>
             </Card>
           </Link>
@@ -267,7 +267,7 @@ export default function NutriDashboard() {
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <TrendingUp className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-                <p className="font-medium">View Progress</p>
+                <p className="font-medium">Progress & Stats</p>
               </CardContent>
             </Card>
           </Link>
@@ -276,7 +276,7 @@ export default function NutriDashboard() {
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
                 <Target className="w-8 h-8 text-purple-500 mx-auto mb-2" />
-                <p className="font-medium">Set Goals</p>
+                <p className="font-medium">Goals & Input Data</p>
               </CardContent>
             </Card>
           </Link>
