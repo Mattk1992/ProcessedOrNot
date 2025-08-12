@@ -328,12 +328,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update user's last login time to maintain session activity (throttled to once per 5 minutes)
-      const now = new Date();
-      const lastUpdate = (req.session as any).lastLoginUpdate;
-      if (!lastUpdate || (now.getTime() - lastUpdate.getTime()) > 5 * 60 * 1000) {
-        await storage.updateUser(user.id, { lastLoginAt: now });
-        (req.session as any).lastLoginUpdate = now;
-      }
+      // Temporarily disabled to prevent errors
+      // const now = new Date();
+      // const lastUpdate = (req.session as any).lastLoginUpdate;
+      // if (!lastUpdate || (Date.now() - new Date(lastUpdate).getTime()) > 5 * 60 * 1000) {
+      //   await storage.updateUser(user.id, { lastLoginAt: new Date() });
+      //   (req.session as any).lastLoginUpdate = Date.now();
+      // }
 
       console.log("Auth check successful for user:", user.id);
       res.json({

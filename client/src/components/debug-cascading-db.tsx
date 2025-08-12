@@ -35,6 +35,7 @@ import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { apiRequest } from "@/lib/queryClient";
+import AdvancedBatchTester from "@/components/advanced-batch-tester";
 
 interface DatabaseManagementRowProps {
   database: ProductDatabase;
@@ -268,7 +269,7 @@ export default function DebugCascadingDB() {
       </div>
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <Eye className="w-4 h-4" />
             Overview
@@ -280,6 +281,10 @@ export default function DebugCascadingDB() {
           <TabsTrigger value="testing" className="flex items-center gap-2">
             <TestTube className="w-4 h-4" />
             Testing
+          </TabsTrigger>
+          <TabsTrigger value="batch" className="flex items-center gap-2">
+            <Zap className="w-4 h-4" />
+            Batch Test
           </TabsTrigger>
           <TabsTrigger value="analytics" className="flex items-center gap-2">
             <BarChart3 className="w-4 h-4" />
@@ -594,6 +599,11 @@ export default function DebugCascadingDB() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Advanced Batch Testing Tab */}
+        <TabsContent value="batch" className="space-y-6">
+          <AdvancedBatchTester />
         </TabsContent>
 
         {/* Analytics Tab */}
