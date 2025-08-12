@@ -67,8 +67,18 @@ function Router() {
   const { generatePaidUserUrl, hasAccountTypeSuffix } = usePaidUserNavigation();
 
   useEffect(() => {
+    // Debug: Log the current state
+    console.log('URL Modifier Debug:', {
+      location,
+      hasAccountTypeSuffix,
+      userAccountType: (window as any).currentUser?.accountType
+    });
+
     // Only modify URL if we have an account type that should modify URLs
-    if (!hasAccountTypeSuffix) return;
+    if (!hasAccountTypeSuffix) {
+      console.log('No account type suffix needed');
+      return;
+    }
 
     // Parse current URL to check if it already has account type parameters
     const url = new URL(location, window.location.origin);
@@ -76,13 +86,23 @@ function Router() {
                            url.searchParams.has('regularuser') || 
                            url.searchParams.has('adminuser');
 
+    console.log('URL check:', {
+      hasAccountParam,
+      searchParams: Array.from(url.searchParams.entries())
+    });
+
     // If URL doesn't have account type parameter, add it
     if (!hasAccountParam) {
       const modifiedPath = generatePaidUserUrl(location);
       
+      console.log('Generated URL:', modifiedPath);
+      
       // Only update if the URL actually changed
       if (modifiedPath !== location) {
-        // Use replace to avoid adding history entries
+        console.log('Updating URL from', location, 'to', modifiedPath);
+        // Update browser URL directly to ensure it's visible
+        window.history.replaceState(null, '', modifiedPath);
+        // Also update wouter location
         setLocation(modifiedPath, { replace: true });
       }
     }

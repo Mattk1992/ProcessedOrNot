@@ -30,6 +30,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import NavigationWrapper from "@/components/navigation-wrapper";
 import AccountTypeTester from "@/components/account-type-tester";
+import { URLStatusDisplay } from "@/components/url-status-display";
 
 interface UpdateUserData {
   firstName?: string;
@@ -1316,6 +1317,7 @@ export default function UserProfile() {
 
         {/* URL Modification Demonstration for Paid Users */}
         <div className="mt-8 space-y-6">
+          <URLStatusDisplay />
           <AccountTypeTester />
           <NavigationWrapper className="max-w-4xl">
             <div className="mb-4">

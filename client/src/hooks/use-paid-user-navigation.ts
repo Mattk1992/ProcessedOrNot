@@ -105,6 +105,16 @@ export function usePaidUserNavigation() {
    */
   const isAdminUser = user?.accountType === 'Admin';
 
+  // Debug logging
+  console.log('usePaidUserNavigation Debug:', {
+    user: user,
+    accountType: user?.accountType,
+    isPaidUser,
+    isRegularUser,
+    isAdminUser,
+    hasAccountTypeSuffix: isPaidUser || isRegularUser || isAdminUser
+  });
+
   return {
     navigateWithPaidUserSuffix,
     generatePaidUserUrl,
