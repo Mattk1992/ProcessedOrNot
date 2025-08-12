@@ -3128,7 +3128,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log('Onboarding request body:', JSON.stringify(req.body, null, 2));
       
-      const validatedData = insertUserOnboardingSchema.parse(req.body);
+      // Remove database-only fields that shouldn't be validated
+      const { id, createdAt, updatedAt, ...requestData } = req.body;
+      
+      const validatedData = insertUserOnboardingSchema.parse(requestData);
 
       // Check if onboarding already exists
       const existing = await storage.getUserOnboarding(userId);

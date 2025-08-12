@@ -972,6 +972,18 @@ export const insertUserOnboardingSchema = createInsertSchema(userOnboarding).omi
 }).partial().extend({
   userId: z.number().optional(), // userId is handled by the backend
   isCompleted: z.boolean().optional(), // Special field for completion
+  completedAt: z.union([z.string(), z.date()]).transform((val) => {
+    if (typeof val === 'string') {
+      return new Date(val);
+    }
+    return val;
+  }).optional(),
+  lastUpdated: z.union([z.string(), z.date()]).transform((val) => {
+    if (typeof val === 'string') {
+      return new Date(val);
+    }
+    return val;
+  }).optional(),
 });
 
 export type InsertUserOnboarding = z.infer<typeof insertUserOnboardingSchema>;
