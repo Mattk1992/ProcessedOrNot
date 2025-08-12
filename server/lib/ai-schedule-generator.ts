@@ -232,7 +232,7 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
         ],
         response_format: { type: "json_object" },
         temperature: 0.7,
-        max_tokens: 2000
+        max_tokens: 4000
       });
 
       const generationTimeMs = Date.now() - startTime;
@@ -242,7 +242,30 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
       try {
         schedule = JSON.parse(aiResponse);
       } catch (parseError) {
-        throw new Error(`Failed to parse AI response as JSON: ${parseError}`);
+        console.error('Raw AI Response causing parse error:', aiResponse);
+        console.error('Parse error details:', parseError);
+        
+        // Try to clean up the response and parse again
+        let cleanedResponse = aiResponse.trim();
+        
+        // Remove any text before the first {
+        const firstBrace = cleanedResponse.indexOf('{');
+        if (firstBrace > 0) {
+          cleanedResponse = cleanedResponse.substring(firstBrace);
+        }
+        
+        // Remove any text after the last }
+        const lastBrace = cleanedResponse.lastIndexOf('}');
+        if (lastBrace >= 0 && lastBrace < cleanedResponse.length - 1) {
+          cleanedResponse = cleanedResponse.substring(0, lastBrace + 1);
+        }
+        
+        try {
+          schedule = JSON.parse(cleanedResponse);
+          console.log('Successfully parsed cleaned response');
+        } catch (secondParseError) {
+          throw new Error(`Failed to parse AI response as JSON: ${parseError}\nCleaned response also failed: ${secondParseError}\nOriginal response length: ${aiResponse.length}`);
+        }
       }
 
       // Calculate end date if not provided
