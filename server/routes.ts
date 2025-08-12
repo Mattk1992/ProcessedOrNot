@@ -3630,8 +3630,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
 
-      const user = await storage.getUser(req.session.userId);
-      if (!user || user.role !== 'admin') {
+      const user = await storage.getUserById(req.session.userId);
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 
@@ -3662,8 +3662,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
 
-      const user = await storage.getUser(req.session.userId);
-      if (!user || user.role !== 'admin') {
+      const user = await storage.getUserById(req.session.userId);
+      if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
 

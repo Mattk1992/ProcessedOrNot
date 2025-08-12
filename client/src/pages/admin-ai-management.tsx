@@ -54,7 +54,7 @@ export default function AdminAIManagement() {
   const [activeTab, setActiveTab] = useState("analysis");
 
   // Redirect if not authenticated or not admin
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!isAuthenticated || user?.accountType !== 'Admin') {
     setLocation("/login");
     return null;
   }
@@ -102,7 +102,7 @@ export default function AdminAIManagement() {
   // Fetch AI configuration
   const { data: aiConfig, isLoading: isLoadingConfig } = useQuery<AIConfiguration>({
     queryKey: ['/api/admin/ai-config'],
-    enabled: isAuthenticated && user?.role === 'admin',
+    enabled: isAuthenticated && user?.accountType === 'Admin',
   });
 
   // Update AI configuration mutation
