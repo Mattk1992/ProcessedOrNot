@@ -3125,6 +3125,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId!;
       const { insertUserOnboardingSchema } = await import("@shared/schema");
+      
+      console.log('Onboarding request body:', JSON.stringify(req.body, null, 2));
+      
       const validatedData = insertUserOnboardingSchema.parse(req.body);
 
       // Check if onboarding already exists
@@ -3147,9 +3150,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error: any) {
       if (error.name === 'ZodError') {
+        console.error("Onboarding validation error:", error.errors);
+        console.error("Request body that failed:", JSON.stringify(req.body, null, 2));
         return res.status(400).json({ 
           message: "Validation error",
-          errors: error.errors
+          errors: error.errors,
+          details: error.errors.map((e: any) => ({
+            field: e.path.join('.'),
+            message: e.message,
+            received: e.received
+          }))
         });
       }
       console.error("Error saving onboarding:", error);
