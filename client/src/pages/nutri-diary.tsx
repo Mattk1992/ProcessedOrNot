@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { 
@@ -153,7 +153,7 @@ export default function NutriDiary() {
       salt: 0,
       fiber: 0,
       mealType: "breakfast",
-      consumedAt: new Date().toISOString().slice(0, 16),
+      consumedAt: selectedDate + "T12:00",
       notes: "",
     },
   });
@@ -169,9 +169,21 @@ export default function NutriDiary() {
     },
   });
 
+  // Update form default date when selectedDate changes
+  useEffect(() => {
+    form.setValue("consumedAt", selectedDate + "T12:00");
+  }, [selectedDate, form]);
+
   // Fetch diary entries for selected date
   const { data: diaryEntries, isLoading } = useQuery<DiaryEntry[]>({
     queryKey: ["/api/nutrition/diary", selectedDate],
+    queryFn: async () => {
+      const response = await fetch(`/api/nutrition/diary?date=${selectedDate}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch diary entries');
+      }
+      return response.json();
+    },
     enabled: isAuthenticated,
   });
 
@@ -188,7 +200,7 @@ export default function NutriDiary() {
       });
       setIsAddDialogOpen(false);
       form.reset();
-      queryClient.invalidateQueries({ queryKey: ["/api/nutrition/diary"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/nutrition/diary", selectedDate] });
     },
     onError: (error: any) => {
       toast({
@@ -210,7 +222,7 @@ export default function NutriDiary() {
         title: "Entry Deleted",
         description: "Food entry has been removed from your diary",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/nutrition/diary"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/nutrition/diary", selectedDate] });
     },
     onError: (error: any) => {
       toast({
