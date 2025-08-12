@@ -87,17 +87,29 @@ export default function NutritionCalendar() {
 
   // AI schedule generation mutation
   const generateScheduleMutation = useMutation({
-    mutationFn: (formData: any) => apiRequest('/api/calendar/generate-schedule', {
-      method: 'POST',
-      body: formData,
-    }),
-    onSuccess: (data) => {
+    mutationFn: async (formData: any) => {
+      const response = await fetch('/api/calendar/generate-schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to generate schedule');
+      }
+      
+      return response.json();
+    },
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['/api/calendar/entries'] });
       setIsScheduleDialogOpen(false);
       resetForm();
       toast({
         title: "AI Schedule Generated!",
-        description: `Successfully created "${data.schedule.title}" with personalized recommendations.`,
+        description: `Successfully created "${data.schedule?.title || 'your schedule'}" with personalized recommendations.`,
       });
     },
     onError: (error: any) => {
