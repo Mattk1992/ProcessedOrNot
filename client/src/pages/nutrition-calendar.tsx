@@ -69,19 +69,7 @@ export default function NutritionCalendar() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/calendar/entries'] });
       setIsScheduleDialogOpen(false);
-      setScheduleForm({
-        goal: '',
-        duration: '7',
-        startDate: new Date().toISOString().split('T')[0],
-        caloriesTarget: '',
-        proteinTarget: '',
-        carbsTarget: '',
-        fatTarget: '',
-        dietaryRestrictions: '',
-        mealPreferences: [],
-        activityLevel: '',
-        specialNotes: ''
-      });
+      resetForm();
       toast({
         title: "Success!",
         description: "Nutrition schedule created successfully.",
@@ -96,6 +84,45 @@ export default function NutritionCalendar() {
       });
     },
   });
+
+  // AI schedule generation mutation
+  const generateScheduleMutation = useMutation({
+    mutationFn: (formData: any) => apiRequest('/api/calendar/generate-schedule', {
+      method: 'POST',
+      body: formData,
+    }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/calendar/entries'] });
+      setIsScheduleDialogOpen(false);
+      resetForm();
+      toast({
+        title: "AI Schedule Generated!",
+        description: `Successfully created "${data.schedule.title}" with personalized recommendations.`,
+      });
+    },
+    onError: (error: any) => {
+      console.error('Error generating AI schedule:', error);
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate AI schedule. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const resetForm = () => {
+    setScheduleForm({
+      goal: '',
+      duration: '7',
+      startDate: new Date().toISOString().split('T')[0],
+      caloriesTarget: '',
+      proteinTarget: '',
+      carbsTarget: '',
+      fatTarget: '',
+      mealPreferences: [],
+      specialNotes: ''
+    });
+  };
 
   // Redirect if not authenticated
   if (!isAuthenticated) {
@@ -218,9 +245,21 @@ export default function NutritionCalendar() {
       return;
     }
 
-    setIsGeneratingSchedule(true);
+    // Use AI generation mutation
+    generateScheduleMutation.mutate(scheduleForm);
+  };
+
+  const handleManualCreate = async () => {
+    if (!scheduleForm.goal || !scheduleForm.startDate || !scheduleForm.caloriesTarget) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in the schedule title, start date, and calories target.",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    // Create calendar entry data
+    // Create calendar entry data for manual creation
     const entryData = {
       title: `${scheduleForm.goal} - ${scheduleForm.duration} days`,
       description: `Nutrition schedule: ${scheduleForm.goal}`,
@@ -232,14 +271,11 @@ export default function NutritionCalendar() {
       dailyProtein: scheduleForm.proteinTarget ? parseFloat(scheduleForm.proteinTarget) : null,
       dailyCarbs: scheduleForm.carbsTarget ? parseFloat(scheduleForm.carbsTarget) : null,
       dailyFat: scheduleForm.fatTarget ? parseFloat(scheduleForm.fatTarget) : null,
-      activityLevel: scheduleForm.activityLevel,
-      dietaryRestrictions: scheduleForm.dietaryRestrictions,
       specialNotes: scheduleForm.specialNotes,
       status: 'active'
     };
 
     createEntryMutation.mutate(entryData);
-    setIsGeneratingSchedule(false);
   };
 
   return (
@@ -784,27 +820,46 @@ export default function NutritionCalendar() {
               <Button
                 variant="outline"
                 onClick={() => setIsScheduleDialogOpen(false)}
-                disabled={isGeneratingSchedule}
+                disabled={generateScheduleMutation.isPending || createEntryMutation.isPending}
               >
                 Cancel
               </Button>
-              <Button
-                onClick={handleGenerateSchedule}
-                disabled={isGeneratingSchedule || !scheduleForm.goal || !scheduleForm.startDate || !scheduleForm.caloriesTarget || !scheduleForm.activityLevel}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-              >
-                {isGeneratingSchedule ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Generating Schedule...
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4" />
-                    Generate Schedule
-                  </div>
-                )}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={handleManualCreate}
+                  disabled={generateScheduleMutation.isPending || createEntryMutation.isPending || !scheduleForm.goal || !scheduleForm.startDate || !scheduleForm.caloriesTarget}
+                >
+                  {createEntryMutation.isPending ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-gray-400 border-t-gray-600 rounded-full animate-spin" />
+                      Creating...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Plus className="w-4 h-4" />
+                      Create Manually
+                    </div>
+                  )}
+                </Button>
+                <Button
+                  onClick={handleGenerateSchedule}
+                  disabled={generateScheduleMutation.isPending || createEntryMutation.isPending || !scheduleForm.goal || !scheduleForm.startDate || !scheduleForm.caloriesTarget}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                >
+                  {generateScheduleMutation.isPending ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Generating with AI...
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      Generate with AI
+                    </div>
+                  )}
+                </Button>
+              </div>
             </div>
           </DialogContent>
         </Dialog>

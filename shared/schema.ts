@@ -799,6 +799,48 @@ export const insertCalendarEntrySchema = createInsertSchema(calendarEntries).omi
 export type InsertCalendarEntry = z.infer<typeof insertCalendarEntrySchema>;
 export type CalendarEntry = typeof calendarEntries.$inferSelect;
 
+// Schedule Generation History table - for tracking AI-generated nutrition schedules
+export const scheduleGenHistory = pgTable("schedule_gen_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  
+  // Generation request details
+  requestData: jsonb("request_data").notNull(), // User profile data and form inputs used for generation
+  aiModel: varchar("ai_model", { length: 50 }).notNull().default("gpt-4o"), // AI model used
+  prompt: text("prompt").notNull(), // Full prompt sent to AI
+  
+  // AI response details
+  aiResponse: text("ai_response").notNull(), // Full AI response
+  generatedSchedule: jsonb("generated_schedule").notNull(), // Parsed schedule data
+  
+  // Calendar integration
+  calendarEntryId: integer("calendar_entry_id").references(() => calendarEntries.id, { onDelete: "set null" }), // Link to created calendar entry
+  
+  // Generation metadata
+  generationTimeMs: integer("generation_time_ms"), // Time taken for AI generation
+  tokensUsed: integer("tokens_used"), // Number of tokens used in generation
+  
+  // Status and tracking
+  status: varchar("status", { length: 20 }).default("success").notNull(), // 'success', 'failed', 'partial'
+  errorMessage: text("error_message"), // Error details if generation failed
+  
+  // Metadata
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("schedule_gen_history_user_id_idx").on(table.userId),
+  statusIdx: index("schedule_gen_history_status_idx").on(table.status),
+  createdAtIdx: index("schedule_gen_history_created_at_idx").on(table.createdAt),
+  calendarEntryIdx: index("schedule_gen_history_calendar_entry_idx").on(table.calendarEntryId),
+}));
+
+export const insertScheduleGenHistorySchema = createInsertSchema(scheduleGenHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertScheduleGenHistory = z.infer<typeof insertScheduleGenHistorySchema>;
+export type ScheduleGenHistory = typeof scheduleGenHistory.$inferSelect;
+
 // User Onboarding Information - Comprehensive health and lifestyle data
 export const userOnboarding = pgTable("user_onboarding", {
   id: serial("id").primaryKey(),

@@ -69,7 +69,10 @@ import {
   type InsertRewardingSystemSettings,
   calendarEntries,
   type CalendarEntry,
-  type InsertCalendarEntry
+  type InsertCalendarEntry,
+  scheduleGenHistory,
+  type ScheduleGenHistory,
+  type InsertScheduleGenHistory
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -2691,6 +2694,52 @@ export class DatabaseStorage implements IStorage {
     const start = new Date(startDate);
     start.setDate(start.getDate() + duration - 1); // duration includes start date
     return start.toISOString().split('T')[0];
+  }
+
+  // Schedule Generation History methods
+  async createScheduleGenHistory(entry: InsertScheduleGenHistory): Promise<ScheduleGenHistory> {
+    const [historyEntry] = await db
+      .insert(scheduleGenHistory)
+      .values(entry)
+      .returning();
+    return historyEntry;
+  }
+
+  async getScheduleGenHistoryByUser(userId: number): Promise<ScheduleGenHistory[]> {
+    return db
+      .select()
+      .from(scheduleGenHistory)
+      .where(eq(scheduleGenHistory.userId, userId))
+      .orderBy(desc(scheduleGenHistory.createdAt));
+  }
+
+  async getScheduleGenHistoryById(id: number): Promise<ScheduleGenHistory | undefined> {
+    const [entry] = await db
+      .select()
+      .from(scheduleGenHistory)
+      .where(eq(scheduleGenHistory.id, id));
+    return entry;
+  }
+
+  async getSuccessfulScheduleGenerations(userId: number): Promise<ScheduleGenHistory[]> {
+    return db
+      .select()
+      .from(scheduleGenHistory)
+      .where(
+        and(
+          eq(scheduleGenHistory.userId, userId),
+          eq(scheduleGenHistory.status, 'success')
+        )
+      )
+      .orderBy(desc(scheduleGenHistory.createdAt));
+  }
+
+  async getScheduleGenHistoryByCalendarEntry(calendarEntryId: number): Promise<ScheduleGenHistory | undefined> {
+    const [entry] = await db
+      .select()
+      .from(scheduleGenHistory)
+      .where(eq(scheduleGenHistory.calendarEntryId, calendarEntryId));
+    return entry;
   }
 }
 

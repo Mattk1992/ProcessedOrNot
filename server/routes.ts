@@ -6,6 +6,7 @@ import { transcribeAudio, isVoiceTranscriptionAvailable } from "./lib/voice-tran
 import { smartProductLookup, cascadingProductLookup } from "./lib/product-lookup";
 import { analyzeIngredients, analyzeGlycemicIndex, getUserAIProvider } from "./lib/openai";
 import { getNutriBotResponse, generateProductNutritionInsight, generateFunFacts, generateNutritionSpotlightInsights } from "./lib/nutribot";
+import { AIScheduleGenerator } from "./lib/ai-schedule-generator";
 import { 
   insertProductSchema,
   registerUserSchema,
@@ -3455,6 +3456,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting calendar entry:", error);
       res.status(500).json({ message: "Failed to delete calendar entry" });
+    }
+  });
+
+  // AI-powered schedule generation
+  app.post('/api/calendar/generate-schedule', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      // Validate required fields
+      const { goal, startDate, duration, caloriesTarget } = req.body;
+      if (!goal || !startDate || !duration || !caloriesTarget) {
+        return res.status(400).json({ 
+          message: "Missing required fields: goal, startDate, duration, caloriesTarget" 
+        });
+      }
+
+      // Get user profile data for AI analysis
+      const userProfile = await storage.getUserOnboarding(req.session.userId);
+      if (!userProfile) {
+        return res.status(400).json({ 
+          message: "User profile not found. Please complete your profile first." 
+        });
+      }
+
+      // Generate AI schedule
+      const generationResult = await AIScheduleGenerator.generateSchedule(req.body, userProfile);
+      
+      // Create calendar entry from generated schedule
+      const calendarEntry = await storage.createCalendarEntry({
+        userId: req.session.userId,
+        title: generationResult.schedule.title,
+        description: generationResult.schedule.description,
+        type: 'schedule',
+        goal: generationResult.schedule.goal,
+        duration: generationResult.schedule.duration,
+        startDate: generationResult.schedule.startDate,
+        endDate: generationResult.schedule.endDate,
+        dailyCalories: generationResult.schedule.dailyCalories,
+        dailyProtein: generationResult.schedule.dailyProtein,
+        dailyCarbs: generationResult.schedule.dailyCarbs,
+        dailyFat: generationResult.schedule.dailyFat,
+        specialNotes: generationResult.schedule.specialNotes
+      });
+
+      // Save generation history
+      await storage.createScheduleGenHistory({
+        userId: req.session.userId,
+        requestData: {
+          formData: req.body,
+          userProfile: userProfile
+        },
+        aiModel: "gpt-4o",
+        prompt: generationResult.prompt,
+        aiResponse: generationResult.aiResponse,
+        generatedSchedule: generationResult.schedule,
+        calendarEntryId: calendarEntry.id,
+        generationTimeMs: generationResult.generationTimeMs,
+        tokensUsed: generationResult.tokensUsed,
+        status: "success"
+      });
+
+      res.json({
+        success: true,
+        calendarEntry,
+        schedule: generationResult.schedule,
+        generationTimeMs: generationResult.generationTimeMs
+      });
+
+    } catch (error) {
+      console.error("Error generating AI schedule:", error);
+      
+      // Save failed generation attempt if we have user ID
+      if (req.session.userId) {
+        try {
+          await storage.createScheduleGenHistory({
+            userId: req.session.userId,
+            requestData: { formData: req.body },
+            aiModel: "gpt-4o",
+            prompt: "Generation failed before prompt creation",
+            aiResponse: "",
+            generatedSchedule: {},
+            generationTimeMs: 0,
+            status: "failed",
+            errorMessage: error instanceof Error ? error.message : "Unknown error"
+          });
+        } catch (historyError) {
+          console.error("Error saving failed generation history:", historyError);
+        }
+      }
+
+      res.status(500).json({ 
+        message: "Failed to generate AI schedule",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
