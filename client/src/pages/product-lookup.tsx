@@ -171,15 +171,7 @@ export default function ProductLookup() {
                   Discover comprehensive tools to analyze, understand, and improve your food choices
                 </p>
                 
-                {/* CTA Button */}
-                <div className="px-4">
-                  <button
-                    onClick={() => document.querySelector('[data-tutorial="camera-button"]')?.scrollIntoView({ behavior: 'smooth' })}
-                    className="mobile-button px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary to-accent text-white font-semibold rounded-xl hover:from-primary/90 hover:to-accent/90 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl touch-target w-full sm:w-auto"
-                  >
-                    Start Scanning Products
-                  </button>
-                </div>
+                
               </div>
 
 
