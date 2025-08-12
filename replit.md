@@ -4,6 +4,12 @@
 ProcessedOrNot Scanner is a modern web application designed to analyze food products for processing levels. It leverages barcode scanning, AI-powered ingredient analysis, and an interactive chatbot (NutriBot) to provide comprehensive food product insights. The project aims to provide users with transparent and detailed information about the food they consume, fostering healthier dietary choices. It has significant market potential as a tool for health-conscious consumers and aims to become a leading platform for food transparency.
 
 ## Recent Changes  
+- **Meal Time Management System**: Enhanced calendar entries and profile management with comprehensive meal timing:
+  - Added 15 meal time fields (time_meal_1 through time_meal_15) to calendar_entries database table
+  - Created corresponding meal time fields in user_onboarding database table
+  - Built 15 "Meal Nr X Time:" input fields in profile page under Meals per Day section
+  - Implemented time inputs (HH:MM format) for flexible meal scheduling throughout the day
+  - Enhanced nutrition tracking with specific meal timing capabilities for better schedule management
 - **Admin AI Management & Settings System**: Created comprehensive AI management interface for controlling AI models across the platform:
   - Built Admin "AI Management & Settings" page accessible at `/admin-ai-management` route
   - Created Analysis AI configuration tab with AI model dropdown (GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo)

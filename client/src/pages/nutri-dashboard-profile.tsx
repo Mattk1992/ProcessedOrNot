@@ -1025,6 +1025,32 @@ export default function UserProfile() {
                   </div>
                 </div>
 
+                {/* Meal Times Section - 15 meal time slots */}
+                <div>
+                  <Label className="text-base font-semibold">Meal Times</Label>
+                  <p className="text-sm text-muted-foreground mb-4">Set specific times for your meals throughout the day (optional)</p>
+                  <div className="grid grid-cols-3 gap-4">
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((mealNum) => (
+                      <div key={mealNum}>
+                        <Label htmlFor={`meal-${mealNum}-time`}>Meal {mealNum} Time:</Label>
+                        {isEditingOnboarding ? (
+                          <Input
+                            id={`meal-${mealNum}-time`}
+                            type="time"
+                            value={onboardingData[`timeMeal${mealNum}` as keyof typeof onboardingData] as string || ""}
+                            onChange={(e) => updateOnboardingFormData(`timeMeal${mealNum}` as keyof typeof onboardingData, e.target.value)}
+                            className="w-full"
+                          />
+                        ) : (
+                          <p className="py-2 px-3 bg-muted rounded-md text-sm">
+                            {(onboardingData[`timeMeal${mealNum}` as keyof typeof onboardingData] as string) || "Not set"}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Cooking Skill</Label>

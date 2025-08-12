@@ -776,6 +776,23 @@ export const calendarEntries = pgTable("calendar_entries", {
   dietaryRestrictions: text("dietary_restrictions"),
   specialNotes: text("special_notes"),
   
+  // Meal times (15 time slots for meals throughout the day)
+  timeMeal1: varchar("time_meal_1", { length: 5 }), // HH:MM format
+  timeMeal2: varchar("time_meal_2", { length: 5 }),
+  timeMeal3: varchar("time_meal_3", { length: 5 }),
+  timeMeal4: varchar("time_meal_4", { length: 5 }),
+  timeMeal5: varchar("time_meal_5", { length: 5 }),
+  timeMeal6: varchar("time_meal_6", { length: 5 }),
+  timeMeal7: varchar("time_meal_7", { length: 5 }),
+  timeMeal8: varchar("time_meal_8", { length: 5 }),
+  timeMeal9: varchar("time_meal_9", { length: 5 }),
+  timeMeal10: varchar("time_meal_10", { length: 5 }),
+  timeMeal11: varchar("time_meal_11", { length: 5 }),
+  timeMeal12: varchar("time_meal_12", { length: 5 }),
+  timeMeal13: varchar("time_meal_13", { length: 5 }),
+  timeMeal14: varchar("time_meal_14", { length: 5 }),
+  timeMeal15: varchar("time_meal_15", { length: 5 }),
+  
   // Status and tracking
   status: varchar("status", { length: 20 }).default("active").notNull(), // 'active', 'completed', 'paused', 'cancelled'
   progress: real("progress").default(0), // percentage 0-100
@@ -913,6 +930,23 @@ export const userOnboarding = pgTable("user_onboarding", {
   familySupport: boolean("family_support").default(false), // Has family support for diet goals
   friendsSupport: boolean("friends_support").default(false), // Has friends support for diet goals
   professionalSupport: boolean("professional_support").default(false), // Working with nutritionist/dietitian
+  
+  // Meal times (15 time slots for meals throughout the day)
+  timeMeal1: varchar("time_meal_1", { length: 5 }), // HH:MM format
+  timeMeal2: varchar("time_meal_2", { length: 5 }),
+  timeMeal3: varchar("time_meal_3", { length: 5 }),
+  timeMeal4: varchar("time_meal_4", { length: 5 }),
+  timeMeal5: varchar("time_meal_5", { length: 5 }),
+  timeMeal6: varchar("time_meal_6", { length: 5 }),
+  timeMeal7: varchar("time_meal_7", { length: 5 }),
+  timeMeal8: varchar("time_meal_8", { length: 5 }),
+  timeMeal9: varchar("time_meal_9", { length: 5 }),
+  timeMeal10: varchar("time_meal_10", { length: 5 }),
+  timeMeal11: varchar("time_meal_11", { length: 5 }),
+  timeMeal12: varchar("time_meal_12", { length: 5 }),
+  timeMeal13: varchar("time_meal_13", { length: 5 }),
+  timeMeal14: varchar("time_meal_14", { length: 5 }),
+  timeMeal15: varchar("time_meal_15", { length: 5 }),
   
   // Additional Information
   sleepHours: real("sleep_hours"), // Average hours of sleep per night
