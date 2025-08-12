@@ -972,13 +972,19 @@ export const insertUserOnboardingSchema = createInsertSchema(userOnboarding).omi
 }).partial().extend({
   userId: z.number().optional(), // userId is handled by the backend
   isCompleted: z.boolean().optional(), // Special field for completion
-  completedAt: z.union([z.string(), z.date()]).transform((val) => {
+  completedAt: z.union([z.string(), z.date(), z.null()]).transform((val) => {
+    if (val === null) {
+      return null;
+    }
     if (typeof val === 'string') {
       return new Date(val);
     }
     return val;
   }).optional(),
-  lastUpdated: z.union([z.string(), z.date()]).transform((val) => {
+  lastUpdated: z.union([z.string(), z.date(), z.null()]).transform((val) => {
+    if (val === null) {
+      return null;
+    }
     if (typeof val === 'string') {
       return new Date(val);
     }
