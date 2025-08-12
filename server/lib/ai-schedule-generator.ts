@@ -12,6 +12,12 @@ interface ScheduleFormData {
   carbsTarget: string;
   fatTarget: string;
   specialNotes: string;
+  mealTimes?: {
+    breakfastTime?: string;
+    lunchTime?: string;
+    dinnerTime?: string;
+    snackTime?: string;
+  };
 }
 
 interface GeneratedSchedule {
@@ -80,6 +86,12 @@ SCHEDULE REQUEST:
 - Target Carbs: ${formData.carbsTarget || 'Not specified'} g
 - Target Fat: ${formData.fatTarget || 'Not specified'} g
 - Special Notes: ${formData.specialNotes || 'None'}
+${formData.mealTimes ? `
+MEAL TIMES:
+- Breakfast: ${formData.mealTimes.breakfastTime || '08:00'}
+- Lunch: ${formData.mealTimes.lunchTime || '13:00'}
+- Dinner: ${formData.mealTimes.dinnerTime || '18:00'}
+- Snack: ${formData.mealTimes.snackTime || '20:00'}` : ''}
 
 INSTRUCTIONS:
 1. Create a comprehensive nutrition schedule that considers the user's health profile, dietary restrictions, and goals

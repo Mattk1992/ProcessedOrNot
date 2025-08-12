@@ -3616,8 +3616,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Get user meal times
+      const userMealTimes = await storage.getUserMealTimes(req.session.userId);
+      
+      // Include meal times in form data
+      const formDataWithMealTimes = {
+        ...req.body,
+        mealTimes: userMealTimes ? {
+          breakfastTime: userMealTimes.breakfastTime,
+          lunchTime: userMealTimes.lunchTime,
+          dinnerTime: userMealTimes.dinnerTime,
+          snackTime: userMealTimes.snackTime
+        } : undefined
+      };
+
       // Generate AI schedule
-      const generationResult = await AIScheduleGenerator.generateSchedule(req.body, userProfile);
+      const generationResult = await AIScheduleGenerator.generateSchedule(formDataWithMealTimes, userProfile);
       
       // Create calendar entry from generated schedule
       const calendarEntry = await storage.createCalendarEntry({
@@ -3640,7 +3654,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createScheduleGenHistory({
         userId: req.session.userId,
         requestData: {
-          formData: req.body,
+          formData: formDataWithMealTimes,
           userProfile: userProfile
         },
         aiModel: "gpt-4o",
