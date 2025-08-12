@@ -72,7 +72,10 @@ import {
   type InsertCalendarEntry,
   scheduleGenHistory,
   type ScheduleGenHistory,
-  type InsertScheduleGenHistory
+  type InsertScheduleGenHistory,
+  aiConfiguration,
+  type AiConfiguration,
+  type InsertAiConfiguration
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -2740,6 +2743,56 @@ export class DatabaseStorage implements IStorage {
       .from(scheduleGenHistory)
       .where(eq(scheduleGenHistory.calendarEntryId, calendarEntryId));
     return entry;
+  }
+
+  // AI Configuration methods
+  async getAiConfiguration(): Promise<AiConfiguration | undefined> {
+    const [config] = await db
+      .select()
+      .from(aiConfiguration)
+      .limit(1);
+    return config;
+  }
+
+  async createDefaultAiConfiguration(): Promise<AiConfiguration> {
+    const [config] = await db
+      .insert(aiConfiguration)
+      .values({
+        analysisAiModel: "gpt-4o",
+        analysisAiTemperature: 0.3,
+        analysisAiMaxTokens: 1500,
+        analysisAiSystemPrompt: "You are a professional nutritionist and food analysis expert. Analyze food products and ingredients to provide accurate processing scores, nutritional insights, and health recommendations.",
+        analysisAiEnabled: true
+      })
+      .returning();
+    return config;
+  }
+
+  async updateAiConfiguration(updates: Partial<InsertAiConfiguration>, updatedBy?: number): Promise<AiConfiguration | undefined> {
+    // Get existing config or create one if it doesn't exist
+    let existingConfig = await this.getAiConfiguration();
+    if (!existingConfig) {
+      existingConfig = await this.createDefaultAiConfiguration();
+    }
+
+    const [updatedConfig] = await db
+      .update(aiConfiguration)
+      .set({
+        ...updates,
+        updatedBy,
+        updatedAt: new Date()
+      })
+      .where(eq(aiConfiguration.id, existingConfig.id))
+      .returning();
+    return updatedConfig;
+  }
+
+  async getOrCreateAiConfiguration(): Promise<AiConfiguration> {
+    let config = await this.getAiConfiguration();
+    if (!config) {
+      config = await this.createDefaultAiConfiguration();
+    }
+    return config;
   }
 }
 

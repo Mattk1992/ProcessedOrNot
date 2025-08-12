@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, History, Database, Mic, Gift } from "lucide-react";
+import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, History, Database, Mic, Gift, Brain } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import AdminSettings from "@/components/admin-settings";
 import DebugCascadingDB from "@/components/debug-cascading-db";
@@ -180,6 +180,13 @@ export default function AdminPanel() {
                     <Button variant="outline" size="sm" className="w-full h-auto p-3 flex flex-col sm:flex-row items-center gap-2 text-left">
                       <Settings className="h-4 w-4 flex-shrink-0" />
                       <span className="text-xs sm:text-sm leading-tight">Website Management</span>
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/admin-ai-management" className="block">
+                    <Button variant="outline" size="sm" className="w-full h-auto p-3 flex flex-col sm:flex-row items-center gap-2 text-left">
+                      <Brain className="h-4 w-4 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm leading-tight">AI Management & Settings</span>
                     </Button>
                   </Link>
                   

@@ -3570,5 +3570,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Management & Configuration endpoints
+  
+  // Get AI configuration
+  app.get('/api/admin/ai-config', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const config = await storage.getOrCreateAiConfiguration();
+      
+      // Transform database format to frontend format
+      const response = {
+        analysisAI: {
+          model: config.analysisAiModel,
+          temperature: config.analysisAiTemperature,
+          maxTokens: config.analysisAiMaxTokens,
+          systemPrompt: config.analysisAiSystemPrompt,
+          enabled: config.analysisAiEnabled
+        }
+      };
+
+      res.json(response);
+    } catch (error) {
+      console.error("Error fetching AI configuration:", error);
+      res.status(500).json({ message: "Failed to fetch AI configuration" });
+    }
+  });
+
+  // Update AI configuration
+  app.post('/api/admin/ai-config', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { analysisAI } = req.body;
+      
+      if (!analysisAI) {
+        return res.status(400).json({ message: "Invalid configuration data" });
+      }
+
+      // Transform frontend format to database format
+      const updates = {
+        analysisAiModel: analysisAI.model,
+        analysisAiTemperature: analysisAI.temperature,
+        analysisAiMaxTokens: analysisAI.maxTokens,
+        analysisAiSystemPrompt: analysisAI.systemPrompt,
+        analysisAiEnabled: analysisAI.enabled
+      };
+
+      const updatedConfig = await storage.updateAiConfiguration(updates, req.session.userId);
+      
+      if (!updatedConfig) {
+        return res.status(500).json({ message: "Failed to update configuration" });
+      }
+
+      res.json({ message: "Configuration updated successfully", config: updatedConfig });
+    } catch (error) {
+      console.error("Error updating AI configuration:", error);
+      res.status(500).json({ message: "Failed to update AI configuration" });
+    }
+  });
+
+  // Test AI connection
+  app.post('/api/admin/ai-test', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(req.session.userId);
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { model } = req.body;
+      
+      if (!model) {
+        return res.status(400).json({ message: "Model parameter is required" });
+      }
+
+      const startTime = Date.now();
+      
+      // Test the AI model with a simple request
+      const OpenAI = require('openai');
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+      const response = await openai.chat.completions.create({
+        model: model,
+        messages: [
+          {
+            role: "system",
+            content: "You are a test assistant. Respond with exactly: 'Connection successful'"
+          },
+          {
+            role: "user",
+            content: "Test connection"
+          }
+        ],
+        max_tokens: 10,
+        temperature: 0
+      });
+
+      const responseTime = Date.now() - startTime;
+      
+      if (response.choices[0].message.content?.includes('Connection successful')) {
+        res.json({
+          success: true,
+          model: model,
+          responseTime: responseTime,
+          message: "AI model connection successful"
+        });
+      } else {
+        res.status(500).json({
+          success: false,
+          model: model,
+          message: "Unexpected response from AI model"
+        });
+      }
+    } catch (error) {
+      console.error("Error testing AI connection:", error);
+      res.status(500).json({
+        success: false,
+        message: error instanceof Error ? error.message : "Failed to test AI connection"
+      });
+    }
+  });
+
   return httpServer;
 }

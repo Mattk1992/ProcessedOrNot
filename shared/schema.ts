@@ -841,6 +841,36 @@ export const insertScheduleGenHistorySchema = createInsertSchema(scheduleGenHist
 export type InsertScheduleGenHistory = z.infer<typeof insertScheduleGenHistorySchema>;
 export type ScheduleGenHistory = typeof scheduleGenHistory.$inferSelect;
 
+// AI Configuration table - for managing AI models and settings
+export const aiConfiguration = pgTable("ai_configuration", {
+  id: serial("id").primaryKey(),
+  
+  // Analysis AI Configuration
+  analysisAiModel: varchar("analysis_ai_model", { length: 50 }).notNull().default("gpt-4o"),
+  analysisAiTemperature: real("analysis_ai_temperature").notNull().default(0.3),
+  analysisAiMaxTokens: integer("analysis_ai_max_tokens").notNull().default(1500),
+  analysisAiSystemPrompt: text("analysis_ai_system_prompt").notNull().default("You are a professional nutritionist and food analysis expert. Analyze food products and ingredients to provide accurate processing scores, nutritional insights, and health recommendations."),
+  analysisAiEnabled: boolean("analysis_ai_enabled").notNull().default(true),
+  
+  // Future AI configurations can be added here
+  // chatbotAiModel: varchar("chatbot_ai_model", { length: 50 }).notNull().default("gpt-4o"),
+  // recommendationAiModel: varchar("recommendation_ai_model", { length: 50 }).notNull().default("gpt-4o"),
+  
+  // Metadata
+  updatedBy: integer("updated_by").references(() => users.id),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertAiConfigurationSchema = createInsertSchema(aiConfiguration).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAiConfiguration = z.infer<typeof insertAiConfigurationSchema>;
+export type AiConfiguration = typeof aiConfiguration.$inferSelect;
+
 // User Onboarding Information - Comprehensive health and lifestyle data
 export const userOnboarding = pgTable("user_onboarding", {
   id: serial("id").primaryKey(),

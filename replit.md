@@ -4,6 +4,16 @@
 ProcessedOrNot Scanner is a modern web application designed to analyze food products for processing levels. It leverages barcode scanning, AI-powered ingredient analysis, and an interactive chatbot (NutriBot) to provide comprehensive food product insights. The project aims to provide users with transparent and detailed information about the food they consume, fostering healthier dietary choices. It has significant market potential as a tool for health-conscious consumers and aims to become a leading platform for food transparency.
 
 ## Recent Changes  
+- **Admin AI Management & Settings System**: Created comprehensive AI management interface for controlling AI models across the platform:
+  - Built Admin "AI Management & Settings" page accessible at `/admin-ai-management` route
+  - Created Analysis AI configuration tab with AI model dropdown (GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo)
+  - Implemented ai_configuration database table for storing AI model settings and configurations
+  - Added backend API endpoints for getting/updating AI configurations and testing AI connections
+  - Integrated AI model selection controls with real-time configuration updates
+  - Added temperature, max tokens, and system prompt customization for Analysis AI
+  - Created connection testing functionality to validate AI model accessibility
+  - Added usage statistics display and enable/disable toggles for AI features
+  - Connected admin panel with "AI Management & Settings" navigation button
 - **Profile Page Integration**: Copied complete user profile functionality to `/nutri-dashboard/profile` route:
   - Duplicated user-profile.tsx as nutri-dashboard-profile.tsx
   - Updated App.tsx routing to use NutriDashboardProfile component for nutri-dashboard/profile path
