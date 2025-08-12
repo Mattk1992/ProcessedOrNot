@@ -4,6 +4,12 @@
 ProcessedOrNot Scanner is a modern web application designed to analyze food products for processing levels. It leverages barcode scanning, AI-powered ingredient analysis, and an interactive chatbot (NutriBot) to provide comprehensive food product insights. The project aims to provide users with transparent and detailed information about the food they consume, fostering healthier dietary choices. It has significant market potential as a tool for health-conscious consumers and aims to become a leading platform for food transparency.
 
 ## Recent Changes  
+- **FoodData Central Integration**: Successfully configured USDA FoodData Central API for enhanced product lookup:
+  - Added USDA_API_KEY environment variable with valid API key (fFVhHwzJHh3zb67Zhe7p2dcjJshrWyCgJOPXGEo5)
+  - USDA FoodData Central integrated as secondary fallback in cascading product lookup system
+  - API tested and verified working correctly for comprehensive nutritional data retrieval
+  - Enhanced product database coverage with official US government food composition data
+  - Provides detailed nutrient information when products aren't available in OpenFoodFacts
 - **Meal Time Management System**: Enhanced calendar entries and profile management with comprehensive meal timing:
   - Added 15 meal time fields (time_meal_1 through time_meal_15) to calendar_entries database table
   - Created corresponding meal time fields in user_onboarding database table
