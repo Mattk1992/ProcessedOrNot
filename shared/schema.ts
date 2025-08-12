@@ -395,7 +395,7 @@ export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
 // User Account Types
-export type UserAccountType = 'Admin' | 'Regular';
+export type UserAccountType = 'Admin' | 'Regular' | 'Paid';
 
 // Admin Settings schema
 export const adminSettings = pgTable("admin_settings", {

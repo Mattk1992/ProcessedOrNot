@@ -385,6 +385,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user account type endpoint
+  app.put("/api/auth/account-type", requireAuth, async (req: any, res) => {
+    try {
+      const { accountType } = req.body;
+      const userId = req.session.userId;
+
+      // Validate account type
+      if (!accountType || !['Admin', 'Regular', 'Paid'].includes(accountType)) {
+        return res.status(400).json({ 
+          message: "Valid account type required (Admin, Regular, or Paid)" 
+        });
+      }
+
+      // Update user account type
+      const updatedUser = await storage.updateUser(userId, { 
+        accountType,
+        updatedAt: new Date()
+      });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Update session user data
+      req.session.user = sanitizeUser(updatedUser);
+
+      res.json({
+        message: "Account type updated successfully",
+        user: sanitizeUser(updatedUser)
+      });
+    } catch (error) {
+      console.error("Update account type error:", error);
+      res.status(500).json({ message: "Failed to update account type" });
+    }
+  });
+
   // Session debug endpoint (development only)
   if (process.env.NODE_ENV === 'development') {
     app.get("/api/debug/session", (req, res) => {

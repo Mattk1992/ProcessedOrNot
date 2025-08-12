@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import NavigationWrapper from "@/components/navigation-wrapper";
+import AccountTypeTester from "@/components/account-type-tester";
 
 interface UpdateUserData {
   firstName?: string;
@@ -464,9 +466,18 @@ export default function UserProfile() {
               <div>
                 <Label>Account Type</Label>
                 <div className="py-2">
-                  <Badge variant={user.accountType === 'Admin' ? 'default' : 'secondary'}>
+                  <Badge variant={
+                    user.accountType === 'Admin' ? 'default' : 
+                    user.accountType === 'Paid' ? 'outline' : 
+                    'secondary'
+                  }>
                     {user.accountType || 'User'}
                   </Badge>
+                  {user.accountType === 'Paid' && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Premium features enabled • URLs automatically include paid user indicator
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -1292,6 +1303,19 @@ export default function UserProfile() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* URL Modification Demonstration for Paid Users */}
+        <div className="mt-8 space-y-6">
+          <AccountTypeTester />
+          <NavigationWrapper className="max-w-4xl">
+            <div className="mb-4">
+              <h2 className="text-xl font-semibold">Additional URL Modification Examples</h2>
+              <p className="text-sm text-muted-foreground">
+                More examples of how URLs are automatically modified for paid users.
+              </p>
+            </div>
+          </NavigationWrapper>
+        </div>
       </div>
     </div>
   );
