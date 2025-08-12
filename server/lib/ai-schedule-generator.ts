@@ -34,6 +34,30 @@ interface GeneratedSchedule {
   dailyFat?: number;
   specialNotes: string;
   recommendations?: string[];
+  dailySchedule?: Array<{
+    day: number;
+    date: string;
+    meals: Array<{
+      name: string;
+      time: string;
+      foods: Array<{
+        item: string;
+        portion: string;
+        calories: number;
+        protein: number;
+        carbs: number;
+        fat: number;
+        preparation?: string;
+      }>;
+      totalCalories: number;
+      notes?: string;
+    }>;
+    dailyTotalCalories: number;
+    dailyTotalProtein: number;
+    dailyTotalCarbs: number;
+    dailyTotalFat: number;
+  }>;
+  // Keep old structure for backward compatibility
   mealSuggestions?: Array<{
     meal: string;
     foods: string[];
@@ -72,6 +96,30 @@ export class AIScheduleGenerator {
   private static createPrompt(formData: ScheduleFormData, userProfile: UserOnboarding): string {
     const userProfileText = this.formatUserProfile(userProfile);
     
+    // Build meal times dynamically based on user preferences
+    const mealTimesText = formData.mealTimes ? 
+      Object.entries(formData.mealTimes)
+        .filter(([_, time]) => time) // Only include meals with set times
+        .map(([mealType, time]) => {
+          const mealName = mealType.replace('Time', '').charAt(0).toUpperCase() + mealType.replace('Time', '').slice(1);
+          return `- ${mealName}: ${time}`;
+        }).join('\n') 
+      : '- Breakfast: 08:00\n- Lunch: 13:00\n- Dinner: 18:00\n- Snack: 20:00';
+
+    const activeMeals = formData.mealTimes ? 
+      Object.entries(formData.mealTimes)
+        .filter(([_, time]) => time)
+        .map(([mealType, time]) => ({
+          name: mealType.replace('Time', '').charAt(0).toUpperCase() + mealType.replace('Time', '').slice(1),
+          time: time
+        }))
+      : [
+        { name: 'Breakfast', time: '08:00' },
+        { name: 'Lunch', time: '13:00' },
+        { name: 'Dinner', time: '18:00' },
+        { name: 'Snack', time: '20:00' }
+      ];
+    
     return `You are a professional nutritionist and dietitian AI assistant. Create a personalized nutrition schedule/plan based on the user's profile and goals.
 
 USER PROFILE:
@@ -86,20 +134,19 @@ SCHEDULE REQUEST:
 - Target Carbs: ${formData.carbsTarget || 'Not specified'} g
 - Target Fat: ${formData.fatTarget || 'Not specified'} g
 - Special Notes: ${formData.specialNotes || 'None'}
-${formData.mealTimes ? `
+
 MEAL TIMES:
-- Breakfast: ${formData.mealTimes.breakfastTime || '08:00'}
-- Lunch: ${formData.mealTimes.lunchTime || '13:00'}
-- Dinner: ${formData.mealTimes.dinnerTime || '18:00'}
-- Snack: ${formData.mealTimes.snackTime || '20:00'}` : ''}
+${mealTimesText}
 
 INSTRUCTIONS:
-1. Create a comprehensive nutrition schedule that considers the user's health profile, dietary restrictions, and goals
-2. Provide personalized recommendations based on their activity level, medical conditions, and preferences
-3. Suggest specific meal ideas that align with their cooking skills and time availability
-4. Include practical tips for meal preparation and grocery shopping
-5. Ensure the nutrition targets are appropriate for their age, gender, weight goals, and activity level
-6. Consider any allergies, medical conditions, and dietary restrictions
+1. Create a comprehensive daily nutrition schedule with specific food products and recipes for each meal time
+2. Base the number of meals and their timing EXACTLY on the user's meal times provided above - only include meals that have times set
+3. For each day in the ${formData.duration}-day schedule, provide specific food items, recipes, or real products with detailed nutritional information
+4. Include realistic portion sizes, preparation methods, and distribute calories appropriately across all scheduled meals
+5. Consider the user's cooking skills, dietary restrictions, allergies, and food preferences when selecting foods
+6. Ensure meals align with their activity level, weight goals, and health conditions
+7. Provide variety across different days while maintaining nutritional consistency and hitting daily targets
+8. Use real food products, brand names when appropriate, and authentic recipes that people can actually purchase and prepare
 
 Please respond with a JSON object containing the following structure:
 {
@@ -116,22 +163,35 @@ Please respond with a JSON object containing the following structure:
   "dailyFat": ${parseFloat(formData.fatTarget) || null},
   "specialNotes": "Personalized notes and recommendations based on user profile",
   "recommendations": ["List of 5-8 key recommendations"],
-  "mealSuggestions": [
+  "dailySchedule": [
     {
-      "meal": "Breakfast",
-      "foods": ["List of suggested foods"],
-      "calories": "estimated calories"
-    },
-    {
-      "meal": "Lunch", 
-      "foods": ["List of suggested foods"],
-      "calories": "estimated calories"
-    },
-    {
-      "meal": "Dinner",
-      "foods": ["List of suggested foods"], 
-      "calories": "estimated calories"
+      "day": 1,
+      "date": "YYYY-MM-DD",
+      "meals": [
+${activeMeals.map(meal => `        {
+          "name": "${meal.name}",
+          "time": "${meal.time}",
+          "foods": [
+            {
+              "item": "Specific food product or recipe name for ${meal.name.toLowerCase()}",
+              "portion": "Amount and unit",
+              "calories": 150,
+              "protein": 8,
+              "carbs": 12,
+              "fat": 6,
+              "preparation": "Brief preparation instructions if needed"
+            }
+          ],
+          "totalCalories": 300,
+          "notes": "Any specific preparation or timing notes"
+        }`).join(',\n')}
+      ],
+      "dailyTotalCalories": 2000,
+      "dailyTotalProtein": 120,
+      "dailyTotalCarbs": 250,
+      "dailyTotalFat": 67
     }
+    // ... repeat for all ${formData.duration} days with different food choices but same meal structure and times
   ]
 }
 

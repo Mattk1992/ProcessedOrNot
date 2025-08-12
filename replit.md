@@ -24,7 +24,7 @@ ProcessedOrNot Scanner is built on a full-stack JavaScript/TypeScript architectu
     - **Onboarding System**: Tracks onboarding completion with a popup for incomplete users.
     - **Product Analysis Settings**: Customizable analysis sections with toggleable visibility and localStorage persistence.
     - **NutriBot AI Personalization**: Integrates user profile data (excluding PII) into NutriBot responses for personalized advice.
-    - **AI Schedule Generation with Meal Times**: AI-powered nutrition schedule generator automatically includes user's customized meal times (breakfast, lunch, dinner, snack) in schedule requests for personalized meal timing recommendations.
+    - **AI Schedule Generation with Meal Times**: AI-powered nutrition schedule generator creates detailed daily schedules with specific food products and recipes. Automatically adapts to user's customized meal times, generating meals only for configured time slots. Provides comprehensive daily nutrition plans with portion sizes, preparation instructions, and calorie distribution across all user-defined meal periods.
     - **Admin Panel**: Redesigned with tabs for Overview, Users, Products, Settings, Speech, Rewards, and Debug, including AI Management.
     - **Role-Based Access Control**: Dashboard and admin features restricted to Admin users. 
     - **Universal Account Type URL Modification System**: Comprehensive URL modification based on user account types:
