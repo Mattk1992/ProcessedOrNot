@@ -25,7 +25,15 @@ ProcessedOrNot Scanner is built on a full-stack JavaScript/TypeScript architectu
     - **Product Analysis Settings**: Customizable analysis sections with toggleable visibility and localStorage persistence.
     - **NutriBot AI Personalization**: Integrates user profile data (excluding PII) into NutriBot responses for personalized advice.
     - **Admin Panel**: Redesigned with tabs for Overview, Users, Products, Settings, Speech, Rewards, and Debug, including AI Management.
-    - **Role-Based Access Control**: Dashboard and admin features restricted to Admin users. Includes "Paid" user account type with automatic URL modification.
+    - **Role-Based Access Control**: Dashboard and admin features restricted to Admin users. 
+    - **Universal Account Type URL Modification System**: Comprehensive URL modification based on user account types:
+      - Paid users: URLs automatically get "?paiduser=true" parameter
+      - Regular users: URLs automatically get "?regularuser=true" parameter  
+      - Admin users: URLs remain unchanged
+      - Custom hook (usePaidUserNavigation) handles URL generation and navigation
+      - System intelligently handles existing query parameters, fragments, and complex URLs
+      - AccountTypeTester component provides real-time testing interface
+      - Backend API endpoint `/api/auth/account-type` enables account type management
 - **Mobile Application**: A corresponding Expo (React Native) mobile app replicates web functionality.
 
 ## External Dependencies

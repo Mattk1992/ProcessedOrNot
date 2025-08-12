@@ -16,7 +16,7 @@ import { usePaidUserNavigation } from "@/hooks/use-paid-user-navigation";
 export function AccountTypeTester() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { generatePaidUserUrl, isPaidUser, navigateWithPaidUserSuffix } = usePaidUserNavigation();
+  const { generatePaidUserUrl, isPaidUser, isRegularUser, navigateWithPaidUserSuffix, hasAccountTypeSuffix } = usePaidUserNavigation();
   const [selectedAccountType, setSelectedAccountType] = useState<string>(user?.accountType || "Regular");
 
   const updateAccountTypeMutation = useMutation({
@@ -72,7 +72,7 @@ export function AccountTypeTester() {
           </Badge>
         </CardTitle>
         <CardDescription>
-          Test the account type system and observe URL modifications for paid users
+          Test the account type system and observe URL modifications for different user types
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -102,6 +102,9 @@ export function AccountTypeTester() {
         {/* URL Generation Demo */}
         <div className="space-y-3">
           <h4 className="font-medium">URL Generation Test</h4>
+          <p className="text-sm text-muted-foreground">
+            Original URL → Modified URL (based on current account type)
+          </p>
           <div className="grid gap-2 text-sm">
             {testUrls.map((url) => (
               <div key={url} className="flex justify-between items-center p-2 bg-muted rounded">
@@ -118,7 +121,7 @@ export function AccountTypeTester() {
         <div className="space-y-3">
           <h4 className="font-medium">Navigation Test</h4>
           <p className="text-sm text-muted-foreground">
-            These buttons use the paid user navigation system:
+            These buttons use the account type navigation system:
           </p>
           <div className="flex gap-2 flex-wrap">
             <Button 
@@ -148,10 +151,14 @@ export function AccountTypeTester() {
         {/* Status Display */}
         <div className="p-3 bg-blue-50 dark:bg-blue-950 rounded">
           <p className="text-sm">
-            <strong>Status:</strong> {isPaidUser ? 
-              "✅ Paid user detected - URLs will include paid user parameter" : 
-              "ℹ️ Regular user - URLs remain unchanged"
+            <strong>Status:</strong> {
+              isPaidUser ? "✅ Paid user detected - URLs will include '?paiduser=true' parameter" :
+              isRegularUser ? "✅ Regular user detected - URLs will include '?regularuser=true' parameter" :
+              "ℹ️ Admin user - URLs remain unchanged"
             }
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {hasAccountTypeSuffix ? "URL modification is active" : "No URL modification for admin users"}
           </p>
         </div>
       </CardContent>

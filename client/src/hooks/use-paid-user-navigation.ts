@@ -3,22 +3,32 @@ import { useLocation } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
- * Custom hook for handling URL navigation with automatic "=paiduser" suffix for paid users
+ * Custom hook for handling URL navigation with automatic account type suffixes
+ * - Paid users get "=paiduser" suffix
+ * - Regular users get "=regularuser" suffix
+ * - Admin users get no suffix
  */
 export function usePaidUserNavigation() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
 
   /**
-   * Navigate to a URL with automatic "=paiduser" suffix for paid users
+   * Navigate to a URL with automatic account type suffix
    * @param path - The base path to navigate to
    * @param options - Additional navigation options
    */
   const navigateWithPaidUserSuffix = useCallback((path: string, options?: { replace?: boolean }) => {
     let finalPath = path;
     
-    // Add =paiduser suffix for paid users
+    // Add account type suffix based on user type
+    let accountParam = '';
     if (user?.accountType === 'Paid') {
+      accountParam = 'paiduser=true';
+    } else if (user?.accountType === 'Regular') {
+      accountParam = 'regularuser=true';
+    }
+    
+    if (accountParam) {
       // Check if path already has query parameters
       const hasQueryParams = path.includes('?');
       const hasFragment = path.includes('#');
@@ -27,13 +37,13 @@ export function usePaidUserNavigation() {
         // Insert before fragment
         const [pathPart, fragment] = path.split('#');
         const separator = pathPart.includes('?') ? '&' : '?';
-        finalPath = `${pathPart}${separator}paiduser=true#${fragment}`;
+        finalPath = `${pathPart}${separator}${accountParam}#${fragment}`;
       } else if (hasQueryParams) {
         // Append to existing query parameters
-        finalPath = `${path}&paiduser=true`;
+        finalPath = `${path}&${accountParam}`;
       } else {
         // Add as first query parameter
-        finalPath = `${path}?paiduser=true`;
+        finalPath = `${path}?${accountParam}`;
       }
     }
 
@@ -41,12 +51,20 @@ export function usePaidUserNavigation() {
   }, [user?.accountType, setLocation]);
 
   /**
-   * Generate a URL with automatic "=paiduser" suffix for paid users
+   * Generate a URL with automatic account type suffix
    * @param path - The base path
-   * @returns The modified path for paid users, or original path for regular users
+   * @returns The modified path with account type parameter, or original path for admin users
    */
   const generatePaidUserUrl = useCallback((path: string): string => {
-    if (user?.accountType !== 'Paid') {
+    // Determine account parameter based on user type
+    let accountParam = '';
+    if (user?.accountType === 'Paid') {
+      accountParam = 'paiduser=true';
+    } else if (user?.accountType === 'Regular') {
+      accountParam = 'regularuser=true';
+    }
+    
+    if (!accountParam) {
       return path;
     }
 
@@ -58,13 +76,13 @@ export function usePaidUserNavigation() {
       // Insert before fragment
       const [pathPart, fragment] = path.split('#');
       const separator = pathPart.includes('?') ? '&' : '?';
-      return `${pathPart}${separator}paiduser=true#${fragment}`;
+      return `${pathPart}${separator}${accountParam}#${fragment}`;
     } else if (hasQueryParams) {
       // Append to existing query parameters
-      return `${path}&paiduser=true`;
+      return `${path}&${accountParam}`;
     } else {
       // Add as first query parameter
-      return `${path}?paiduser=true`;
+      return `${path}?${accountParam}`;
     }
   }, [user?.accountType]);
 
@@ -72,11 +90,18 @@ export function usePaidUserNavigation() {
    * Check if current user is a paid user
    */
   const isPaidUser = user?.accountType === 'Paid';
+  
+  /**
+   * Check if current user is a regular user
+   */
+  const isRegularUser = user?.accountType === 'Regular';
 
   return {
     navigateWithPaidUserSuffix,
     generatePaidUserUrl,
     isPaidUser,
-    accountType: user?.accountType
+    isRegularUser,
+    accountType: user?.accountType,
+    hasAccountTypeSuffix: isPaidUser || isRegularUser
   };
 }

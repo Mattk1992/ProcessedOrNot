@@ -475,7 +475,12 @@ export default function UserProfile() {
                   </Badge>
                   {user.accountType === 'Paid' && (
                     <p className="text-sm text-muted-foreground mt-1">
-                      Premium features enabled • URLs automatically include paid user indicator
+                      Premium features enabled • URLs automatically include "?paiduser=true" parameter
+                    </p>
+                  )}
+                  {user.accountType === 'Regular' && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Standard account • URLs automatically include "?regularuser=true" parameter
                     </p>
                   )}
                 </div>
