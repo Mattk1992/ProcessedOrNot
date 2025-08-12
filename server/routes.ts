@@ -3657,7 +3657,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           formData: formDataWithMealTimes,
           userProfile: userProfile
         },
-        aiModel: "gpt-4o",
+        aiModel: formDataWithMealTimes.aiModel || "gpt-4o",
         prompt: generationResult.prompt,
         aiResponse: generationResult.aiResponse,
         generatedSchedule: generationResult.schedule,
@@ -3683,7 +3683,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.createScheduleGenHistory({
             userId: req.session.userId,
             requestData: { formData: req.body },
-            aiModel: "gpt-4o",
+            aiModel: req.body.aiModel || "gpt-4o",
             prompt: "Generation failed before prompt creation",
             aiResponse: "",
             generatedSchedule: {},

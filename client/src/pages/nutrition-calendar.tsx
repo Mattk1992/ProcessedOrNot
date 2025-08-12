@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -6,13 +6,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Clock, TrendingUp, ArrowLeft, Download, Copy, ExternalLink, Smartphone, Monitor, Plus, Sparkles } from "lucide-react";
+import { Calendar, Clock, TrendingUp, ArrowLeft, Download, Copy, ExternalLink, Smartphone, Monitor, Plus, Sparkles, Settings } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays, subDays } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 import type { CalendarEntry } from "@shared/schema";
@@ -46,8 +47,18 @@ export default function NutritionCalendar() {
     carbsTarget: '',
     fatTarget: '',
     mealPreferences: [],
-    specialNotes: ''
+    specialNotes: '',
+    aiModel: 'gpt-4o'
   });
+  const [selectedAiModel, setSelectedAiModel] = useState('gpt-4o');
+  
+  // Sync AI model with form
+  useEffect(() => {
+    setScheduleForm(prev => ({
+      ...prev,
+      aiModel: selectedAiModel
+    }));
+  }, [selectedAiModel]);
   const [isGeneratingSchedule, setIsGeneratingSchedule] = useState(false);
   const { toast } = useToast();
 
@@ -132,7 +143,8 @@ export default function NutritionCalendar() {
       carbsTarget: '',
       fatTarget: '',
       mealPreferences: [],
-      specialNotes: ''
+      specialNotes: '',
+      aiModel: selectedAiModel
     });
   };
 
@@ -258,7 +270,10 @@ export default function NutritionCalendar() {
     }
 
     // Use AI generation mutation
-    generateScheduleMutation.mutate(scheduleForm);
+    generateScheduleMutation.mutate({
+      ...scheduleForm,
+      aiModel: selectedAiModel
+    });
   };
 
   const handleManualCreate = async () => {
@@ -336,6 +351,48 @@ export default function NutritionCalendar() {
                   Daily
                 </Button>
               </div>
+              
+              {/* Admin AI Model Selector */}
+              {user?.accountType === 'Admin' && (
+                <div className="flex items-center gap-2">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-2">
+                        <Settings className="w-4 h-4" />
+                        {selectedAiModel}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuLabel>AI Model</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => setSelectedAiModel('gpt-4o')}
+                        className={selectedAiModel === 'gpt-4o' ? 'bg-accent' : ''}
+                      >
+                        GPT-4o (Latest)
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSelectedAiModel('gpt-4o-mini')}
+                        className={selectedAiModel === 'gpt-4o-mini' ? 'bg-accent' : ''}
+                      >
+                        GPT-4o Mini
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSelectedAiModel('gpt-4-turbo')}
+                        className={selectedAiModel === 'gpt-4-turbo' ? 'bg-accent' : ''}
+                      >
+                        GPT-4 Turbo
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSelectedAiModel('gpt-3.5-turbo')}
+                        className={selectedAiModel === 'gpt-3.5-turbo' ? 'bg-accent' : ''}
+                      >
+                        GPT-3.5 Turbo
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              )}
               
               {/* Generate Nutrition Schedule Button */}
               <Button

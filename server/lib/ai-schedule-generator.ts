@@ -12,6 +12,7 @@ interface ScheduleFormData {
   carbsTarget: string;
   fatTarget: string;
   specialNotes: string;
+  aiModel?: string;
   mealTimes?: {
     breakfastTime?: string;
     lunchTime?: string;
@@ -216,8 +217,9 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
     try {
       const prompt = this.createPrompt(formData, userProfile);
       
+      const selectedModel = formData.aiModel || "gpt-4o";
       const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: selectedModel,
         messages: [
           {
             role: "system",
