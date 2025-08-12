@@ -1060,24 +1060,27 @@ export default function UserProfile() {
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">Set specific times for your meals throughout the day (optional)</p>
                   <div className="grid grid-cols-3 gap-4">
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((mealNum) => (
-                      <div key={mealNum}>
-                        <Label htmlFor={`meal-${mealNum}-time`} className="text-xs font-medium">Meal {mealNum} Time:</Label>
-                        {isEditingOnboarding ? (
-                          <Input
-                            id={`meal-${mealNum}-time`}
-                            type="time"
-                            value={onboardingData[`timeMeal${mealNum}` as keyof typeof onboardingData] as string || ""}
-                            onChange={(e) => updateOnboardingFormData(`timeMeal${mealNum}` as keyof typeof onboardingData, e.target.value)}
-                            className="w-full text-sm"
-                          />
-                        ) : (
-                          <p className="py-1.5 px-2 bg-muted rounded text-xs">
-                            {(onboardingData[`timeMeal${mealNum}` as keyof typeof onboardingData] as string) || "Not set"}
-                          </p>
-                        )}
-                      </div>
-                    ))}
+                    {Array.from({ length: Math.max(1, onboardingData.mealsPerDay || 1) }, (_, index) => {
+                      const mealNum = index + 1;
+                      return (
+                        <div key={mealNum}>
+                          <Label htmlFor={`meal-${mealNum}-time`} className="text-xs font-medium">Meal Nr {mealNum} Time:</Label>
+                          {isEditingOnboarding ? (
+                            <Input
+                              id={`meal-${mealNum}-time`}
+                              type="time"
+                              value={onboardingData[`timeMeal${mealNum}` as keyof typeof onboardingData] as string || ""}
+                              onChange={(e) => updateOnboardingFormData(`timeMeal${mealNum}` as keyof typeof onboardingData, e.target.value)}
+                              className="w-full text-sm"
+                            />
+                          ) : (
+                            <p className="py-1.5 px-2 bg-muted rounded text-xs">
+                              {(onboardingData[`timeMeal${mealNum}` as keyof typeof onboardingData] as string) || "Not set"}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

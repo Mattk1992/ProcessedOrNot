@@ -7,7 +7,8 @@ ProcessedOrNot Scanner is a modern web application designed to analyze food prod
 - **Meal Time Management System**: Enhanced calendar entries and profile management with comprehensive meal timing:
   - Added 15 meal time fields (time_meal_1 through time_meal_15) to calendar_entries database table
   - Created corresponding meal time fields in user_onboarding database table
-  - Built 15 "Meal Nr X Time:" input fields in profile page under Meals per Day section
+  - Built dynamic "Meal Nr X Time:" input fields in profile page that show based on "Meals per Day" value
+  - Always shows "Meal Nr 1 Time:", then dynamically shows additional fields up to the set meals per day count
   - Implemented time inputs (HH:MM format) for flexible meal scheduling throughout the day
   - Enhanced nutrition tracking with specific meal timing capabilities for better schedule management
 - **Admin AI Management & Settings System**: Created comprehensive AI management interface for controlling AI models across the platform:
