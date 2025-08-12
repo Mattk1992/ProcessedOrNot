@@ -119,6 +119,25 @@ export class AIScheduleGenerator {
         { name: 'Dinner', time: '18:00' },
         { name: 'Snack', time: '20:00' }
       ];
+
+    // Generate meal structure examples for the JSON template
+    const mealExamples = activeMeals.map(meal => `        {
+          "name": "${meal.name}",
+          "time": "${meal.time}",
+          "foods": [
+            {
+              "item": "Specific food product or recipe name for ${meal.name.toLowerCase()}",
+              "portion": "Amount and unit",
+              "calories": 150,
+              "protein": 8,
+              "carbs": 12,
+              "fat": 6,
+              "preparation": "Brief preparation instructions if needed"
+            }
+          ],
+          "totalCalories": 300,
+          "notes": "Any specific preparation or timing notes"
+        }`).join(',\n');
     
     return `You are a professional nutritionist and dietitian AI assistant. Create a personalized nutrition schedule/plan based on the user's profile and goals.
 
@@ -168,23 +187,7 @@ Please respond with a JSON object containing the following structure:
       "day": 1,
       "date": "YYYY-MM-DD",
       "meals": [
-${activeMeals.map(meal => `        {
-          "name": "${meal.name}",
-          "time": "${meal.time}",
-          "foods": [
-            {
-              "item": "Specific food product or recipe name for ${meal.name.toLowerCase()}",
-              "portion": "Amount and unit",
-              "calories": 150,
-              "protein": 8,
-              "carbs": 12,
-              "fat": 6,
-              "preparation": "Brief preparation instructions if needed"
-            }
-          ],
-          "totalCalories": 300,
-          "notes": "Any specific preparation or timing notes"
-        }`).join(',\n')}
+${mealExamples}
       ],
       "dailyTotalCalories": 2000,
       "dailyTotalProtein": 120,
@@ -257,6 +260,12 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
       };
     } catch (error) {
       const generationTimeMs = Date.now() - startTime;
+      console.error('AI Schedule Generation Error:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        formData,
+        userProfile: userProfile.id || 'unknown'
+      });
       throw new Error(`AI schedule generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
