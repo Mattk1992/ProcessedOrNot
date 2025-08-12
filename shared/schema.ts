@@ -751,6 +751,29 @@ export const insertWeightEntrySchema = createInsertSchema(weightEntries).omit({
 export type InsertWeightEntry = z.infer<typeof insertWeightEntrySchema>;
 export type WeightEntry = typeof weightEntries.$inferSelect;
 
+// User Meal Times table - for storing user's preferred meal times
+export const userMealTimes = pgTable("user_meal_times", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull().unique(),
+  breakfastTime: varchar("breakfast_time", { length: 5 }).notNull().default("08:00"), // HH:MM format
+  lunchTime: varchar("lunch_time", { length: 5 }).notNull().default("13:00"),
+  dinnerTime: varchar("dinner_time", { length: 5 }).notNull().default("18:00"),
+  snackTime: varchar("snack_time", { length: 5 }).notNull().default("20:00"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("user_meal_times_user_id_idx").on(table.userId),
+}));
+
+export const insertUserMealTimesSchema = createInsertSchema(userMealTimes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUserMealTimes = z.infer<typeof insertUserMealTimesSchema>;
+export type UserMealTimes = typeof userMealTimes.$inferSelect;
+
 // Calendar Entries table - for nutrition calendar events and schedules
 export const calendarEntries = pgTable("calendar_entries", {
   id: serial("id").primaryKey(),
@@ -776,7 +799,13 @@ export const calendarEntries = pgTable("calendar_entries", {
   dietaryRestrictions: text("dietary_restrictions"),
   specialNotes: text("special_notes"),
   
-  // Meal times (15 time slots for meals throughout the day)
+  // Meal times (main meals for schedule requests)
+  breakfastTime: varchar("breakfast_time", { length: 5 }), // HH:MM format
+  lunchTime: varchar("lunch_time", { length: 5 }),
+  dinnerTime: varchar("dinner_time", { length: 5 }),
+  snackTime: varchar("snack_time", { length: 5 }),
+  
+  // Additional meal times (15 time slots for meals throughout the day)
   timeMeal1: varchar("time_meal_1", { length: 5 }), // HH:MM format
   timeMeal2: varchar("time_meal_2", { length: 5 }),
   timeMeal3: varchar("time_meal_3", { length: 5 }),

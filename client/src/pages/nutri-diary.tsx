@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { 
   Plus, 
@@ -34,7 +34,7 @@ import LanguageSwitcher from "@/components/language-switcher";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 
 const diaryEntrySchema = z.object({
@@ -98,6 +98,7 @@ export default function NutriDiary() {
   const { user, isAuthenticated } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -108,6 +109,7 @@ export default function NutriDiary() {
     dinner: "18:00",
     snack: "20:00"
   });
+  const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
 
   // Date navigation functions
   const goToPreviousDay = () => {
@@ -180,12 +182,78 @@ export default function NutriDiary() {
     form.setValue("consumedAt", selectedDate + "T12:00");
   }, [selectedDate, form]);
 
+  // Fetch meal times from database
+  const { data: savedMealTimes } = useQuery({
+    queryKey: ["/api/nutrition/meal-times"],
+    enabled: isAuthenticated,
+  });
+
+  // Update local state when saved meal times are loaded
+  useEffect(() => {
+    if (savedMealTimes) {
+      setMealTimes({
+        breakfast: savedMealTimes.breakfastTime || "08:00",
+        lunch: savedMealTimes.lunchTime || "13:00",
+        dinner: savedMealTimes.dinnerTime || "18:00",
+        snack: savedMealTimes.snackTime || "20:00"
+      });
+    }
+  }, [savedMealTimes]);
+
+  // Mutation to save meal times
+  const saveMealTimesMutation = useMutation({
+    mutationFn: async (mealTimesData: any) => {
+      const response = await fetch("/api/nutrition/meal-times", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(mealTimesData),
+      });
+      if (!response.ok) throw new Error("Failed to save meal times");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/nutrition/meal-times"] });
+      toast({
+        title: "Success",
+        description: "Meal times saved successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save meal times",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Handle meal time changes
   const handleMealTimeChange = (mealType: string, time: string) => {
-    setMealTimes(prev => ({
-      ...prev,
+    // Clear existing timeout
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+    }
+
+    // Update local state immediately
+    const newMealTimes = {
+      ...mealTimes,
       [mealType]: time
-    }));
+    };
+    setMealTimes(newMealTimes);
+
+    // Save to database with debouncing
+    const timeoutId = setTimeout(() => {
+      const mealTimesData = {
+        breakfastTime: newMealTimes.breakfast,
+        lunchTime: newMealTimes.lunch,
+        dinnerTime: newMealTimes.dinner,
+        snackTime: newMealTimes.snack,
+      };
+      
+      saveMealTimesMutation.mutate(mealTimesData);
+    }, 1500);
+
+    setSaveTimeout(timeoutId);
   };
 
   // Fetch diary entries for selected date

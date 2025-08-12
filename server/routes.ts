@@ -2635,6 +2635,89 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User meal times endpoints
+  app.get("/api/nutrition/meal-times", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const mealTimes = await storage.getUserMealTimes(userId);
+      
+      if (!mealTimes) {
+        // Create default meal times if they don't exist
+        const defaultMealTimes = await storage.createUserMealTimes({
+          userId,
+          breakfastTime: "08:00",
+          lunchTime: "13:00",
+          dinnerTime: "18:00",
+          snackTime: "20:00"
+        });
+        return res.json(defaultMealTimes);
+      }
+      
+      res.json(mealTimes);
+    } catch (error) {
+      console.error("Error fetching meal times:", error);
+      res.status(500).json({ message: "Failed to fetch meal times" });
+    }
+  });
+
+  app.post("/api/nutrition/meal-times", async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    try {
+      const userId = req.session.userId;
+      const { breakfastTime, lunchTime, dinnerTime, snackTime } = req.body;
+
+      // Validate time format (HH:MM)
+      const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      if (breakfastTime && !timeRegex.test(breakfastTime)) {
+        return res.status(400).json({ message: "Invalid breakfast time format" });
+      }
+      if (lunchTime && !timeRegex.test(lunchTime)) {
+        return res.status(400).json({ message: "Invalid lunch time format" });
+      }
+      if (dinnerTime && !timeRegex.test(dinnerTime)) {
+        return res.status(400).json({ message: "Invalid dinner time format" });
+      }
+      if (snackTime && !timeRegex.test(snackTime)) {
+        return res.status(400).json({ message: "Invalid snack time format" });
+      }
+
+      // Check if user meal times exist
+      const existingMealTimes = await storage.getUserMealTimes(userId);
+      
+      let mealTimes;
+      if (existingMealTimes) {
+        // Update existing meal times
+        mealTimes = await storage.updateUserMealTimes(userId, {
+          breakfastTime,
+          lunchTime,
+          dinnerTime,
+          snackTime
+        });
+      } else {
+        // Create new meal times
+        mealTimes = await storage.createUserMealTimes({
+          userId,
+          breakfastTime,
+          lunchTime,
+          dinnerTime,
+          snackTime
+        });
+      }
+      
+      res.json(mealTimes);
+    } catch (error) {
+      console.error("Error saving meal times:", error);
+      res.status(500).json({ message: "Failed to save meal times" });
+    }
+  });
+
   const httpServer = createServer(app);
   // ==================== PRODUCT DATABASE MANAGEMENT ROUTES ====================
 

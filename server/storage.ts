@@ -75,7 +75,10 @@ import {
   type InsertScheduleGenHistory,
   aiConfiguration,
   type AiConfiguration,
-  type InsertAiConfiguration
+  type InsertAiConfiguration,
+  userMealTimes,
+  type UserMealTimes,
+  type InsertUserMealTimes
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -302,6 +305,11 @@ export interface IStorage {
   updateCalendarEntry(id: number, updates: Partial<InsertCalendarEntry>): Promise<CalendarEntry | undefined>;
   deleteCalendarEntry(id: number, userId?: number): Promise<boolean>;
   getActiveCalendarEntries(userId: number): Promise<CalendarEntry[]>;
+
+  // User Meal Times methods
+  getUserMealTimes(userId: number): Promise<UserMealTimes | undefined>;
+  createUserMealTimes(mealTimes: InsertUserMealTimes): Promise<UserMealTimes>;
+  updateUserMealTimes(userId: number, updates: Partial<InsertUserMealTimes>): Promise<UserMealTimes | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2793,6 +2801,35 @@ export class DatabaseStorage implements IStorage {
       config = await this.createDefaultAiConfiguration();
     }
     return config;
+  }
+
+  // User Meal Times methods
+  async getUserMealTimes(userId: number): Promise<UserMealTimes | undefined> {
+    const [mealTimes] = await db
+      .select()
+      .from(userMealTimes)
+      .where(eq(userMealTimes.userId, userId));
+    return mealTimes;
+  }
+
+  async createUserMealTimes(mealTimesData: InsertUserMealTimes): Promise<UserMealTimes> {
+    const [mealTimes] = await db
+      .insert(userMealTimes)
+      .values(mealTimesData)
+      .returning();
+    return mealTimes;
+  }
+
+  async updateUserMealTimes(userId: number, updates: Partial<InsertUserMealTimes>): Promise<UserMealTimes | undefined> {
+    const [updatedMealTimes] = await db
+      .update(userMealTimes)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(userMealTimes.userId, userId))
+      .returning();
+    return updatedMealTimes;
   }
 }
 
