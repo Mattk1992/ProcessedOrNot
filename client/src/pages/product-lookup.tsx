@@ -186,11 +186,6 @@ export default function ProductLookup() {
 
             </div>
 
-            {/* Ad Space after features */}
-            <div className="mt-12 flex justify-center">
-              <ResponsiveAd className="max-w-2xl w-full" />
-            </div>
-
           </div>
         </div>
       </section>
