@@ -299,16 +299,20 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
       setIsScanning(false);
 
-      // Optimized camera constraints for short-range barcode scanning (compatible)
+      // Advanced camera constraints optimized for barcode scanning
       const constraints: MediaStreamConstraints = {
         video: {
           deviceId: { exact: selectedDeviceId },
-          width: { ideal: 2560, min: 1920 }, // Higher resolution for better barcode detail capture
-          height: { ideal: 1440, min: 1080 }, // Increased height for better barcode scanning area
+          width: { ideal: 3840, min: 1920 }, // 4K resolution for superior barcode detail
+          height: { ideal: 2160, min: 1080 }, // 4K height for maximum scanning accuracy
           facingMode: { ideal: 'environment' },
-          frameRate: { ideal: 60, min: 30 }, // Higher frame rate for smoother focus adjustments
+          frameRate: { ideal: 60, min: 30 }, // High frame rate for motion blur reduction
           aspectRatio: { ideal: 16/9 },
-        }
+          // Advanced constraints for barcode scanning
+          focusMode: { ideal: 'continuous' },
+          exposureMode: { ideal: 'manual' },
+          whiteBalanceMode: { ideal: 'manual' },
+        } as any
       };
 
       // Get the video stream with enhanced constraints
@@ -360,8 +364,15 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
               const scannedCode = result.getText();
               console.log("Scanned barcode:", scannedCode);
               
-              // Validate barcode format before processing
-              if (scannedCode && /^[0-9]{8,14}$/.test(scannedCode)) {
+              // Enhanced barcode format validation supporting more types
+              const isValidBarcode = (code: string) => {
+                // EAN-13, EAN-8, UPC-A, UPC-E, Code 128, Code 39, QR codes with numeric content
+                return /^[0-9]{8,14}$/.test(code) || // Traditional barcodes
+                       /^[A-Z0-9\-\.\ \$\/\+\%]{1,43}$/.test(code) || // Code 39/128
+                       /^[0-9A-Z\-\.\$\/\+\% ]*$/.test(code); // Extended formats
+              };
+              
+              if (scannedCode && isValidBarcode(scannedCode)) {
                 // Check reward system before processing scanned barcode
                 const canProceed = await checkRewardBeforeAction();
                 if (!canProceed) {
@@ -369,14 +380,16 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   return; // Reward modal will be shown automatically
                 }
                 
-                // Track barcode scan event
-                trackEvent('barcode_scan', 'product_search', 'camera_scan', scannedCode.length);
+                // Track barcode scan event with format detection
+                const barcodeFormat = result.getBarcodeFormat().toString();
+                trackEvent('barcode_scan', 'product_search', `camera_scan_${barcodeFormat}`, scannedCode.length);
                 
+                console.log(`Successfully scanned ${barcodeFormat} barcode:`, scannedCode);
                 stopCamera();
                 onScan(scannedCode);
               } else if (scannedCode) {
                 // Log invalid format but continue scanning
-                console.warn("Invalid barcode format:", scannedCode);
+                console.warn("Unsupported barcode format:", scannedCode, "Length:", scannedCode.length);
               }
             }
             if (error && !(error instanceof NotFoundException)) {
@@ -756,17 +769,22 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                     </div>
                   </div>
                   
-                  {/* Dynamic scanning feedback */}
+                  {/* Enhanced scanning feedback with quality detection */}
                   <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-xl text-sm backdrop-blur-sm">
                     {isScanning ? (
                       <div className="flex items-center gap-2">
                         <Loader2 className="w-4 h-4 animate-spin text-primary" />
-                        <span>Initializing close-range scanner...</span>
+                        <span>Initializing advanced scanner...</span>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                        <span className="font-medium">Hold barcode close (2-8cm) for best results</span>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                          <span className="font-medium">Scanner ready - Position barcode clearly</span>
+                        </div>
+                        <div className="text-xs text-green-300 opacity-80">
+                          Multi-format support: EAN, UPC, Code128, Code39, QR
+                        </div>
                       </div>
                     )}
                   </div>
