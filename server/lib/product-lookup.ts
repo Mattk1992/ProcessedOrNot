@@ -47,9 +47,39 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
   // Get user's AI provider setting
   const userAIProvider = await getUserAIProvider(userId);
 
-  // 1. OpenFoodFacts (Primary)
+  // 1. USDA FoodData Central (Primary)
   try {
-    console.log('1. Trying OpenFoodFacts (Primary)...');
+    console.log('1. Trying USDA FoodData Central (Primary)...');
+    const usdaProduct = await fetchProductFromUSDA(barcode);
+    
+    if (usdaProduct) {
+      // Analyze ingredients if available
+      if (usdaProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            usdaProduct.ingredientsText,
+            usdaProduct.productName || "Unknown Product",
+            'en',
+            userAIProvider
+          );
+          usdaProduct.processingScore = analysis.score;
+          usdaProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze USDA ingredients:", error);
+          usdaProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+      }
+
+      console.log('Found product in USDA FoodData Central');
+      return { product: usdaProduct, source: 'USDA FoodData Central' };
+    }
+  } catch (error) {
+    console.error('USDA lookup failed:', error);
+  }
+
+  // 2. OpenFoodFacts (Secondary)
+  try {
+    console.log('2. Trying OpenFoodFacts (Secondary)...');
     const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
     
     if (openFoodFactsData && openFoodFactsData.status === 1) {
@@ -117,36 +147,6 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     }
   } catch (error) {
     console.error('OpenFoodFacts lookup failed:', error);
-  }
-
-  // 2. USDA FoodData Central (Secondary)
-  try {
-    console.log('2. Trying USDA FoodData Central (Secondary)...');
-    const usdaProduct = await fetchProductFromUSDA(barcode);
-    
-    if (usdaProduct) {
-      // Analyze ingredients if available
-      if (usdaProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            usdaProduct.ingredientsText,
-            usdaProduct.productName || "Unknown Product",
-            'en',
-            userAIProvider
-          );
-          usdaProduct.processingScore = analysis.score;
-          usdaProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze USDA ingredients:", error);
-          usdaProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in USDA FoodData Central');
-      return { product: usdaProduct, source: 'USDA FoodData Central' };
-    }
-  } catch (error) {
-    console.error('USDA lookup failed:', error);
   }
 
   // 3. FoodDB.ca
