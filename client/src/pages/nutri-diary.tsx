@@ -102,6 +102,12 @@ export default function NutriDiary() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isWeightDialogOpen, setIsWeightDialogOpen] = useState(false);
+  const [mealTimes, setMealTimes] = useState({
+    breakfast: "08:00",
+    lunch: "13:00",
+    dinner: "18:00",
+    snack: "20:00"
+  });
 
   // Date navigation functions
   const goToPreviousDay = () => {
@@ -173,6 +179,14 @@ export default function NutriDiary() {
   useEffect(() => {
     form.setValue("consumedAt", selectedDate + "T12:00");
   }, [selectedDate, form]);
+
+  // Handle meal time changes
+  const handleMealTimeChange = (mealType: string, time: string) => {
+    setMealTimes(prev => ({
+      ...prev,
+      [mealType]: time
+    }));
+  };
 
   // Fetch diary entries for selected date
   const { data: diaryEntries, isLoading } = useQuery<DiaryEntry[]>({
@@ -653,7 +667,15 @@ export default function NutriDiary() {
                     <div className="flex items-center space-x-3">
                       {getMealIcon(mealType)}
                       <div>
-                        <CardTitle className="capitalize">{mealType}</CardTitle>
+                        <div className="flex items-center space-x-3">
+                          <CardTitle className="capitalize">{mealType}</CardTitle>
+                          <Input
+                            type="time"
+                            value={mealTimes[mealType as keyof typeof mealTimes]}
+                            onChange={(e) => handleMealTimeChange(mealType, e.target.value)}
+                            className="w-20 h-8 text-sm"
+                          />
+                        </div>
                         <CardDescription>
                           {mealEntries.length} items • {mealCalories.toFixed(0)} calories
                         </CardDescription>
