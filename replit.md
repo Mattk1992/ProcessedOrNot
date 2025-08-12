@@ -1,155 +1,35 @@
-# ProcessedOrNot Scanner - Replit Documentation
+# ProcessedOrNot Scanner
 
 ## Overview
-ProcessedOrNot Scanner is a modern web application designed to analyze food products for processing levels. It leverages barcode scanning, AI-powered ingredient analysis, and an interactive chatbot (NutriBot) to provide comprehensive food product insights. The project aims to provide users with transparent and detailed information about the food they consume, fostering healthier dietary choices. It has significant market potential as a tool for health-conscious consumers and aims to become a leading platform for food transparency.
-
-## Recent Changes  
-- **FoodData Central Integration**: Successfully configured USDA FoodData Central API for enhanced product lookup:
-  - Added USDA_API_KEY environment variable with valid API key (fFVhHwzJHh3zb67Zhe7p2dcjJshrWyCgJOPXGEo5)
-  - USDA FoodData Central integrated as secondary fallback in cascading product lookup system
-  - API tested and verified working correctly for comprehensive nutritional data retrieval
-  - Enhanced product database coverage with official US government food composition data
-  - Provides detailed nutrient information when products aren't available in OpenFoodFacts
-- **Meal Time Management System**: Enhanced calendar entries and profile management with comprehensive meal timing:
-  - Added 15 meal time fields (time_meal_1 through time_meal_15) to calendar_entries database table
-  - Created corresponding meal time fields in user_onboarding database table
-  - Built dynamic "Meal Nr X Time:" input fields in profile page that show based on "Meals per Day" value
-  - Always shows "Meal Nr 1 Time:", then dynamically shows additional fields up to the set meals per day count
-  - Implemented time inputs (HH:MM format) for flexible meal scheduling throughout the day
-  - Enhanced nutrition tracking with specific meal timing capabilities for better schedule management
-- **Admin AI Management & Settings System**: Created comprehensive AI management interface for controlling AI models across the platform:
-  - Built Admin "AI Management & Settings" page accessible at `/admin-ai-management` route
-  - Created Analysis AI configuration tab with AI model dropdown (GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo)
-  - Implemented ai_configuration database table for storing AI model settings and configurations
-  - Added backend API endpoints for getting/updating AI configurations and testing AI connections
-  - Integrated AI model selection controls with real-time configuration updates
-  - Added temperature, max tokens, and system prompt customization for Analysis AI
-  - Created connection testing functionality to validate AI model accessibility
-  - Added usage statistics display and enable/disable toggles for AI features
-  - Connected admin panel with "AI Management & Settings" navigation button
-- **Profile Page Integration**: Copied complete user profile functionality to `/nutri-dashboard/profile` route:
-  - Duplicated user-profile.tsx as nutri-dashboard-profile.tsx
-  - Updated App.tsx routing to use NutriDashboardProfile component for nutri-dashboard/profile path
-  - Comprehensive profile management now available within nutrition dashboard section
-  - Includes all tabs: Account, Basic Info, Health, Lifestyle, Nutrition, and Goals
-- **Create Nutrition Schedule Form Simplified**: Streamlined the Create Nutrition Schedule form by removing three fields:
-  - Removed "Activity Level" dropdown (sedentary, lightly active, etc.)
-  - Removed "Primary Goal" dropdown (weight loss, muscle gain, etc.) - replaced with free-form "Schedule Title" text input
-  - Removed "Dietary Preferences & Restrictions" textarea field
-  - Form now focuses on essential nutrition targets and schedule duration for better user experience
-- **Dashboard Real Data Integration**: Verified and confirmed the Dashboard page uses authentic Food Diary data:
-  - Today's Summary displays real meal count, fiber, and salt totals from current day diary entries
-  - Food Processing Score shows actual average processing score from logged foods
-  - Macronutrients section displays real carbs, proteins, and fat totals from diary entries
-  - Calories section shows authentic daily calorie consumption from food logs
-  - Recent Entries section displays actual logged food items with meal types and calorie counts
-  - All data pulls from `/api/nutrition/daily-progress` and `/api/nutrition/recent-entries` endpoints
-- **Stats Tab Implementation**: Added comprehensive Stats tab to Progress page with Daily Statistics:
-  - Created tabbed interface with "Progress" and "Stats" tabs for better organization
-  - Added Daily Statistics section showing Total Calories, Total Fat, Total Carbs, and Total Proteins
-  - Implemented date selector for viewing historical nutrition data
-  - Created backend API endpoint `/api/nutrition/daily-stats` for data retrieval
-  - Added storage method `getDailyNutritionStats` to calculate daily nutrition totals from diary entries
-- **Onboarding Completion Tracking System**: Implemented comprehensive onboarding completion workflow:
-  - Added onboarding_finished boolean field to user database (default: false)
-  - Enhanced onboarding completion logic to set onboarding_finished to true when user completes process
-  - Created OnboardingPopup component with polished UI asking users to "Continue Onboarding" or "Go to Dashboard"
-  - Implemented OnboardingGuard component to show popup on login for users with incomplete onboarding
-  - Integrated popup system into main App component for seamless user experience
-  - Users with incomplete onboarding now receive a helpful prompt after authentication
-- **Dashboard Button Labels Updated**: Renamed quick action buttons on Dashboard page for improved clarity:
-  - "Add Food" → "Food Diary" 
-  - "Scan Product" → "Product Lookup"
-  - "View Progress" → "Progress & Stats"
-  - "Set Goals" → "Goals & Input Data"
-- **NutriBot AI Nutrition History Integration**: Enhanced NutriBot with intelligent nutrition diary context:
-  - Added automatic detection of nutrition history-related queries using keyword analysis
-  - Integrated recent diary entries (up to 15) into NutriBot responses when relevant
-  - Enhanced personalization with detailed nutrition patterns and eating history
-  - Updated system prompt to consider recent eating history for better recommendations
-- **Reward URL System Disabled**: Completely disabled the reward URL functionality that was blocking user searches:
-  - Updated reward system database settings to disable all reward features
-  - Modified backend API endpoints to never trigger reward URLs or blocking behavior
-  - Disabled reward counter incrementing in product search and barcode scan endpoints
-  - Users can now search and scan products without interruption from reward prompts
-  - Admin panel still shows reward system settings but system is functionally disabled
-- **User Account Type Enhancement & URL Modification for Paid Users**: Implemented comprehensive paid user account system:
-  - Enhanced database schema to support "Paid" account type alongside existing "Admin" and "Regular" types
-  - Updated UserAccountType in shared/schema.ts to include 'Paid' as valid account type
-  - Created usePaidUserNavigation custom hook for automatic URL modification for paid users
-  - Implemented PaidUserLink component that automatically appends "=paiduser" to URLs for paid users
-  - Enhanced user profile page to display paid account status with special styling and description
-  - Built NavigationWrapper component demonstrating URL modification functionality with example navigation buttons
-  - URLs automatically get "?paiduser=true" or "&paiduser=true" suffix based on existing query parameters
-  - System handles URL fragments and complex URLs correctly without breaking existing functionality
-  - Added visual indicators in user profile showing "Premium features enabled • URLs automatically include paid user indicator"
-- **Admin Panel Restructure**: Completely redesigned Admin Panel structure for improved usability and navigation:
-  - Added comprehensive Overview tab with real-time statistics and system health monitoring
-  - Organized admin functions into logical categories: Core Management and System Configuration  
-  - Created clickable navigation cards that switch between tabs for intuitive user experience
-  - Enhanced visual design with color-coded sections and hover animations
-  - Improved responsive grid layout for better mobile and desktop experience
-  - Added comprehensive Rewarding System management with enable/disable functionality
-  - Implemented structured tab navigation with 7 main sections (Overview, Users, Products, Settings, Speech, Rewards, Debug)
-- **NutriBot AI Personalization**: Enhanced NutriBot with user data integration for personalized nutrition advice:
-  - Added "ExtraInfo" parameter to getNutriBotSystemPrompt and getNutriBotResponse functions
-  - Modified NutriBot chat API endpoint to fetch and include all user profile data (except name, username, email, password)
-  - User data includes health goals, activity level, weight goals, dietary restrictions, health conditions, physical attributes, onboarding information, allergies, dietary preferences, lifestyle factors, fitness goals, cooking skills, meal prep time, and budget preferences
-  - NutriBot now provides personalized recommendations based on authenticated user's complete profile
-- **Product Analysis Settings**: Implemented customizable analysis sections with toggleable visibility:
-  - Added Product Analysis Settings button to main Product Analysis screen (moved from Add to Nutrition Diary modal)
-  - Created settings modal with checkboxes for 8 analysis sections (Processing Analysis, Nutrition Facts, Glycemic Impact, Ingredients List, Product Metadata, Nutrition Spotlight, Fun Facts, NutriBot AI Insight)
-  - Implemented localStorage persistence for user preferences
-  - Made all analysis sections conditional based on user settings
-  - Moved "Add Missing Data" button to Product Analysis screen and made it smaller
-- **User Profile System**: Created comprehensive User Profile page with authentication-based access control:
-  - Developed /profile page with editable user information (first name, last name, email)
-  - Added User Profile option to authenticated dropdown menu (hidden when logged out)
-  - Implemented authentication protection with automatic redirect to login page
-  - Created backend API endpoint for updating profile information
-  - Added User Profile link to Dashboard page in Additional Quick Actions section
-- **Homepage Restructure**: Renamed Marketing page to Home and made it the new homepage, featuring comprehensive product showcase and AI-powered food analysis information
-- **Enhanced Admin Panel Visual Design**: Improved tab styling with color-coded gradients, smooth animations, and modern visual hierarchy:
-  - Debug Cascading DB tab (blue theme)
-  - System Settings tab (emerald theme) 
-  - Speech-to-Text Settings tab (violet theme)
-  - User Management tab (orange theme)
-- **Speech-to-Text Settings Fix**: Resolved database table creation issue and encryption errors for Speech-to-Text functionality
-- **Debug Cascading DB Integration**: Integrated Debug Cascading DB functionality directly into Admin Panel as first tab, removing standalone page route
-- **Admin Panel Enhancement**: Restructured Admin Panel with tabbed interface featuring three main sections:
-  - Debug Cascading DB (comprehensive database testing and management)
-  - System Settings (application configuration)
-  - User Management (user role management and permissions)
-- **Menu Reorganization**: Completely restructured header dropdown menu with improved logical grouping:
-  - Main Navigation (always expanded)
-  - User Account (with Dashboard for Admin, User Profile, Sign Out)
-  - Admin Tools (collapsed by default - Admin Panel, Take Tour, Debug Tools)
-  - Information & Support (collapsed by default)
-  - Legal & Privacy (collapsed by default)
-- **Role-Based Access Control**: Dashboard page and admin features are restricted to Admin users only
+ProcessedOrNot Scanner is a web application that analyzes food products for processing levels. It provides comprehensive food product insights through barcode scanning, AI-powered ingredient analysis, and an interactive chatbot (NutriBot). The project aims to empower users with transparent and detailed information about their food, encouraging healthier dietary choices, and has significant market potential as a leading platform for food transparency.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 ProcessedOrNot Scanner is built on a full-stack JavaScript/TypeScript architecture.
-- **Frontend**: React with TypeScript, utilizing Vite for build processes, Shadcn/ui components with Radix UI primitives, and Tailwind CSS for styling. It supports dark/light themes and features modular component design, React Query for state management, Wouter for routing, and a context system for global state.
+- **Frontend**: React with TypeScript, Vite, Shadcn/ui, Radix UI, and Tailwind CSS. It supports dark/light themes, features modular components, React Query for state management, Wouter for routing, and a context system for global state.
 - **Backend**: Express.js server with TypeScript, providing RESTful API endpoints.
-- **Database**: PostgreSQL with Drizzle ORM for data persistence.
+- **Database**: PostgreSQL with Drizzle ORM.
 - **Deployment**: Replit autoscale deployment on Node.js 20.
-
-The system incorporates multi-language support for 7 languages with dynamic language detection. Core features include:
-- **Barcode Scanner System**: Uses ZXing library for real-time barcode recognition via camera access, with manual entry and text-based search fallbacks.
-- **Smart Lookup System**: Employs regex for barcode format detection and OpenAI for text-based product searches. It integrates with over 20 different food databases for comprehensive coverage.
-- **AI Integration**: OpenAI GPT-4o powers ingredient analysis for processing levels, the NutriBot chatbot, and generates nutrition insights and fun facts, all adaptable to the user's selected language.
-- **Data Encryption**: Comprehensive AES-256-CBC encryption for all PII (emails, names, search queries), bcrypt for password hashing, and secure session management.
-- **Security Features**: Email addresses encrypted/hashed for uniqueness, encrypted search history storage, enhanced session security, and encrypted tokens for password reset and email verification.
-- **Consent Management Platform (CMP)**: Integrated system for GDPR, US state privacy laws, and IAB Global Privacy Platform (GPP) compliance, managing user consent for ads.
-- **Reward System**: Tracks user searches/scans and triggers a reward URL visit after every 6 interactions, applicable to both logged-in and anonymous users.
-- **Mobile Application**: A corresponding Expo (React Native) mobile app replicates all web functionality, offering native barcode scanning and seamless integration.
+- **UI/UX Decisions**: Shadcn/ui components, Radix UI primitives, Tailwind CSS for styling, dark/light theme support, and a modular component design.
+- **Technical Implementations**:
+    - **Multi-language Support**: Supports 7 languages with dynamic detection.
+    - **Barcode Scanner System**: Uses ZXing library for real-time barcode recognition, with manual entry and text-based search fallbacks.
+    - **Smart Lookup System**: Employs regex for barcode format detection and OpenAI for text-based product searches, integrating with over 20 food databases.
+    - **AI Integration**: OpenAI GPT-4o powers ingredient analysis, the NutriBot chatbot, and generates nutrition insights and fun facts, adaptable to user language. Includes Admin AI Management for model selection (GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo), temperature, max tokens, and system prompt customization.
+    - **Data Security**: AES-256-CBC encryption for PII, bcrypt for password hashing, secure session management, and encrypted tokens for password reset/email verification. Email addresses are encrypted/hashed for uniqueness, and search history is encrypted.
+    - **Consent Management Platform (CMP)**: Integrated for GDPR, US state privacy laws, and IAB Global Privacy Platform (GPP) compliance.
+    - **User Profile System**: Comprehensive profile management accessible at `/nutri-dashboard/profile` with editable user information, authentication protection, and specific meal timing fields.
+    - **Onboarding System**: Tracks onboarding completion with a popup for incomplete users.
+    - **Product Analysis Settings**: Customizable analysis sections with toggleable visibility and localStorage persistence.
+    - **NutriBot AI Personalization**: Integrates user profile data (excluding PII) into NutriBot responses for personalized advice.
+    - **Admin Panel**: Redesigned with tabs for Overview, Users, Products, Settings, Speech, Rewards, and Debug, including AI Management.
+    - **Role-Based Access Control**: Dashboard and admin features restricted to Admin users. Includes "Paid" user account type with automatic URL modification.
+- **Mobile Application**: A corresponding Expo (React Native) mobile app replicates web functionality.
 
 ## External Dependencies
-- **Food Database APIs**: OpenFoodFacts (primary), FoodDB.ca, USDA Food Data Central, OpenNutrition, Nutritionix, Spoonacular, API Ninjas, UPC Database, Australian Food Composition Database, Health Canada Food Database, European Food Safety Authority (EFSA), and multiple regional food databases.
-- **Third-Party Services**: OpenAI GPT-4o (AI analysis, chatbot), ZXing Library (barcode scanning), Neon Database (PostgreSQL hosting), Assembly AI (voice-to-text for voice search).
+- **Food Database APIs**: OpenFoodFacts, FoodDB.ca, USDA Food Data Central, OpenNutrition, Nutritionix, Spoonacular, API Ninjas, UPC Database, Australian Food Composition Database, Health Canada Food Database, European Food Safety Authority (EFSA), and multiple regional food databases.
+- **Third-Party Services**: OpenAI GPT-4o, ZXing Library, Neon Database (PostgreSQL hosting), Assembly AI (voice-to-text).
 - **Core Dependencies**: React 18, Express.js, Drizzle ORM, Tailwind CSS, React Query, Radix UI.
 - **Advertising**: Google AdSense (web), Google AdMob (mobile components for future integration).
