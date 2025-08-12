@@ -23,14 +23,14 @@ export function useAuth() {
     retry: (failureCount, error: any) => {
       // Don't retry on 401 (unauthorized) errors
       if (error?.status === 401) return false;
-      // Retry up to 2 times for other errors
-      return failureCount < 2;
+      // Retry up to 1 time for other errors
+      return failureCount < 1;
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes (reduced for better responsiveness)
-    gcTime: 5 * 60 * 1000, // 5 minutes garbage collection time
-    refetchOnWindowFocus: true,
+    staleTime: 10 * 60 * 1000, // 10 minutes - increased to reduce requests
+    gcTime: 15 * 60 * 1000, // 15 minutes garbage collection time
+    refetchOnWindowFocus: false, // Disabled to reduce excessive requests
     refetchOnReconnect: true,
-    refetchInterval: 5 * 60 * 1000, // Periodic refresh every 5 minutes to maintain session
+    refetchInterval: false, // Disabled automatic polling
   });
 
   return {

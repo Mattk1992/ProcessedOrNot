@@ -117,12 +117,15 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
     console.log(`Showing ${type} ad${position ? ` at ${position}` : ''}`);
     
     if (config.platform === 'web') {
-      // Trigger AdSense ad refresh
-      try {
-        (window as any).adsbygoogle = (window as any).adsbygoogle || [];
-        (window as any).adsbygoogle.push({});
-      } catch (error) {
-        console.error('Error showing ad:', error);
+      // Only trigger ad refresh for individual ads, not page-level ads
+      if (type === 'banner') {
+        try {
+          (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+          // Push empty object to refresh individual ads only
+          (window as any).adsbygoogle.push({});
+        } catch (error) {
+          console.error('Error showing banner ad:', error);
+        }
       }
     } else {
       // Trigger AdMob ad (would work in React Native)

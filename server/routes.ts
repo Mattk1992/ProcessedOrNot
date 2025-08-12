@@ -316,23 +316,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get current user endpoint
   app.get("/api/auth/me", async (req, res) => {
-    console.log("Auth check - Session ID:", req.session.id, "User ID:", req.session.userId);
-    
     if (!req.session.userId) {
-      console.log("Auth check failed - No userId in session");
       return res.status(401).json({ message: "Not authenticated" });
     }
 
     try {
       const user = await storage.getUserById(req.session.userId);
       if (!user) {
-        console.log("Auth check failed - User not found in database:", req.session.userId);
         req.session.destroy(() => {});
         return res.status(401).json({ message: "User not found" });
       }
       
-      // Update user's last login time to maintain session activity
-      await storage.updateUser(user.id, { lastLoginAt: new Date() });
+      // Update user's last login time to maintain session activity (throttled to once per 5 minutes)
+      const now = new Date();
+      const lastUpdate = (req.session as any).lastLoginUpdate;
+      if (!lastUpdate || (now.getTime() - lastUpdate.getTime()) > 5 * 60 * 1000) {
+        await storage.updateUser(user.id, { lastLoginAt: now });
+        (req.session as any).lastLoginUpdate = now;
+      }
 
       console.log("Auth check successful for user:", user.id);
       res.json({

@@ -39,7 +39,7 @@ import NutriProgress from "@/pages/nutri-progress";
 import NutriProfile from "@/pages/nutri-profile";
 import NutritionCalendar from "@/pages/nutrition-calendar";
 import UserProfile from "@/pages/user-profile";
-import NutriDashboardProfile from "@/pages/nutri-dashboard-profile";
+
 import Onboarding from "@/pages/onboarding";
 import LookupHistory from "@/pages/lookup-history";
 import Notifications from "@/pages/notifications";
@@ -108,7 +108,7 @@ function Router() {
         <Route path="/nutri-dashboard" component={NutriDashboard} />
         <Route path="/nutri-dashboard/diary" component={NutriDiary} />
         <Route path="/nutri-dashboard/progress" component={NutriProgress} />
-        <Route path="/nutri-dashboard/profile" component={NutriDashboardProfile} />
+        <Route path="/nutri-dashboard/profile" component={UserProfile} />
         <Route path="/nutrition-calendar" component={NutritionCalendar} />
         <Route path="/notifications" component={Notifications} />
         

@@ -175,8 +175,13 @@ class ConsentIntegration {
       return;
     }
 
-    // Prevent multiple initializations
-    if (!this.initialized || (window as any).__adSenseInitialized || (window as any).__adSenseConfigured) {
+    // Prevent multiple initializations - check all possible initialization flags
+    if (!this.initialized || 
+        (window as any).__adSenseInitialized || 
+        (window as any).__adSenseConfigured || 
+        (window as any).__adSensePageLevelEnabled ||
+        document.querySelector(`script[src*="pagead2.googlesyndication.com"]`)) {
+      console.log('AdSense initialization prevented: Already initialized or in progress');
       return;
     }
 
@@ -184,24 +189,23 @@ class ConsentIntegration {
     
     // Load Google Ads only if consent is granted
     if (consent?.advertising) {
-      // Check if script already exists
-      const existingScript = document.querySelector(`script[src*="pagead2.googlesyndication.com"]`);
+      // Set all flags immediately to prevent race conditions
+      (window as any).__adSenseConfigured = true;
+      (window as any).__adSenseInitialized = true;
+      (window as any).__adSensePageLevelEnabled = true;
       
-      if (!existingScript) {
-        const script = document.createElement('script');
-        script.async = true;
-        script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-${publisherId}`;
-        script.crossOrigin = 'anonymous';
-        document.head.appendChild(script);
-      }
-
-      // Initialize adsbygoogle array only once
-      (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+      // Load script
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-${publisherId}`;
+      script.crossOrigin = 'anonymous';
       
-      // Configure AdSense only once with proper error handling
-      try {
-        // Only push enable_page_level_ads once per page load
-        if (!(window as any).__adSenseConfigured && !(window as any).__adSensePageLevelEnabled) {
+      script.onload = () => {
+        try {
+          // Initialize adsbygoogle array only once
+          (window as any).adsbygoogle = (window as any).adsbygoogle || [];
+          
+          // Configure AdSense with page-level ads
           (window as any).adsbygoogle.push({
             google_ad_client: `ca-pub-${publisherId}`,
             enable_page_level_ads: true,
@@ -212,22 +216,27 @@ class ConsentIntegration {
             }
           });
           
-          (window as any).__adSenseConfigured = true;
-          (window as any).__adSenseInitialized = true;
-          (window as any).__adSensePageLevelEnabled = true;
           adSystemManager.setActiveSystem('adsense');
           adSystemManager.markInitialized();
           console.log('AdSense initialized successfully');
-        } else {
-          console.log('AdSense initialization skipped: Already configured');
+        } catch (error) {
+          console.error('AdSense initialization error:', error);
+          // Reset flags on error
+          (window as any).__adSenseConfigured = false;
+          (window as any).__adSenseInitialized = false;
+          (window as any).__adSensePageLevelEnabled = false;
         }
-      } catch (error) {
-        console.error('AdSense initialization error:', error);
-        // Reset configuration flags on error to allow retry
+      };
+      
+      script.onerror = () => {
+        console.error('Failed to load AdSense script');
+        // Reset flags on error
         (window as any).__adSenseConfigured = false;
         (window as any).__adSenseInitialized = false;
-        // Don't reset __adSensePageLevelEnabled to prevent duplicate page-level ads
-      }
+        (window as any).__adSensePageLevelEnabled = false;
+      };
+      
+      document.head.appendChild(script);
     }
   }
 
