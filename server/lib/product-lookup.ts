@@ -403,37 +403,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Health Canada lookup failed:', error);
   }
 
-  // 12. Barcode Spider
+  // 12. EAN Search
   try {
-    console.log('12. Trying Barcode Spider...');
-    const barcodeSpiderProduct = await fetchProductFromBarcodeSpider(barcode);
-    
-    if (barcodeSpiderProduct) {
-      // Analyze ingredients if available
-      if (barcodeSpiderProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            barcodeSpiderProduct.ingredientsText,
-            barcodeSpiderProduct.productName || "Unknown Product"
-          );
-          barcodeSpiderProduct.processingScore = analysis.score;
-          barcodeSpiderProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze Barcode Spider ingredients:", error);
-          barcodeSpiderProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in Barcode Spider');
-      return { product: barcodeSpiderProduct, source: 'Barcode Spider' };
-    }
-  } catch (error) {
-    console.error('Barcode Spider lookup failed:', error);
-  }
-
-  // 13. EAN Search
-  try {
-    console.log('13. Trying EAN Search...');
+    console.log('12. Trying EAN Search...');
     const eanSearchProduct = await fetchProductFromEANSearch(barcode);
     
     if (eanSearchProduct) {
@@ -444,9 +416,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('EAN Search lookup failed:', error);
   }
 
-  // 14. UPC Database
+  // 13. UPC Database
   try {
-    console.log('14. Trying UPC Database...');
+    console.log('13. Trying UPC Database...');
     const upcProduct = await fetchProductFromUPCDatabase(barcode);
     
     if (upcProduct) {
@@ -457,7 +429,7 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('UPC Database lookup failed:', error);
   }
 
-  // 15. All lookups failed
+  // 14. All lookups failed
   console.log('All database lookups failed for barcode:', barcode);
   return { 
     product: null, 
