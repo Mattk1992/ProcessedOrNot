@@ -29,7 +29,7 @@ ProcessedOrNot Scanner is built on a full-stack JavaScript/TypeScript architectu
     - **Universal Account Type URL Modification System**: Comprehensive URL modification based on user account types:
       - Paid users: URLs automatically get "?paiduser=true" parameter
       - Regular users: URLs automatically get "?regularuser=true" parameter  
-      - Admin users: URLs remain unchanged
+      - Admin users: URLs automatically get "?adminuser=true" parameter
       - Custom hook (usePaidUserNavigation) handles URL generation and navigation
       - System intelligently handles existing query parameters, fragments, and complex URLs
       - AccountTypeTester component provides real-time testing interface

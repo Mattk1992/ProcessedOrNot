@@ -16,7 +16,7 @@ import { usePaidUserNavigation } from "@/hooks/use-paid-user-navigation";
 export function AccountTypeTester() {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { generatePaidUserUrl, isPaidUser, isRegularUser, navigateWithPaidUserSuffix, hasAccountTypeSuffix } = usePaidUserNavigation();
+  const { generatePaidUserUrl, isPaidUser, isRegularUser, isAdminUser, navigateWithPaidUserSuffix, hasAccountTypeSuffix } = usePaidUserNavigation();
   const [selectedAccountType, setSelectedAccountType] = useState<string>(user?.accountType || "Regular");
 
   const updateAccountTypeMutation = useMutation({
@@ -154,11 +154,12 @@ export function AccountTypeTester() {
             <strong>Status:</strong> {
               isPaidUser ? "✅ Paid user detected - URLs will include '?paiduser=true' parameter" :
               isRegularUser ? "✅ Regular user detected - URLs will include '?regularuser=true' parameter" :
-              "ℹ️ Admin user - URLs remain unchanged"
+              isAdminUser ? "✅ Admin user detected - URLs will include '?adminuser=true' parameter" :
+              "ℹ️ Unknown user type - URLs remain unchanged"
             }
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            {hasAccountTypeSuffix ? "URL modification is active" : "No URL modification for admin users"}
+            {hasAccountTypeSuffix ? "URL modification is active for this account type" : "No URL modification"}
           </p>
         </div>
       </CardContent>

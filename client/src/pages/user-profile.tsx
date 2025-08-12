@@ -483,6 +483,11 @@ export default function UserProfile() {
                       Standard account • URLs automatically include "?regularuser=true" parameter
                     </p>
                   )}
+                  {user.accountType === 'Admin' && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Administrator account • URLs automatically include "?adminuser=true" parameter
+                    </p>
+                  )}
                 </div>
               </div>
 

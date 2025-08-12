@@ -12,7 +12,7 @@ interface NavigationWrapperProps {
  * to child components via render props or context
  */
 export function NavigationWrapper({ children, className }: NavigationWrapperProps) {
-  const { navigateWithPaidUserSuffix, generatePaidUserUrl, isPaidUser, isRegularUser, accountType } = usePaidUserNavigation();
+  const { navigateWithPaidUserSuffix, generatePaidUserUrl, isPaidUser, isRegularUser, isAdminUser, accountType } = usePaidUserNavigation();
 
   // Example usage component showing how to use the navigation methods
   const ExampleUsage = () => (
@@ -23,6 +23,7 @@ export function NavigationWrapper({ children, className }: NavigationWrapperProp
           Account Type: {accountType || 'Unknown'} {
             isPaidUser ? '(URLs get "?paiduser=true")' :
             isRegularUser ? '(URLs get "?regularuser=true")' :
+            isAdminUser ? '(URLs get "?adminuser=true")' :
             '(No URL modification)'
           }
         </p>

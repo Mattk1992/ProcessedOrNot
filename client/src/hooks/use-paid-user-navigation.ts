@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
  * Custom hook for handling URL navigation with automatic account type suffixes
  * - Paid users get "=paiduser" suffix
  * - Regular users get "=regularuser" suffix
- * - Admin users get no suffix
+ * - Admin users get "=adminuser" suffix
  */
 export function usePaidUserNavigation() {
   const { user } = useAuth();
@@ -26,6 +26,8 @@ export function usePaidUserNavigation() {
       accountParam = 'paiduser=true';
     } else if (user?.accountType === 'Regular') {
       accountParam = 'regularuser=true';
+    } else if (user?.accountType === 'Admin') {
+      accountParam = 'adminuser=true';
     }
     
     if (accountParam) {
@@ -53,7 +55,7 @@ export function usePaidUserNavigation() {
   /**
    * Generate a URL with automatic account type suffix
    * @param path - The base path
-   * @returns The modified path with account type parameter, or original path for admin users
+   * @returns The modified path with account type parameter
    */
   const generatePaidUserUrl = useCallback((path: string): string => {
     // Determine account parameter based on user type
@@ -62,6 +64,8 @@ export function usePaidUserNavigation() {
       accountParam = 'paiduser=true';
     } else if (user?.accountType === 'Regular') {
       accountParam = 'regularuser=true';
+    } else if (user?.accountType === 'Admin') {
+      accountParam = 'adminuser=true';
     }
     
     if (!accountParam) {
@@ -96,12 +100,18 @@ export function usePaidUserNavigation() {
    */
   const isRegularUser = user?.accountType === 'Regular';
 
+  /**
+   * Check if current user is an admin user
+   */
+  const isAdminUser = user?.accountType === 'Admin';
+
   return {
     navigateWithPaidUserSuffix,
     generatePaidUserUrl,
     isPaidUser,
     isRegularUser,
+    isAdminUser,
     accountType: user?.accountType,
-    hasAccountTypeSuffix: isPaidUser || isRegularUser
+    hasAccountTypeSuffix: isPaidUser || isRegularUser || isAdminUser
   };
 }
