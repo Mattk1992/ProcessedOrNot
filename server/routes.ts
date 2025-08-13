@@ -3631,7 +3631,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Generate AI schedule
-      const generationResult = await AIScheduleGenerator.generateSchedule(formDataWithMealTimes, userProfile);
+      // Generate the AI schedule with prompt history logging
+      const sessionId = req.sessionID || `session_${Date.now()}`;
+      const generationResult = await AIScheduleGenerator.generateSchedule(
+        formDataWithMealTimes,
+        userProfile,
+        req.session.userId,
+        sessionId,
+        req.ip,
+        req.get('User-Agent')
+      );
       
       // Create calendar entry from generated schedule
       const calendarEntry = await storage.createCalendarEntry({
@@ -3934,6 +3943,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     return names[databaseId] || databaseId;
   }
+
+  // Prompt History endpoints
+  app.get('/api/prompt-history', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 50;
+      const promptHistory = await storage.getPromptHistoryByUser(req.session.userId, limit);
+      
+      res.json(promptHistory);
+    } catch (error) {
+      console.error('Error fetching prompt history:', error);
+      res.status(500).json({ message: 'Failed to fetch prompt history' });
+    }
+  });
+
+  app.get('/api/prompt-history/stats', requireAuth, async (req: Request, res: Response) => {
+    try {
+      // Only allow admin users to view overall stats
+      const currentUser = await storage.getUser(req.session.userId);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: 'Access denied. Admin access required.' });
+      }
+
+      const stats = await storage.getPromptHistoryStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching prompt history stats:', error);
+      res.status(500).json({ message: 'Failed to fetch prompt history stats' });
+    }
+  });
+
+  app.get('/api/prompt-history/feature/:feature', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const feature = req.params.feature;
+      const limit = parseInt(req.query.limit as string) || 100;
+      
+      // Only allow admin users to view feature-specific history
+      const currentUser = await storage.getUser(req.session.userId);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: 'Access denied. Admin access required.' });
+      }
+
+      const promptHistory = await storage.getPromptHistoryByFeature(feature, limit);
+      res.json(promptHistory);
+    } catch (error) {
+      console.error('Error fetching feature prompt history:', error);
+      res.status(500).json({ message: 'Failed to fetch feature prompt history' });
+    }
+  });
 
   return httpServer;
 }

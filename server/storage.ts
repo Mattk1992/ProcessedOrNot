@@ -78,7 +78,10 @@ import {
   type InsertAiConfiguration,
   userMealTimes,
   type UserMealTimes,
-  type InsertUserMealTimes
+  type InsertUserMealTimes,
+  promptHistory,
+  type PromptHistory,
+  type InsertPromptHistory
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -310,6 +313,18 @@ export interface IStorage {
   getUserMealTimes(userId: number): Promise<UserMealTimes | undefined>;
   createUserMealTimes(mealTimes: InsertUserMealTimes): Promise<UserMealTimes>;
   updateUserMealTimes(userId: number, updates: Partial<InsertUserMealTimes>): Promise<UserMealTimes | undefined>;
+
+  // Prompt History methods
+  createPromptHistory(entry: InsertPromptHistory): Promise<PromptHistory>;
+  getPromptHistoryByUser(userId: number, limit?: number): Promise<PromptHistory[]>;
+  getPromptHistoryByFeature(feature: string, limit?: number): Promise<PromptHistory[]>;
+  getPromptHistoryStats(): Promise<{
+    totalPrompts: number;
+    totalTokensUsed: number;
+    avgResponseTime: number;
+    modelUsage: Record<string, number>;
+    featureUsage: Record<string, number>;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2830,6 +2845,89 @@ export class DatabaseStorage implements IStorage {
       .where(eq(userMealTimes.userId, userId))
       .returning();
     return updatedMealTimes;
+  }
+
+  // Prompt History methods
+  async createPromptHistory(entry: InsertPromptHistory): Promise<PromptHistory> {
+    const [promptEntry] = await db
+      .insert(promptHistory)
+      .values(entry)
+      .returning();
+    return promptEntry;
+  }
+
+  async getPromptHistoryByUser(userId: number, limit: number = 50): Promise<PromptHistory[]> {
+    return db
+      .select()
+      .from(promptHistory)
+      .where(eq(promptHistory.userId, userId))
+      .orderBy(desc(promptHistory.createdAt))
+      .limit(limit);
+  }
+
+  async getPromptHistoryByFeature(feature: string, limit: number = 100): Promise<PromptHistory[]> {
+    return db
+      .select()
+      .from(promptHistory)
+      .where(eq(promptHistory.feature, feature))
+      .orderBy(desc(promptHistory.createdAt))
+      .limit(limit);
+  }
+
+  async getPromptHistoryStats(): Promise<{
+    totalPrompts: number;
+    totalTokensUsed: number;
+    avgResponseTime: number;
+    modelUsage: Record<string, number>;
+    featureUsage: Record<string, number>;
+  }> {
+    const [totalPromptsResult] = await db
+      .select({ count: sql`count(*)` })
+      .from(promptHistory);
+
+    const [totalTokensResult] = await db
+      .select({ sum: sql`sum(${promptHistory.tokensUsed})` })
+      .from(promptHistory)
+      .where(isNotNull(promptHistory.tokensUsed));
+
+    const [avgTimeResult] = await db
+      .select({ avg: sql`avg(${promptHistory.generationTimeMs})` })
+      .from(promptHistory)
+      .where(isNotNull(promptHistory.generationTimeMs));
+
+    const modelUsageResults = await db
+      .select({ 
+        model: promptHistory.aiModel, 
+        count: sql`count(*)` 
+      })
+      .from(promptHistory)
+      .groupBy(promptHistory.aiModel);
+
+    const featureUsageResults = await db
+      .select({ 
+        feature: promptHistory.feature, 
+        count: sql`count(*)` 
+      })
+      .from(promptHistory)
+      .groupBy(promptHistory.feature);
+
+    const modelUsage: Record<string, number> = {};
+    modelUsageResults.forEach(result => {
+      modelUsage[result.model] = Number(result.count);
+    });
+
+    const featureUsage: Record<string, number> = {};
+    featureUsageResults.forEach(result => {
+      featureUsage[result.feature] = Number(result.count);
+    });
+
+    return {
+      totalPrompts: Number(totalPromptsResult.count),
+      totalTokensUsed: Number(totalTokensResult.sum) || 0,
+      avgResponseTime: Number(avgTimeResult.avg) || 0,
+      modelUsage,
+      featureUsage
+    };
   }
 }
 

@@ -887,6 +887,63 @@ export const insertScheduleGenHistorySchema = createInsertSchema(scheduleGenHist
 export type InsertScheduleGenHistory = z.infer<typeof insertScheduleGenHistorySchema>;
 export type ScheduleGenHistory = typeof scheduleGenHistory.$inferSelect;
 
+// Prompt History table - for storing all AI input/output data
+export const promptHistory = pgTable("prompt_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
+  
+  // Request metadata
+  sessionId: text("session_id"), // For tracking conversation sessions
+  feature: varchar("feature", { length: 100 }).notNull(), // 'schedule_generation', 'nutribot', 'analysis', etc.
+  aiModel: varchar("ai_model", { length: 50 }).notNull(), // 'gpt-4o', 'gpt-4o-mini', etc.
+  
+  // Input data
+  userPrompt: text("user_prompt"), // The user's input/request
+  systemPrompt: text("system_prompt"), // System/instruction prompt sent to AI
+  fullPrompt: text("full_prompt"), // Complete prompt sent to AI API
+  requestData: jsonb("request_data"), // Additional request parameters/context
+  
+  // Output data
+  aiResponse: text("ai_response"), // Raw AI response
+  processedResponse: text("processed_response"), // Cleaned/processed response
+  parsedData: jsonb("parsed_data"), // Structured data extracted from response
+  
+  // Performance metrics
+  tokensUsed: integer("tokens_used"),
+  promptTokens: integer("prompt_tokens"),
+  completionTokens: integer("completion_tokens"),
+  generationTimeMs: integer("generation_time_ms"),
+  
+  // Status and error tracking
+  status: varchar("status", { length: 20 }).default("success").notNull(), // 'success', 'error', 'partial'
+  errorMessage: text("error_message"),
+  retryCount: integer("retry_count").default(0),
+  
+  // Quality metrics
+  responseLength: integer("response_length"),
+  parseSuccess: boolean("parse_success").default(true),
+  userRating: integer("user_rating"), // 1-5 rating if user provides feedback
+  
+  // Metadata
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("prompt_history_user_id_idx").on(table.userId),
+  featureIdx: index("prompt_history_feature_idx").on(table.feature),
+  modelIdx: index("prompt_history_model_idx").on(table.aiModel),
+  statusIdx: index("prompt_history_status_idx").on(table.status),
+  createdAtIdx: index("prompt_history_created_at_idx").on(table.createdAt),
+}));
+
+export const insertPromptHistorySchema = createInsertSchema(promptHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPromptHistory = z.infer<typeof insertPromptHistorySchema>;
+export type PromptHistory = typeof promptHistory.$inferSelect;
+
 // AI Configuration table - for managing AI models and settings
 export const aiConfiguration = pgTable("ai_configuration", {
   id: serial("id").primaryKey(),

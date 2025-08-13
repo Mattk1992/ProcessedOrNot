@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import { UserOnboarding } from "@shared/schema";
+import { storage } from '../storage';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -204,7 +205,11 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
 
   static async generateSchedule(
     formData: ScheduleFormData,
-    userProfile: UserOnboarding
+    userProfile: UserOnboarding,
+    userId?: number,
+    sessionId?: string,
+    ipAddress?: string,
+    userAgent?: string
   ): Promise<{
     schedule: GeneratedSchedule;
     prompt: string;
@@ -213,17 +218,46 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
     generationTimeMs: number;
   }> {
     const startTime = Date.now();
+    let promptHistoryId: number | undefined;
     
     try {
       const prompt = this.createPrompt(formData, userProfile);
       
       const selectedModel = formData.aiModel || "gpt-4o";
+      const systemPrompt = "You are a professional nutritionist and dietitian AI assistant. Always respond with valid JSON in the exact format requested.";
+      
+      // Log prompt to database before API call
+      if (userId) {
+        const promptHistoryEntry = await storage.createPromptHistory({
+          userId,
+          sessionId,
+          feature: 'schedule_generation',
+          aiModel: selectedModel,
+          userPrompt: `Goal: ${formData.goal}`,
+          systemPrompt,
+          fullPrompt: prompt,
+          requestData: {
+            formData,
+            userProfile: {
+              id: userProfile.id,
+              age: userProfile.age,
+              gender: userProfile.gender,
+              activityLevel: userProfile.activityLevel
+            }
+          },
+          status: 'processing',
+          ipAddress,
+          userAgent
+        });
+        promptHistoryId = promptHistoryEntry.id;
+      }
+
       const response = await openai.chat.completions.create({
         model: selectedModel,
         messages: [
           {
             role: "system",
-            content: "You are a professional nutritionist and dietitian AI assistant. Always respond with valid JSON in the exact format requested."
+            content: systemPrompt
           },
           {
             role: "user",
@@ -276,6 +310,40 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
         schedule.endDate = endDate.toISOString().split('T')[0];
       }
 
+      // Update prompt history with successful result
+      if (userId && promptHistoryId) {
+        await storage.createPromptHistory({
+          userId,
+          sessionId,
+          feature: 'schedule_generation',
+          aiModel: selectedModel,
+          userPrompt: `Goal: ${formData.goal}`,
+          systemPrompt,
+          fullPrompt: prompt,
+          requestData: {
+            formData,
+            userProfile: {
+              id: userProfile.id,
+              age: userProfile.age,
+              gender: userProfile.gender,
+              activityLevel: userProfile.activityLevel
+            }
+          },
+          aiResponse,
+          processedResponse: typeof cleanedResponse !== 'undefined' ? cleanedResponse : aiResponse,
+          parsedData: schedule,
+          tokensUsed: response.usage?.total_tokens,
+          promptTokens: response.usage?.prompt_tokens,
+          completionTokens: response.usage?.completion_tokens,
+          generationTimeMs,
+          responseLength: aiResponse.length,
+          parseSuccess: true,
+          status: 'success',
+          ipAddress,
+          userAgent
+        });
+      }
+
       return {
         schedule,
         prompt,
@@ -285,13 +353,43 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
       };
     } catch (error) {
       const generationTimeMs = Date.now() - startTime;
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Log error to prompt history
+      if (userId && promptHistoryId) {
+        await storage.createPromptHistory({
+          userId,
+          sessionId,
+          feature: 'schedule_generation',
+          aiModel: formData.aiModel || "gpt-4o",
+          userPrompt: `Goal: ${formData.goal}`,
+          systemPrompt: "You are a professional nutritionist and dietitian AI assistant. Always respond with valid JSON in the exact format requested.",
+          fullPrompt: this.createPrompt(formData, userProfile),
+          requestData: {
+            formData,
+            userProfile: {
+              id: userProfile.id,
+              age: userProfile.age,
+              gender: userProfile.gender,
+              activityLevel: userProfile.activityLevel
+            }
+          },
+          generationTimeMs,
+          status: 'error',
+          errorMessage,
+          parseSuccess: false,
+          ipAddress,
+          userAgent
+        });
+      }
+      
       console.error('AI Schedule Generation Error:', {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
         stack: error instanceof Error ? error.stack : undefined,
         formData,
         userProfile: userProfile.id || 'unknown'
       });
-      throw new Error(`AI schedule generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`AI schedule generation failed: ${errorMessage}`);
     }
   }
 }
