@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Calendar, Clock, TrendingUp, ArrowLeft, Download, Copy, ExternalLink, Smartphone, Monitor, Plus, Sparkles, Settings } from "lucide-react";
+import { Calendar, Clock, TrendingUp, ArrowLeft, Download, Copy, ExternalLink, Smartphone, Monitor, Plus, Sparkles, Settings, Edit, Trash2, MoreVertical } from "lucide-react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, addWeeks, subWeeks, addDays, subDays } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
 import type { CalendarEntry } from "@shared/schema";
@@ -51,6 +52,19 @@ export default function NutritionCalendar() {
     aiModel: 'gpt-4o'
   });
   const [selectedAiModel, setSelectedAiModel] = useState('gpt-4o');
+  const [editingEntry, setEditingEntry] = useState<CalendarEntry | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: '',
+    description: '',
+    goal: '',
+    duration: '',
+    dailyCalories: '',
+    dailyProtein: '',
+    dailyCarbs: '',
+    dailyFat: '',
+    specialNotes: ''
+  });
   
   // Sync AI model with form
   useEffect(() => {
@@ -62,10 +76,100 @@ export default function NutritionCalendar() {
   const [isGeneratingSchedule, setIsGeneratingSchedule] = useState(false);
   const { toast } = useToast();
 
+  // Open edit dialog and populate form
+  const openEditDialog = (entry: CalendarEntry) => {
+    setEditingEntry(entry);
+    setEditForm({
+      title: entry.title || '',
+      description: entry.description || '',
+      goal: entry.goal || '',
+      duration: entry.duration?.toString() || '',
+      dailyCalories: entry.dailyCalories?.toString() || '',
+      dailyProtein: entry.dailyProtein?.toString() || '',
+      dailyCarbs: entry.dailyCarbs?.toString() || '',
+      dailyFat: entry.dailyFat?.toString() || '',
+      specialNotes: entry.specialNotes || ''
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  // Handle edit form submission
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEntry) return;
+
+    const updateData = {
+      title: editForm.title,
+      description: editForm.description,
+      goal: editForm.goal,
+      duration: editForm.duration ? parseInt(editForm.duration) : null,
+      dailyCalories: editForm.dailyCalories ? parseInt(editForm.dailyCalories) : null,
+      dailyProtein: editForm.dailyProtein ? parseInt(editForm.dailyProtein) : null,
+      dailyCarbs: editForm.dailyCarbs ? parseInt(editForm.dailyCarbs) : null,
+      dailyFat: editForm.dailyFat ? parseInt(editForm.dailyFat) : null,
+      specialNotes: editForm.specialNotes
+    };
+
+    updateEntryMutation.mutate({ id: editingEntry.id, data: updateData });
+  };
+
+  // Handle delete confirmation
+  const handleDelete = (entry: CalendarEntry) => {
+    deleteEntryMutation.mutate(entry.id);
+  };
+
   // Fetch calendar entries
   const { data: calendarEntries = [], isLoading: isLoadingEntries } = useQuery<CalendarEntry[]>({
     queryKey: ['/api/calendar/entries'],
     enabled: isAuthenticated,
+  });
+
+  // Update calendar entry mutation
+  const updateEntryMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) =>
+      apiRequest(`/api/calendar/entries/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' },
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/calendar/entries'] });
+      toast({
+        title: "Plan Updated",
+        description: "Your nutrition plan has been updated successfully.",
+      });
+      setIsEditDialogOpen(false);
+      setEditingEntry(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update nutrition plan.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete calendar entry mutation
+  const deleteEntryMutation = useMutation({
+    mutationFn: (id: number) =>
+      apiRequest(`/api/calendar/entries/${id}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/calendar/entries'] });
+      toast({
+        title: "Plan Deleted",
+        description: "Your nutrition plan has been deleted successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete nutrition plan.",
+        variant: "destructive",
+      });
+    },
   });
 
   // Create calendar entry mutation
@@ -538,7 +642,56 @@ export default function NutritionCalendar() {
                       <CardContent className="p-4">
                         <div className="flex flex-col gap-4">
                           <div>
-                            <h3 className="text-lg font-semibold">{entry.title}</h3>
+                            <div className="flex items-center justify-between">
+                              <h3 className="text-lg font-semibold">{entry.title}</h3>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                  <DropdownMenuItem
+                                    onClick={() => openEditDialog(entry)}
+                                    className="cursor-pointer"
+                                  >
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit Plan
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <DropdownMenuItem
+                                        onSelect={(e) => e.preventDefault()}
+                                        className="cursor-pointer text-destructive focus:text-destructive"
+                                      >
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete Plan
+                                      </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          This will permanently delete the nutrition plan "{entry.title}". This action cannot be undone.
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          onClick={() => handleDelete(entry)}
+                                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                        >
+                                          Delete
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                             {entry.description && (
                               <p className="text-muted-foreground">{entry.description}</p>
                             )}
@@ -930,6 +1083,153 @@ export default function NutritionCalendar() {
                 </Button>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Plan Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Nutrition Plan</DialogTitle>
+              <DialogDescription>
+                Update the details of your nutrition plan
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-title">Plan Title</Label>
+                  <Input
+                    id="edit-title"
+                    value={editForm.title}
+                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                    placeholder="Enter plan title"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-goal">Goal</Label>
+                  <Input
+                    id="edit-goal"
+                    value={editForm.goal}
+                    onChange={(e) => setEditForm({ ...editForm, goal: e.target.value })}
+                    placeholder="Weight loss, muscle gain, etc."
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-description">Description</Label>
+                <Textarea
+                  id="edit-description"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  placeholder="Brief description of the plan"
+                  rows={3}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                  <Label htmlFor="edit-duration">Duration (days)</Label>
+                  <Input
+                    id="edit-duration"
+                    type="number"
+                    min="1"
+                    value={editForm.duration}
+                    onChange={(e) => setEditForm({ ...editForm, duration: e.target.value })}
+                    placeholder="7"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-calories">Daily Calories</Label>
+                  <Input
+                    id="edit-calories"
+                    type="number"
+                    min="500"
+                    max="5000"
+                    value={editForm.dailyCalories}
+                    onChange={(e) => setEditForm({ ...editForm, dailyCalories: e.target.value })}
+                    placeholder="2000"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-protein">Protein (g)</Label>
+                  <Input
+                    id="edit-protein"
+                    type="number"
+                    min="0"
+                    value={editForm.dailyProtein}
+                    onChange={(e) => setEditForm({ ...editForm, dailyProtein: e.target.value })}
+                    placeholder="150"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-carbs">Carbs (g)</Label>
+                  <Input
+                    id="edit-carbs"
+                    type="number"
+                    min="0"
+                    value={editForm.dailyCarbs}
+                    onChange={(e) => setEditForm({ ...editForm, dailyCarbs: e.target.value })}
+                    placeholder="200"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-fat">Fat (g)</Label>
+                  <Input
+                    id="edit-fat"
+                    type="number"
+                    min="0"
+                    value={editForm.dailyFat}
+                    onChange={(e) => setEditForm({ ...editForm, dailyFat: e.target.value })}
+                    placeholder="67"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-notes">Special Notes</Label>
+                <Textarea
+                  id="edit-notes"
+                  value={editForm.specialNotes}
+                  onChange={(e) => setEditForm({ ...editForm, specialNotes: e.target.value })}
+                  placeholder="Any special considerations, allergies, or preferences"
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex gap-2 pt-4">
+                <Button 
+                  type="submit" 
+                  disabled={updateEntryMutation.isPending}
+                  className="flex-1"
+                >
+                  {updateEntryMutation.isPending ? (
+                    <>
+                      <Clock className="w-4 h-4 mr-2 animate-spin" />
+                      Updating Plan...
+                    </>
+                  ) : (
+                    <>
+                      <Edit className="w-4 h-4 mr-2" />
+                      Update Plan
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setIsEditDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
           </DialogContent>
         </Dialog>
       </div>

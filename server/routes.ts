@@ -3539,6 +3539,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update a calendar entry
+  app.put('/api/calendar/entries/:id', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const entryId = parseInt(req.params.id);
+      if (isNaN(entryId)) {
+        return res.status(400).json({ message: "Invalid entry ID" });
+      }
+
+      // Verify entry belongs to the user
+      const existingEntry = await storage.getCalendarEntryById(entryId);
+      if (!existingEntry) {
+        return res.status(404).json({ message: "Calendar entry not found" });
+      }
+      if (existingEntry.userId !== req.session.userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const updatedEntry = await storage.updateCalendarEntry(entryId, req.body);
+      if (!updatedEntry) {
+        return res.status(404).json({ message: "Calendar entry not found" });
+      }
+
+      res.json(updatedEntry);
+    } catch (error) {
+      console.error("Error updating calendar entry:", error);
+      res.status(500).json({ message: "Failed to update calendar entry" });
+    }
+  });
+
+  // Delete a calendar entry
+  app.delete('/api/calendar/entries/:id', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const entryId = parseInt(req.params.id);
+      if (isNaN(entryId)) {
+        return res.status(400).json({ message: "Invalid entry ID" });
+      }
+
+      // Verify entry belongs to the user
+      const existingEntry = await storage.getCalendarEntryById(entryId);
+      if (!existingEntry) {
+        return res.status(404).json({ message: "Calendar entry not found" });
+      }
+      if (existingEntry.userId !== req.session.userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const deleted = await storage.deleteCalendarEntry(entryId, req.session.userId);
+      if (!deleted) {
+        return res.status(404).json({ message: "Calendar entry not found" });
+      }
+
+      res.json({ success: true, message: "Calendar entry deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting calendar entry:", error);
+      res.status(500).json({ message: "Failed to delete calendar entry" });
+    }
+  });
+
   // Update calendar entry
   app.patch('/api/calendar/entries/:id', async (req, res) => {
     try {
