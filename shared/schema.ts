@@ -53,6 +53,12 @@ export const searchHistory = pgTable("search_history", {
   glycemicExplanation: text("glycemic_explanation"),
   dataSource: text("data_source"),
   lookupSource: text("lookup_source"),
+  lastUpdated: text("last_updated"),
+  
+  // Media fields for comprehensive product data storage
+  additionalImages: text("additional_images").array(), // URLs to additional product images
+  videoUrl: text("video_url"), // URL to product video
+  mediaGallery: jsonb("media_gallery"), // JSON array of media IDs for comprehensive media management
   
   // Error handling
   errorMessage: text("error_message"),
