@@ -48,13 +48,9 @@ import Notifications from "@/pages/notifications";
 import { AdManagerProvider, AdConsentBanner } from "@/components/ads";
 import AdSettings from "@/pages/ad-settings";
 import SiteInfo from "@/pages/site-info";
-import ConsentSettings from "@/pages/consent-settings";
 import AdPlacementGuidelinesPage from "@/pages/ad-placement-guidelines";
-import UserConsentCollectionPage from "@/pages/user-consent-collection";
 import AdComplianceDashboard from "@/pages/ad-compliance-dashboard";
 import GPTConfigPage from "@/pages/gpt-config";
-import ConsentBanner from "@/components/consent-banner";
-import { consentIntegration } from "@/lib/consent-integration";
 import OnboardingGuard from "@/components/onboarding-guard";
 import { usePaidUserNavigation } from "@/hooks/use-paid-user-navigation";
 import { useLocation } from "wouter";
@@ -119,7 +115,6 @@ function Router() {
 
   return (
     <Layout onStartTutorial={handleStartTutorial}>
-      <ConsentBanner />
       <OnboardingGuard />
       <Switch>
         <Route path="/" component={Home} />
@@ -136,8 +131,6 @@ function Router() {
         <Route path="/onboarding" component={Onboarding} />
         <Route path="/nutri-dashboard/settings" component={Settings} />
         <Route path="/nutri-dashboard/site-info" component={SiteInfo} />
-        <Route path="/consent-settings" component={ConsentSettings} />
-        <Route path="/privacy-settings" component={ConsentSettings} />
         <Route path="/admin" component={Admin} />
         <Route path="/admin-search-history" component={AdminSearchHistory} />
         <Route path="/admin-product-database" component={AdminProductDatabase} />
@@ -173,7 +166,6 @@ function Router() {
         {/* Ad Compliance Pages */}
         <Route path="/ad-compliance-dashboard" component={AdComplianceDashboard} />
         <Route path="/ad-placement-guidelines" component={AdPlacementGuidelinesPage} />
-        <Route path="/user-consent-collection" component={UserConsentCollectionPage} />
         <Route path="/gpt-config" component={GPTConfigPage} />
         
         <Route component={NotFound} />
@@ -190,11 +182,6 @@ function App() {
       console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');
     } else {
       initGA();
-    }
-    // Initialize consent integration for Google services (only if not already done)
-    if (!(window as any).__globalAdInitialized) {
-      consentIntegration.initializeGoogleAds('1163701043339821');
-      (window as any).__globalAdInitialized = true;
     }
   }, []);
 

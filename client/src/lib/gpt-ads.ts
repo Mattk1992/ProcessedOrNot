@@ -47,14 +47,7 @@ class GPTAdManager {
       return;
     }
 
-    // Check consent before initializing GPT
-    const consentManager = await import('@/lib/consent-manager').then(m => m.consentManager);
-    const consent = consentManager.getConsent();
-    
-    if (!consent?.advertising) {
-      console.log('GPT initialization skipped: No advertising consent');
-      return;
-    }
+    // GPT initialization (consent management removed)
 
     return new Promise((resolve, reject) => {
       try {

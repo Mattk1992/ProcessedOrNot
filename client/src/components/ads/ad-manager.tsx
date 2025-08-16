@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { consentManager, type ConsentData } from '@/lib/consent-manager';
 
 interface AdConfig {
   adsenseClientId?: string;
@@ -41,20 +40,10 @@ export function AdManagerProvider({ children }: { children: React.ReactNode }) {
   const [isAdBlocked, setIsAdBlocked] = useState(false);
   const [canShowAds, setCanShowAds] = useState(false);
 
-  // Listen for CMP consent changes
+  // Simplified consent handling (consent management removed)
   useEffect(() => {
-    const unsubscribe = consentManager.addConsentListener((consent: ConsentData | null) => {
-      const hasAdvertisingConsent = consent?.advertising ?? false;
-      setConfig(prev => ({ ...prev, consentGiven: hasAdvertisingConsent }));
-      setCanShowAds(hasAdvertisingConsent && config.globallyEnabled && !isAdBlocked);
-    });
-    
-    // Check initial consent state
-    const currentConsent = consentManager.getConsent();
-    const hasAdvertisingConsent = currentConsent?.advertising ?? false;
-    setConfig(prev => ({ ...prev, consentGiven: hasAdvertisingConsent }));
-    
-    return unsubscribe;
+    setConfig(prev => ({ ...prev, consentGiven: true }));
+    setCanShowAds(config.globallyEnabled && !isAdBlocked);
   }, [isAdBlocked, config.globallyEnabled]);
 
   // Update config when global ads setting changes

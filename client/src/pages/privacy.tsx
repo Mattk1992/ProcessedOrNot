@@ -122,46 +122,32 @@ export default function Privacy() {
             </CardContent>
           </Card>
 
-          {/* Advertising and Cookies */}
+          {/* Advertising */}
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Monitor className="h-5 w-5 text-primary" />
-                Advertising and Cookies
+                Advertising
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <h3 className="font-semibold text-blue-800 mb-2">Google AdSense Integration</h3>
                 <p className="text-blue-700 text-sm">
-                  This website uses Google AdSense to serve advertisements. Google and other third-party vendors use cookies to serve ads based on your prior visits to our website or other websites.
+                  This website uses Google AdSense to serve advertisements. These ads help support our free service.
                 </p>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-2">How Cookies Enable Personalized Advertising</h3>
+                <h3 className="font-semibold mb-2">Advertising Standards</h3>
                 <p className="text-gray-600 mb-2">
-                  Cookies allow Google and its partners to serve ads to you based on your visit to our site and/or other sites on the Internet. This includes:
+                  All advertisements on our platform are served through Google AdSense and comply with Google's advertising policies, including:
                 </p>
                 <ul className="text-gray-600 space-y-1 text-sm ml-4">
-                  <li>• <strong>Interest-based advertising:</strong> Ads selected based on your browsing patterns</li>
-                  <li>• <strong>Demographic targeting:</strong> Ads relevant to your general demographic information</li>
-                  <li>• <strong>Contextual advertising:</strong> Ads related to the content you're viewing</li>
-                  <li>• <strong>Remarketing:</strong> Ads for products or services you've previously shown interest in</li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">Data Collection from Advertising Partners</h3>
-                <p className="text-gray-600 mb-2">
-                  Our advertising partners may collect and use information about you, including:
-                </p>
-                <ul className="text-gray-600 space-y-1 text-sm ml-4">
-                  <li>• Websites you visit and apps you use</li>
-                  <li>• Location information (with your consent)</li>
-                  <li>• Device information and identifiers</li>
-                  <li>• Search terms and interaction data</li>
-                  <li>• Demographic and interest categories</li>
+                  <li>• Family-safe content standards</li>
+                  <li>• Prohibited content restrictions</li>
+                  <li>• Transparency in sponsored content</li>
+                  <li>• Compliance with applicable advertising laws</li>
                 </ul>
               </div>
 
@@ -169,7 +155,7 @@ export default function Privacy() {
                 <h3 className="font-semibold text-orange-800 mb-2">Your Advertising Choices</h3>
                 <div className="space-y-2">
                   <p className="text-orange-700 text-sm">
-                    You have full control over personalized advertising. You can opt out of personalized ads at any time:
+                    You can control your advertising experience through Google's settings:
                   </p>
                   <div className="flex flex-col gap-2">
                     <a 
@@ -190,65 +176,8 @@ export default function Privacy() {
                       <ExternalLink className="h-4 w-4" />
                       Digital Advertising Alliance Opt-Out
                     </a>
-                    <a 
-                      href="/privacy-settings" 
-                      className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 text-sm font-medium"
-                    >
-                      <ExternalLink className="h-4 w-4" />
-                      Manage Your Consent Settings
-                    </a>
                   </div>
                 </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">Types of Cookies We Use</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <h4 className="font-medium mb-1">Essential Cookies</h4>
-                    <ul className="text-gray-600 space-y-1 text-sm">
-                      <li>• Authentication and security</li>
-                      <li>• Session management</li>
-                      <li>• User preferences</li>
-                      <li>• Site functionality</li>
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-medium mb-1">Advertising Cookies</h4>
-                    <ul className="text-gray-600 space-y-1 text-sm">
-                      <li>• Personalized ad targeting</li>
-                      <li>• Ad frequency management</li>
-                      <li>• Performance measurement</li>
-                      <li>• Cross-site tracking (with consent)</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <h3 className="font-semibold mb-2">Third-Party Advertising Partners</h3>
-                <p className="text-gray-600 text-sm mb-2">
-                  We work with the following advertising technology providers:
-                </p>
-                <ul className="text-gray-600 space-y-1 text-sm">
-                  <li>• <strong>Google AdSense:</strong> Primary advertising network</li>
-                  <li>• <strong>Google Analytics:</strong> Website analytics and advertising insights</li>
-                  <li>• <strong>DoubleClick:</strong> Ad serving and campaign management</li>
-                  <li>• <strong>Other Google Advertising Products:</strong> As integrated with AdSense</li>
-                </ul>
-                <p className="text-gray-500 text-xs mt-2">
-                  Each partner has their own privacy policy governing their data collection and use practices.
-                </p>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">International Data Transfers</h3>
-                <p className="text-gray-600 text-sm">
-                  Advertising data may be transferred to and processed in countries outside your residence, including the United States. 
-                  We ensure appropriate safeguards are in place for international transfers, including adequacy decisions and 
-                  Standard Contractual Clauses where applicable.
-                </p>
               </div>
             </CardContent>
           </Card>

@@ -56,26 +56,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize PostgreSQL session store
   const PgSession = pgSession(session);
   
-  // Configure session middleware with enhanced security and persistent storage
+  // Configure basic session middleware
   app.use(session({
     store: new PgSession({
-      pool: pool, // Connection pool
-      tableName: 'session', // Table name to store sessions
-      createTableIfMissing: true, // Create the table if it doesn't exist
+      pool: pool,
+      tableName: 'session',
+      createTableIfMissing: true,
     }),
     secret: process.env.SESSION_SECRET || 'secure-session-key-change-in-production-2024',
     resave: false,
-    saveUninitialized: false, // Don't create sessions for anonymous users unless needed
-    name: 'sessionId', // Change default session name for security
-    rolling: true, // Refresh session expiry on activity
-    cookie: {
-      secure: false, // Set to false for development, should be true in production with HTTPS
-      httpOnly: true,
-      sameSite: 'lax', // Better compatibility than 'strict'
-      path: '/', // Ensure cookie is available for all paths
-      domain: undefined, // Let the browser set the domain automatically
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days default
-    },
+    saveUninitialized: false,
   }));
 
   // Helper functions for reward tracking (works for both logged-in and anonymous users)
@@ -289,10 +279,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Session destroy error:", err);
         return res.status(500).json({ message: "Logout failed" });
       }
-      // Clear session cookies with proper path and domain settings
-      res.clearCookie('connect.sid', { path: '/', httpOnly: true });
-      res.clearCookie('sessionId', { path: '/', httpOnly: true });
-      console.log("Logout successful - Session destroyed and cookies cleared");
+      // Session destroyed
+      console.log("Logout successful - Session destroyed");
       res.json({ message: "Logout successful" });
     });
   });
@@ -305,9 +293,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error("Session destroy error (GET):", err);
         return res.status(500).send("Logout failed");
       }
-      // Clear session cookies with proper path and domain settings
-      res.clearCookie('connect.sid', { path: '/', httpOnly: true });
-      res.clearCookie('sessionId', { path: '/', httpOnly: true });
+      // Session destroyed
       console.log("Logout GET successful - Session destroyed and redirecting to home");
       // Redirect to home page after logout
       res.redirect('/');
