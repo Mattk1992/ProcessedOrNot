@@ -318,7 +318,13 @@ export default function NutriDiary() {
         
         setIsProductLookupActive(false);
       } else {
-        setProductLookupError(data.error || "Product not found. You can enter the details manually.");
+        const errorMsg = data.error || "Product not found in our databases";
+        setProductLookupError(errorMsg);
+        toast({
+          title: "Product Not Found",
+          description: "This product isn't in our databases yet. You can add it manually below.",
+          variant: "default",
+        });
       }
     } catch (error: any) {
       setProductLookupError(error.message || "Failed to lookup product");
@@ -557,16 +563,30 @@ export default function NutriDiary() {
                       )}
                       
                       {productLookupError && (
-                        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
-                          <p className="text-sm text-destructive">{productLookupError}</p>
-                          <Button
-                            onClick={() => setProductLookupError("")}
-                            variant="link"
-                            size="sm"
-                            className="text-destructive p-0 h-auto mt-1"
-                          >
-                            Dismiss
-                          </Button>
+                        <div className="p-3 bg-muted/50 border border-border rounded-md">
+                          <p className="text-sm text-muted-foreground">{productLookupError}</p>
+                          <div className="flex gap-2 mt-2">
+                            <Button
+                              onClick={() => {
+                                setProductLookupError("");
+                                // Switch to manual entry tab
+                                const manualTab = document.querySelector('[value="manual"]') as HTMLElement;
+                                manualTab?.click();
+                              }}
+                              size="sm"
+                              className="h-auto py-1"
+                            >
+                              Enter Manually
+                            </Button>
+                            <Button
+                              onClick={() => setProductLookupError("")}
+                              variant="outline"
+                              size="sm"
+                              className="h-auto py-1"
+                            >
+                              Try Again
+                            </Button>
+                          </div>
                         </div>
                       )}
                     </div>
