@@ -470,6 +470,24 @@ export default function NutriDiary() {
     }, 0);
   };
 
+  // Calculate daily totals
+  const getDailyTotal = (nutrient: 'calories' | 'fat' | 'carbohydrates' | 'proteins' | 'salt' | 'fiber') => {
+    return filteredEntries.reduce((total, entry) => {
+      const value = entry[nutrient] || 0;
+      return total + (value * entry.servingSize);
+    }, 0);
+  };
+
+  const dailyStats = {
+    calories: getDailyTotal('calories'),
+    fat: getDailyTotal('fat'),
+    carbohydrates: getDailyTotal('carbohydrates'),
+    proteins: getDailyTotal('proteins'),
+    salt: getDailyTotal('salt'),
+    fiber: getDailyTotal('fiber'),
+    totalEntries: filteredEntries.length
+  };
+
   const onSubmit = (data: DiaryEntryForm) => {
     console.log('Form submission data:', data);
     
@@ -912,6 +930,75 @@ export default function NutriDiary() {
               className="pl-10"
             />
           </div>
+        </div>
+
+        {/* Daily Statistics */}
+        <div className="mb-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Scale className="w-5 h-5" />
+                Daily Statistics
+              </CardTitle>
+              <CardDescription>
+                Nutritional summary for {formatDisplayDate(selectedDate)}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-lg">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                    {Math.round(dailyStats.calories)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Calories</div>
+                </div>
+                
+                <div className="bg-green-50 dark:bg-green-950/20 p-4 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                    {Math.round(dailyStats.proteins)}g
+                  </div>
+                  <div className="text-sm text-muted-foreground">Protein</div>
+                </div>
+                
+                <div className="bg-yellow-50 dark:bg-yellow-950/20 p-4 rounded-lg">
+                  <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                    {Math.round(dailyStats.carbohydrates)}g
+                  </div>
+                  <div className="text-sm text-muted-foreground">Carbs</div>
+                </div>
+                
+                <div className="bg-red-50 dark:bg-red-950/20 p-4 rounded-lg">
+                  <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+                    {Math.round(dailyStats.fat)}g
+                  </div>
+                  <div className="text-sm text-muted-foreground">Fat</div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div className="bg-purple-50 dark:bg-purple-950/20 p-4 rounded-lg">
+                  <div className="text-lg font-semibold text-purple-600 dark:text-purple-400">
+                    {Math.round(dailyStats.fiber)}g
+                  </div>
+                  <div className="text-sm text-muted-foreground">Fiber</div>
+                </div>
+                
+                <div className="bg-orange-50 dark:bg-orange-950/20 p-4 rounded-lg">
+                  <div className="text-lg font-semibold text-orange-600 dark:text-orange-400">
+                    {Math.round(dailyStats.salt * 1000)}mg
+                  </div>
+                  <div className="text-sm text-muted-foreground">Salt</div>
+                </div>
+                
+                <div className="bg-gray-50 dark:bg-gray-950/20 p-4 rounded-lg">
+                  <div className="text-lg font-semibold text-gray-600 dark:text-gray-400">
+                    {dailyStats.totalEntries}
+                  </div>
+                  <div className="text-sm text-muted-foreground">Entries</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Diary Entries by Meal */}
