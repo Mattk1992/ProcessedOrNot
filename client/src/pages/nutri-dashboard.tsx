@@ -67,19 +67,19 @@ export default function NutriDashboard() {
 
   // Fetch daily progress
   const { data: dailyProgress } = useQuery<DailyProgress>({
-    queryKey: ["/api/nutrition/daily-progress", selectedDate],
+    queryKey: ["/api/nutrition/daily-stats", selectedDate],
     enabled: isAuthenticated,
   });
 
   // Fetch weight progress
-  const { data: weightProgress } = useQuery<WeightProgress>({
-    queryKey: ["/api/nutrition/weight-progress"],
+  const { data: weightEntries } = useQuery<any[]>({
+    queryKey: ["/api/nutrition/weight"],
     enabled: isAuthenticated,
   });
 
   // Fetch recent diary entries
   const { data: recentEntries } = useQuery({
-    queryKey: ["/api/nutrition/recent-entries"],
+    queryKey: ["/api/nutrition/recent"],
     enabled: isAuthenticated,
   });
 
@@ -176,7 +176,16 @@ export default function NutriDashboard() {
   };
 
   const currentGoals = goals || defaultGoals;
-  const progress = dailyProgress || {
+  const progress = dailyProgress ? {
+    calories: dailyProgress.totalCalories || 0,
+    fat: dailyProgress.totalFat || 0,
+    carbs: dailyProgress.totalCarbohydrates || 0,
+    proteins: dailyProgress.totalProteins || 0,
+    salt: dailyProgress.totalSalt || 0,
+    fiber: dailyProgress.totalFiber || 0,
+    averageProcessingScore: dailyProgress.averageProcessingScore || 0,
+    entriesCount: dailyProgress.entriesCount || 0,
+  } : {
     calories: 0,
     fat: 0,
     carbs: 0,
@@ -186,6 +195,25 @@ export default function NutriDashboard() {
     averageProcessingScore: 0,
     entriesCount: 0,
   };
+
+  // Calculate weight progress from weight entries
+  const weightProgress = weightEntries && weightEntries.length > 0 ? (() => {
+    const sortedEntries = [...weightEntries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const currentWeight = sortedEntries[0]?.weight || 0;
+    const lastWeighed = sortedEntries[0]?.date || new Date().toISOString();
+    
+    // Calculate weight change over last week
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const weekAgoEntry = sortedEntries.find(entry => new Date(entry.date) <= weekAgo);
+    const weightChange = weekAgoEntry ? currentWeight - weekAgoEntry.weight : 0;
+    
+    return {
+      currentWeight,
+      weightChange,
+      lastWeighed
+    };
+  })() : null;
 
   const getProgressPercentage = (current: number, target: number) => {
     return Math.min((current / target) * 100, 100);
@@ -468,7 +496,7 @@ export default function NutriDashboard() {
                   <div className="text-center">
                     <p className="text-2xl font-bold">{weightProgress.currentWeight} kg</p>
                     <p className={`text-sm ${weightProgress.weightChange >= 0 ? 'text-red-500' : 'text-green-500'}`}>
-                      {weightProgress.weightChange >= 0 ? '+' : ''}{weightProgress.weightChange} kg this week
+                      {weightProgress.weightChange >= 0 ? '+' : ''}{weightProgress.weightChange.toFixed(1)} kg this week
                     </p>
                     <p className="text-xs text-muted-foreground mt-1">
                       Last weighed: {new Date(weightProgress.lastWeighed).toLocaleDateString()}
