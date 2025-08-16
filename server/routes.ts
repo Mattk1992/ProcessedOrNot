@@ -3613,29 +3613,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete calendar entry
-  app.delete('/api/calendar/entries/:id', async (req, res) => {
-    try {
-      if (!req.session.userId) {
-        return res.status(401).json({ message: "Authentication required" });
-      }
-
-      const entryId = parseInt(req.params.id);
-      if (isNaN(entryId)) {
-        return res.status(400).json({ message: "Invalid entry ID" });
-      }
-
-      const success = await storage.deleteCalendarEntry(entryId, req.session.userId);
-      if (!success) {
-        return res.status(404).json({ message: "Calendar entry not found" });
-      }
-
-      res.json({ message: "Calendar entry deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting calendar entry:", error);
-      res.status(500).json({ message: "Failed to delete calendar entry" });
-    }
-  });
 
   // AI-powered schedule generation
   app.post('/api/calendar/generate-schedule', async (req, res) => {

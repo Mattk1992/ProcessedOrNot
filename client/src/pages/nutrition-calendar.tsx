@@ -127,11 +127,7 @@ export default function NutritionCalendar() {
   // Update calendar entry mutation
   const updateEntryMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) =>
-      apiRequest(`/api/calendar/entries/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
-      }),
+      apiRequest('PUT', `/api/calendar/entries/${id}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/calendar/entries'] });
       toast({
@@ -153,9 +149,7 @@ export default function NutritionCalendar() {
   // Delete calendar entry mutation
   const deleteEntryMutation = useMutation({
     mutationFn: (id: number) =>
-      apiRequest(`/api/calendar/entries/${id}`, {
-        method: 'DELETE',
-      }),
+      apiRequest('DELETE', `/api/calendar/entries/${id}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/calendar/entries'] });
       toast({
