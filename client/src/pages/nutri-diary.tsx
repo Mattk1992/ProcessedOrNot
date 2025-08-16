@@ -41,16 +41,24 @@ import BarcodeScanner from "@/components/barcode-scanner";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 
 const diaryEntrySchema = z.object({
+  productBarcode: z.string().optional(),
   productName: z.string().min(1, "Product name is required"),
   productBrands: z.string().optional(),
+  productImageUrl: z.string().optional(),
   servingSize: z.number().min(0.1, "Serving size must be at least 0.1"),
   servingUnit: z.string().default("serving"),
   calories: z.number().min(0).optional(),
   fat: z.number().min(0).optional(),
+  saturatedFat: z.number().min(0).optional(),
   carbohydrates: z.number().min(0).optional(),
+  sugars: z.number().min(0).optional(),
   proteins: z.number().min(0).optional(),
   salt: z.number().min(0).optional(),
   fiber: z.number().min(0).optional(),
+  processingScore: z.number().min(0).max(10).optional(),
+  processingExplanation: z.string().optional(),
+  glycemicIndex: z.number().min(0).optional(),
+  glycemicLoad: z.number().min(0).optional(),
   mealType: z.enum(["breakfast", "lunch", "dinner", "snack"]),
   consumedAt: z.string(),
   notes: z.string().optional(),
@@ -156,16 +164,24 @@ export default function NutriDiary() {
   const form = useForm<DiaryEntryForm>({
     resolver: zodResolver(diaryEntrySchema),
     defaultValues: {
+      productBarcode: "",
       productName: "",
       productBrands: "",
+      productImageUrl: "",
       servingSize: 1,
       servingUnit: "serving",
       calories: 0,
       fat: 0,
+      saturatedFat: 0,
       carbohydrates: 0,
+      sugars: 0,
       proteins: 0,
       salt: 0,
       fiber: 0,
+      processingScore: undefined,
+      processingExplanation: "",
+      glycemicIndex: undefined,
+      glycemicLoad: undefined,
       mealType: "breakfast",
       consumedAt: selectedDate + "T12:00",
       notes: "",
@@ -297,15 +313,23 @@ export default function NutriDiary() {
       if (data.product) {
         const product = data.product;
         // Populate form with product data
+        form.setValue("productBarcode", input || "");
         form.setValue("productName", product.productName || "");
         form.setValue("productBrands", product.brands || "");
+        form.setValue("productImageUrl", product.imageUrl || "");
+        form.setValue("processingScore", product.processingScore || undefined);
+        form.setValue("processingExplanation", product.processingExplanation || "");
+        form.setValue("glycemicIndex", product.glycemicIndex || undefined);
+        form.setValue("glycemicLoad", product.glycemicLoad || undefined);
         
         // Extract nutritional data from nutriments
         if (product.nutriments) {
           const nutriments = product.nutriments;
           form.setValue("calories", nutriments.energy_kcal || nutriments['energy-kcal'] || 0);
           form.setValue("fat", nutriments.fat || 0);
+          form.setValue("saturatedFat", nutriments.saturated_fat || nutriments['saturated-fat'] || 0);
           form.setValue("carbohydrates", nutriments.carbohydrates || 0);
+          form.setValue("sugars", nutriments.sugars || 0);
           form.setValue("proteins", nutriments.proteins || 0);
           form.setValue("salt", nutriments.salt || 0);
           form.setValue("fiber", nutriments.fiber || 0);
@@ -447,7 +471,20 @@ export default function NutriDiary() {
   };
 
   const onSubmit = (data: DiaryEntryForm) => {
-    addEntryMutation.mutate(data);
+    console.log('Form submission data:', data);
+    
+    // Ensure consumedAt is properly formatted as ISO string
+    const formattedData = {
+      ...data,
+      consumedAt: new Date(data.consumedAt).toISOString(),
+      // Set defaults for missing optional fields
+      processingScore: data.processingScore || undefined,
+      glycemicIndex: data.glycemicIndex || undefined,
+      glycemicLoad: data.glycemicLoad || undefined,
+    };
+    
+    console.log('Formatted submission data:', formattedData);
+    addEntryMutation.mutate(formattedData);
   };
 
   return (
