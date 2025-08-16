@@ -42,18 +42,30 @@ export function URLStatusDisplay() {
   }, []);
   
   const hasAccountParam = () => {
-    const url = new URL(currentUrl);
-    return url.searchParams.has('paiduser') || 
-           url.searchParams.has('regularuser') || 
-           url.searchParams.has('adminuser');
+    try {
+      if (!currentUrl) return false;
+      const url = new URL(currentUrl);
+      return url.searchParams.has('paiduser') || 
+             url.searchParams.has('regularuser') || 
+             url.searchParams.has('adminuser');
+    } catch (error) {
+      console.warn('Invalid URL in hasAccountParam:', currentUrl, error);
+      return false;
+    }
   };
   
   const getAccountParamValue = () => {
-    const url = new URL(currentUrl);
-    if (url.searchParams.has('adminuser')) return 'adminuser=true';
-    if (url.searchParams.has('paiduser')) return 'paiduser=true';
-    if (url.searchParams.has('regularuser')) return 'regularuser=true';
-    return 'none';
+    try {
+      if (!currentUrl) return 'none';
+      const url = new URL(currentUrl);
+      if (url.searchParams.has('adminuser')) return 'adminuser=true';
+      if (url.searchParams.has('paiduser')) return 'paiduser=true';
+      if (url.searchParams.has('regularuser')) return 'regularuser=true';
+      return 'none';
+    } catch (error) {
+      console.warn('Invalid URL in getAccountParamValue:', currentUrl, error);
+      return 'none';
+    }
   };
   
   return (
