@@ -15,7 +15,9 @@ import {
   Scale,
   Utensils,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Scan,
+  Loader2
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -35,6 +37,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import BarcodeScanner from "@/components/barcode-scanner";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 
 const diaryEntrySchema = z.object({
@@ -110,6 +113,9 @@ export default function NutriDiary() {
     snack: "20:00"
   });
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [isProductLookupActive, setIsProductLookupActive] = useState(false);
+  const [isLookingUpProduct, setIsLookingUpProduct] = useState(false);
+  const [productLookupError, setProductLookupError] = useState<string>("");
 
   // Date navigation functions
   const goToPreviousDay = () => {
@@ -191,11 +197,12 @@ export default function NutriDiary() {
   // Update local state when saved meal times are loaded
   useEffect(() => {
     if (savedMealTimes) {
+      const times = savedMealTimes as any;
       setMealTimes({
-        breakfast: savedMealTimes.breakfastTime || "08:00",
-        lunch: savedMealTimes.lunchTime || "13:00",
-        dinner: savedMealTimes.dinnerTime || "18:00",
-        snack: savedMealTimes.snackTime || "20:00"
+        breakfast: times.breakfastTime || "08:00",
+        lunch: times.lunchTime || "13:00",
+        dinner: times.dinnerTime || "18:00",
+        snack: times.snackTime || "20:00"
       });
     }
   }, [savedMealTimes]);
@@ -268,6 +275,57 @@ export default function NutriDiary() {
     },
     enabled: isAuthenticated,
   });
+
+  // Product lookup function
+  const handleProductLookup = async (input: string) => {
+    setIsLookingUpProduct(true);
+    setProductLookupError("");
+    
+    try {
+      const response = await fetch(`/api/products/search`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: input })
+      });
+      
+      if (!response.ok) {
+        throw new Error("Failed to lookup product");
+      }
+      
+      const data = await response.json();
+      
+      if (data.product) {
+        const product = data.product;
+        // Populate form with product data
+        form.setValue("productName", product.productName || "");
+        form.setValue("productBrands", product.brands || "");
+        
+        // Extract nutritional data from nutriments
+        if (product.nutriments) {
+          const nutriments = product.nutriments;
+          form.setValue("calories", nutriments.energy_kcal || nutriments['energy-kcal'] || 0);
+          form.setValue("fat", nutriments.fat || 0);
+          form.setValue("carbohydrates", nutriments.carbohydrates || 0);
+          form.setValue("proteins", nutriments.proteins || 0);
+          form.setValue("salt", nutriments.salt || 0);
+          form.setValue("fiber", nutriments.fiber || 0);
+        }
+        
+        toast({
+          title: "Product Found",
+          description: `Found ${product.productName} from ${data.source}`,
+        });
+        
+        setIsProductLookupActive(false);
+      } else {
+        setProductLookupError(data.error || "Product not found. You can enter the details manually.");
+      }
+    } catch (error: any) {
+      setProductLookupError(error.message || "Failed to lookup product");
+    } finally {
+      setIsLookingUpProduct(false);
+    }
+  };
 
   // Add diary entry mutation
   const addEntryMutation = useMutation({
@@ -432,7 +490,7 @@ export default function NutriDiary() {
                   Add Food
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-md">
+              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Add Food Entry</DialogTitle>
                   <DialogDescription>
@@ -440,8 +498,83 @@ export default function NutriDiary() {
                   </DialogDescription>
                 </DialogHeader>
                 
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <Tabs defaultValue="manual" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="scan" className="flex items-center gap-2">
+                      <Scan className="w-4 h-4" />
+                      Scan Barcode
+                    </TabsTrigger>
+                    <TabsTrigger value="manual" className="flex items-center gap-2">
+                      <Edit3 className="w-4 h-4" />
+                      Manual Entry
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="scan" className="space-y-4">
+                    <div className="text-center space-y-4">
+                      <h3 className="font-semibold">Scan Product Barcode</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Scan a barcode to automatically fill in product information
+                      </p>
+                      
+                      {!isProductLookupActive ? (
+                        <Button
+                          onClick={() => setIsProductLookupActive(true)}
+                          disabled={isLookingUpProduct}
+                          className="w-full"
+                          variant="outline"
+                        >
+                          {isLookingUpProduct ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Looking up product...
+                            </>
+                          ) : (
+                            <>
+                              <Scan className="w-4 h-4 mr-2" />
+                              Start Barcode Scanner
+                            </>
+                          )}
+                        </Button>
+                      ) : (
+                        <div className="space-y-4">
+                          <BarcodeScanner
+                            onScan={handleProductLookup}
+                            isLoading={isLookingUpProduct}
+                          />
+                          <Button
+                            onClick={() => {
+                              setIsProductLookupActive(false);
+                              setProductLookupError("");
+                            }}
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                          >
+                            Cancel Scanner
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {productLookupError && (
+                        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                          <p className="text-sm text-destructive">{productLookupError}</p>
+                          <Button
+                            onClick={() => setProductLookupError("")}
+                            variant="link"
+                            size="sm"
+                            className="text-destructive p-0 h-auto mt-1"
+                          >
+                            Dismiss
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="manual">
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <FormField
                       control={form.control}
                       name="productName"
@@ -652,20 +785,22 @@ export default function NutriDiary() {
                       )}
                     />
                     
-                    <div className="flex justify-end space-x-2">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        onClick={() => setIsAddDialogOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit" disabled={addEntryMutation.isPending}>
-                        {addEntryMutation.isPending ? "Adding..." : "Add Entry"}
-                      </Button>
-                    </div>
-                  </form>
-                </Form>
+                        <div className="flex justify-end space-x-2">
+                          <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => setIsAddDialogOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button type="submit" disabled={addEntryMutation.isPending}>
+                            {addEntryMutation.isPending ? "Adding..." : "Add Entry"}
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
+                  </TabsContent>
+                </Tabs>
               </DialogContent>
             </Dialog>
           </div>
