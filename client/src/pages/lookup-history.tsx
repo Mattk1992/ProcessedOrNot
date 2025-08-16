@@ -378,8 +378,8 @@ export default function LookupHistory() {
 
                     {/* Actions */}
                     <div className="flex flex-col space-y-2 ml-4">
-                      {item.resultFound && item.productBarcode && (
-                        <Link href={`/product-lookup?barcode=${item.productBarcode}`}>
+                      {item.resultFound && (
+                        <Link href={`/search-history/view/${item.id}`}>
                           <Button variant="outline" size="sm">
                             <Eye className="w-4 h-4 mr-1" />
                             View

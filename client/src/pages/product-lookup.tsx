@@ -31,20 +31,6 @@ export default function ProductLookup() {
     queryKey: ["/api/settings/tutorial-overlay"],
   });
 
-  // Handle URL parameters for automatic searching
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const barcodeParam = urlParams.get('barcode');
-    const queryParam = urlParams.get('q');
-    
-    if (barcodeParam && !currentBarcode) {
-      // Auto-search for barcode from URL parameter
-      handleScan(barcodeParam);
-    } else if (queryParam && !currentBarcode) {
-      // Auto-search for text query from URL parameter
-      handleScan(decodeURIComponent(queryParam));
-    }
-  }, [location]);
 
   // Check if this is a first-time user and tutorial is enabled by admin
   useEffect(() => {

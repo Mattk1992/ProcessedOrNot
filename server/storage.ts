@@ -132,6 +132,7 @@ export interface IStorage {
   // Search history methods
   createSearchHistory(searchHistory: InsertSearchHistory): Promise<SearchHistory>;
   getSearchHistoryBySearchId(searchId: string): Promise<SearchHistory | undefined>;
+  getSearchHistoryById(historyId: number, userId: number): Promise<SearchHistory | undefined>;
   getSearchHistoryByInput(searchInput: string): Promise<SearchHistory | undefined>;
   getAllSearchHistory(): Promise<SearchHistory[]>;
   getRecentSearchHistory(limit?: number): Promise<SearchHistory[]>;
@@ -752,6 +753,24 @@ export class DatabaseStorage implements IStorage {
       .from(searchHistory)
       .where(eq(searchHistory.searchId, searchId));
     return searchRecord || undefined;
+  }
+
+  async getSearchHistoryById(historyId: number, userId: number): Promise<SearchHistory | undefined> {
+    const [searchRecord] = await db
+      .select()
+      .from(searchHistory)
+      .where(and(
+        eq(searchHistory.id, historyId),
+        eq(searchHistory.userId, userId)
+      ));
+    
+    if (!searchRecord) return undefined;
+    
+    // Decrypt for return
+    return {
+      ...searchRecord,
+      searchInput: decryptSearchData(searchRecord.searchInput)
+    };
   }
 
   async getSearchHistoryByInput(searchInput: string): Promise<SearchHistory | undefined> {

@@ -1313,6 +1313,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get search history by database ID
+  app.get("/api/search-history/by-id/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const historyId = parseInt(req.params.id);
+      if (isNaN(historyId)) {
+        return res.status(400).json({ message: "Invalid history ID" });
+      }
+
+      const searchRecord = await storage.getSearchHistoryById(historyId, req.session.userId);
+      
+      if (!searchRecord) {
+        return res.status(404).json({ 
+          message: "Search record not found" 
+        });
+      }
+      
+      res.json(searchRecord);
+    } catch (error) {
+      console.error("Error fetching search record by ID:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch search record" 
+      });
+    }
+  });
+
   // Re-analyze products missing glycemic index data
   app.post("/api/admin/reanalyze-products", requireAuth, async (req, res) => {
     try {

@@ -43,6 +43,7 @@ import UserProfile from "@/pages/user-profile";
 
 import Onboarding from "@/pages/onboarding";
 import LookupHistory from "@/pages/lookup-history";
+import SearchHistoryView from "@/pages/search-history-view";
 import Notifications from "@/pages/notifications";
 
 import { AdManagerProvider, AdConsentBanner } from "@/components/ads";
@@ -157,6 +158,7 @@ function Router() {
         
         {/* Lookup History Page */}
         <Route path="/lookup-history" component={LookupHistory} />
+        <Route path="/search-history/view/:id" component={SearchHistoryView} />
         
 
         
