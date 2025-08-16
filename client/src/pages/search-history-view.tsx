@@ -7,7 +7,11 @@ import {
   Clock,
   ExternalLink,
   Star,
-  Info
+  Info,
+  Activity,
+  Zap,
+  FileText,
+  BarChart3
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,8 +33,13 @@ interface SearchHistoryItem {
   productName?: string;
   productBrands?: string;
   productImageUrl?: string;
+  productIngredientsText?: string;
+  productNutriments?: any;
   processingScore?: number;
   processingExplanation?: string;
+  glycemicIndex?: number;
+  glycemicLoad?: number;
+  glycemicExplanation?: string;
   dataSource?: string;
   lookupSource?: string;
   errorMessage?: string;
@@ -267,6 +276,43 @@ export default function SearchHistoryView() {
                         </div>
                       )}
 
+                      {/* Glycemic Information */}
+                      {(historyItem.glycemicIndex || historyItem.glycemicLoad) && (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                          <div className="flex items-start space-x-2">
+                            <Activity className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <h4 className="font-medium mb-3 text-blue-800 dark:text-blue-200">Glycemic Information</h4>
+                              <div className="grid grid-cols-2 gap-4 mb-3">
+                                {historyItem.glycemicIndex && (
+                                  <div>
+                                    <div className="flex items-center space-x-2">
+                                      <Zap className="w-4 h-4 text-blue-500" />
+                                      <span className="font-medium text-sm">Glycemic Index</span>
+                                    </div>
+                                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{historyItem.glycemicIndex}</p>
+                                  </div>
+                                )}
+                                {historyItem.glycemicLoad && (
+                                  <div>
+                                    <div className="flex items-center space-x-2">
+                                      <BarChart3 className="w-4 h-4 text-blue-500" />
+                                      <span className="font-medium text-sm">Glycemic Load</span>
+                                    </div>
+                                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{historyItem.glycemicLoad}</p>
+                                  </div>
+                                )}
+                              </div>
+                              {historyItem.glycemicExplanation && (
+                                <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
+                                  {historyItem.glycemicExplanation}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Data Source */}
                       {historyItem.dataSource && (
                         <div className="pt-4 border-t border-border/50">
@@ -278,6 +324,93 @@ export default function SearchHistoryView() {
                       )}
                     </div>
                   </div>
+
+                  {/* Ingredients Section */}
+                  {historyItem.productIngredientsText && (
+                    <div className="mt-6 pt-6 border-t border-border/50">
+                      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                        <div className="flex items-start space-x-2">
+                          <FileText className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <h4 className="font-medium mb-3 text-green-800 dark:text-green-200">Ingredients List</h4>
+                            <p className="text-sm text-green-700 dark:text-green-300 leading-relaxed">
+                              {historyItem.productIngredientsText}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Nutritional Information */}
+                  {historyItem.productNutriments && Object.keys(historyItem.productNutriments).length > 0 && (
+                    <div className="mt-6 pt-6 border-t border-border/50">
+                      <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4">
+                        <div className="flex items-start space-x-2">
+                          <BarChart3 className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <h4 className="font-medium mb-3 text-orange-800 dark:text-orange-200">Nutritional Information</h4>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                              {historyItem.productNutriments.energy && (
+                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
+                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Energy</span>
+                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.energy} kJ</span>
+                                </div>
+                              )}
+                              {historyItem.productNutriments.fat && (
+                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
+                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Fat</span>
+                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.fat}g</span>
+                                </div>
+                              )}
+                              {historyItem.productNutriments.carbohydrates && (
+                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
+                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Carbs</span>
+                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.carbohydrates}g</span>
+                                </div>
+                              )}
+                              {historyItem.productNutriments.proteins && (
+                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
+                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Protein</span>
+                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.proteins}g</span>
+                                </div>
+                              )}
+                              {historyItem.productNutriments.sugars && (
+                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
+                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Sugars</span>
+                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.sugars}g</span>
+                                </div>
+                              )}
+                              {historyItem.productNutriments.salt && (
+                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
+                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Salt</span>
+                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.salt}g</span>
+                                </div>
+                              )}
+                              {historyItem.productNutriments.fiber && (
+                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
+                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Fiber</span>
+                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.fiber}g</span>
+                                </div>
+                              )}
+                              {historyItem.productNutriments.sodium && (
+                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
+                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Sodium</span>
+                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.sodium}mg</span>
+                                </div>
+                              )}
+                              {historyItem.productNutriments['saturated-fat'] && (
+                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
+                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Saturated Fat</span>
+                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments['saturated-fat']}g</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Action Buttons */}
                   <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t border-border/50">
