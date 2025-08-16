@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 import BarcodeScanner from "@/components/barcode-scanner";
 import ProductResults from "@/components/product-results";
@@ -23,11 +24,27 @@ export default function ProductLookup() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const { isAuthenticated, user } = useAuth();
+  const [location] = useLocation();
 
   // Fetch tutorial overlay setting from admin
   const { data: tutorialSetting } = useQuery<{ enabled: boolean; source: string }>({
     queryKey: ["/api/settings/tutorial-overlay"],
   });
+
+  // Handle URL parameters for automatic searching
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const barcodeParam = urlParams.get('barcode');
+    const queryParam = urlParams.get('q');
+    
+    if (barcodeParam && !currentBarcode) {
+      // Auto-search for barcode from URL parameter
+      handleScan(barcodeParam);
+    } else if (queryParam && !currentBarcode) {
+      // Auto-search for text query from URL parameter
+      handleScan(decodeURIComponent(queryParam));
+    }
+  }, [location]);
 
   // Check if this is a first-time user and tutorial is enabled by admin
   useEffect(() => {
