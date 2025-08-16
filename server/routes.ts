@@ -1316,8 +1316,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get search history by database ID
   app.get("/api/search-history/by-id/:id", async (req, res) => {
     try {
-      if (!req.session.userId) {
-        return res.status(401).json({ message: "Authentication required" });
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
       }
 
       const historyId = parseInt(req.params.id);
@@ -1325,7 +1326,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid history ID" });
       }
 
-      const searchRecord = await storage.getSearchHistoryById(historyId, req.session.userId);
+      const searchRecord = await storage.getSearchHistoryById(historyId, userId);
       
       if (!searchRecord) {
         return res.status(404).json({ 
