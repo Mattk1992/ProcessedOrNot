@@ -273,15 +273,6 @@ export default function NutriDashboard() {
             </Card>
           </Link>
           
-          <Link href="/nutri-dashboard/profile">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-4 text-center">
-                <Target className="w-8 h-8 text-purple-500 mx-auto mb-2" />
-                <p className="font-medium">Goals & Input Data</p>
-              </CardContent>
-            </Card>
-          </Link>
-
           <Link href="/nutri-dashboard/settings">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardContent className="p-4 text-center">
