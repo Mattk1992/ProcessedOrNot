@@ -1004,6 +1004,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         (language as string) || 'en'
       );
 
+      // Automatically save processing analysis and ingredient categories to products database
+      try {
+        const insightsToSave: any = {};
+        if (analysis.explanation) {
+          insightsToSave.processingAnalysis = analysis.explanation;
+        }
+        if (analysis.categories) {
+          insightsToSave.ingredientCategories = JSON.stringify(analysis.categories);
+        }
+        
+        if (Object.keys(insightsToSave).length > 0) {
+          await storage.updateProductWithAIInsights(barcode, insightsToSave);
+          console.log(`Processing analysis saved to product database for barcode: ${barcode}`);
+        }
+      } catch (saveError) {
+        console.warn("Failed to save processing analysis to product database:", saveError);
+        // Continue without failing the request
+      }
+
       res.json(analysis);
 
     } catch (error) {
@@ -1033,6 +1052,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         product.nutriments,
         (language as string) || 'en'
       );
+
+      // Automatically save glycemic impact to products database
+      try {
+        const glycemicInsight = {
+          glycemicIndex: glycemicAnalysis.glycemicIndex,
+          glycemicLoad: glycemicAnalysis.glycemicLoad,
+          explanation: glycemicAnalysis.explanation,
+          category: glycemicAnalysis.category,
+          impactDescription: glycemicAnalysis.impactDescription
+        };
+        await storage.updateProductWithAIInsights(barcode, { glycemicImpact: JSON.stringify(glycemicInsight) });
+        console.log(`Glycemic impact saved to product database for barcode: ${barcode}`);
+      } catch (saveError) {
+        console.warn("Failed to save glycemic impact to product database:", saveError);
+        // Continue without failing the request
+      }
 
       res.json(glycemicAnalysis);
 
@@ -1176,6 +1211,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         (language as string) || 'en'
       );
 
+      // Automatically save NutriBot insight to products database
+      try {
+        await storage.updateProductWithAIInsights(barcode, { nutriBotInsight: JSON.stringify(insight) });
+        console.log(`NutriBot insight saved to product database for barcode: ${barcode}`);
+      } catch (saveError) {
+        console.warn("Failed to save NutriBot insight to product database:", saveError);
+        // Continue without failing the request
+      }
+
       res.json({ insight });
 
     } catch (error) {
@@ -1207,6 +1251,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         (language as string) || 'en'
       );
 
+      // Automatically save fun facts to products database
+      try {
+        await storage.updateProductWithAIInsights(barcode, { funFacts: JSON.stringify(facts) });
+        console.log(`Fun facts saved to product database for barcode: ${barcode}`);
+      } catch (saveError) {
+        console.warn("Failed to save fun facts to product database:", saveError);
+        // Continue without failing the request
+      }
+
       res.json({ facts });
 
     } catch (error) {
@@ -1237,6 +1290,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         product.processingScore || 0,
         (language as string) || 'en'
       );
+
+      // Automatically save nutrition spotlight to products database
+      try {
+        await storage.updateProductWithAIInsights(barcode, { nutritionSpotlight: JSON.stringify(insights) });
+        console.log(`Nutrition spotlight saved to product database for barcode: ${barcode}`);
+      } catch (saveError) {
+        console.warn("Failed to save nutrition spotlight to product database:", saveError);
+        // Continue without failing the request
+      }
 
       res.json(insights);
 
@@ -1381,6 +1443,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error saving AI insights:", error);
       res.status(500).json({ error: "Failed to save AI insights" });
+    }
+  });
+
+  // Update product with AI insights
+  app.post("/api/products/:barcode/ai-insights", async (req, res) => {
+    try {
+      const { barcode } = req.params;
+      const insights = req.body;
+
+      // Validate insights data structure
+      const validInsightKeys = [
+        'nutriBotInsight', 'funFacts', 'nutritionSpotlight', 'ingredientsList',
+        'glycemicImpact', 'nutritionFact', 'processingAnalysis', 'ingredientCategories'
+      ];
+
+      const filteredInsights: any = {};
+      for (const [key, value] of Object.entries(insights)) {
+        if (validInsightKeys.includes(key) && value !== null && value !== undefined) {
+          filteredInsights[key] = value;
+        }
+      }
+
+      if (Object.keys(filteredInsights).length === 0) {
+        return res.status(400).json({ error: "No valid insights provided" });
+      }
+
+      const updatedProduct = await storage.updateProductWithAIInsights(barcode, filteredInsights);
+      
+      if (!updatedProduct) {
+        return res.status(404).json({ error: "Product not found" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "AI insights saved to product successfully",
+        barcode,
+        updatedFields: Object.keys(filteredInsights),
+        product: updatedProduct
+      });
+    } catch (error) {
+      console.error("Error saving AI insights to product:", error);
+      res.status(500).json({ error: "Failed to save AI insights to product" });
     }
   });
 

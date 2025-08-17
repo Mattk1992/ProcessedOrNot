@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Zap, Heart, Shield, TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { productInsightsManager } from '@/lib/product-insights';
 
 interface NutritionSpotlightProps {
   productName: string;
@@ -43,6 +44,13 @@ export default function NutritionSpotlight({ productName, nutriments, processing
     },
     enabled: !!barcode && !!nutriments,
   });
+
+  // Auto-save nutrition spotlight to products database when loaded
+  useEffect(() => {
+    if (insights && barcode) {
+      productInsightsManager.saveNutritionSpotlight(barcode, insights);
+    }
+  }, [insights, barcode]);
 
   const nutrients = insights?.nutrients || [];
 

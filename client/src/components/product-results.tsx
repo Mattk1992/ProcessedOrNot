@@ -19,6 +19,7 @@ import SocialShare from "./social-share";
 import NutritionFactPopup from "./nutrition-fact-popup";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
+import { productInsightsManager } from "@/lib/product-insights";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -294,8 +295,25 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       setShowNutritionPopup(true);
       setShowProductAnalysis(true);
       onProductFound?.(product);
+      
+      // Auto-save basic product insights to database
+      productInsightsManager.saveAllProductInsights(product.barcode, product);
     }
   }, [product, isLoadingProduct, productError, onProductFound]);
+
+  // Auto-save analysis (processing analysis & ingredient categories) when loaded
+  useEffect(() => {
+    if (analysis && !isLoadingAnalysis && product?.barcode) {
+      productInsightsManager.saveProcessingAnalysis(product.barcode, analysis);
+    }
+  }, [analysis, isLoadingAnalysis, product?.barcode]);
+
+  // Auto-save NutriBot insight when loaded
+  useEffect(() => {
+    if (nutriBotInsight?.insight && !isLoadingInsight && product?.barcode) {
+      productInsightsManager.saveNutriBotInsight(product.barcode, nutriBotInsight.insight);
+    }
+  }, [nutriBotInsight?.insight, isLoadingInsight, product?.barcode]);
 
   if (isLoadingProduct) {
     return (

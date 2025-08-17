@@ -17,6 +17,17 @@ export const products = pgTable("products", {
   glycemicExplanation: text("glycemic_explanation"),
   dataSource: text("data_source").default("OpenFoodFacts"),
   lastUpdated: text("last_updated"),
+  
+  // AI-Generated Insights and Analysis for Products
+  nutriBotInsight: text("nutri_bot_insight"), // NutriBot AI Insight
+  funFacts: text("fun_facts"), // Fun Facts & Insights
+  nutritionSpotlight: text("nutrition_spotlight"), // Nutrition Spotlight & Analysis
+  ingredientsList: jsonb("ingredients_list"), // Structured ingredients list with categories
+  glycemicImpact: text("glycemic_impact"), // Detailed glycemic impact analysis
+  nutritionFact: text("nutrition_fact"), // Key nutrition fact highlight
+  processingAnalysis: text("processing_analysis"), // Processing Analysis & Ingredient Categories
+  ingredientCategories: jsonb("ingredient_categories"), // Categorized ingredients (ultra-processed, processed, minimally processed)
+  
   // Media fields for future image/video uploads
   additionalImages: text("additional_images").array(), // URLs to additional product images
   videoUrl: text("video_url"), // URL to product video

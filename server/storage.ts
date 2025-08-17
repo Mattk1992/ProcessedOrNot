@@ -123,6 +123,16 @@ export interface IStorage {
   getProductByBarcode(barcode: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(barcode: string, product: Partial<InsertProduct>): Promise<Product | undefined>;
+  updateProductWithAIInsights(barcode: string, insights: {
+    nutriBotInsight?: string;
+    funFacts?: string;
+    nutritionSpotlight?: string;
+    ingredientsList?: any;
+    glycemicImpact?: string;
+    nutritionFact?: string;
+    processingAnalysis?: string;
+    ingredientCategories?: any;
+  }): Promise<Product | undefined>;
   getProductsWithoutGlycemicIndex(): Promise<Product[]>;
   getAllProducts(limit?: number, offset?: number): Promise<Product[]>;
   searchProducts(query: string, limit?: number): Promise<Product[]>;
@@ -691,6 +701,30 @@ export class DatabaseStorage implements IStorage {
   async updateProduct(barcode: string, productUpdate: Partial<InsertProduct>): Promise<Product | undefined> {
     const updateData = {
       ...productUpdate,
+      lastUpdated: new Date().toISOString()
+    };
+
+    const [product] = await db
+      .update(products)
+      .set(updateData)
+      .where(eq(products.barcode, barcode))
+      .returning();
+    
+    return product || undefined;
+  }
+
+  async updateProductWithAIInsights(barcode: string, insights: {
+    nutriBotInsight?: string;
+    funFacts?: string;
+    nutritionSpotlight?: string;
+    ingredientsList?: any;
+    glycemicImpact?: string;
+    nutritionFact?: string;
+    processingAnalysis?: string;
+    ingredientCategories?: any;
+  }): Promise<Product | undefined> {
+    const updateData = {
+      ...insights,
       lastUpdated: new Date().toISOString()
     };
 

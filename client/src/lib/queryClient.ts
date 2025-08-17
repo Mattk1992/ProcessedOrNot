@@ -78,3 +78,26 @@ export async function saveAIInsightsToDatabase(searchId: string, insights: {
     throw error;
   }
 }
+
+// Utility function to save AI insights to products database
+export async function saveAIInsightsToProduct(barcode: string, insights: {
+  nutriBotInsight?: string;
+  funFacts?: string;
+  nutritionSpotlight?: string;
+  ingredientsList?: any;
+  glycemicImpact?: string;
+  nutritionFact?: string;
+  processingAnalysis?: string;
+  ingredientCategories?: any;
+}) {
+  try {
+    console.log(`Saving AI insights for product barcode: ${barcode}`);
+    const response = await apiRequest('POST', `/api/products/${barcode}/ai-insights`, insights);
+    const result = await response.json();
+    console.log('AI insights saved to product successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('Error saving AI insights to product:', error);
+    throw error;
+  }
+}
