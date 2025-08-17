@@ -13,6 +13,7 @@ import { VoiceSearchButton } from "./voice-search-button";
 import { useGPTRewards } from "@/hooks/useGPTRewards";
 import { GPTRewardModal } from "./gpt-reward-modal";
 import QuickCameraSettings from "./quick-camera-settings";
+import SearchEngineSettings from "./search-engine-settings";
 import { trackEvent } from "@/lib/analytics";
 
 interface BarcodeScannerProps {
@@ -1037,20 +1038,7 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   )}
                 </Button>
 
-                <Button 
-                  type="button"
-                  variant="outline"
-                  className="border-2 border-primary/20 text-primary hover:bg-primary/10 py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
-                  disabled={isLoading}
-                  onClick={() => {
-                    // Navigate to admin panel with settings tab selected
-                    navigate('/nutri-dashboard/admin?tab=settings');
-                  }}
-                  title="Configure search result display settings and visibility controls"
-                >
-                  <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span className="text-sm sm:text-base hidden sm:inline">Search Settings</span>
-                </Button>
+                <SearchEngineSettings />
               </div>
             </form>
           )}
