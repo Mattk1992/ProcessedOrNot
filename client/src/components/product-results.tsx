@@ -18,6 +18,7 @@ import FunFacts from "./fun-facts";
 import SocialShare from "./social-share";
 import NutritionFactPopup from "./nutrition-fact-popup";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useSearchResultVisibility } from "@/contexts/SearchResultVisibilityContext";
 import { useAuth } from "@/hooks/useAuth";
 import { productInsightsManager, searchHistoryInsightsManager } from "@/lib/product-insights";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
@@ -48,6 +49,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
   const [showAnalysisSettings, setShowAnalysisSettings] = useState(false);
   const { t, language } = useLanguage();
   const { user } = useAuth();
+  const { settings: visibilitySettings } = useSearchResultVisibility();
 
   // Analysis section visibility settings
   const [analysisSettings, setAnalysisSettings] = useState(() => {
@@ -658,8 +660,9 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
         </Card>
       )}
 
-      {/* Glycemic Index Card - Always show */}
-      <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
+      {/* Glycemic Index Card */}
+      {visibilitySettings.showGlycemicImpact && (
+        <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center space-x-3 mb-8">
               <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
@@ -720,6 +723,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
             </div>
           </CardContent>
         </Card>
+      )}
 
       {/* Enhanced Product Metadata Card */}
       <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
@@ -973,7 +977,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       )}
 
       {/* NutriBot Insights Card */}
-      {nutriBotInsight && typeof nutriBotInsight === 'object' && 'insight' in nutriBotInsight && (
+      {visibilitySettings.showNutriBotInsight && nutriBotInsight && typeof nutriBotInsight === 'object' && 'insight' in nutriBotInsight && (
         <Card className="glass-card border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up glow-effect">
           <CardHeader className="bg-gradient-to-r from-primary to-accent text-white rounded-t-lg">
             <CardTitle className="flex items-center space-x-3">
@@ -997,7 +1001,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
         </Card>
       )}
 
-      {isLoadingInsight && (
+      {visibilitySettings.showNutriBotInsight && isLoadingInsight && (
         <Card className="glass-card border-2 border-primary/20 shadow-xl">
           <CardHeader className="bg-gradient-to-r from-primary to-accent text-white rounded-t-lg">
             <CardTitle className="flex items-center space-x-3">
@@ -1022,7 +1026,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       )}
 
       {/* Nutrition Spotlight */}
-      {product.nutriments && typeof product.nutriments === 'object' && (
+      {visibilitySettings.showNutritionSpotlight && product.nutriments && typeof product.nutriments === 'object' && (
         <div className="slide-up">
           <NutritionSpotlight 
             productName={product.productName || "Unknown Product"}
@@ -1034,15 +1038,17 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       )}
 
       {/* Fun Facts */}
-      <div className="slide-up">
-        <FunFacts 
-          productName={product.productName || "Unknown Product"}
-          ingredients={product.ingredientsText || ""}
-          nutriments={product.nutriments as Record<string, any> | null}
-          processingScore={product.processingScore || 0}
-          barcode={barcode}
-        />
-      </div>
+      {visibilitySettings.showFunFacts && (
+        <div className="slide-up">
+          <FunFacts 
+            productName={product.productName || "Unknown Product"}
+            ingredients={product.ingredientsText || ""}
+            nutriments={product.nutriments as Record<string, any> | null}
+            processingScore={product.processingScore || 0}
+            barcode={barcode}
+          />
+        </div>
+      )}
 
       {/* Social Sharing */}
       <div className="slide-up">
@@ -1080,88 +1086,92 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               </div>
 
               {/* Processing Indicators */}
-              {isLoadingAnalysis ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {[...Array(3)].map((_, i) => (
-                    <div key={i} className="h-32 bg-muted rounded-2xl animate-pulse"></div>
-                  ))}
-                </div>
-              ) : analysis ? (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="border-2 border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></div>
-                      <span className="text-base font-semibold text-red-800">{t('ingredients.ultraProcessed')}</span>
+              {visibilitySettings.showProcessingAnalysis && (
+                <>
+                  {isLoadingAnalysis ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="h-32 bg-muted rounded-2xl animate-pulse"></div>
+                      ))}
                     </div>
-                    <ul className="text-sm text-red-700 space-y-2">
-                      {analysis.categories.ultraProcessed.length > 0 ? (
-                        analysis.categories.ultraProcessed.map((ingredient, index) => (
-                          <li key={index} className="flex items-start space-x-2">
-                            <span className="text-red-500 mt-1">•</span>
-                            <span>{ingredient}</span>
-                          </li>
-                        ))
-                      ) : (
-                        <li className="flex items-center space-x-2 text-red-600">
-                          <CheckCircle className="w-4 h-4" />
-                          <span>{t('ingredients.noneDetected')}</span>
-                        </li>
-                      )}
-                    </ul>
-                  </div>
+                  ) : analysis ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="border-2 border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></div>
+                          <span className="text-base font-semibold text-red-800">{t('ingredients.ultraProcessed')}</span>
+                        </div>
+                        <ul className="text-sm text-red-700 space-y-2">
+                          {analysis.categories.ultraProcessed.length > 0 ? (
+                            analysis.categories.ultraProcessed.map((ingredient, index) => (
+                              <li key={index} className="flex items-start space-x-2">
+                                <span className="text-red-500 mt-1">•</span>
+                                <span>{ingredient}</span>
+                              </li>
+                            ))
+                          ) : (
+                            <li className="flex items-center space-x-2 text-red-600">
+                              <CheckCircle className="w-4 h-4" />
+                              <span>{t('ingredients.noneDetected')}</span>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
 
-                  <div className="border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-4 h-4 bg-yellow-500 rounded-full shadow-sm"></div>
-                      <span className="text-base font-semibold text-yellow-800">{t('ingredients.processed')}</span>
-                    </div>
-                    <ul className="text-sm text-yellow-700 space-y-2">
-                      {analysis.categories.processed.length > 0 ? (
-                        analysis.categories.processed.map((ingredient, index) => (
-                          <li key={index} className="flex items-start space-x-2">
-                            <span className="text-yellow-500 mt-1">•</span>
-                            <span>{ingredient}</span>
-                          </li>
-                        ))
-                      ) : (
-                        <li className="flex items-center space-x-2 text-yellow-600">
-                          <CheckCircle className="w-4 h-4" />
-                          <span>{t('ingredients.noneDetected')}</span>
-                        </li>
-                      )}
-                    </ul>
-                  </div>
+                      <div className="border-2 border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className="w-4 h-4 bg-yellow-500 rounded-full shadow-sm"></div>
+                          <span className="text-base font-semibold text-yellow-800">{t('ingredients.processed')}</span>
+                        </div>
+                        <ul className="text-sm text-yellow-700 space-y-2">
+                          {analysis.categories.processed.length > 0 ? (
+                            analysis.categories.processed.map((ingredient, index) => (
+                              <li key={index} className="flex items-start space-x-2">
+                                <span className="text-yellow-500 mt-1">•</span>
+                                <span>{ingredient}</span>
+                              </li>
+                            ))
+                          ) : (
+                            <li className="flex items-center space-x-2 text-yellow-600">
+                              <CheckCircle className="w-4 h-4" />
+                              <span>{t('ingredients.noneDetected')}</span>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
 
-                  <div className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
-                    <div className="flex items-center space-x-3 mb-4">
-                      <div className="w-4 h-4 bg-emerald-500 rounded-full shadow-sm"></div>
-                      <span className="text-base font-semibold text-emerald-800">{t('ingredients.minimallyProcessed')}</span>
+                      <div className="border-2 border-emerald-200 bg-gradient-to-br from-emerald-50 to-emerald-100/50 rounded-2xl p-6 hover:shadow-lg transition-all duration-300">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className="w-4 h-4 bg-emerald-500 rounded-full shadow-sm"></div>
+                          <span className="text-base font-semibold text-emerald-800">{t('ingredients.minimallyProcessed')}</span>
+                        </div>
+                        <ul className="text-sm text-emerald-700 space-y-2">
+                          {analysis.categories.minimallyProcessed.length > 0 ? (
+                            analysis.categories.minimallyProcessed.map((ingredient, index) => (
+                              <li key={index} className="flex items-start space-x-2">
+                                <span className="text-emerald-500 mt-1">•</span>
+                                <span>{ingredient}</span>
+                              </li>
+                            ))
+                          ) : (
+                            <li className="flex items-center space-x-2 text-emerald-600">
+                              <AlertTriangle className="w-4 h-4" />
+                              <span>{t('ingredients.noneDetected')}</span>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
                     </div>
-                    <ul className="text-sm text-emerald-700 space-y-2">
-                      {analysis.categories.minimallyProcessed.length > 0 ? (
-                        analysis.categories.minimallyProcessed.map((ingredient, index) => (
-                          <li key={index} className="flex items-start space-x-2">
-                            <span className="text-emerald-500 mt-1">•</span>
-                            <span>{ingredient}</span>
-                          </li>
-                        ))
-                      ) : (
-                        <li className="flex items-center space-x-2 text-emerald-600">
-                          <AlertTriangle className="w-4 h-4" />
-                          <span>{t('ingredients.noneDetected')}</span>
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-                </div>
-              ) : null}
+                  ) : null}
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
       )}
 
       {/* Nutrition Facts Card */}
-      {product.nutriments && (
+      {visibilitySettings.showNutritionFacts && product.nutriments && (
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center space-x-3 mb-8">

@@ -26,6 +26,7 @@ import HeaderDropdown from "@/components/header-dropdown";
 import LanguageSwitcher from "@/components/language-switcher";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useSearchResultVisibility } from '@/contexts/SearchResultVisibilityContext';
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 
 interface SearchHistoryItem {
@@ -64,6 +65,7 @@ interface SearchHistoryItem {
 export default function SearchHistoryView() {
   const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
+  const { settings: visibilitySettings } = useSearchResultVisibility();
   const [match, params] = useRoute("/search-history/view/:id");
   const historyId = params?.id;
 
@@ -324,7 +326,7 @@ export default function SearchHistoryView() {
                       </div>
 
                       {/* Enhanced Processing Score */}
-                      {historyItem.processingScore && (
+                      {visibilitySettings.showProcessingAnalysis && historyItem.processingScore && (
                         <div className="bg-white/60 dark:bg-black/20 rounded-xl p-5 border border-orange-200/50">
                           <div className="flex items-center justify-between mb-4">
                             <h4 className="text-lg font-semibold text-orange-800 dark:text-orange-200">Processing Level Analysis</h4>
@@ -364,7 +366,7 @@ export default function SearchHistoryView() {
                       )}
 
                       {/* Enhanced Glycemic Information */}
-                      {(historyItem.glycemicIndex || historyItem.glycemicLoad) && (
+                      {visibilitySettings.showGlycemicImpact && (historyItem.glycemicIndex || historyItem.glycemicLoad) && (
                         <div className="bg-white/60 dark:bg-black/20 rounded-xl p-5 border border-blue-200/50">
                           <div className="flex items-center space-x-3 mb-4">
                             <div className="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center">
@@ -496,7 +498,7 @@ export default function SearchHistoryView() {
                   )}
 
                   {/* Enhanced Comprehensive Nutritional Information */}
-                  {historyItem.productNutriments && Object.keys(historyItem.productNutriments).length > 0 && (
+                  {visibilitySettings.showNutritionFacts && historyItem.productNutriments && Object.keys(historyItem.productNutriments).length > 0 && (
                     <div className="mt-6 pt-6 border-t border-border/50 space-y-6">
                       {/* Macronutrients */}
                       <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 dark:bg-orange-900/20 rounded-2xl p-6 border border-orange-200">
@@ -781,6 +783,18 @@ export default function SearchHistoryView() {
                         // Create a map of known fields for quick lookup
                         const knownFieldsMap = new Map(knownInsightFields.map(field => [field.key, field]));
 
+                        // Mapping between insight field keys and visibility settings
+                        const visibilityMapping: Record<string, keyof typeof visibilitySettings> = {
+                          'nutriBotInsight': 'showNutriBotInsight',
+                          'funFacts': 'showFunFacts',
+                          'nutritionSpotlight': 'showNutritionSpotlight',
+                          'glycemicImpact': 'showGlycemicImpact',
+                          'nutritionFact': 'showNutritionFacts',
+                          'processingAnalysis': 'showProcessingAnalysis',
+                          'ingredientsList': 'showProcessingAnalysis',
+                          'ingredientCategories': 'showProcessingAnalysis'
+                        };
+
                         // Find all fields with data, including unknown ones
                         const allInsightFields: Array<any> = [];
                         let unknownFieldIndex = 0;
@@ -791,6 +805,14 @@ export default function SearchHistoryView() {
                           // Skip excluded fields and empty values
                           if (excludeFields.includes(key) || value === null || value === undefined || value === '') {
                             return;
+                          }
+
+                          // Check visibility settings for known fields
+                          if (visibilityMapping[key]) {
+                            const visibilityKey = visibilityMapping[key];
+                            if (!visibilitySettings[visibilityKey]) {
+                              return; // Skip if visibility is disabled
+                            }
                           }
 
                           if (knownFieldsMap.has(key)) {

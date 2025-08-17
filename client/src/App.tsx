@@ -47,6 +47,7 @@ import SearchHistoryView from "@/pages/search-history-view";
 import Notifications from "@/pages/notifications";
 
 import { AdManagerProvider, AdConsentBanner } from "@/components/ads";
+import { SearchResultVisibilityProvider } from "@/contexts/SearchResultVisibilityContext";
 import AdSettings from "@/pages/ad-settings";
 import SiteInfo from "@/pages/site-info";
 import AdPlacementGuidelinesPage from "@/pages/ad-placement-guidelines";
@@ -191,14 +192,16 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <LanguageProvider>
-          <AdManagerProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Router />
-              <ThemeToggle />
-              <AdConsentBanner />
-            </TooltipProvider>
-          </AdManagerProvider>
+          <SearchResultVisibilityProvider>
+            <AdManagerProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Router />
+                <ThemeToggle />
+                <AdConsentBanner />
+              </TooltipProvider>
+            </AdManagerProvider>
+          </SearchResultVisibilityProvider>
         </LanguageProvider>
       </ThemeProvider>
     </QueryClientProvider>

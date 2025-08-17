@@ -11,7 +11,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Settings, Save, RefreshCw, Camera, Timer, Monitor, Eye, DollarSign, Target, Zap, ExternalLink } from 'lucide-react';
+import { useSearchResultVisibility } from '@/contexts/SearchResultVisibilityContext';
+import { Settings, Save, RefreshCw, Camera, Timer, Monitor, Eye, DollarSign, Target, Zap, ExternalLink, Bot, Sparkles, Activity, TrendingUp, BarChart3, List } from 'lucide-react';
 import { GPTTestPanel } from './gpt-test-panel';
 
 interface AdminSetting {
@@ -31,6 +32,7 @@ export default function AdminSettings() {
   const queryClient = useQueryClient();
   const [editingSettings, setEditingSettings] = useState<Record<string, string>>({});
   const [autoSaveTimeouts, setAutoSaveTimeouts] = useState<Record<string, NodeJS.Timeout>>({});
+  const { settings: visibilitySettings, updateSetting: updateVisibilitySetting } = useSearchResultVisibility();
 
   // Fetch all admin settings
   const { data: settings, isLoading } = useQuery({
@@ -367,6 +369,160 @@ export default function AdminSettings() {
                   <ExternalLink className="h-4 w-4" />
                 </Button>
               </a>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Search Result Display Settings */}
+      <Card className="border border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5 text-blue-500" />
+            Search Result Display Settings
+          </CardTitle>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Control which sections are visible in search results and product analysis
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* NutriBot AI Insight */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Bot className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white">
+                    NutriBot AI Insight
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Show AI-powered nutrition insights
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={visibilitySettings.showNutriBotInsight}
+                onCheckedChange={(checked) => {
+                  updateVisibilitySetting('showNutriBotInsight', checked);
+                }}
+              />
+            </div>
+
+            {/* Fun Facts & Insights */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/20">
+                  <Sparkles className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white">
+                    Fun Facts & Insights
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Show interesting product insights
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={visibilitySettings.showFunFacts}
+                onCheckedChange={(checked) => {
+                  updateVisibilitySetting('showFunFacts', checked);
+                }}
+              />
+            </div>
+
+            {/* Nutrition Spotlight & Analysis */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
+                  <Activity className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white">
+                    Nutrition Spotlight & Analysis
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Show detailed nutrition analysis
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={visibilitySettings.showNutritionSpotlight}
+                onCheckedChange={(checked) => {
+                  updateVisibilitySetting('showNutritionSpotlight', checked);
+                }}
+              />
+            </div>
+
+            {/* Glycemic Impact */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/20">
+                  <TrendingUp className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white">
+                    Glycemic Impact
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Show glycemic index and load
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={visibilitySettings.showGlycemicImpact}
+                onCheckedChange={(checked) => {
+                  updateVisibilitySetting('showGlycemicImpact', checked);
+                }}
+              />
+            </div>
+
+            {/* Nutrition Facts */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/20">
+                  <BarChart3 className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white">
+                    Nutrition Facts
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Show detailed nutrition facts table
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={visibilitySettings.showNutritionFacts}
+                onCheckedChange={(checked) => {
+                  updateVisibilitySetting('showNutritionFacts', checked);
+                }}
+              />
+            </div>
+
+            {/* Processing Analysis & Ingredient Categories */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-red-100 dark:bg-red-900/20">
+                  <List className="h-5 w-5 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white">
+                    Processing Analysis & Ingredient Categories
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Show ingredient processing analysis
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={visibilitySettings.showProcessingAnalysis}
+                onCheckedChange={(checked) => {
+                  updateVisibilitySetting('showProcessingAnalysis', checked);
+                }}
+              />
             </div>
           </div>
         </CardContent>
