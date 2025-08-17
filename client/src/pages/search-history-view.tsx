@@ -527,137 +527,235 @@ export default function SearchHistoryView() {
                         );
                       })()}
 
-                      {/* AI-Generated Insights */}
-                      {(historyItem.nutriBotInsight || historyItem.funFacts || historyItem.nutritionSpotlight || historyItem.glycemicImpact || historyItem.nutritionFact || historyItem.processingAnalysis) && (
-                        <div className="mt-6 pt-6 border-t border-border/50 space-y-6">
-                          <div className="flex items-center space-x-3 mb-4">
-                            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                              <Brain className="w-5 h-5 text-white" />
+                      {/* AI-Generated Insights - Auto-Detecting Dynamic System */}
+                      {(() => {
+                        // Define known insight field configurations with their display properties
+                        const knownInsightFields = [
+                          {
+                            key: 'nutriBotInsight',
+                            title: 'NutriBot AI Insight',
+                            icon: MessageSquare,
+                            colors: {
+                              bg: 'from-blue-50 to-indigo-100/50',
+                              bgDark: 'dark:bg-blue-900/20',
+                              border: 'border-blue-200',
+                              iconBg: 'bg-blue-500',
+                              titleColor: 'text-blue-800 dark:text-blue-200',
+                              textColor: 'text-blue-900 dark:text-blue-100'
+                            }
+                          },
+                          {
+                            key: 'funFacts',
+                            title: 'Fun Facts & Insights',
+                            icon: Lightbulb,
+                            colors: {
+                              bg: 'from-green-50 to-emerald-100/50',
+                              bgDark: 'dark:bg-green-900/20',
+                              border: 'border-green-200',
+                              iconBg: 'bg-green-500',
+                              titleColor: 'text-green-800 dark:text-green-200',
+                              textColor: 'text-green-900 dark:text-green-100'
+                            }
+                          },
+                          {
+                            key: 'nutritionSpotlight',
+                            title: 'Nutrition Spotlight & Analysis',
+                            icon: Target,
+                            colors: {
+                              bg: 'from-orange-50 to-amber-100/50',
+                              bgDark: 'dark:bg-orange-900/20',
+                              border: 'border-orange-200',
+                              iconBg: 'bg-orange-500',
+                              titleColor: 'text-orange-800 dark:text-orange-200',
+                              textColor: 'text-orange-900 dark:text-orange-100'
+                            }
+                          },
+                          {
+                            key: 'glycemicImpact',
+                            title: 'Glycemic Impact Analysis',
+                            icon: Activity,
+                            colors: {
+                              bg: 'from-red-50 to-rose-100/50',
+                              bgDark: 'dark:bg-red-900/20',
+                              border: 'border-red-200',
+                              iconBg: 'bg-red-500',
+                              titleColor: 'text-red-800 dark:text-red-200',
+                              textColor: 'text-red-900 dark:text-red-100'
+                            }
+                          },
+                          {
+                            key: 'nutritionFact',
+                            title: 'Key Nutrition Fact',
+                            icon: Info,
+                            colors: {
+                              bg: 'from-cyan-50 to-teal-100/50',
+                              bgDark: 'dark:bg-cyan-900/20',
+                              border: 'border-cyan-200',
+                              iconBg: 'bg-cyan-500',
+                              titleColor: 'text-cyan-800 dark:text-cyan-200',
+                              textColor: 'text-cyan-900 dark:text-cyan-100'
+                            }
+                          },
+                          {
+                            key: 'processingAnalysis',
+                            title: 'Processing Analysis & Categories',
+                            icon: Zap,
+                            colors: {
+                              bg: 'from-violet-50 to-purple-100/50',
+                              bgDark: 'dark:bg-violet-900/20',
+                              border: 'border-violet-200',
+                              iconBg: 'bg-violet-500',
+                              titleColor: 'text-violet-800 dark:text-violet-200',
+                              textColor: 'text-violet-900 dark:text-violet-100'
+                            }
+                          },
+                          {
+                            key: 'ingredientsList',
+                            title: 'Structured Ingredients Analysis',
+                            icon: List,
+                            isJSON: true,
+                            colors: {
+                              bg: 'from-emerald-50 to-green-100/50',
+                              bgDark: 'dark:bg-emerald-900/20',
+                              border: 'border-emerald-200',
+                              iconBg: 'bg-emerald-500',
+                              titleColor: 'text-emerald-800 dark:text-emerald-200',
+                              textColor: 'text-emerald-900 dark:text-emerald-100'
+                            }
+                          },
+                          {
+                            key: 'ingredientCategories',
+                            title: 'Ingredient Categories',
+                            icon: Tags,
+                            isJSON: true,
+                            colors: {
+                              bg: 'from-amber-50 to-yellow-100/50',
+                              bgDark: 'dark:bg-amber-900/20',
+                              border: 'border-amber-200',
+                              iconBg: 'bg-amber-500',
+                              titleColor: 'text-amber-800 dark:text-amber-200',
+                              textColor: 'text-amber-900 dark:text-amber-100'
+                            }
+                          }
+                        ];
+
+                        // Auto-detect any additional insight fields not in the known list
+                        // This will automatically include any new columns added to the database
+                        const excludeFields = [
+                          'id', 'searchId', 'searchInput', 'searchInputType', 'userId', 'resultFound',
+                          'productBarcode', 'productName', 'productBrands', 'productImageUrl', 
+                          'productIngredientsText', 'productNutriments', 'processingScore', 
+                          'processingExplanation', 'glycemicIndex', 'glycemicLoad', 'glycemicExplanation',
+                          'dataSource', 'lookupSource', 'errorMessage', 'createdAt', 'lastUpdated',
+                          'additionalImages', 'videoUrl', 'mediaGallery'
+                        ];
+
+                        const defaultColors = [
+                          {
+                            bg: 'from-indigo-50 to-blue-100/50',
+                            bgDark: 'dark:bg-indigo-900/20',
+                            border: 'border-indigo-200',
+                            iconBg: 'bg-indigo-500',
+                            titleColor: 'text-indigo-800 dark:text-indigo-200',
+                            textColor: 'text-indigo-900 dark:text-indigo-100'
+                          },
+                          {
+                            bg: 'from-purple-50 to-pink-100/50',
+                            bgDark: 'dark:bg-purple-900/20',
+                            border: 'border-purple-200',
+                            iconBg: 'bg-purple-500',
+                            titleColor: 'text-purple-800 dark:text-purple-200',
+                            textColor: 'text-purple-900 dark:text-purple-100'
+                          },
+                          {
+                            bg: 'from-teal-50 to-emerald-100/50',
+                            bgDark: 'dark:bg-teal-900/20',
+                            border: 'border-teal-200',
+                            iconBg: 'bg-teal-500',
+                            titleColor: 'text-teal-800 dark:text-teal-200',
+                            textColor: 'text-teal-900 dark:text-teal-100'
+                          }
+                        ];
+
+                        // Create a map of known fields for quick lookup
+                        const knownFieldsMap = new Map(knownInsightFields.map(field => [field.key, field]));
+
+                        // Find all fields with data, including unknown ones
+                        const allInsightFields: Array<any> = [];
+                        let unknownFieldIndex = 0;
+
+                        Object.keys(historyItem).forEach(key => {
+                          const value = historyItem[key as keyof SearchHistoryItem];
+                          
+                          // Skip excluded fields and empty values
+                          if (excludeFields.includes(key) || value === null || value === undefined || value === '') {
+                            return;
+                          }
+
+                          if (knownFieldsMap.has(key)) {
+                            // Use known field configuration
+                            allInsightFields.push(knownFieldsMap.get(key));
+                          } else {
+                            // Auto-detect new insight field and create default configuration
+                            const colorScheme = defaultColors[unknownFieldIndex % defaultColors.length];
+                            unknownFieldIndex++;
+
+                            // Generate user-friendly title from camelCase field name
+                            const title = key
+                              .replace(/([A-Z])/g, ' $1')
+                              .replace(/^./, str => str.toUpperCase())
+                              .trim();
+
+                            allInsightFields.push({
+                              key,
+                              title: title || 'New AI Insight',
+                              icon: Brain, // Default icon for new fields
+                              isJSON: typeof value === 'object',
+                              colors: colorScheme
+                            });
+                          }
+                        });
+
+                        // Return early if no insights available
+                        if (allInsightFields.length === 0) return null;
+
+                        return (
+                          <div className="mt-6 pt-6 border-t border-border/50 space-y-6">
+                            <div className="flex items-center space-x-3 mb-4">
+                              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                                <Brain className="w-5 h-5 text-white" />
+                              </div>
+                              <h3 className="text-xl font-bold text-foreground">AI-Generated Insights</h3>
                             </div>
-                            <h3 className="text-xl font-bold text-foreground">AI-Generated Insights</h3>
+
+                            {/* Dynamically render each available insight */}
+                            {allInsightFields.map((field) => {
+                              const IconComponent = field.icon;
+                              const value = historyItem[field.key as keyof SearchHistoryItem];
+
+                              return (
+                                <div key={field.key} className={`bg-gradient-to-br ${field.colors.bg} ${field.colors.bgDark} rounded-2xl p-6 border ${field.colors.border}`}>
+                                  <div className="flex items-center space-x-3 mb-3">
+                                    <div className={`w-7 h-7 ${field.colors.iconBg} rounded-lg flex items-center justify-center`}>
+                                      <IconComponent className="w-4 h-4 text-white" />
+                                    </div>
+                                    <h4 className={`text-lg font-semibold ${field.colors.titleColor}`}>{field.title}</h4>
+                                  </div>
+                                  <div className={field.colors.textColor}>
+                                    {field.isJSON && typeof value === 'object' ? (
+                                      <pre className="whitespace-pre-wrap font-mono text-sm bg-white/50 dark:bg-black/20 rounded-lg p-3">
+                                        {JSON.stringify(value, null, 2)}
+                                      </pre>
+                                    ) : (
+                                      <p className="leading-relaxed">{String(value)}</p>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
-
-                          {/* NutriBot Insight */}
-                          {historyItem.nutriBotInsight && (
-                            <div className="bg-gradient-to-br from-blue-50 to-indigo-100/50 dark:bg-blue-900/20 rounded-2xl p-6 border border-blue-200">
-                              <div className="flex items-center space-x-3 mb-3">
-                                <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
-                                  <MessageSquare className="w-4 h-4 text-white" />
-                                </div>
-                                <h4 className="text-lg font-semibold text-blue-800 dark:text-blue-200">NutriBot Insight</h4>
-                              </div>
-                              <p className="text-blue-900 dark:text-blue-100 leading-relaxed">{historyItem.nutriBotInsight}</p>
-                            </div>
-                          )}
-
-                          {/* Fun Facts */}
-                          {historyItem.funFacts && (
-                            <div className="bg-gradient-to-br from-green-50 to-emerald-100/50 dark:bg-green-900/20 rounded-2xl p-6 border border-green-200">
-                              <div className="flex items-center space-x-3 mb-3">
-                                <div className="w-7 h-7 bg-green-500 rounded-lg flex items-center justify-center">
-                                  <Lightbulb className="w-4 h-4 text-white" />
-                                </div>
-                                <h4 className="text-lg font-semibold text-green-800 dark:text-green-200">Fun Facts & Insights</h4>
-                              </div>
-                              <p className="text-green-900 dark:text-green-100 leading-relaxed">{historyItem.funFacts}</p>
-                            </div>
-                          )}
-
-                          {/* Nutrition Spotlight */}
-                          {historyItem.nutritionSpotlight && (
-                            <div className="bg-gradient-to-br from-orange-50 to-amber-100/50 dark:bg-orange-900/20 rounded-2xl p-6 border border-orange-200">
-                              <div className="flex items-center space-x-3 mb-3">
-                                <div className="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center">
-                                  <Target className="w-4 h-4 text-white" />
-                                </div>
-                                <h4 className="text-lg font-semibold text-orange-800 dark:text-orange-200">Nutrition Spotlight & Analysis</h4>
-                              </div>
-                              <p className="text-orange-900 dark:text-orange-100 leading-relaxed">{historyItem.nutritionSpotlight}</p>
-                            </div>
-                          )}
-
-                          {/* Glycemic Impact */}
-                          {historyItem.glycemicImpact && (
-                            <div className="bg-gradient-to-br from-red-50 to-rose-100/50 dark:bg-red-900/20 rounded-2xl p-6 border border-red-200">
-                              <div className="flex items-center space-x-3 mb-3">
-                                <div className="w-7 h-7 bg-red-500 rounded-lg flex items-center justify-center">
-                                  <Activity className="w-4 h-4 text-white" />
-                                </div>
-                                <h4 className="text-lg font-semibold text-red-800 dark:text-red-200">Glycemic Impact Analysis</h4>
-                              </div>
-                              <p className="text-red-900 dark:text-red-100 leading-relaxed">{historyItem.glycemicImpact}</p>
-                            </div>
-                          )}
-
-                          {/* Nutrition Fact */}
-                          {historyItem.nutritionFact && (
-                            <div className="bg-gradient-to-br from-cyan-50 to-teal-100/50 dark:bg-cyan-900/20 rounded-2xl p-6 border border-cyan-200">
-                              <div className="flex items-center space-x-3 mb-3">
-                                <div className="w-7 h-7 bg-cyan-500 rounded-lg flex items-center justify-center">
-                                  <Info className="w-4 h-4 text-white" />
-                                </div>
-                                <h4 className="text-lg font-semibold text-cyan-800 dark:text-cyan-200">Key Nutrition Fact</h4>
-                              </div>
-                              <p className="text-cyan-900 dark:text-cyan-100 leading-relaxed">{historyItem.nutritionFact}</p>
-                            </div>
-                          )}
-
-                          {/* Processing Analysis */}
-                          {historyItem.processingAnalysis && (
-                            <div className="bg-gradient-to-br from-violet-50 to-purple-100/50 dark:bg-violet-900/20 rounded-2xl p-6 border border-violet-200">
-                              <div className="flex items-center space-x-3 mb-3">
-                                <div className="w-7 h-7 bg-violet-500 rounded-lg flex items-center justify-center">
-                                  <Zap className="w-4 h-4 text-white" />
-                                </div>
-                                <h4 className="text-lg font-semibold text-violet-800 dark:text-violet-200">Processing Analysis & Categories</h4>
-                              </div>
-                              <p className="text-violet-900 dark:text-violet-100 leading-relaxed">{historyItem.processingAnalysis}</p>
-                            </div>
-                          )}
-
-                          {/* Ingredients List */}
-                          {historyItem.ingredientsList && (
-                            <div className="bg-gradient-to-br from-emerald-50 to-green-100/50 dark:bg-emerald-900/20 rounded-2xl p-6 border border-emerald-200">
-                              <div className="flex items-center space-x-3 mb-3">
-                                <div className="w-7 h-7 bg-emerald-500 rounded-lg flex items-center justify-center">
-                                  <List className="w-4 h-4 text-white" />
-                                </div>
-                                <h4 className="text-lg font-semibold text-emerald-800 dark:text-emerald-200">Structured Ingredients Analysis</h4>
-                              </div>
-                              <div className="text-emerald-900 dark:text-emerald-100">
-                                {typeof historyItem.ingredientsList === 'object' ? (
-                                  <pre className="whitespace-pre-wrap font-mono text-sm bg-white/50 dark:bg-black/20 rounded-lg p-3">
-                                    {JSON.stringify(historyItem.ingredientsList, null, 2)}
-                                  </pre>
-                                ) : (
-                                  <p className="leading-relaxed">{String(historyItem.ingredientsList)}</p>
-                                )}
-                              </div>
-                            </div>
-                          )}
-
-                          {/* Ingredient Categories */}
-                          {historyItem.ingredientCategories && (
-                            <div className="bg-gradient-to-br from-amber-50 to-yellow-100/50 dark:bg-amber-900/20 rounded-2xl p-6 border border-amber-200">
-                              <div className="flex items-center space-x-3 mb-3">
-                                <div className="w-7 h-7 bg-amber-500 rounded-lg flex items-center justify-center">
-                                  <Tags className="w-4 h-4 text-white" />
-                                </div>
-                                <h4 className="text-lg font-semibold text-amber-800 dark:text-amber-200">Ingredient Categories</h4>
-                              </div>
-                              <div className="text-amber-900 dark:text-amber-100">
-                                {typeof historyItem.ingredientCategories === 'object' ? (
-                                  <pre className="whitespace-pre-wrap font-mono text-sm bg-white/50 dark:bg-black/20 rounded-lg p-3">
-                                    {JSON.stringify(historyItem.ingredientCategories, null, 2)}
-                                  </pre>
-                                ) : (
-                                  <p className="leading-relaxed">{String(historyItem.ingredientCategories)}</p>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
+                        );
+                      })()}
                     </div>
                   )}
 
