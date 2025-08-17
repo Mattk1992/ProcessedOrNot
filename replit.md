@@ -10,14 +10,14 @@ Preferred communication style: Simple, everyday language.
 ProcessedOrNot Scanner is built on a full-stack JavaScript/TypeScript architecture.
 - **Frontend**: React with TypeScript, Vite, Shadcn/ui, Radix UI, and Tailwind CSS. It supports dark/light themes, features modular components, React Query for state management, Wouter for routing, and a context system for global state.
 - **Backend**: Express.js server with TypeScript, providing RESTful API endpoints.
-- **Database**: PostgreSQL with Drizzle ORM.
+- **Database**: PostgreSQL with Drizzle ORM. Enhanced search history table stores comprehensive AI-generated insights and analysis results for future reference and improved user experience.
 - **Deployment**: Replit autoscale deployment on Node.js 20.
 - **UI/UX Decisions**: Shadcn/ui components, Radix UI primitives, Tailwind CSS for styling, dark/light theme support, and a modular component design.
 - **Technical Implementations**:
     - **Multi-language Support**: Supports 7 languages with dynamic detection.
     - **Barcode Scanner System**: Uses ZXing library for real-time barcode recognition, with manual entry and text-based search fallbacks.
     - **Smart Lookup System**: Employs regex for barcode format detection and OpenAI for text-based product searches, integrating with over 20 food databases.
-    - **AI Integration**: OpenAI GPT-4o powers ingredient analysis, the NutriBot chatbot, and generates nutrition insights and fun facts, adaptable to user language. Includes Admin AI Management for model selection (GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo), temperature, max tokens, and system prompt customization.
+    - **AI Integration**: OpenAI GPT-4o powers ingredient analysis, the NutriBot chatbot, and generates nutrition insights and fun facts, adaptable to user language. Includes Admin AI Management for model selection (GPT-4o, GPT-4o Mini, GPT-4 Turbo, GPT-3.5 Turbo), temperature, max tokens, and system prompt customization. **AI insights are automatically saved to the database** including NutriBot insights, fun facts, nutrition spotlight analysis, glycemic impact assessments, processing analysis, and structured ingredient categorization.
     - **Data Security**: AES-256-CBC encryption for PII, bcrypt for password hashing, secure session management, and encrypted tokens for password reset/email verification. Email addresses are encrypted/hashed for uniqueness, and search history is encrypted.
     - **Consent Management Platform (CMP)**: Integrated for GDPR, US state privacy laws, and IAB Global Privacy Platform (GPP) compliance.
     - **User Profile System**: Comprehensive profile management accessible at `/nutri-dashboard/profile` with editable user information, authentication protection, and specific meal timing fields.

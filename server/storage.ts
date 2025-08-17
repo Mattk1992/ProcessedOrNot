@@ -138,6 +138,16 @@ export interface IStorage {
   getRecentSearchHistory(limit?: number): Promise<SearchHistory[]>;
   getUserSearchHistory(userId: number, limit?: number): Promise<SearchHistory[]>;
   createSearchHistoryWithResult(searchInput: string, searchInputType: string, product?: Product | null, error?: string, lookupSource?: string): Promise<SearchHistory>;
+  updateSearchHistoryWithAIInsights(searchId: string, insights: {
+    nutriBotInsight?: string;
+    funFacts?: string;
+    nutritionSpotlight?: string;
+    ingredientsList?: any;
+    glycemicImpact?: string;
+    nutritionFact?: string;
+    processingAnalysis?: string;
+    ingredientCategories?: any;
+  }): Promise<SearchHistory | undefined>;
   clearAllSearchHistory(): Promise<void>;
 
   // Admin settings methods
@@ -878,6 +888,38 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`Created search history record for: "${searchInput}" with result: ${!!product}`);
     return searchRecord;
+  }
+
+  async updateSearchHistoryWithAIInsights(
+    searchId: string, 
+    insights: {
+      nutriBotInsight?: string;
+      funFacts?: string;
+      nutritionSpotlight?: string;
+      ingredientsList?: any;
+      glycemicImpact?: string;
+      nutritionFact?: string;
+      processingAnalysis?: string;
+      ingredientCategories?: any;
+    }
+  ): Promise<SearchHistory | undefined> {
+    const [updatedRecord] = await db
+      .update(searchHistory)
+      .set({
+        nutriBotInsight: insights.nutriBotInsight || null,
+        funFacts: insights.funFacts || null,
+        nutritionSpotlight: insights.nutritionSpotlight || null,
+        ingredientsList: insights.ingredientsList || null,
+        glycemicImpact: insights.glycemicImpact || null,
+        nutritionFact: insights.nutritionFact || null,
+        processingAnalysis: insights.processingAnalysis || null,
+        ingredientCategories: insights.ingredientCategories || null,
+      })
+      .where(eq(searchHistory.searchId, searchId))
+      .returning();
+    
+    console.log(`Updated search history record ${searchId} with AI insights`);
+    return updatedRecord || undefined;
   }
 
   // Admin settings methods

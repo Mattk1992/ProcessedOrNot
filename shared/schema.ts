@@ -60,6 +60,16 @@ export const searchHistory = pgTable("search_history", {
   videoUrl: text("video_url"), // URL to product video
   mediaGallery: jsonb("media_gallery"), // JSON array of media IDs for comprehensive media management
   
+  // AI-Generated Insights and Analysis
+  nutriBotInsight: text("nutri_bot_insight"), // NutriBot AI Insight
+  funFacts: text("fun_facts"), // Fun Facts & Insights
+  nutritionSpotlight: text("nutrition_spotlight"), // Nutrition Spotlight & Analysis
+  ingredientsList: jsonb("ingredients_list"), // Structured ingredients list with categories
+  glycemicImpact: text("glycemic_impact"), // Detailed glycemic impact analysis
+  nutritionFact: text("nutrition_fact"), // Key nutrition fact highlight
+  processingAnalysis: text("processing_analysis"), // Processing Analysis & Ingredient Categories
+  ingredientCategories: jsonb("ingredient_categories"), // Categorized ingredients (ultra-processed, processed, minimally processed)
+  
   // Error handling
   errorMessage: text("error_message"),
   

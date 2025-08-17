@@ -1343,6 +1343,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update search history with AI insights
+  app.post("/api/search-history/:searchId/ai-insights", async (req, res) => {
+    try {
+      const { searchId } = req.params;
+      const insights = req.body;
+
+      // Validate insights data structure
+      const validInsightKeys = [
+        'nutriBotInsight', 'funFacts', 'nutritionSpotlight', 'ingredientsList',
+        'glycemicImpact', 'nutritionFact', 'processingAnalysis', 'ingredientCategories'
+      ];
+
+      const filteredInsights: any = {};
+      for (const [key, value] of Object.entries(insights)) {
+        if (validInsightKeys.includes(key) && value !== null && value !== undefined) {
+          filteredInsights[key] = value;
+        }
+      }
+
+      if (Object.keys(filteredInsights).length === 0) {
+        return res.status(400).json({ error: "No valid insights provided" });
+      }
+
+      const updatedRecord = await storage.updateSearchHistoryWithAIInsights(searchId, filteredInsights);
+      
+      if (!updatedRecord) {
+        return res.status(404).json({ error: "Search history record not found" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "AI insights saved successfully",
+        searchId,
+        updatedFields: Object.keys(filteredInsights)
+      });
+    } catch (error) {
+      console.error("Error saving AI insights:", error);
+      res.status(500).json({ error: "Failed to save AI insights" });
+    }
+  });
+
   // Re-analyze products missing glycemic index data
   app.post("/api/admin/reanalyze-products", requireAuth, async (req, res) => {
     try {

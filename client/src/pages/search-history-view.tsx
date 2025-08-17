@@ -11,7 +11,13 @@ import {
   Activity,
   Zap,
   FileText,
-  BarChart3
+  BarChart3,
+  Brain,
+  MessageSquare,
+  Lightbulb,
+  Target,
+  List,
+  Tags
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +49,15 @@ interface SearchHistoryItem {
   dataSource?: string;
   lookupSource?: string;
   errorMessage?: string;
+  // AI-Generated Insights
+  nutriBotInsight?: string;
+  funFacts?: string;
+  nutritionSpotlight?: string;
+  ingredientsList?: any;
+  glycemicImpact?: string;
+  nutritionFact?: string;
+  processingAnalysis?: string;
+  ingredientCategories?: any;
   createdAt: string;
 }
 
@@ -511,6 +526,138 @@ export default function SearchHistoryView() {
                           </div>
                         );
                       })()}
+
+                      {/* AI-Generated Insights */}
+                      {(historyItem.nutriBotInsight || historyItem.funFacts || historyItem.nutritionSpotlight || historyItem.glycemicImpact || historyItem.nutritionFact || historyItem.processingAnalysis) && (
+                        <div className="mt-6 pt-6 border-t border-border/50 space-y-6">
+                          <div className="flex items-center space-x-3 mb-4">
+                            <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                              <Brain className="w-5 h-5 text-white" />
+                            </div>
+                            <h3 className="text-xl font-bold text-foreground">AI-Generated Insights</h3>
+                          </div>
+
+                          {/* NutriBot Insight */}
+                          {historyItem.nutriBotInsight && (
+                            <div className="bg-gradient-to-br from-blue-50 to-indigo-100/50 dark:bg-blue-900/20 rounded-2xl p-6 border border-blue-200">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center">
+                                  <MessageSquare className="w-4 h-4 text-white" />
+                                </div>
+                                <h4 className="text-lg font-semibold text-blue-800 dark:text-blue-200">NutriBot Insight</h4>
+                              </div>
+                              <p className="text-blue-900 dark:text-blue-100 leading-relaxed">{historyItem.nutriBotInsight}</p>
+                            </div>
+                          )}
+
+                          {/* Fun Facts */}
+                          {historyItem.funFacts && (
+                            <div className="bg-gradient-to-br from-green-50 to-emerald-100/50 dark:bg-green-900/20 rounded-2xl p-6 border border-green-200">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-7 h-7 bg-green-500 rounded-lg flex items-center justify-center">
+                                  <Lightbulb className="w-4 h-4 text-white" />
+                                </div>
+                                <h4 className="text-lg font-semibold text-green-800 dark:text-green-200">Fun Facts & Insights</h4>
+                              </div>
+                              <p className="text-green-900 dark:text-green-100 leading-relaxed">{historyItem.funFacts}</p>
+                            </div>
+                          )}
+
+                          {/* Nutrition Spotlight */}
+                          {historyItem.nutritionSpotlight && (
+                            <div className="bg-gradient-to-br from-orange-50 to-amber-100/50 dark:bg-orange-900/20 rounded-2xl p-6 border border-orange-200">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-7 h-7 bg-orange-500 rounded-lg flex items-center justify-center">
+                                  <Target className="w-4 h-4 text-white" />
+                                </div>
+                                <h4 className="text-lg font-semibold text-orange-800 dark:text-orange-200">Nutrition Spotlight & Analysis</h4>
+                              </div>
+                              <p className="text-orange-900 dark:text-orange-100 leading-relaxed">{historyItem.nutritionSpotlight}</p>
+                            </div>
+                          )}
+
+                          {/* Glycemic Impact */}
+                          {historyItem.glycemicImpact && (
+                            <div className="bg-gradient-to-br from-red-50 to-rose-100/50 dark:bg-red-900/20 rounded-2xl p-6 border border-red-200">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-7 h-7 bg-red-500 rounded-lg flex items-center justify-center">
+                                  <Activity className="w-4 h-4 text-white" />
+                                </div>
+                                <h4 className="text-lg font-semibold text-red-800 dark:text-red-200">Glycemic Impact Analysis</h4>
+                              </div>
+                              <p className="text-red-900 dark:text-red-100 leading-relaxed">{historyItem.glycemicImpact}</p>
+                            </div>
+                          )}
+
+                          {/* Nutrition Fact */}
+                          {historyItem.nutritionFact && (
+                            <div className="bg-gradient-to-br from-cyan-50 to-teal-100/50 dark:bg-cyan-900/20 rounded-2xl p-6 border border-cyan-200">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-7 h-7 bg-cyan-500 rounded-lg flex items-center justify-center">
+                                  <Info className="w-4 h-4 text-white" />
+                                </div>
+                                <h4 className="text-lg font-semibold text-cyan-800 dark:text-cyan-200">Key Nutrition Fact</h4>
+                              </div>
+                              <p className="text-cyan-900 dark:text-cyan-100 leading-relaxed">{historyItem.nutritionFact}</p>
+                            </div>
+                          )}
+
+                          {/* Processing Analysis */}
+                          {historyItem.processingAnalysis && (
+                            <div className="bg-gradient-to-br from-violet-50 to-purple-100/50 dark:bg-violet-900/20 rounded-2xl p-6 border border-violet-200">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-7 h-7 bg-violet-500 rounded-lg flex items-center justify-center">
+                                  <Zap className="w-4 h-4 text-white" />
+                                </div>
+                                <h4 className="text-lg font-semibold text-violet-800 dark:text-violet-200">Processing Analysis & Categories</h4>
+                              </div>
+                              <p className="text-violet-900 dark:text-violet-100 leading-relaxed">{historyItem.processingAnalysis}</p>
+                            </div>
+                          )}
+
+                          {/* Ingredients List */}
+                          {historyItem.ingredientsList && (
+                            <div className="bg-gradient-to-br from-emerald-50 to-green-100/50 dark:bg-emerald-900/20 rounded-2xl p-6 border border-emerald-200">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-7 h-7 bg-emerald-500 rounded-lg flex items-center justify-center">
+                                  <List className="w-4 h-4 text-white" />
+                                </div>
+                                <h4 className="text-lg font-semibold text-emerald-800 dark:text-emerald-200">Structured Ingredients Analysis</h4>
+                              </div>
+                              <div className="text-emerald-900 dark:text-emerald-100">
+                                {typeof historyItem.ingredientsList === 'object' ? (
+                                  <pre className="whitespace-pre-wrap font-mono text-sm bg-white/50 dark:bg-black/20 rounded-lg p-3">
+                                    {JSON.stringify(historyItem.ingredientsList, null, 2)}
+                                  </pre>
+                                ) : (
+                                  <p className="leading-relaxed">{String(historyItem.ingredientsList)}</p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Ingredient Categories */}
+                          {historyItem.ingredientCategories && (
+                            <div className="bg-gradient-to-br from-amber-50 to-yellow-100/50 dark:bg-amber-900/20 rounded-2xl p-6 border border-amber-200">
+                              <div className="flex items-center space-x-3 mb-3">
+                                <div className="w-7 h-7 bg-amber-500 rounded-lg flex items-center justify-center">
+                                  <Tags className="w-4 h-4 text-white" />
+                                </div>
+                                <h4 className="text-lg font-semibold text-amber-800 dark:text-amber-200">Ingredient Categories</h4>
+                              </div>
+                              <div className="text-amber-900 dark:text-amber-100">
+                                {typeof historyItem.ingredientCategories === 'object' ? (
+                                  <pre className="whitespace-pre-wrap font-mono text-sm bg-white/50 dark:bg-black/20 rounded-lg p-3">
+                                    {JSON.stringify(historyItem.ingredientCategories, null, 2)}
+                                  </pre>
+                                ) : (
+                                  <p className="leading-relaxed">{String(historyItem.ingredientCategories)}</p>
+                                )}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
 

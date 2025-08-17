@@ -55,3 +55,26 @@ export const queryClient = new QueryClient({
     },
   },
 });
+
+// Utility function to save AI insights to search history
+export async function saveAIInsightsToDatabase(searchId: string, insights: {
+  nutriBotInsight?: string;
+  funFacts?: string;
+  nutritionSpotlight?: string;
+  ingredientsList?: any;
+  glycemicImpact?: string;
+  nutritionFact?: string;
+  processingAnalysis?: string;
+  ingredientCategories?: any;
+}) {
+  try {
+    console.log(`Saving AI insights for search ID: ${searchId}`);
+    const response = await apiRequest('POST', `/api/search-history/${searchId}/ai-insights`, insights);
+    const result = await response.json();
+    console.log('AI insights saved successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('Error saving AI insights:', error);
+    throw error;
+  }
+}
