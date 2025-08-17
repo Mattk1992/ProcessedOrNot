@@ -36,7 +36,7 @@ const sampleProducts = [
 
 export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeScannerProps) {
   const { t } = useLanguage();
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const [barcode, setBarcode] = useState("");
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState<string>("");
@@ -1043,10 +1043,10 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                   className="border-2 border-primary/20 text-primary hover:bg-primary/10 py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
                   disabled={isLoading}
                   onClick={() => {
-                    // Navigate to search engine settings (could be admin panel or dedicated settings page)
-                    window.location.href = '/nutri-dashboard/admin?tab=settings';
+                    // Navigate to admin panel with settings tab selected
+                    navigate('/nutri-dashboard/admin?tab=settings');
                   }}
-                  title="Configure search engines and data sources"
+                  title="Configure search result display settings and visibility controls"
                 >
                   <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span className="text-sm sm:text-base hidden sm:inline">Search Settings</span>

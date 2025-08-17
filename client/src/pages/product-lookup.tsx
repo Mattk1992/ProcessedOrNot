@@ -301,18 +301,14 @@ export default function ProductLookup() {
 
       {/* Tutorial Overlay */}
       <TutorialOverlay
-        isVisible={showTutorial}
+        isOpen={showTutorial}
         onComplete={handleTutorialComplete}
         onClose={handleTutorialClose}
-        onDisable={handleTutorialDisable}
-        onStartTutorial={handleStartTutorial}
       />
 
       {/* Chat Integration */}
       <div className="fixed bottom-4 right-4 z-50">
-        <NutriBotChat 
-          onStartTutorial={user?.username === 'Admin' ? handleStartTutorial : undefined}
-        />
+        <NutriBotChat />
       </div>
     </div>
   );

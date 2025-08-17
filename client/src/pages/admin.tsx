@@ -39,17 +39,33 @@ interface AdminStats {
   verifiedUsers: number;
   totalProducts: number;
   recentRegistrations: number;
+  recentSearches?: number;
 }
 
 export default function AdminPanel() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const { user, isAuthenticated } = useAuth();
   const { t } = useLanguage();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newAccountType, setNewAccountType] = useState<string>("");
-  const [activeTab, setActiveTab] = useState('overview');
+  
+  // Parse URL parameters to get initial tab
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    return tabParam || 'overview';
+  });
+
+  // Update URL when tab changes
+  const handleTabChange = (newTab: string) => {
+    setActiveTab(newTab);
+    const params = new URLSearchParams(window.location.search);
+    params.set('tab', newTab);
+    const newUrl = `${location.split('?')[0]}?${params.toString()}`;
+    setLocation(newUrl, { replace: true });
+  };
 
   // Redirect if not admin
   useEffect(() => {
@@ -417,7 +433,7 @@ export default function AdminPanel() {
 
           {/* Detailed Management Panel */}
           <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
               <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 p-1 m-4 mb-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-slate-200/50 dark:border-gray-600/50 shadow-inner">
                 <TabsTrigger 
                   value="overview" 
