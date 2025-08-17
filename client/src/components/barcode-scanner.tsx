@@ -1016,24 +1016,42 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                 />
               </div>
               
-              <Button 
-                type="submit"
-                className="w-full bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
-                disabled={isLoading || barcode.trim().length < 1}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
-                    <span className="text-sm sm:text-base">{t('scanner.input.analyzing')}</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl shimmer"></div>
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-                    <span className="text-sm sm:text-base">{t('scanner.input.button')}</span>
-                  </>
-                )}
-              </Button>
+              {/* Action Buttons Row */}
+              <div className="flex gap-3">
+                <Button 
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 sm:space-x-3 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
+                  disabled={isLoading || barcode.trim().length < 1}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+                      <span className="text-sm sm:text-base">{t('scanner.input.analyzing')}</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/20 rounded-2xl shimmer"></div>
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="text-sm sm:text-base">{t('scanner.input.button')}</span>
+                    </>
+                  )}
+                </Button>
+
+                <Button 
+                  type="button"
+                  variant="outline"
+                  className="border-2 border-primary/20 text-primary hover:bg-primary/10 py-3 sm:py-4 px-4 sm:px-6 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98] mobile-touch-friendly touch-action-manipulation"
+                  disabled={isLoading}
+                  onClick={() => {
+                    // Navigate to search engine settings (could be admin panel or dedicated settings page)
+                    window.location.href = '/nutri-dashboard/admin?tab=settings';
+                  }}
+                  title="Configure search engines and data sources"
+                >
+                  <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <span className="text-sm sm:text-base hidden sm:inline">Search Settings</span>
+                </Button>
+              </div>
             </form>
           )}
         </CardContent>
