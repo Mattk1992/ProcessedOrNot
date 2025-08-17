@@ -313,15 +313,52 @@ export default function SearchHistoryView() {
                         </div>
                       )}
 
-                      {/* Data Source */}
-                      {historyItem.dataSource && (
-                        <div className="pt-4 border-t border-border/50">
-                          <p className="text-sm text-muted-foreground">
-                            <strong>Data Source:</strong> {historyItem.dataSource}
-                            {historyItem.lookupSource && ` (${historyItem.lookupSource})`}
-                          </p>
+                      {/* Enhanced Product Metadata */}
+                      <div className="mt-6 pt-6 border-t border-border/50">
+                        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:bg-blue-900/20 rounded-2xl p-6 border border-blue-200">
+                          <div className="flex items-center space-x-3 mb-4">
+                            <div className="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center">
+                              <Info className="w-5 h-5 text-white" />
+                            </div>
+                            <h4 className="text-lg font-semibold text-blue-800 dark:text-blue-200">Product Information</h4>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {historyItem.productBarcode && (
+                              <div className="bg-white/60 dark:bg-black/20 rounded-xl p-4">
+                                <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Barcode</div>
+                                <div className="font-mono text-lg text-blue-900 dark:text-blue-100">{historyItem.productBarcode}</div>
+                              </div>
+                            )}
+                            {historyItem.productBrands && (
+                              <div className="bg-white/60 dark:bg-black/20 rounded-xl p-4">
+                                <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Brand</div>
+                                <div className="text-lg text-blue-900 dark:text-blue-100">{historyItem.productBrands}</div>
+                              </div>
+                            )}
+                            {historyItem.dataSource && (
+                              <div className="bg-white/60 dark:bg-black/20 rounded-xl p-4">
+                                <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Data Source</div>
+                                <div className="text-lg text-blue-900 dark:text-blue-100">
+                                  {historyItem.dataSource}
+                                  {historyItem.lookupSource && ` (${historyItem.lookupSource})`}
+                                </div>
+                              </div>
+                            )}
+                            <div className="bg-white/60 dark:bg-black/20 rounded-xl p-4">
+                              <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Search Type</div>
+                              <div className="text-lg text-blue-900 dark:text-blue-100 capitalize">{historyItem.searchInputType}</div>
+                            </div>
+                            <div className="bg-white/60 dark:bg-black/20 rounded-xl p-4">
+                              <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Search Query</div>
+                              <div className="text-lg text-blue-900 dark:text-blue-100 font-mono">{historyItem.searchInput}</div>
+                            </div>
+                            <div className="bg-white/60 dark:bg-black/20 rounded-xl p-4">
+                              <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Search Date</div>
+                              <div className="text-lg text-blue-900 dark:text-blue-100">{formatDate(historyItem.createdAt)}</div>
+                            </div>
+                          </div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
 
@@ -342,73 +379,138 @@ export default function SearchHistoryView() {
                     </div>
                   )}
 
-                  {/* Nutritional Information */}
+                  {/* Enhanced Comprehensive Nutritional Information */}
                   {historyItem.productNutriments && Object.keys(historyItem.productNutriments).length > 0 && (
-                    <div className="mt-6 pt-6 border-t border-border/50">
-                      <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-4">
-                        <div className="flex items-start space-x-2">
-                          <BarChart3 className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1">
-                            <h4 className="font-medium mb-3 text-orange-800 dark:text-orange-200">Nutritional Information</h4>
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                              {historyItem.productNutriments.energy && (
-                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
-                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Energy</span>
-                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.energy} kJ</span>
-                                </div>
-                              )}
-                              {historyItem.productNutriments.fat && (
-                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
-                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Fat</span>
-                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.fat}g</span>
-                                </div>
-                              )}
-                              {historyItem.productNutriments.carbohydrates && (
-                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
-                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Carbs</span>
-                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.carbohydrates}g</span>
-                                </div>
-                              )}
-                              {historyItem.productNutriments.proteins && (
-                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
-                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Protein</span>
-                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.proteins}g</span>
-                                </div>
-                              )}
-                              {historyItem.productNutriments.sugars && (
-                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
-                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Sugars</span>
-                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.sugars}g</span>
-                                </div>
-                              )}
-                              {historyItem.productNutriments.salt && (
-                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
-                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Salt</span>
-                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.salt}g</span>
-                                </div>
-                              )}
-                              {historyItem.productNutriments.fiber && (
-                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
-                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Fiber</span>
-                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.fiber}g</span>
-                                </div>
-                              )}
-                              {historyItem.productNutriments.sodium && (
-                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
-                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Sodium</span>
-                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments.sodium}mg</span>
-                                </div>
-                              )}
-                              {historyItem.productNutriments['saturated-fat'] && (
-                                <div className="bg-white/50 dark:bg-black/20 rounded p-3">
-                                  <span className="font-medium text-orange-800 dark:text-orange-200 block">Saturated Fat</span>
-                                  <span className="text-orange-600 dark:text-orange-400">{historyItem.productNutriments['saturated-fat']}g</span>
-                                </div>
-                              )}
-                            </div>
+                    <div className="mt-6 pt-6 border-t border-border/50 space-y-6">
+                      {/* Macronutrients */}
+                      <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 dark:bg-orange-900/20 rounded-2xl p-6 border border-orange-200">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className="w-8 h-8 bg-orange-500 rounded-xl flex items-center justify-center">
+                            <BarChart3 className="w-5 h-5 text-white" />
                           </div>
+                          <h4 className="text-lg font-semibold text-orange-800 dark:text-orange-200">Macronutrients (per 100g)</h4>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          {(() => {
+                            const macronutrients = [
+                              { key: 'energy_100g', label: 'Energy', unit: 'kcal', fallback: 'energy' },
+                              { key: 'fat_100g', label: 'Total Fat', unit: 'g', fallback: 'fat' },
+                              { key: 'carbohydrates_100g', label: 'Carbohydrates', unit: 'g', fallback: 'carbohydrates' },
+                              { key: 'proteins_100g', label: 'Protein', unit: 'g', fallback: 'proteins' },
+                              { key: 'saturated_fat_100g', label: 'Saturated Fat', unit: 'g', fallback: 'saturated-fat' },
+                              { key: 'sugars_100g', label: 'Sugars', unit: 'g', fallback: 'sugars' },
+                              { key: 'fiber_100g', label: 'Fiber', unit: 'g', fallback: 'fiber' },
+                              { key: 'salt_100g', label: 'Salt', unit: 'g', fallback: 'salt' },
+                              { key: 'sodium_100g', label: 'Sodium', unit: 'mg', fallback: 'sodium' }
+                            ];
+
+                            return macronutrients.map((nutrient, index) => {
+                              const value = historyItem.productNutriments[nutrient.key] || historyItem.productNutriments[nutrient.fallback];
+                              if (!value) return null;
+                              
+                              return (
+                                <div key={index} className="bg-white/60 dark:bg-black/20 rounded-xl p-4 text-center">
+                                  <div className="text-2xl font-bold text-orange-700 dark:text-orange-300 mb-1">
+                                    {typeof value === 'number' ? value.toFixed(1) : String(value)}
+                                    <span className="text-sm font-normal">{nutrient.unit}</span>
+                                  </div>
+                                  <div className="text-xs text-orange-600 dark:text-orange-400 font-medium">{nutrient.label}</div>
+                                </div>
+                              );
+                            }).filter(Boolean);
+                          })()}
                         </div>
                       </div>
+
+                      {/* Vitamins */}
+                      {(() => {
+                        const vitamins = [
+                          { key: 'vitamin_a_100g', label: 'Vitamin A', unit: 'μg' },
+                          { key: 'vitamin_c_100g', label: 'Vitamin C', unit: 'mg' },
+                          { key: 'vitamin_d_100g', label: 'Vitamin D', unit: 'μg' },
+                          { key: 'vitamin_e_100g', label: 'Vitamin E', unit: 'mg' },
+                          { key: 'vitamin_k_100g', label: 'Vitamin K', unit: 'μg' },
+                          { key: 'vitamin_b1_100g', label: 'Thiamin (B1)', unit: 'mg' },
+                          { key: 'vitamin_b2_100g', label: 'Riboflavin (B2)', unit: 'mg' },
+                          { key: 'vitamin_b6_100g', label: 'Vitamin B6', unit: 'mg' },
+                          { key: 'vitamin_b12_100g', label: 'Vitamin B12', unit: 'μg' },
+                          { key: 'folate_100g', label: 'Folate', unit: 'μg' }
+                        ];
+                        
+                        const availableVitamins = vitamins.filter(vitamin => historyItem.productNutriments[vitamin.key]);
+                        
+                        if (availableVitamins.length === 0) return null;
+                        
+                        return (
+                          <div className="bg-gradient-to-br from-green-50 to-green-100/50 dark:bg-green-900/20 rounded-2xl p-6 border border-green-200">
+                            <div className="flex items-center space-x-3 mb-4">
+                              <div className="w-8 h-8 bg-green-500 rounded-xl flex items-center justify-center">
+                                <span className="text-white font-bold text-sm">V</span>
+                              </div>
+                              <h4 className="text-lg font-semibold text-green-800 dark:text-green-200">Vitamins (per 100g)</h4>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                              {availableVitamins.map((vitamin, index) => {
+                                const value = historyItem.productNutriments[vitamin.key];
+                                return (
+                                  <div key={index} className="bg-white/60 dark:bg-black/20 rounded-xl p-4 text-center">
+                                    <div className="text-xl font-bold text-green-700 dark:text-green-300 mb-1">
+                                      {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                                      <span className="text-xs font-normal">{vitamin.unit}</span>
+                                    </div>
+                                    <div className="text-xs text-green-600 dark:text-green-400 font-medium">{vitamin.label}</div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* Minerals */}
+                      {(() => {
+                        const minerals = [
+                          { key: 'calcium_100g', label: 'Calcium', unit: 'mg' },
+                          { key: 'iron_100g', label: 'Iron', unit: 'mg' },
+                          { key: 'magnesium_100g', label: 'Magnesium', unit: 'mg' },
+                          { key: 'phosphorus_100g', label: 'Phosphorus', unit: 'mg' },
+                          { key: 'potassium_100g', label: 'Potassium', unit: 'mg' },
+                          { key: 'zinc_100g', label: 'Zinc', unit: 'mg' },
+                          { key: 'copper_100g', label: 'Copper', unit: 'mg' },
+                          { key: 'manganese_100g', label: 'Manganese', unit: 'mg' },
+                          { key: 'selenium_100g', label: 'Selenium', unit: 'μg' },
+                          { key: 'iodine_100g', label: 'Iodine', unit: 'μg' }
+                        ];
+                        
+                        const availableMinerals = minerals.filter(mineral => historyItem.productNutriments[mineral.key]);
+                        
+                        if (availableMinerals.length === 0) return null;
+                        
+                        return (
+                          <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 dark:bg-purple-900/20 rounded-2xl p-6 border border-purple-200">
+                            <div className="flex items-center space-x-3 mb-4">
+                              <div className="w-8 h-8 bg-purple-500 rounded-xl flex items-center justify-center">
+                                <span className="text-white font-bold text-sm">M</span>
+                              </div>
+                              <h4 className="text-lg font-semibold text-purple-800 dark:text-purple-200">Minerals (per 100g)</h4>
+                            </div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                              {availableMinerals.map((mineral, index) => {
+                                const value = historyItem.productNutriments[mineral.key];
+                                return (
+                                  <div key={index} className="bg-white/60 dark:bg-black/20 rounded-xl p-4 text-center">
+                                    <div className="text-xl font-bold text-purple-700 dark:text-purple-300 mb-1">
+                                      {typeof value === 'number' ? value.toFixed(2) : String(value)}
+                                      <span className="text-xs font-normal">{mineral.unit}</span>
+                                    </div>
+                                    <div className="text-xs text-purple-600 dark:text-purple-400 font-medium">{mineral.label}</div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
                   )}
 

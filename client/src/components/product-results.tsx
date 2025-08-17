@@ -468,44 +468,75 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                 </div>
               </div>
 
-              {/* Quick Stats */}
+              {/* Enhanced Quick Stats */}
               {product.nutriments && (
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 slide-up">
-                  <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-primary/30 transition-colors">
-                    <div className="text-2xl font-bold text-foreground mb-1">
-{(() => {
-                        const nutrients = product.nutriments as Record<string, any>;
-                        return nutrients?.energy_100g ? String(nutrients.energy_100g) : "N/A";
-                      })()}
+                <div className="space-y-6 slide-up">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-primary/30 transition-colors">
+                      <div className="text-2xl font-bold text-foreground mb-1">
+                        {(() => {
+                          const nutrients = product.nutriments as Record<string, any>;
+                          return nutrients?.energy_100g ? String(nutrients.energy_100g) : "N/A";
+                        })()}
+                      </div>
+                      <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.energy'))}</div>
                     </div>
-                    <div className="text-xs text-muted-foreground font-medium">{t('nutrition.quick.energy')}</div>
+                    <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
+                      <div className="text-2xl font-bold text-foreground mb-1">
+                        {(() => {
+                          const nutrients = product.nutriments as any;
+                          return nutrients?.sugars_100g ? `${nutrients.sugars_100g}g` : "N/A";
+                        })()}
+                      </div>
+                      <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.sugars'))}</div>
+                    </div>
+                    <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-primary/30 transition-colors">
+                      <div className="text-2xl font-bold text-foreground mb-1">
+                        {(() => {
+                          const nutrients = product.nutriments as any;
+                          return nutrients?.fat_100g ? `${nutrients.fat_100g}g` : "N/A";
+                        })()}
+                      </div>
+                      <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.fat'))}</div>
+                    </div>
+                    <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
+                      <div className="text-2xl font-bold text-foreground mb-1">
+                        {(() => {
+                          const nutrients = product.nutriments as any;
+                          return nutrients?.proteins_100g ? `${nutrients.proteins_100g}g` : "N/A";
+                        })()}
+                      </div>
+                      <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.protein'))}</div>
+                    </div>
                   </div>
-                  <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
-                    <div className="text-2xl font-bold text-foreground mb-1">
-                      {(() => {
-                        const nutrients = product.nutriments as any;
-                        return nutrients?.sugars_100g ? `${nutrients.sugars_100g}g` : "N/A";
-                      })()}
-                    </div>
-                    <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.sugars'))}</div>
-                  </div>
-                  <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-primary/30 transition-colors">
-                    <div className="text-2xl font-bold text-foreground mb-1">
-                      {(() => {
-                        const nutrients = product.nutriments as any;
-                        return nutrients?.fat_100g ? `${nutrients.fat_100g}g` : "N/A";
-                      })()}
-                    </div>
-                    <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.fat'))}</div>
-                  </div>
-                  <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
-                    <div className="text-2xl font-bold text-foreground mb-1">
-                      {(() => {
-                        const nutrients = product.nutriments as any;
-                        return nutrients?.proteins_100g ? `${nutrients.proteins_100g}g` : "N/A";
-                      })()}
-                    </div>
-                    <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.protein'))}</div>
+
+                  {/* Additional Nutritional Information */}
+                  <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+                    {(() => {
+                      const nutrients = product.nutriments as Record<string, any>;
+                      const additionalNutrients = [
+                        { key: 'carbohydrates_100g', label: 'Carbs', unit: 'g' },
+                        { key: 'fiber_100g', label: 'Fiber', unit: 'g' },
+                        { key: 'salt_100g', label: 'Salt', unit: 'g' },
+                        { key: 'sodium_100g', label: 'Sodium', unit: 'mg' },
+                        { key: 'saturated_fat_100g', label: 'Sat. Fat', unit: 'g' },
+                        { key: 'trans_fat_100g', label: 'Trans Fat', unit: 'g' }
+                      ];
+
+                      return additionalNutrients.map((nutrient, index) => {
+                        const value = nutrients?.[nutrient.key];
+                        if (!value) return null;
+                        
+                        return (
+                          <div key={index} className="bg-gradient-to-br from-muted/50 to-muted/30 rounded-xl p-3 text-center border border-border/10">
+                            <div className="text-lg font-semibold text-foreground">
+                              {typeof value === 'number' ? value.toFixed(1) : String(value)}{nutrient.unit}
+                            </div>
+                            <div className="text-xs text-muted-foreground font-medium">{nutrient.label}</div>
+                          </div>
+                        );
+                      }).filter(Boolean);
+                    })()}
                   </div>
                 </div>
               )}
@@ -667,8 +698,259 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
           </CardContent>
         </Card>
 
+      {/* Enhanced Product Metadata Card */}
+      <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
+        <CardContent className="pt-8 pb-8">
+          <div className="flex items-center space-x-3 mb-8">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+              <Info className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-foreground">Product Information</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Basic Product Info */}
+            <div className="space-y-4">
+              <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+                <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center">
+                  <Flag className="w-5 h-5 mr-2 text-primary" />
+                  Product Details
+                </h4>
+                <div className="space-y-3">
+                  {product.barcode && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-muted-foreground">Barcode:</span>
+                      <span className="font-mono text-sm bg-muted px-2 py-1 rounded">{product.barcode}</span>
+                    </div>
+                  )}
+                  {product.brands && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-muted-foreground">Brand:</span>
+                      <span className="text-sm font-semibold">{String(product.brands)}</span>
+                    </div>
+                  )}
+                  {(product as any).categories && (
+                    <div className="flex justify-between items-start">
+                      <span className="text-sm font-medium text-muted-foreground">Category:</span>
+                      <span className="text-sm text-right max-w-xs">{String((product as any).categories)}</span>
+                    </div>
+                  )}
+                  {(product as any).countries && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-muted-foreground">Country:</span>
+                      <span className="text-sm">{String((product as any).countries)}</span>
+                    </div>
+                  )}
+                  {(product as any).packaging && (
+                    <div className="flex justify-between items-start">
+                      <span className="text-sm font-medium text-muted-foreground">Packaging:</span>
+                      <span className="text-sm text-right max-w-xs">{String((product as any).packaging)}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Nutritional Overview */}
+            <div className="space-y-4">
+              <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+                <h4 className="text-lg font-semibold text-foreground mb-4 flex items-center">
+                  <Apple className="w-5 h-5 mr-2 text-green-600" />
+                  Nutritional Overview
+                </h4>
+                {product.nutriments && (
+                  <div className="space-y-3">
+                    {(() => {
+                      const nutrients = product.nutriments as Record<string, any>;
+                      const nutritionGrade = (product as any).nutritionGrade || (product as any).nutriscore_grade;
+                      const servingSize = (product as any).serving_size || nutrients.serving_size;
+                      
+                      return (
+                        <>
+                          {nutritionGrade && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-muted-foreground">Nutri-Score:</span>
+                              <Badge 
+                                className={`${
+                                  nutritionGrade.toLowerCase() === 'a' ? 'bg-green-500' :
+                                  nutritionGrade.toLowerCase() === 'b' ? 'bg-lime-500' :
+                                  nutritionGrade.toLowerCase() === 'c' ? 'bg-yellow-500' :
+                                  nutritionGrade.toLowerCase() === 'd' ? 'bg-orange-500' :
+                                  'bg-red-500'
+                                } text-white`}
+                              >
+                                {nutritionGrade.toUpperCase()}
+                              </Badge>
+                            </div>
+                          )}
+                          {servingSize && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-sm font-medium text-muted-foreground">Serving Size:</span>
+                              <span className="text-sm font-semibold">{String(servingSize)}</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-muted-foreground">Energy per 100g:</span>
+                            <span className="text-sm font-semibold">
+                              {nutrients.energy_100g ? `${nutrients.energy_100g} kcal` : 'N/A'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-muted-foreground">Total Fat:</span>
+                            <span className="text-sm">{nutrients.fat_100g ? `${nutrients.fat_100g}g` : 'N/A'}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-muted-foreground">Total Carbs:</span>
+                            <span className="text-sm">{nutrients.carbohydrates_100g ? `${nutrients.carbohydrates_100g}g` : 'N/A'}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm font-medium text-muted-foreground">Protein:</span>
+                            <span className="text-sm">{nutrients.proteins_100g ? `${nutrients.proteins_100g}g` : 'N/A'}</span>
+                          </div>
+                        </>
+                      );
+                    })()}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Allergens and Labels */}
+          {((product as any).allergens || (product as any).labels) && (
+            <div className="mt-6 space-y-4">
+              {(product as any).allergens && (
+                <div className="bg-gradient-to-br from-red-50 to-red-100/50 border border-red-200 rounded-2xl p-4">
+                  <h4 className="text-lg font-semibold text-red-800 mb-3 flex items-center">
+                    <AlertTriangle className="w-5 h-5 mr-2" />
+                    Allergens
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {String((product as any).allergens).split(',').map((allergen, index) => (
+                      <Badge key={index} variant="destructive" className="text-xs">
+                        {allergen.trim()}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {(product as any).labels && (
+                <div className="bg-gradient-to-br from-green-50 to-green-100/50 border border-green-200 rounded-2xl p-4">
+                  <h4 className="text-lg font-semibold text-green-800 mb-3 flex items-center">
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    Labels & Certifications
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {String((product as any).labels).split(',').map((label, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs bg-green-100 text-green-800">
+                        {label.trim()}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Comprehensive Nutrition Facts Card */}
+      {product.nutriments && (
+        <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
+          <CardContent className="pt-8 pb-8">
+            <div className="flex items-center space-x-3 mb-8">
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">Complete Nutrition Facts</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {(() => {
+                const nutrients = product.nutriments as Record<string, any>;
+                
+                const macronutrients = [
+                  { key: 'energy_100g', label: 'Energy', unit: 'kcal', icon: '⚡' },
+                  { key: 'fat_100g', label: 'Total Fat', unit: 'g', icon: '🧈' },
+                  { key: 'saturated_fat_100g', label: 'Saturated Fat', unit: 'g', icon: '🔸', indent: true },
+                  { key: 'trans_fat_100g', label: 'Trans Fat', unit: 'g', icon: '🔸', indent: true },
+                  { key: 'carbohydrates_100g', label: 'Total Carbohydrates', unit: 'g', icon: '🌾' },
+                  { key: 'fiber_100g', label: 'Dietary Fiber', unit: 'g', icon: '🔸', indent: true },
+                  { key: 'sugars_100g', label: 'Total Sugars', unit: 'g', icon: '🔸', indent: true },
+                  { key: 'proteins_100g', label: 'Protein', unit: 'g', icon: '💪' },
+                  { key: 'salt_100g', label: 'Salt', unit: 'g', icon: '🧂' },
+                  { key: 'sodium_100g', label: 'Sodium', unit: 'mg', icon: '🧂' }
+                ];
+
+                const vitamins = [
+                  { key: 'vitamin_a_100g', label: 'Vitamin A', unit: 'μg', icon: '🥕' },
+                  { key: 'vitamin_c_100g', label: 'Vitamin C', unit: 'mg', icon: '🍊' },
+                  { key: 'vitamin_d_100g', label: 'Vitamin D', unit: 'μg', icon: '☀️' },
+                  { key: 'vitamin_e_100g', label: 'Vitamin E', unit: 'mg', icon: '🥜' },
+                  { key: 'vitamin_k_100g', label: 'Vitamin K', unit: 'μg', icon: '🥬' },
+                  { key: 'vitamin_b1_100g', label: 'Thiamin (B1)', unit: 'mg', icon: '🅱️' },
+                  { key: 'vitamin_b2_100g', label: 'Riboflavin (B2)', unit: 'mg', icon: '🅱️' },
+                  { key: 'vitamin_b6_100g', label: 'Vitamin B6', unit: 'mg', icon: '🅱️' },
+                  { key: 'vitamin_b12_100g', label: 'Vitamin B12', unit: 'μg', icon: '🅱️' },
+                  { key: 'folate_100g', label: 'Folate', unit: 'μg', icon: '🥬' }
+                ];
+
+                const minerals = [
+                  { key: 'calcium_100g', label: 'Calcium', unit: 'mg', icon: '🦴' },
+                  { key: 'iron_100g', label: 'Iron', unit: 'mg', icon: '🩸' },
+                  { key: 'magnesium_100g', label: 'Magnesium', unit: 'mg', icon: '⚡' },
+                  { key: 'phosphorus_100g', label: 'Phosphorus', unit: 'mg', icon: '🦴' },
+                  { key: 'potassium_100g', label: 'Potassium', unit: 'mg', icon: '🍌' },
+                  { key: 'zinc_100g', label: 'Zinc', unit: 'mg', icon: '🔧' },
+                  { key: 'copper_100g', label: 'Copper', unit: 'mg', icon: '🔩' },
+                  { key: 'manganese_100g', label: 'Manganese', unit: 'mg', icon: '⚙️' },
+                  { key: 'selenium_100g', label: 'Selenium', unit: 'μg', icon: '🔬' },
+                  { key: 'iodine_100g', label: 'Iodine', unit: 'μg', icon: '🧂' }
+                ];
+
+                const renderNutrientSection = (nutrients_list: any[], title: string) => {
+                  const availableNutrients = nutrients_list.filter(nutrient => nutrients[nutrient.key]);
+                  if (availableNutrients.length === 0) return null;
+
+                  return (
+                    <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+                      <h4 className="text-lg font-semibold text-foreground mb-4">{title}</h4>
+                      <div className="space-y-3">
+                        {availableNutrients.map((nutrient, index) => {
+                          const value = nutrients[nutrient.key];
+                          return (
+                            <div key={index} className={`flex justify-between items-center ${nutrient.indent ? 'ml-4' : ''}`}>
+                              <span className="text-sm text-muted-foreground flex items-center">
+                                <span className="mr-2">{nutrient.icon}</span>
+                                {nutrient.label}
+                              </span>
+                              <span className="text-sm font-semibold">
+                                {typeof value === 'number' ? value.toFixed(2) : String(value)}{nutrient.unit}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                };
+
+                return (
+                  <>
+                    {renderNutrientSection(macronutrients, 'Macronutrients')}
+                    {renderNutrientSection(vitamins, 'Vitamins')}
+                    {renderNutrientSection(minerals, 'Minerals')}
+                  </>
+                );
+              })()}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* NutriBot Insights Card */}
-      {nutriBotInsight && typeof nutriBotInsight === 'string' && (
+      {nutriBotInsight && typeof nutriBotInsight === 'object' && 'insight' in nutriBotInsight && (
         <Card className="glass-card border-2 border-primary/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up glow-effect">
           <CardHeader className="bg-gradient-to-r from-primary to-accent text-white rounded-t-lg">
             <CardTitle className="flex items-center space-x-3">
@@ -685,7 +967,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
           <CardContent className="pt-6 pb-6">
             <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
               <p className="text-foreground leading-relaxed text-lg">
-                {nutriBotInsight}
+                {(nutriBotInsight as { insight: string }).insight}
               </p>
             </div>
           </CardContent>
