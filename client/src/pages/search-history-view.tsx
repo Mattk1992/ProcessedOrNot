@@ -194,94 +194,166 @@ export default function SearchHistoryView() {
 
         {/* Search Result Display */}
         {!isLoading && !error && historyItem && (
-          <div className="space-y-6">
-            {/* Search Info Header */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle className="flex items-center space-x-3">
-                      <div className="flex items-center space-x-2">
-                        {historyItem.searchInputType === 'barcode' && <Package className="w-5 h-5 text-blue-500" />}
-                        {historyItem.searchInputType === 'text' && <Package className="w-5 h-5 text-green-500" />}
-                        {historyItem.searchInputType === 'voice' && <Package className="w-5 h-5 text-purple-500" />}
-                        <span>Search Result</span>
+          <div className="space-y-8">
+            {/* Enhanced Search Info Header */}
+            <Card className="border-2 border-primary/20 bg-gradient-to-r from-background via-primary/5 to-background">
+              <CardHeader className="pb-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <CardTitle className="flex items-center space-x-3 text-xl">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        historyItem.searchInputType === 'barcode' ? 'bg-blue-500' :
+                        historyItem.searchInputType === 'text' ? 'bg-green-500' : 'bg-purple-500'
+                      }`}>
+                        <Package className="w-5 h-5 text-white" />
                       </div>
-                      <Badge variant="outline">
-                        {historyItem.searchInputType}
-                      </Badge>
+                      <div>
+                        <span className="gradient-text">Search History Record</span>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Badge className={`${
+                            historyItem.searchInputType === 'barcode' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                            historyItem.searchInputType === 'text' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                            'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                          }`}>
+                            {historyItem.searchInputType.charAt(0).toUpperCase() + historyItem.searchInputType.slice(1)} Search
+                          </Badge>
+                          {historyItem.resultFound ? (
+                            <Badge className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                              Product Found
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200">
+                              No Result
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
                     </CardTitle>
-                    <CardDescription className="flex items-center space-x-2 mt-2">
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center space-x-2 text-muted-foreground mb-2">
                       <Clock className="w-4 h-4" />
-                      <span>Searched on {formatDate(historyItem.createdAt)}</span>
-                    </CardDescription>
+                      <span className="text-sm">Search Date</span>
+                    </div>
+                    <p className="font-medium">{formatDate(historyItem.createdAt)}</p>
+                    {historyItem.dataSource && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Data: {historyItem.dataSource}
+                        {historyItem.lookupSource && ` (${historyItem.lookupSource})`}
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium text-sm text-muted-foreground mb-1">Search Query</h4>
-                    <p className="font-mono text-lg">{historyItem.searchInput}</p>
+                <div className="bg-muted/30 rounded-xl p-4">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <div className="w-2 h-2 bg-primary rounded-full"></div>
+                    <h4 className="font-semibold text-foreground">Search Query</h4>
                   </div>
+                  <p className="font-mono text-lg bg-background/50 rounded-lg px-3 py-2 border">
+                    {historyItem.searchInput}
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Product Result */}
+            {/* Enhanced Product Result */}
             {historyItem.resultFound && historyItem.productName ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-green-700 dark:text-green-300">Product Found</CardTitle>
+              <Card className="border-green-200 bg-gradient-to-br from-green-50/50 via-background to-emerald-50/30 dark:from-green-900/20 dark:via-background dark:to-emerald-900/10">
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center space-x-3 text-xl">
+                    <div className="w-8 h-8 bg-green-500 rounded-xl flex items-center justify-center">
+                      <Package className="w-5 h-5 text-white" />
+                    </div>
+                    <span className="text-green-700 dark:text-green-300">Product Analysis Results</span>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-3 gap-6">
+                  <div className="grid lg:grid-cols-4 gap-6">
                     {/* Product Image */}
-                    {historyItem.productImageUrl && (
-                      <div className="flex justify-center">
-                        <img 
-                          src={historyItem.productImageUrl} 
-                          alt={historyItem.productName}
-                          className="w-48 h-48 object-cover rounded-lg border shadow-sm"
-                        />
+                    {historyItem.productImageUrl ? (
+                      <div className="lg:col-span-1 flex justify-center">
+                        <div className="relative">
+                          <img 
+                            src={historyItem.productImageUrl} 
+                            alt={historyItem.productName}
+                            className="w-full max-w-48 h-48 object-cover rounded-xl border-2 border-green-200 shadow-lg"
+                          />
+                          <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                            <Package className="w-3 h-3 text-white" />
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="lg:col-span-1 flex justify-center">
+                        <div className="w-48 h-48 bg-muted/50 rounded-xl border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                          <div className="text-center">
+                            <Package className="w-12 h-12 text-muted-foreground/50 mx-auto mb-2" />
+                            <p className="text-sm text-muted-foreground">No Image Available</p>
+                          </div>
+                        </div>
                       </div>
                     )}
                     
                     {/* Product Details */}
-                    <div className="md:col-span-2 space-y-4">
-                      <div>
-                        <h3 className="text-2xl font-bold text-foreground mb-2">
+                    <div className="lg:col-span-3 space-y-6">
+                      {/* Product Identity */}
+                      <div className="bg-white/60 dark:bg-black/20 rounded-xl p-5 border border-green-200/50">
+                        <h3 className="text-2xl font-bold text-foreground mb-3 leading-tight">
                           {historyItem.productName}
                         </h3>
-                        {historyItem.productBrands && (
-                          <p className="text-lg text-muted-foreground">
-                            {historyItem.productBrands}
-                          </p>
-                        )}
-                        {historyItem.productBarcode && (
-                          <p className="text-sm text-muted-foreground font-mono mt-2">
-                            Barcode: {historyItem.productBarcode}
-                          </p>
-                        )}
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {historyItem.productBrands && (
+                            <div>
+                              <div className="text-sm font-medium text-green-700 dark:text-green-300 mb-1">Brand</div>
+                              <p className="text-lg font-medium text-foreground">
+                                {historyItem.productBrands}
+                              </p>
+                            </div>
+                          )}
+                          {historyItem.productBarcode && (
+                            <div>
+                              <div className="text-sm font-medium text-green-700 dark:text-green-300 mb-1">Barcode</div>
+                              <p className="text-lg font-mono font-medium text-foreground bg-muted/30 rounded px-2 py-1 inline-block">
+                                {historyItem.productBarcode}
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </div>
 
-                      {/* Processing Score */}
+                      {/* Enhanced Processing Score */}
                       {historyItem.processingScore && (
-                        <div className="space-y-3">
-                          <div className="flex items-center space-x-3">
-                            <Badge className={`${getProcessingScoreColor(historyItem.processingScore)} text-white px-3 py-1`}>
-                              <Star className="w-4 h-4 mr-1" />
-                              {getProcessingScoreText(historyItem.processingScore)} ({historyItem.processingScore}/10)
+                        <div className="bg-white/60 dark:bg-black/20 rounded-xl p-5 border border-orange-200/50">
+                          <div className="flex items-center justify-between mb-4">
+                            <h4 className="text-lg font-semibold text-orange-800 dark:text-orange-200">Processing Level Analysis</h4>
+                            <Badge className={`${getProcessingScoreColor(historyItem.processingScore)} text-white px-4 py-2 text-sm font-medium`}>
+                              <Star className="w-4 h-4 mr-2" />
+                              {getProcessingScoreText(historyItem.processingScore)}
                             </Badge>
                           </div>
                           
+                          <div className="flex items-center space-x-4 mb-4">
+                            <div className="flex-1 bg-muted/30 rounded-full h-3">
+                              <div 
+                                className={`h-3 rounded-full transition-all duration-500 ${getProcessingScoreColor(historyItem.processingScore)}`}
+                                style={{ width: `${(historyItem.processingScore / 10) * 100}%` }}
+                              ></div>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-2xl font-bold text-foreground">{historyItem.processingScore}</span>
+                              <span className="text-muted-foreground">/10</span>
+                            </div>
+                          </div>
+                          
                           {historyItem.processingExplanation && (
-                            <div className="bg-muted/50 rounded-lg p-4">
-                              <div className="flex items-start space-x-2">
-                                <Info className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                            <div className="bg-orange-50/50 dark:bg-orange-900/20 rounded-lg p-4 border border-orange-200/30">
+                              <div className="flex items-start space-x-3">
+                                <Info className="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" />
                                 <div>
-                                  <h4 className="font-medium mb-2">Processing Analysis</h4>
-                                  <p className="text-sm text-muted-foreground leading-relaxed">
+                                  <h5 className="font-medium mb-2 text-orange-800 dark:text-orange-200">Detailed Analysis</h5>
+                                  <p className="text-sm text-orange-700 dark:text-orange-300 leading-relaxed">
                                     {historyItem.processingExplanation}
                                   </p>
                                 </div>
@@ -291,85 +363,102 @@ export default function SearchHistoryView() {
                         </div>
                       )}
 
-                      {/* Glycemic Information */}
+                      {/* Enhanced Glycemic Information */}
                       {(historyItem.glycemicIndex || historyItem.glycemicLoad) && (
-                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                          <div className="flex items-start space-x-2">
-                            <Activity className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                            <div className="flex-1">
-                              <h4 className="font-medium mb-3 text-blue-800 dark:text-blue-200">Glycemic Information</h4>
-                              <div className="grid grid-cols-2 gap-4 mb-3">
-                                {historyItem.glycemicIndex && (
-                                  <div>
-                                    <div className="flex items-center space-x-2">
-                                      <Zap className="w-4 h-4 text-blue-500" />
-                                      <span className="font-medium text-sm">Glycemic Index</span>
-                                    </div>
-                                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{historyItem.glycemicIndex}</p>
-                                  </div>
-                                )}
-                                {historyItem.glycemicLoad && (
-                                  <div>
-                                    <div className="flex items-center space-x-2">
-                                      <BarChart3 className="w-4 h-4 text-blue-500" />
-                                      <span className="font-medium text-sm">Glycemic Load</span>
-                                    </div>
-                                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{historyItem.glycemicLoad}</p>
-                                  </div>
-                                )}
-                              </div>
-                              {historyItem.glycemicExplanation && (
-                                <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
-                                  {historyItem.glycemicExplanation}
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Enhanced Product Metadata */}
-                      <div className="mt-6 pt-6 border-t border-border/50">
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 dark:bg-blue-900/20 rounded-2xl p-6 border border-blue-200">
+                        <div className="bg-white/60 dark:bg-black/20 rounded-xl p-5 border border-blue-200/50">
                           <div className="flex items-center space-x-3 mb-4">
                             <div className="w-8 h-8 bg-blue-500 rounded-xl flex items-center justify-center">
-                              <Info className="w-5 h-5 text-white" />
+                              <Activity className="w-5 h-5 text-white" />
                             </div>
-                            <h4 className="text-lg font-semibold text-blue-800 dark:text-blue-200">Product Information</h4>
+                            <h4 className="text-lg font-semibold text-blue-800 dark:text-blue-200">Glycemic Impact</h4>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {historyItem.productBarcode && (
-                              <div className="bg-white/60 dark:bg-black/20 rounded-xl p-4">
-                                <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Barcode</div>
-                                <div className="font-mono text-lg text-blue-900 dark:text-blue-100">{historyItem.productBarcode}</div>
-                              </div>
-                            )}
-                            {historyItem.productBrands && (
-                              <div className="bg-white/60 dark:bg-black/20 rounded-xl p-4">
-                                <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Brand</div>
-                                <div className="text-lg text-blue-900 dark:text-blue-100">{historyItem.productBrands}</div>
-                              </div>
-                            )}
-                            {historyItem.dataSource && (
-                              <div className="bg-white/60 dark:bg-black/20 rounded-xl p-4">
-                                <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Data Source</div>
-                                <div className="text-lg text-blue-900 dark:text-blue-100">
-                                  {historyItem.dataSource}
-                                  {historyItem.lookupSource && ` (${historyItem.lookupSource})`}
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                            {historyItem.glycemicIndex && (
+                              <div className="bg-blue-50/50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
+                                <div className="flex items-center justify-center space-x-2 mb-2">
+                                  <Zap className="w-5 h-5 text-blue-500" />
+                                  <span className="font-medium text-blue-800 dark:text-blue-200">Glycemic Index</span>
+                                </div>
+                                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                                  {historyItem.glycemicIndex}
+                                </div>
+                                <div className="text-xs text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                                  {historyItem.glycemicIndex <= 55 ? 'Low GI' : 
+                                   historyItem.glycemicIndex <= 70 ? 'Medium GI' : 'High GI'}
                                 </div>
                               </div>
                             )}
-                            <div className="bg-white/60 dark:bg-black/20 rounded-xl p-4">
-                              <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Search Type</div>
-                              <div className="text-lg text-blue-900 dark:text-blue-100 capitalize">{historyItem.searchInputType}</div>
+                            
+                            {historyItem.glycemicLoad && (
+                              <div className="bg-blue-50/50 dark:bg-blue-900/20 rounded-lg p-4 text-center">
+                                <div className="flex items-center justify-center space-x-2 mb-2">
+                                  <BarChart3 className="w-5 h-5 text-blue-500" />
+                                  <span className="font-medium text-blue-800 dark:text-blue-200">Glycemic Load</span>
+                                </div>
+                                <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-1">
+                                  {historyItem.glycemicLoad}
+                                </div>
+                                <div className="text-xs text-blue-600 dark:text-blue-400 uppercase tracking-wide">
+                                  {historyItem.glycemicLoad <= 10 ? 'Low GL' : 
+                                   historyItem.glycemicLoad <= 20 ? 'Medium GL' : 'High GL'}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {historyItem.glycemicExplanation && (
+                            <div className="bg-blue-50/50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200/30">
+                              <h5 className="font-medium mb-2 text-blue-800 dark:text-blue-200">Impact Explanation</h5>
+                              <p className="text-sm text-blue-700 dark:text-blue-300 leading-relaxed">
+                                {historyItem.glycemicExplanation}
+                              </p>
                             </div>
-                            <div className="bg-white/60 dark:bg-black/20 rounded-xl p-4">
-                              <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Search Query</div>
-                              <div className="text-lg text-blue-900 dark:text-blue-100 font-mono">{historyItem.searchInput}</div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Enhanced Search & Data Metadata */}
+                      <div className="bg-white/60 dark:bg-black/20 rounded-xl p-5 border border-slate-200/50">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className="w-8 h-8 bg-slate-500 rounded-xl flex items-center justify-center">
+                            <Info className="w-5 h-5 text-white" />
+                          </div>
+                          <h4 className="text-lg font-semibold text-slate-800 dark:text-slate-200">Search & Data Information</h4>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="bg-slate-50/50 dark:bg-slate-900/20 rounded-lg p-4 text-center">
+                            <div className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Search Method</div>
+                            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                              historyItem.searchInputType === 'barcode' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                              historyItem.searchInputType === 'text' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                              'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                            }`}>
+                              {historyItem.searchInputType.charAt(0).toUpperCase() + historyItem.searchInputType.slice(1)}
                             </div>
-                            <div className="bg-white/60 dark:bg-black/20 rounded-xl p-4">
-                              <div className="text-sm font-medium text-blue-700 dark:text-blue-300 mb-1">Search Date</div>
-                              <div className="text-lg text-blue-900 dark:text-blue-100">{formatDate(historyItem.createdAt)}</div>
+                          </div>
+                          
+                          {historyItem.dataSource && (
+                            <div className="bg-slate-50/50 dark:bg-slate-900/20 rounded-lg p-4 text-center">
+                              <div className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Data Source</div>
+                              <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                {historyItem.dataSource}
+                              </div>
+                              {historyItem.lookupSource && (
+                                <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                                  via {historyItem.lookupSource}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          
+                          <div className="bg-slate-50/50 dark:bg-slate-900/20 rounded-lg p-4 text-center">
+                            <div className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Search Date</div>
+                            <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                              {new Date(historyItem.createdAt).toLocaleDateString()}
+                            </div>
+                            <div className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                              {new Date(historyItem.createdAt).toLocaleTimeString()}
                             </div>
                           </div>
                         </div>
@@ -377,20 +466,32 @@ export default function SearchHistoryView() {
                     </div>
                   </div>
 
-                  {/* Ingredients Section */}
+                  {/* Enhanced Ingredients Section */}
                   {historyItem.productIngredientsText && (
-                    <div className="mt-6 pt-6 border-t border-border/50">
-                      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-                        <div className="flex items-start space-x-2">
-                          <FileText className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                          <div className="flex-1">
-                            <h4 className="font-medium mb-3 text-green-800 dark:text-green-200">Ingredients List</h4>
-                            <p className="text-sm text-green-700 dark:text-green-300 leading-relaxed">
-                              {historyItem.productIngredientsText}
-                            </p>
+                    <div className="mt-8">
+                      <Card className="border-green-200 bg-gradient-to-br from-green-50/50 via-background to-emerald-50/30 dark:from-green-900/20 dark:via-background dark:to-emerald-900/10">
+                        <CardHeader className="pb-4">
+                          <CardTitle className="flex items-center space-x-3">
+                            <div className="w-8 h-8 bg-green-500 rounded-xl flex items-center justify-center">
+                              <FileText className="w-5 h-5 text-white" />
+                            </div>
+                            <span className="text-green-700 dark:text-green-300">Ingredients Analysis</span>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="bg-white/60 dark:bg-black/20 rounded-xl p-5 border border-green-200/50">
+                            <h5 className="font-semibold text-green-800 dark:text-green-200 mb-3">Complete Ingredients List</h5>
+                            <div className="bg-green-50/50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200/30">
+                              <p className="text-sm text-green-700 dark:text-green-300 leading-relaxed">
+                                {historyItem.productIngredientsText}
+                              </p>
+                            </div>
+                            <div className="mt-3 text-xs text-green-600 dark:text-green-400">
+                              💡 Ingredients are listed in order of quantity (highest to lowest)
+                            </div>
                           </div>
-                        </div>
-                      </div>
+                        </CardContent>
+                      </Card>
                     </div>
                   )}
 
@@ -759,22 +860,36 @@ export default function SearchHistoryView() {
                     </div>
                   )}
 
-                  {/* Action Buttons */}
-                  <div className="flex flex-wrap gap-3 mt-6 pt-6 border-t border-border/50">
-                    <Link href={`/product-lookup?q=${encodeURIComponent(historyItem.searchInput)}`}>
-                      <Button variant="outline">
-                        <Package className="w-4 h-4 mr-2" />
-                        Search Again
-                      </Button>
-                    </Link>
-                    {historyItem.productBarcode && (
-                      <Link href={`/product-lookup?barcode=${historyItem.productBarcode}`}>
-                        <Button variant="outline">
-                          <ExternalLink className="w-4 h-4 mr-2" />
-                          Get Fresh Analysis
-                        </Button>
-                      </Link>
-                    )}
+                  {/* Enhanced Action Buttons */}
+                  <div className="mt-8">
+                    <div className="bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-xl p-6 border-2 border-primary/20">
+                      <h4 className="font-semibold text-foreground mb-4 flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-primary rounded-full animate-pulse"></div>
+                        <span>Quick Actions</span>
+                      </h4>
+                      <div className="flex flex-wrap gap-3">
+                        <Link href={`/product-lookup?q=${encodeURIComponent(historyItem.searchInput)}`}>
+                          <Button className="bg-primary hover:bg-primary/90 text-white shadow-lg">
+                            <Package className="w-4 h-4 mr-2" />
+                            Search Again
+                          </Button>
+                        </Link>
+                        {historyItem.productBarcode && (
+                          <Link href={`/product-lookup?barcode=${historyItem.productBarcode}`}>
+                            <Button variant="outline" className="border-green-200 hover:bg-green-50 dark:hover:bg-green-900/20 text-green-700 dark:text-green-300">
+                              <ExternalLink className="w-4 h-4 mr-2" />
+                              Get Fresh Analysis
+                            </Button>
+                          </Link>
+                        )}
+                        <Link href="/lookup-history">
+                          <Button variant="outline" className="border-slate-200 hover:bg-slate-50 dark:hover:bg-slate-900/20">
+                            <ArrowLeft className="w-4 h-4 mr-2" />
+                            Back to History
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

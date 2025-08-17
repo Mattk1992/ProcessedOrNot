@@ -559,6 +559,58 @@
     background-clip: text;
   }
 
+  /* Enhanced Search History View Styles */
+  .search-history-card {
+    background: linear-gradient(135deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .search-history-product-card {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, hsl(var(--background)) 50%, rgba(16, 185, 129, 0.05) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    transition: all 0.3s ease;
+  }
+  
+  .search-history-product-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+  }
+  
+  .processing-score-bar {
+    background: linear-gradient(90deg, #ef4444 0%, #f97316 30%, #eab308 60%, #22c55e 100%);
+  }
+  
+  .glycemic-indicator {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    color: white;
+    font-weight: 600;
+  }
+  
+  .nutrient-card {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.2s ease;
+  }
+  
+  .nutrient-card:hover {
+    transform: scale(1.02);
+    background: rgba(255, 255, 255, 0.9);
+  }
+  
+  .dark .nutrient-card {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .dark .nutrient-card:hover {
+    background: rgba(0, 0, 0, 0.4);
+  }
+
   .scan-line {
     position: relative;
     overflow: hidden;
