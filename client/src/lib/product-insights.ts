@@ -200,3 +200,90 @@ export class ProductInsightsManager {
 
 // Export singleton instance
 export const productInsightsManager = ProductInsightsManager.getInstance();
+
+// Search History AI Insights Manager - Automatically saves AI insights to search_history database
+class SearchHistoryInsightsManager {
+  private cache = new Map<string, Set<string>>();
+  
+  private async saveInsightToSearchHistory(barcode: string, insightType: string, data: any) {
+    const cacheKey = `${barcode}_${insightType}`;
+    if (this.cache.has(cacheKey)) return; // Already saved
+    
+    try {
+      await apiRequest('PUT', `/api/search-history/${barcode}/ai-insights`, {
+        [insightType]: data
+      });
+      
+      // Add to cache to prevent duplicates
+      if (!this.cache.has(barcode)) {
+        this.cache.set(barcode, new Set());
+      }
+      this.cache.get(barcode)?.add(insightType);
+    } catch (error) {
+      console.error(`Failed to save ${insightType} to search history:`, error);
+    }
+  }
+  
+  async saveNutriBotInsight(barcode: string, insight: string) {
+    await this.saveInsightToSearchHistory(barcode, 'nutriBotInsight', insight);
+  }
+  
+  async saveFunFacts(barcode: string, facts: any) {
+    const factsString = Array.isArray(facts) ? JSON.stringify(facts) : facts;
+    await this.saveInsightToSearchHistory(barcode, 'funFacts', factsString);
+  }
+  
+  async saveNutritionSpotlight(barcode: string, spotlight: any) {
+    const spotlightString = typeof spotlight === 'object' ? JSON.stringify(spotlight) : spotlight;
+    await this.saveInsightToSearchHistory(barcode, 'nutritionSpotlight', spotlightString);
+  }
+  
+  async saveProcessingAnalysis(barcode: string, analysis: any) {
+    const analysisString = typeof analysis === 'object' ? JSON.stringify(analysis) : analysis;
+    await this.saveInsightToSearchHistory(barcode, 'processingAnalysis', analysisString);
+    
+    // Also save ingredient categories if available
+    if (analysis?.ingredientCategories) {
+      await this.saveInsightToSearchHistory(barcode, 'ingredientCategories', analysis.ingredientCategories);
+    }
+  }
+  
+  async saveGlycemicImpact(barcode: string, impact: any) {
+    const impactString = typeof impact === 'object' ? JSON.stringify(impact) : impact;
+    await this.saveInsightToSearchHistory(barcode, 'glycemicImpact', impactString);
+  }
+  
+  async saveIngredientsList(barcode: string, ingredients: any) {
+    await this.saveInsightToSearchHistory(barcode, 'ingredientsList', ingredients);
+  }
+  
+  async saveNutritionFact(barcode: string, fact: string) {
+    await this.saveInsightToSearchHistory(barcode, 'nutritionFact', fact);
+  }
+  
+  async saveAllInsights(barcode: string, product: any) {
+    if (product.nutriBotInsight) {
+      await this.saveNutriBotInsight(barcode, product.nutriBotInsight);
+    }
+    if (product.funFacts) {
+      await this.saveFunFacts(barcode, product.funFacts);
+    }
+    if (product.nutritionSpotlight) {
+      await this.saveNutritionSpotlight(barcode, product.nutritionSpotlight);
+    }
+    if (product.processingAnalysis) {
+      await this.saveProcessingAnalysis(barcode, product.processingAnalysis);
+    }
+    if (product.glycemicImpact) {
+      await this.saveGlycemicImpact(barcode, product.glycemicImpact);
+    }
+    if (product.ingredientsList) {
+      await this.saveIngredientsList(barcode, product.ingredientsList);
+    }
+    if (product.nutritionFact) {
+      await this.saveNutritionFact(barcode, product.nutritionFact);
+    }
+  }
+}
+
+export const searchHistoryInsightsManager = new SearchHistoryInsightsManager();

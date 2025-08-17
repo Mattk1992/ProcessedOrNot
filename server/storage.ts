@@ -913,6 +913,16 @@ export class DatabaseStorage implements IStorage {
       dataSource: product?.dataSource || null,
       lookupSource: lookupSource || null,
       errorMessage: error || null,
+      
+      // AI-Generated Insights from Products - automatically saved to search history
+      nutriBotInsight: product?.nutriBotInsight || null,
+      funFacts: product?.funFacts || null,
+      nutritionSpotlight: product?.nutritionSpotlight || null,
+      ingredientsList: product?.ingredientsList || null,
+      glycemicImpact: product?.glycemicImpact || null,
+      nutritionFact: product?.nutritionFact || null,
+      processingAnalysis: product?.processingAnalysis || null,
+      ingredientCategories: product?.ingredientCategories || null,
     };
 
     const [searchRecord] = await db
@@ -922,6 +932,43 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`Created search history record for: "${searchInput}" with result: ${!!product}`);
     return searchRecord;
+  }
+
+  async updateSearchHistoryWithAIInsights(
+    barcode: string,
+    aiInsights: {
+      nutriBotInsight?: string;
+      funFacts?: string;
+      nutritionSpotlight?: string;
+      ingredientsList?: any;
+      glycemicImpact?: string;
+      nutritionFact?: string;
+      processingAnalysis?: string;
+      ingredientCategories?: any;
+    }
+  ): Promise<boolean> {
+    try {
+      const result = await db
+        .update(searchHistory)
+        .set({
+          nutriBotInsight: aiInsights.nutriBotInsight || undefined,
+          funFacts: aiInsights.funFacts || undefined,
+          nutritionSpotlight: aiInsights.nutritionSpotlight || undefined,
+          ingredientsList: aiInsights.ingredientsList || undefined,
+          glycemicImpact: aiInsights.glycemicImpact || undefined,
+          nutritionFact: aiInsights.nutritionFact || undefined,
+          processingAnalysis: aiInsights.processingAnalysis || undefined,
+          ingredientCategories: aiInsights.ingredientCategories || undefined,
+        })
+        .where(eq(searchHistory.productBarcode, barcode))
+        .returning();
+      
+      console.log(`Updated search history with AI insights for barcode: ${barcode}`);
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error updating search history with AI insights:', error);
+      return false;
+    }
   }
 
   async updateSearchHistoryWithAIInsights(

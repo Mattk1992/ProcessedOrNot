@@ -37,10 +37,11 @@ export default function FunFacts({ productName, ingredients, nutriments, process
     enabled: !!barcode,
   });
 
-  // Auto-save fun facts to products database when loaded
+  // Auto-save fun facts to both products and search history databases when loaded
   useEffect(() => {
     if (apiFacts?.facts && barcode) {
       productInsightsManager.saveFunFacts(barcode, apiFacts.facts);
+      searchHistoryInsightsManager.saveFunFacts(barcode, apiFacts.facts);
     }
   }, [apiFacts?.facts, barcode]);
 

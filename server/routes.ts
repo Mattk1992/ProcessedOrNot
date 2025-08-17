@@ -1405,6 +1405,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update search history with AI insights by barcode
+  app.put("/api/search-history/:barcode/ai-insights", async (req, res) => {
+    try {
+      const { barcode } = req.params;
+      const insights = req.body;
+
+      // Validate insights data structure
+      const validInsightKeys = [
+        'nutriBotInsight', 'funFacts', 'nutritionSpotlight', 'ingredientsList',
+        'glycemicImpact', 'nutritionFact', 'processingAnalysis', 'ingredientCategories'
+      ];
+
+      const filteredInsights: any = {};
+      for (const [key, value] of Object.entries(insights)) {
+        if (validInsightKeys.includes(key) && value !== null && value !== undefined) {
+          filteredInsights[key] = value;
+        }
+      }
+
+      if (Object.keys(filteredInsights).length === 0) {
+        return res.status(400).json({ error: "No valid insights provided" });
+      }
+
+      const updated = await storage.updateSearchHistoryWithAIInsights(barcode, filteredInsights);
+      
+      if (!updated) {
+        return res.status(404).json({ error: "Search history record not found for barcode" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "AI insights saved to search history",
+        barcode,
+        updatedFields: Object.keys(filteredInsights)
+      });
+    } catch (error) {
+      console.error("Error saving AI insights to search history:", error);
+      res.status(500).json({ error: "Failed to save AI insights to search history" });
+    }
+  });
+
   // Update search history with AI insights
   app.post("/api/search-history/:searchId/ai-insights", async (req, res) => {
     try {

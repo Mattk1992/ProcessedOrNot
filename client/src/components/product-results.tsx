@@ -19,7 +19,7 @@ import SocialShare from "./social-share";
 import NutritionFactPopup from "./nutrition-fact-popup";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
-import { productInsightsManager } from "@/lib/product-insights";
+import { productInsightsManager, searchHistoryInsightsManager } from "@/lib/product-insights";
 import type { Product, ProcessingAnalysis } from "@shared/schema";
 
 interface ProductResultsProps {
@@ -296,8 +296,11 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       setShowProductAnalysis(true);
       onProductFound?.(product);
       
-      // Auto-save basic product insights to database
+      // Auto-save basic product insights to products database
       productInsightsManager.saveAllProductInsights(product.barcode, product);
+      
+      // Auto-save basic product insights to search history database
+      searchHistoryInsightsManager.saveAllInsights(product.barcode, product);
     }
   }, [product, isLoadingProduct, productError, onProductFound]);
 
@@ -305,6 +308,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
   useEffect(() => {
     if (analysis && !isLoadingAnalysis && product?.barcode) {
       productInsightsManager.saveProcessingAnalysis(product.barcode, analysis);
+      searchHistoryInsightsManager.saveProcessingAnalysis(product.barcode, analysis);
     }
   }, [analysis, isLoadingAnalysis, product?.barcode]);
 
@@ -312,6 +316,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
   useEffect(() => {
     if (nutriBotInsight?.insight && !isLoadingInsight && product?.barcode) {
       productInsightsManager.saveNutriBotInsight(product.barcode, nutriBotInsight.insight);
+      searchHistoryInsightsManager.saveNutriBotInsight(product.barcode, nutriBotInsight.insight);
     }
   }, [nutriBotInsight?.insight, isLoadingInsight, product?.barcode]);
 
