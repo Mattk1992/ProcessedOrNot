@@ -372,15 +372,7 @@ export default function NutriDashboard() {
             </Card>
           </Link>
           
-          <Link href="/">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-4 text-center">
-                <Apple className="w-8 h-8 text-rose-500 mx-auto mb-2" />
-                <p className="font-medium">Main App</p>
-                <p className="text-xs text-muted-foreground mt-1">Scanner home</p>
-              </CardContent>
-            </Card>
-          </Link>
+
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">

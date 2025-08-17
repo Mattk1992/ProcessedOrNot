@@ -7,7 +7,8 @@ import {
   BookOpen, 
   Users,
   ExternalLink,
-  ArrowLeft
+  ArrowLeft,
+  Apple
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -106,6 +107,35 @@ export default function SiteInfo() {
             </div>
             <h2 className="text-3xl font-bold mb-2">Site Information and Support</h2>
             <p className="text-muted-foreground">Find helpful resources, support, and information about our platform</p>
+          </div>
+        </div>
+
+        {/* Main App Access */}
+        <div className="mb-12">
+          <h3 className="text-xl font-semibold mb-6">Main App Access</h3>
+          <div className="grid grid-cols-1 gap-6 max-w-md">
+            <Link href="/">
+              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group border-2 border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-900/10">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-3 rounded-lg bg-rose-100 dark:bg-rose-900/20 group-hover:bg-rose-200 dark:group-hover:bg-rose-800/30 transition-colors">
+                      <Apple className="w-8 h-8 text-rose-500" />
+                    </div>
+                    <div className="flex-1">
+                      <CardTitle className="flex items-center justify-between text-lg">
+                        Main App
+                        <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </CardTitle>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm">
+                    Access the main ProcessedOrNot Scanner app for barcode scanning and food analysis
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
 
