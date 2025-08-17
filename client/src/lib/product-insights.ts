@@ -1,4 +1,4 @@
-import { saveAIInsightsToProduct } from './queryClient';
+import { saveAIInsightsToProduct, apiRequest } from './queryClient';
 
 // Comprehensive AI insights auto-saver for products
 export class ProductInsightsManager {

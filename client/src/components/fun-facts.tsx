@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Sparkles, RefreshCw, Lightbulb, Zap, Leaf, Globe } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { productInsightsManager } from '@/lib/product-insights';
+import { productInsightsManager, searchHistoryInsightsManager } from '@/lib/product-insights';
 
 interface FunFactsProps {
   productName: string;
