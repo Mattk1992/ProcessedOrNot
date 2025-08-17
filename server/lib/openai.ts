@@ -223,3 +223,80 @@ Provide your response in JSON format:
     throw new Error("Failed to analyze glycemic index");
   }
 }
+
+export async function analyzeProductionProcess(
+  ingredientsText: string, 
+  productName: string, 
+  nutriments: any,
+  language: string = 'en',
+  provider: string = 'ChatGPT'
+): Promise<string> {
+  try {
+    const languageInstructions: Record<string, string> = {
+      'en': 'Provide your analysis in English.',
+      'es': 'Proporciona tu análisis en español.',
+      'fr': 'Fournissez votre analyse en français.',
+      'de': 'Stellen Sie Ihre Analyse auf Deutsch bereit.',
+      'zh': '请用中文提供分析。',
+      'ja': '日本語で分析を提供してください.',
+      'nl': 'Geef je analyse in het Nederlands.'
+    };
+
+    const languageInstruction = languageInstructions[language] || languageInstructions['en'];
+
+    // Extract key nutritional data for context
+    const carbohydrates = nutriments?.carbohydrates_100g || nutriments?.carbs_g || 0;
+    const protein = nutriments?.proteins_100g || nutriments?.protein_g || 0;
+    const fat = nutriments?.fat_100g || nutriments?.fat_g || 0;
+    const fiber = nutriments?.fiber_100g || nutriments?.fiber_g || 0;
+
+    const prompt = `Analyze and describe the complete production process for this food product. ${languageInstruction}
+
+Product: ${productName}
+Ingredients: ${ingredientsText}
+
+Nutritional Information (per 100g):
+- Carbohydrates: ${carbohydrates}g
+- Protein: ${protein}g
+- Fat: ${fat}g
+- Fiber: ${fiber}g
+
+Based on the ingredients and nutritional profile, provide a comprehensive description of the production process including:
+
+1. **Raw Material Sourcing**: Where and how the main ingredients are typically obtained
+2. **Preparation Steps**: Initial processing of raw ingredients (washing, cutting, grinding, etc.)
+3. **Manufacturing Process**: The specific steps involved in creating this product (mixing, cooking, fermenting, etc.)
+4. **Processing Methods**: Heat treatment, preservation methods, packaging processes
+5. **Quality Control**: Testing and quality assurance measures
+6. **Industrial vs Traditional**: Whether this is typically made in industrial facilities or can be made traditionally
+7. **Additives and Preservatives**: Purpose and addition points in the process
+8. **Final Processing**: Packaging, labeling, and distribution preparation
+
+Provide a detailed but accessible explanation that helps consumers understand how their food is made from farm to table. Focus on being educational and informative rather than judgmental about the production methods.`;
+
+    const modelConfig = getModelConfig(provider);
+
+    const response = await openai.chat.completions.create({
+      model: modelConfig.model,
+      messages: [
+        {
+          role: "system",
+          content: "You are a food science and manufacturing expert. Provide detailed, accurate explanations of food production processes that are educational and help consumers understand how their food is made."
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      temperature: modelConfig.temperature,
+      max_tokens: modelConfig.maxTokens,
+    });
+
+    const productionProcess = response.choices[0].message.content || "Unable to analyze production process";
+    
+    return productionProcess;
+  } catch (error) {
+    console.error("Error analyzing production process with OpenAI:", error);
+    return "Unable to analyze production process at this time";
+  }
+}

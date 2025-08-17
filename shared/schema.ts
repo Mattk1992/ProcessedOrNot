@@ -27,6 +27,7 @@ export const products = pgTable("products", {
   nutritionFact: text("nutrition_fact"), // Key nutrition fact highlight
   processingAnalysis: text("processing_analysis"), // Processing Analysis & Ingredient Categories
   ingredientCategories: jsonb("ingredient_categories"), // Categorized ingredients (ultra-processed, processed, minimally processed)
+  productionProcess: text("production_process"), // Detailed production process of the food product
   
   // Media fields for future image/video uploads
   additionalImages: text("additional_images").array(), // URLs to additional product images
@@ -80,6 +81,7 @@ export const searchHistory = pgTable("search_history", {
   nutritionFact: text("nutrition_fact"), // Key nutrition fact highlight
   processingAnalysis: text("processing_analysis"), // Processing Analysis & Ingredient Categories
   ingredientCategories: jsonb("ingredient_categories"), // Categorized ingredients (ultra-processed, processed, minimally processed)
+  productionProcess: text("production_process"), // Detailed production process of the food product
   
   // Error handling
   errorMessage: text("error_message"),
@@ -250,7 +252,7 @@ export const menuItems = pgTable("menu_items", {
   isVisible: boolean("is_visible").notNull().default(true),
   isAdminOnly: boolean("is_admin_only").notNull().default(false),
   order: integer("order").notNull().default(0),
-  parentId: integer("parent_id").references(() => menuItems.id), // For nested menus
+  parentId: integer("parent_id"), // For nested menus
   target: text("target").notNull().default('_self'), // '_self' or '_blank'
   cssClass: text("css_class"), // Custom CSS classes
   createdAt: timestamp("created_at").defaultNow().notNull(),

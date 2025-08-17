@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { InsertProduct } from "@shared/schema";
-import { analyzeIngredients, analyzeGlycemicIndex, getUserAIProvider } from "./openai";
+import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider } from "./openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -207,6 +207,23 @@ Provide realistic nutritional values based on typical products of this type. Thi
         console.error("Failed to analyze glycemic index:", error);
         glycemicExplanation = "Unable to analyze glycemic impact at this time";
       }
+    }
+
+    // Analyze production process
+    let productionProcess = "No production process analysis available";
+    if (searchResult.ingredientsText) {
+      try {
+        productionProcess = await analyzeProductionProcess(
+          searchResult.ingredientsText,
+          searchResult.productName || productName,
+          searchResult.nutriments || {},
+          'en',
+          userAIProvider
+        );
+      } catch (error) {
+        console.error("Failed to analyze production process:", error);
+        productionProcess = "Unable to analyze production process at this time";
+      }
     } else {
       // If no ingredients found, try to get them separately
       try {
@@ -261,6 +278,20 @@ Provide only the ingredients list in this format:
               glycemicExplanation = "Unable to analyze glycemic impact at this time";
             }
           }
+
+          // Analyze production process
+          try {
+            productionProcess = await analyzeProductionProcess(
+              ingredientsResult.ingredientsText,
+              searchResult.productName || productName,
+              searchResult.nutriments || {},
+              'en',
+              userAIProvider
+            );
+          } catch (error) {
+            console.error("Failed to analyze production process:", error);
+            productionProcess = "Unable to analyze production process at this time";
+          }
         }
       } catch (error) {
         console.error("Failed to get ingredients for text search:", error);
@@ -279,6 +310,7 @@ Provide only the ingredients list in this format:
       glycemicIndex,
       glycemicLoad,
       glycemicExplanation,
+      productionProcess,
       dataSource: 'Text Search'
     };
 
@@ -301,6 +333,7 @@ Provide only the ingredients list in this format:
       glycemicIndex: null,
       glycemicLoad: null,
       glycemicExplanation: "No glycemic data available for this generic entry.",
+      productionProcess: "No production process analysis available for this generic entry.",
       dataSource: 'Text Search (Generic)'
     };
     

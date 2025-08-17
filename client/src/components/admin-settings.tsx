@@ -12,7 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSearchResultVisibility } from '@/contexts/SearchResultVisibilityContext';
-import { Settings, Save, RefreshCw, Camera, Timer, Monitor, Eye, DollarSign, Target, Zap, ExternalLink, Bot, Sparkles, Activity, TrendingUp, BarChart3, List } from 'lucide-react';
+import { Settings, Save, RefreshCw, Camera, Timer, Monitor, Eye, DollarSign, Target, Zap, ExternalLink, Bot, Sparkles, Activity, TrendingUp, BarChart3, List, Package } from 'lucide-react';
 import { GPTTestPanel } from './gpt-test-panel';
 
 interface AdminSetting {
@@ -521,6 +521,29 @@ export default function AdminSettings() {
                 checked={visibilitySettings.showProcessingAnalysis}
                 onCheckedChange={(checked) => {
                   updateVisibilitySetting('showProcessingAnalysis', checked);
+                }}
+              />
+            </div>
+
+            {/* Product Production Process */}
+            <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-violet-100 dark:bg-violet-900/20">
+                  <Package className="h-5 w-5 text-violet-600 dark:text-violet-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white">
+                    Product Production Process
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Show manufacturing process analysis
+                  </p>
+                </div>
+              </div>
+              <Switch
+                checked={visibilitySettings.showProductionProcess}
+                onCheckedChange={(checked) => {
+                  updateVisibilitySetting('showProductionProcess', checked);
                 }}
               />
             </div>

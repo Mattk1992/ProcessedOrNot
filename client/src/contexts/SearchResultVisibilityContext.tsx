@@ -8,6 +8,7 @@ export interface SearchResultVisibilitySettings {
   showGlycemicImpact: boolean;
   showNutritionFacts: boolean;
   showProcessingAnalysis: boolean;
+  showProductionProcess: boolean;
 }
 
 // Default settings - all enabled by default
@@ -18,6 +19,7 @@ const defaultSettings: SearchResultVisibilitySettings = {
   showGlycemicImpact: true,
   showNutritionFacts: true,
   showProcessingAnalysis: true,
+  showProductionProcess: true,
 };
 
 interface SearchResultVisibilityContextType {

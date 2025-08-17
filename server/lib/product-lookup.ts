@@ -19,7 +19,7 @@ import { fetchProductFromOpenNutrition } from "./opennutrition";
 import { fetchProductFromNutritionix } from "./nutritionix";
 import { fetchProductFromSpoonacular } from "./spoonacular";
 import { fetchProductFromAPINinjas } from "./api-ninjas";
-import { analyzeIngredients, analyzeGlycemicIndex, getUserAIProvider } from "./openai";
+import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider } from "./openai";
 import { isBarcode, searchProductByText } from "./text-search";
 
 interface ProductLookupResult {
@@ -67,6 +67,21 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         } catch (error) {
           console.error("Failed to analyze USDA ingredients:", error);
           usdaProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+
+        // Analyze production process
+        try {
+          const productionProcess = await analyzeProductionProcess(
+            usdaProduct.ingredientsText,
+            usdaProduct.productName || "Unknown Product",
+            usdaProduct.nutriments || {},
+            'en',
+            userAIProvider
+          );
+          usdaProduct.productionProcess = productionProcess;
+        } catch (error) {
+          console.error("Failed to analyze USDA production process:", error);
+          usdaProduct.productionProcess = "Unable to analyze production process at this time";
         }
       }
 
@@ -127,6 +142,23 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         }
       }
 
+      // Analyze production process
+      let productionProcess = "No production process analysis available";
+      if (product.ingredients_text) {
+        try {
+          productionProcess = await analyzeProductionProcess(
+            product.ingredients_text,
+            product.product_name || "Unknown Product",
+            product.nutriments || {},
+            'en',
+            userAIProvider
+          );
+        } catch (error) {
+          console.error("Failed to analyze production process:", error);
+          productionProcess = "Unable to analyze production process at this time";
+        }
+      }
+
       const productData: InsertProduct = {
         barcode,
         productName: product.product_name || null,
@@ -139,6 +171,7 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         glycemicIndex,
         glycemicLoad,
         glycemicExplanation,
+        productionProcess,
         dataSource: 'OpenFoodFacts'
       };
 
@@ -169,6 +202,21 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         } catch (error) {
           console.error("Failed to analyze FoodDB.ca ingredients:", error);
           foodDBCAProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+
+        // Analyze production process
+        try {
+          const productionProcess = await analyzeProductionProcess(
+            foodDBCAProduct.ingredientsText,
+            foodDBCAProduct.productName || "Unknown Product",
+            foodDBCAProduct.nutriments || {},
+            'en',
+            userAIProvider
+          );
+          foodDBCAProduct.productionProcess = productionProcess;
+        } catch (error) {
+          console.error("Failed to analyze FoodDB.ca production process:", error);
+          foodDBCAProduct.productionProcess = "Unable to analyze production process at this time";
         }
       }
 

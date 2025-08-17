@@ -59,6 +59,7 @@ interface SearchHistoryItem {
   nutritionFact?: string;
   processingAnalysis?: string;
   ingredientCategories?: any;
+  productionProcess?: string;
   createdAt: string;
 }
 
@@ -420,6 +421,30 @@ export default function SearchHistoryView() {
                         </div>
                       )}
 
+                      {/* Product Production Process */}
+                      {visibilitySettings.showProductionProcess && historyItem.productionProcess && (
+                        <div className="bg-white/60 dark:bg-black/20 rounded-xl p-5 border border-purple-200/50">
+                          <div className="flex items-center space-x-3 mb-4">
+                            <div className="w-8 h-8 bg-purple-500 rounded-xl flex items-center justify-center">
+                              <Package className="w-5 h-5 text-white" />
+                            </div>
+                            <h4 className="text-lg font-semibold text-purple-800 dark:text-purple-200">Product Production Process</h4>
+                          </div>
+                          
+                          <div className="bg-purple-50/50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200/30">
+                            <div className="flex items-start space-x-3">
+                              <Info className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                              <div>
+                                <h5 className="font-medium mb-2 text-purple-800 dark:text-purple-200">Manufacturing Process</h5>
+                                <div className="text-sm text-purple-700 dark:text-purple-300 leading-relaxed whitespace-pre-wrap">
+                                  {historyItem.productionProcess}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       {/* Enhanced Search & Data Metadata */}
                       <div className="bg-white/60 dark:bg-black/20 rounded-xl p-5 border border-slate-200/50">
                         <div className="flex items-center space-x-3 mb-4">
@@ -739,6 +764,19 @@ export default function SearchHistoryView() {
                               titleColor: 'text-amber-800 dark:text-amber-200',
                               textColor: 'text-amber-900 dark:text-amber-100'
                             }
+                          },
+                          {
+                            key: 'productionProcess',
+                            title: 'Product Production Process',
+                            icon: Package,
+                            colors: {
+                              bg: 'from-purple-50 to-violet-100/50',
+                              bgDark: 'dark:bg-purple-900/20',
+                              border: 'border-purple-200',
+                              iconBg: 'bg-purple-500',
+                              titleColor: 'text-purple-800 dark:text-purple-200',
+                              textColor: 'text-purple-900 dark:text-purple-100'
+                            }
                           }
                         ];
 
@@ -792,7 +830,8 @@ export default function SearchHistoryView() {
                           'nutritionFact': 'showNutritionFacts',
                           'processingAnalysis': 'showProcessingAnalysis',
                           'ingredientsList': 'showProcessingAnalysis',
-                          'ingredientCategories': 'showProcessingAnalysis'
+                          'ingredientCategories': 'showProcessingAnalysis',
+                          'productionProcess': 'showProductionProcess'
                         };
 
                         // Find all fields with data, including unknown ones
