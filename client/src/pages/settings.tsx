@@ -97,6 +97,10 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [selectedAIProvider, setSelectedAIProvider] = useState<string>("");
   const [selectedBarcodeScannerSystem, setSelectedBarcodeScannerSystem] = useState<string>("");
+  
+  // Check if user is admin or paid user
+  const isAdmin = user?.accountType === 'Admin';
+  const isPaidUser = user?.accountType === 'Paid';
 
   // Redirect if not authenticated
   useEffect(() => {
@@ -119,7 +123,7 @@ export default function SettingsPage() {
 
   // Set selected AI provider when data loads
   useEffect(() => {
-    if (aiProviderSetting) {
+    if (aiProviderSetting && typeof aiProviderSetting === 'object' && 'settingValue' in aiProviderSetting) {
       setSelectedAIProvider(aiProviderSetting.settingValue || "ChatGPT Nano");
     } else {
       // Set default to ChatGPT Nano if no setting exists
@@ -129,7 +133,7 @@ export default function SettingsPage() {
 
   // Set selected barcode scanner system when data loads
   useEffect(() => {
-    if (barcodeScannerSetting) {
+    if (barcodeScannerSetting && typeof barcodeScannerSetting === 'object' && 'settingValue' in barcodeScannerSetting) {
       setSelectedBarcodeScannerSystem(barcodeScannerSetting.settingValue || "Main Barcode Scanner");
     } else {
       // Set default to Main Barcode Scanner if no setting exists
@@ -260,9 +264,10 @@ export default function SettingsPage() {
           </Badge>
         </div>
 
-        {/* AI Provider Settings */}
-        <div className="max-w-4xl">
-          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+        {/* AI Provider Settings - Admin/Paid only */}
+        {(isAdmin || isPaidUser) && (
+          <div className="max-w-4xl">
+            <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-xl">
                 <Zap className="h-6 w-6 text-yellow-500" />
@@ -293,7 +298,7 @@ export default function SettingsPage() {
                           {selectedProviderInfo.description}
                         </p>
                       </div>
-                      {aiProviderSetting?.isDefault && (
+                      {aiProviderSetting && typeof aiProviderSetting === 'object' && 'isDefault' in aiProviderSetting && aiProviderSetting.isDefault && (
                         <Badge variant="outline" className="text-xs">
                           Default
                         </Badge>
@@ -396,9 +401,13 @@ export default function SettingsPage() {
               )}
             </CardContent>
           </Card>
+        </div>
+        )}
 
-          {/* Barcode Scanner System Settings Card */}
-          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg mt-6">
+        {/* Barcode Scanner System Settings Card - Admin/Paid only */}
+        {(isAdmin || isPaidUser) && (
+          <div className="max-w-4xl mt-6">
+            <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Camera className="h-5 w-5" />
@@ -482,7 +491,7 @@ export default function SettingsPage() {
                       <Button
                         onClick={handleSaveBarcodeScannerSystem}
                         disabled={updateBarcodeScannerSystemMutation.isPending || 
-                                selectedBarcodeScannerSystem === barcodeScannerSetting?.settingValue}
+                                selectedBarcodeScannerSystem === (barcodeScannerSetting && typeof barcodeScannerSetting === 'object' && 'settingValue' in barcodeScannerSetting ? barcodeScannerSetting.settingValue : '')}
                         className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700"
                       >
                         <Save className="h-4 w-4 mr-2" />
@@ -494,47 +503,12 @@ export default function SettingsPage() {
               )}
             </CardContent>
           </Card>
+        </div>
+        )}
 
-          {/* Ad Configuration Settings */}
-          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg mt-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Zap className="h-5 w-5 text-yellow-500" />
-                Ad Configuration
-              </CardTitle>
-              <CardDescription>
-                Configure Google AdSense and AdMob integration for monetization
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/20">
-                      <Zap className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-gray-900 dark:text-white">
-                        Advertising Settings
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Manage Google AdSense and AdMob configuration, consent settings, and ad preferences
-                      </p>
-                    </div>
-                  </div>
-                  <Link href="/nutri-dashboard/settings/ad-settings">
-                    <Button variant="outline" className="flex items-center gap-2">
-                      Configure Ads
-                      <ExternalLink className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Account Management Settings */}
-          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg mt-6">
+        {/* Account Management Settings */}
+        <div className="max-w-4xl mt-6">
+          <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
                 <Trash2 className="h-5 w-5" />

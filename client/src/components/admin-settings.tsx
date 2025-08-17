@@ -11,7 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Settings, Save, RefreshCw, Camera, Timer, Monitor, Eye, DollarSign, Target } from 'lucide-react';
+import { Settings, Save, RefreshCw, Camera, Timer, Monitor, Eye, DollarSign, Target, Zap, ExternalLink } from 'lucide-react';
 import { GPTTestPanel } from './gpt-test-panel';
 
 interface AdminSetting {
@@ -336,6 +336,41 @@ export default function AdminSettings() {
           </CardContent>
         </Card>
       ))}
+
+      {/* Ad Configuration */}
+      <Card className="border border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-yellow-900/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-yellow-500" />
+            Ad Configuration
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/20">
+                  <Zap className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white">
+                    Advertising Settings
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Manage Google AdSense and AdMob configuration, consent settings, and ad preferences
+                  </p>
+                </div>
+              </div>
+              <a href="/nutri-dashboard/settings/ad-settings" target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="flex items-center gap-2">
+                  Configure Ads
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </a>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* GPT Reward Ad Testing Panel */}
       <Card className="border-2 border-primary/20">
