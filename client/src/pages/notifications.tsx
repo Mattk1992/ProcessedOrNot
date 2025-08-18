@@ -222,8 +222,16 @@ export default function Notifications() {
             <div className="flex items-center space-x-3">
               <img src={logoPath} alt="ProcessedOrNot Scanner" className="w-10 h-10 rounded-full" />
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold gradient-text">ProcessedOrNot</h1>
-                <p className="text-xs text-muted-foreground">Notifications</p>
+                <h1 className="text-xl font-bold gradient-text flex items-center gap-2">
+                  <Bell className="w-5 h-5" />
+                  Notifications
+                  {unreadCount && unreadCount.count > 0 && (
+                    <Badge variant="destructive" className="text-xs">
+                      {unreadCount.count}
+                    </Badge>
+                  )}
+                </h1>
+                <p className="text-xs text-muted-foreground">Stay updated with your nutrition tracking progress</p>
               </div>
             </div>
             
@@ -244,33 +252,18 @@ export default function Notifications() {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-          <div>
-            <h2 className="text-3xl font-bold mb-2 flex items-center space-x-2">
-              <Bell className="w-8 h-8" />
-              <span>Notifications</span>
-              {unreadCount && unreadCount.count > 0 && (
-                <Badge variant="destructive" className="ml-2">
-                  {unreadCount.count}
-                </Badge>
-              )}
-            </h2>
-            <p className="text-muted-foreground">Stay updated with your nutrition tracking progress</p>
-          </div>
-          
-          <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-            {unreadCount && unreadCount.count > 0 && (
-              <Button 
-                variant="outline" 
-                onClick={() => markAllAsReadMutation.mutate()}
-                disabled={markAllAsReadMutation.isPending}
-              >
-                <Check className="w-4 h-4 mr-2" />
-                Mark All Read
-              </Button>
-            )}
-          </div>
+        {/* Action Button */}
+        <div className="flex justify-end mb-6">
+          {unreadCount && unreadCount.count > 0 && (
+            <Button 
+              variant="outline" 
+              onClick={() => markAllAsReadMutation.mutate()}
+              disabled={markAllAsReadMutation.isPending}
+            >
+              <Check className="w-4 h-4 mr-2" />
+              Mark All Read
+            </Button>
+          )}
         </div>
 
         {/* Filter Tabs */}

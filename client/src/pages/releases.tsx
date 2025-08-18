@@ -176,8 +176,11 @@ export default function ReleasesPage() {
             <div className="flex items-center space-x-3">
               <img src={logoPath} alt="ProcessedOrNot Scanner" className="w-10 h-10 rounded-full" />
               <div className="hidden sm:block">
-                <h1 className="text-xl font-bold gradient-text">ProcessedOrNot</h1>
-                <p className="text-xs text-muted-foreground">What's New</p>
+                <h1 className="text-xl font-bold gradient-text flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-500" />
+                  What's New
+                </h1>
+                <p className="text-xs text-muted-foreground">Discover the latest features and improvements</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -189,23 +192,14 @@ export default function ReleasesPage() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section */}
+        {/* Navigation */}
         <div className="mb-8">
-          <div className="flex items-center space-x-2 mb-4">
-            <Link href="/nutri-dashboard">
-              <Button variant="outline" size="sm" className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
-                Back to Dashboard
-              </Button>
-            </Link>
-          </div>
-          <div className="flex items-center space-x-3 mb-4">
-            <Sparkles className="w-8 h-8 text-purple-500" />
-            <div>
-              <h1 className="text-3xl font-bold">What's New</h1>
-              <p className="text-muted-foreground">Discover the latest features and improvements</p>
-            </div>
-          </div>
+          <Link href="/nutri-dashboard">
+            <Button variant="outline" size="sm" className="gap-2">
+              <ArrowLeft className="w-4 h-4" />
+              Back to Dashboard
+            </Button>
+          </Link>
         </div>
 
         <Tabs defaultValue="all" className="space-y-6">
