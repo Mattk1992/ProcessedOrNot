@@ -337,6 +337,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
     if (productionProcess?.process && !isLoadingProductionProcess && product?.barcode) {
       console.log('Production process data received:', productionProcess);
       console.log('Visibility settings:', visibilitySettings.showProductionProcess);
+      console.log('Production process text length:', productionProcess.process?.length);
+      console.log('Production process first 200 chars:', productionProcess.process?.substring(0, 200));
       productInsightsManager.saveProductionProcess(product.barcode, productionProcess.process);
       searchHistoryInsightsManager.saveProductionProcess(product.barcode, productionProcess.process);
     }
@@ -1046,7 +1048,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       )}
 
       {/* Product Production Process Card */}
-      {visibilitySettings.showProductionProcess && productionProcess && typeof productionProcess === 'object' && 'process' in productionProcess && (
+      {visibilitySettings.showProductionProcess && productionProcess?.process && (
+        console.log('🎯 RENDERING Production Process Card!', productionProcess),
         <Card className="glass-card border-2 border-purple-200/50 dark:border-purple-800/50 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardHeader className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-t-lg">
             <CardTitle className="flex items-center space-x-3">
@@ -1066,8 +1069,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                 <Info className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
                 <div>
                   <h5 className="font-medium mb-2 text-purple-800 dark:text-purple-200">Manufacturing Process</h5>
-                  <div className="text-sm text-purple-700 dark:text-purple-300 leading-relaxed whitespace-pre-wrap">
-                    {(productionProcess as { process: string }).process}
+                  <div className="text-sm text-purple-700 dark:text-purple-300 leading-relaxed whitespace-pre-line max-h-96 overflow-y-auto">
+                    {productionProcess?.process || 'No production process data available'}
                   </div>
                 </div>
               </div>
