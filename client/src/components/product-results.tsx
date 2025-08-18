@@ -335,6 +335,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
   // Auto-save production process when loaded
   useEffect(() => {
     if (productionProcess?.process && !isLoadingProductionProcess && product?.barcode) {
+      console.log('Production process data received:', productionProcess);
+      console.log('Visibility settings:', visibilitySettings.showProductionProcess);
       productInsightsManager.saveProductionProcess(product.barcode, productionProcess.process);
       searchHistoryInsightsManager.saveProductionProcess(product.barcode, productionProcess.process);
     }
