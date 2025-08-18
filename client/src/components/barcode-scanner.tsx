@@ -16,6 +16,33 @@ import QuickCameraSettings from "./quick-camera-settings";
 import SearchEngineSettings from "./search-engine-settings";
 import { trackEvent } from "@/lib/analytics";
 
+interface CameraSettings {
+  id: number;
+  timeout: number;
+  autoStopEnabled: boolean;
+  maxZoomLevel: number;
+  minZoomLevel: number;
+  defaultZoomLevel: number;
+  focusMode: string;
+  flashMode: string;
+  scanFrequency: number;
+  enableBeepSound: boolean;
+  enableVibration: boolean;
+  overlayOpacity: number;
+  scanAreaSize: number;
+  optimizeForCloseRange: boolean;
+  enhanceContrast: boolean;
+  adjustBrightness: number;
+  scanIntervalMs: number;
+  torchEnabled: boolean;
+  enableAutoFocus: boolean;
+  qualityPreset: string;
+  performanceMode: string;
+  errorRecoveryEnabled: boolean;
+  debugMode: boolean;
+  updatedAt: string;
+}
+
 interface BarcodeScannerProps {
   onScan: (barcode: string, filters?: { includeBrands?: string[], excludeBrands?: string[] }) => void;
   isLoading?: boolean;
@@ -50,6 +77,31 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     includeBrands: [],
     excludeBrands: []
   });
+
+  // Fetch user camera settings
+  const { data: cameraSettings } = useQuery<CameraSettings>({
+    queryKey: ['/api/user/camera-settings'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Apply camera settings when they load
+  useEffect(() => {
+    if (cameraSettings) {
+      setMaxZoom(cameraSettings.maxZoomLevel);
+      setMinZoom(cameraSettings.minZoomLevel);
+      setZoomLevel(cameraSettings.defaultZoomLevel);
+      
+      if (cameraSettings.debugMode) {
+        console.log('Barcode Scanner - Using camera settings:', {
+          maxZoom: cameraSettings.maxZoomLevel,
+          minZoom: cameraSettings.minZoomLevel,
+          defaultZoom: cameraSettings.defaultZoomLevel,
+          qualityPreset: cameraSettings.qualityPreset,
+          performanceMode: cameraSettings.performanceMode,
+        });
+      }
+    }
+  }, [cameraSettings]);
   
   // GPT Reward system integration
   const { 
@@ -77,8 +129,11 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
     staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
-  // Get timeout value from setting or use default
+  // Get timeout value from user settings or fallback to global setting
   const getCameraTimeout = () => {
+    if (cameraSettings?.timeout) {
+      return cameraSettings.timeout * 1000; // Convert to milliseconds
+    }
     const timeoutSeconds = (timeoutData as any)?.timeout || 40;
     return timeoutSeconds * 1000; // Convert to milliseconds
   };
@@ -300,27 +355,100 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
 
       setIsScanning(false);
 
-      // Advanced camera constraints optimized for barcode scanning
-      const constraints: MediaStreamConstraints = {
-        video: {
-          deviceId: { exact: selectedDeviceId },
-          width: { ideal: 3840, min: 1920 }, // 4K resolution for superior barcode detail
-          height: { ideal: 2160, min: 1080 }, // 4K height for maximum scanning accuracy
-          facingMode: { ideal: 'environment' },
-          frameRate: { ideal: 60, min: 30 }, // High frame rate for motion blur reduction
-          aspectRatio: { ideal: 16/9 },
-          // Advanced constraints for barcode scanning
-          focusMode: { ideal: 'continuous' },
-          exposureMode: { ideal: 'manual' },
-          whiteBalanceMode: { ideal: 'manual' },
-        } as any
+      // Build camera constraints based on user settings
+      const buildConstraints = () => {
+        if (!cameraSettings) {
+          // Fallback to default constraints
+          return {
+            video: {
+              deviceId: { exact: selectedDeviceId },
+              width: { ideal: 1920, min: 1280 },
+              height: { ideal: 1080, min: 720 },
+              facingMode: { ideal: 'environment' },
+              frameRate: { ideal: 30, min: 15 },
+              aspectRatio: { ideal: 16/9 },
+            }
+          };
+        }
+
+        // Quality preset based constraints
+        const getQualityConstraints = () => {
+          switch (cameraSettings.qualityPreset) {
+            case 'low':
+              return { width: { ideal: 1280, min: 640 }, height: { ideal: 720, min: 480 } };
+            case 'medium':
+              return { width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } };
+            case 'high':
+              return { width: { ideal: 3840, min: 1920 }, height: { ideal: 2160, min: 1080 } };
+            default:
+              return { width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } };
+          }
+        };
+
+        // Performance mode based frame rate
+        const getFrameRate = () => {
+          switch (cameraSettings.performanceMode) {
+            case 'battery_saver':
+              return { ideal: 15, min: 10 };
+            case 'balanced':
+              return { ideal: 30, min: 15 };
+            case 'maximum':
+              return { ideal: 60, min: 30 };
+            default:
+              return { ideal: 30, min: 15 };
+          }
+        };
+
+        const qualityConstraints = getQualityConstraints();
+        const frameRateConstraints = getFrameRate();
+
+        return {
+          video: {
+            deviceId: { exact: selectedDeviceId },
+            ...qualityConstraints,
+            facingMode: { ideal: 'environment' },
+            frameRate: frameRateConstraints,
+            aspectRatio: { ideal: 16/9 },
+            focusMode: { ideal: cameraSettings.enableAutoFocus ? 'continuous' : 'manual' },
+            exposureMode: { ideal: 'continuous' },
+            whiteBalanceMode: { ideal: 'continuous' },
+          } as any
+        };
       };
+
+      const constraints = buildConstraints();
+
+      // Debug log camera settings being applied
+      if (cameraSettings?.debugMode) {
+        console.log('Barcode Scanner - Applying camera constraints:', {
+          constraints,
+          userSettings: {
+            qualityPreset: cameraSettings.qualityPreset,
+            performanceMode: cameraSettings.performanceMode,
+            enableAutoFocus: cameraSettings.enableAutoFocus,
+            adjustBrightness: cameraSettings.adjustBrightness,
+          }
+        });
+      }
 
       // Get the video stream with enhanced constraints
       try {
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         finalVideoElement.srcObject = stream;
         streamRef.current = stream;
+
+        // Apply brightness adjustment if specified in camera settings
+        if (cameraSettings && cameraSettings.adjustBrightness !== 0) {
+          const brightnessValue = 1 + (cameraSettings.adjustBrightness / 100);
+          finalVideoElement.style.filter = `brightness(${brightnessValue})`;
+          
+          if (cameraSettings.debugMode) {
+            console.log('Barcode Scanner - Applied brightness adjustment:', {
+              setting: cameraSettings.adjustBrightness,
+              cssValue: brightnessValue
+            });
+          }
+        }
 
         // Apply additional autofocus settings if supported
         const videoTrack = stream.getVideoTracks()[0];
@@ -786,9 +914,24 @@ export default function BarcodeScanner({ onScan, isLoading = false }: BarcodeSca
                         <div className="text-xs text-green-300 opacity-80">
                           Multi-format support: EAN, UPC, Code128, Code39, QR
                         </div>
+                        {cameraSettings && (
+                          <div className="text-xs text-blue-300 opacity-80">
+                            Custom settings: {cameraSettings.qualityPreset} quality, {cameraSettings.performanceMode} mode
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
+
+                  {/* Camera Settings Active Indicator */}
+                  {cameraSettings && (
+                    <div className="absolute top-4 left-4 bg-blue-500/20 border border-blue-400/40 text-blue-200 px-2 py-1 rounded-lg text-xs backdrop-blur-sm">
+                      <div className="flex items-center gap-1">
+                        <Settings className="w-3 h-3" />
+                        <span>Custom Settings</span>
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Enhanced Zoom Controls - Optimized for Short-Range Barcode Scanning */}
                   <div className="absolute bottom-4 right-4 mobile-zoom-controls flex flex-col gap-2 short-range-zoom-panel">
