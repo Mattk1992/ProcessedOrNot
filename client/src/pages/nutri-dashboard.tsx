@@ -113,34 +113,7 @@ export default function NutriDashboard() {
     );
   }
 
-  // Admin access check
-  if (user?.accountType !== 'Admin') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
-        <header className="backdrop-blur-md bg-background/80 border-b border-border/50 sticky top-0 z-40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-          </div>
-        </header>
-
-        <div className="max-w-2xl mx-auto px-4 py-16 text-center">
-          <div className="mb-8">
-            <Shield className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Access Restricted</h2>
-            <p className="text-muted-foreground">This feature is only available to administrators.</p>
-          </div>
-          
-          <div className="space-y-4">
-            <Link href="/">
-              <Button className="w-full max-w-xs">
-                Go Home
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Dashboard is now available to all authenticated users
 
   const defaultGoals: NutritionGoals = {
     dailyCalories: 2000,
@@ -306,15 +279,18 @@ export default function NutriDashboard() {
             </Card>
           </Link>
           
-          <Link href="/nutrition-calendar">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-4 text-center">
-                <Calendar className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
-                <p className="font-medium">Nutrition Calendar</p>
-                <p className="text-xs text-muted-foreground mt-1">Track daily intake</p>
-              </CardContent>
-            </Card>
-          </Link>
+          {/* Hide Nutrition Calendar for Regular users */}
+          {user?.accountType !== 'Regular' && (
+            <Link href="/nutrition-calendar">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <Calendar className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+                  <p className="font-medium">Nutrition Calendar</p>
+                  <p className="text-xs text-muted-foreground mt-1">Track daily intake</p>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
           
           <Link href="/lookup-history">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -326,15 +302,18 @@ export default function NutriDashboard() {
             </Card>
           </Link>
           
-          <Link href="/admin">
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardContent className="p-4 text-center">
-                <Shield className="w-8 h-8 text-amber-500 mx-auto mb-2" />
-                <p className="font-medium">Admin Panel</p>
-                <p className="text-xs text-muted-foreground mt-1">System tools</p>
-              </CardContent>
-            </Card>
-          </Link>
+          {/* Admin Panel - Only show for Admin users */}
+          {user?.accountType === 'Admin' && (
+            <Link href="/admin">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardContent className="p-4 text-center">
+                  <Shield className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+                  <p className="font-medium">Admin Panel</p>
+                  <p className="text-xs text-muted-foreground mt-1">System tools</p>
+                </CardContent>
+              </Card>
+            </Link>
+          )}
           
 
         </div>
@@ -500,7 +479,7 @@ export default function NutriDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {recentEntries.slice(0, 3).map((entry: any, index: number) => (
+                    {(recentEntries as any[]).slice(0, 3).map((entry: any, index: number) => (
                       <div key={index} className="flex items-center justify-between text-sm">
                         <div>
                           <p className="font-medium">{entry.productName}</p>
