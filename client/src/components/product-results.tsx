@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles, X, Info, BarChart3, Zap, TrendingUp, Activity, Calendar, Apple, Flag, Edit, Settings } from "lucide-react";
+import { Lightbulb, AlertTriangle, CheckCircle, Plus, Database, Bot, Sparkles, X, Info, BarChart3, Zap, TrendingUp, Activity, Calendar, Apple, Flag, Edit, Settings, Factory } from "lucide-react";
 import { api } from "@/lib/api";
 import ManualProductForm from "./manual-product-form";
 import NutritionSpotlight from "./nutrition-spotlight";
@@ -62,7 +62,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       productMetadata: true,
       nutritionSpotlight: true,
       funFacts: true,
-      nutriBotInsight: true
+      nutriBotInsight: true,
+      productionProcess: true
     };
   });
 
@@ -2134,6 +2135,37 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               </Card>
               )}
 
+              {/* Product Production Process Section */}
+              {productionProcess?.process && analysisSettings.productionProcess && (
+                <Card className="border-slate-200 bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-950/20 dark:to-gray-950/20">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Factory className="w-5 h-5 text-slate-600" />
+                      Product Production Process
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                          <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Manufacturing & Processing Details</span>
+                        </div>
+                        <p className="text-sm leading-relaxed text-foreground">{productionProcess.process}</p>
+                        
+                        {/* Additional production process indicators */}
+                        <div className="mt-4 pt-3 border-t border-border/20">
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Info className="w-3 h-3" />
+                            <span>AI-generated production process analysis based on ingredients and product data</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* NutriBot Insight Section */}
               {nutriBotInsight && analysisSettings.nutriBotInsight && (
                 <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20">
@@ -2534,6 +2566,19 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                 />
                 <Label htmlFor="nutribot-insight" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                   NutriBot AI Insight
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="production-process"
+                  checked={analysisSettings.productionProcess}
+                  onCheckedChange={(checked) => 
+                    updateAnalysisSettings({ ...analysisSettings, productionProcess: !!checked })
+                  }
+                />
+                <Label htmlFor="production-process" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  Product Production Process
                 </Label>
               </div>
             </div>
