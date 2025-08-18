@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link, useLocation } from "wouter";
 import { 
   Calendar, 
   Target, 
@@ -16,16 +16,19 @@ import {
   Shield,
   User,
   Bell,
-  Sparkles
+  Sparkles,
+  LogOut
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import HeaderDropdown from "@/components/header-dropdown";
 import LanguageSwitcher from "@/components/language-switcher";
 import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { apiRequest } from "@/lib/queryClient";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 
 interface NutritionGoals {
@@ -58,7 +61,40 @@ interface WeightProgress {
 export default function NutriDashboard() {
   const { user, isAuthenticated } = useAuth();
   const { t } = useLanguage();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+
+  // Logout mutation
+  const logoutMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('POST', '/api/auth/logout');
+      return response;
+    },
+    onSuccess: () => {
+      // Clear all queries from cache
+      queryClient.clear();
+      // Show success message
+      toast({
+        title: "Signed out successfully",
+        description: "You have been logged out of your account.",
+      });
+      // Redirect to home page
+      setLocation('/');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Sign out failed",
+        description: error.message || "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSignOut = () => {
+    logoutMutation.mutate();
+  };
 
   // Fetch user nutrition goals
   const { data: goals } = useQuery<NutritionGoals>({
@@ -196,8 +232,22 @@ export default function NutriDashboard() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Welcome back, {user?.firstName || user?.username}!</h2>
-          <p className="text-muted-foreground">Here's your nutrition overview for today</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="text-3xl font-bold mb-2">Welcome back, {user?.firstName || user?.username}!</h2>
+              <p className="text-muted-foreground">Here's your nutrition overview for today</p>
+            </div>
+            <Button
+              onClick={handleSignOut}
+              variant="outline"
+              size="sm"
+              className="w-fit gap-2"
+              disabled={logoutMutation.isPending}
+            >
+              <LogOut className="w-4 h-4" />
+              {logoutMutation.isPending ? "Signing out..." : "Sign Out"}
+            </Button>
+          </div>
         </div>
 
         {/* Quick Actions */}
