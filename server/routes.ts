@@ -4,7 +4,7 @@ import multer from "multer";
 import { storage } from "./storage";
 import { transcribeAudio, isVoiceTranscriptionAvailable } from "./lib/voice-transcription";
 import { smartProductLookup, cascadingProductLookup } from "./lib/product-lookup";
-import { analyzeIngredients, analyzeGlycemicIndex, getUserAIProvider } from "./lib/openai";
+import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider } from "./lib/openai";
 import { getNutriBotResponse, generateProductNutritionInsight, generateFunFacts, generateNutritionSpotlightInsights } from "./lib/nutribot";
 import { AIScheduleGenerator } from "./lib/ai-schedule-generator";
 import { 
@@ -1306,6 +1306,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error generating nutrition spotlight:", error);
       res.status(500).json({ 
         message: "Failed to generate nutrition insights" 
+      });
+    }
+  });
+
+  // Generate production process analysis
+  app.get("/api/products/:barcode/production-process", async (req, res) => {
+    try {
+      const barcode = decodeURIComponent(req.params.barcode);
+      const { language } = req.query;
+
+      const product = await storage.getProductByBarcode(barcode);
+      if (!product || !product.ingredientsText) {
+        return res.status(404).json({ 
+          message: "Product or ingredients not found" 
+        });
+      }
+
+      // Get user's AI provider setting
+      const user = (req.session as any).user;
+      const userAIProvider = await getUserAIProvider(user?.id);
+
+      const processAnalysis = await analyzeProductionProcess(
+        product.ingredientsText,
+        product.productName || "Unknown Product",
+        product.nutriments || {},
+        (language as string) || 'en',
+        userAIProvider
+      );
+
+      // Automatically save production process to products database
+      try {
+        await storage.updateProductWithAIInsights(barcode, { productionProcess: processAnalysis });
+        console.log(`Production process saved to product database for barcode: ${barcode}`);
+      } catch (saveError) {
+        console.warn("Failed to save production process to product database:", saveError);
+        // Continue without failing the request
+      }
+
+      res.json({ process: processAnalysis });
+
+    } catch (error) {
+      console.error("Error generating production process analysis:", error);
+      res.status(500).json({ 
+        message: "Failed to generate production process analysis" 
       });
     }
   });

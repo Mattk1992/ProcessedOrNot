@@ -170,6 +170,24 @@ export class ProductInsightsManager {
     }
   }
 
+  // Save production process to products database
+  async saveProductionProcess(barcode: string, process: any): Promise<void> {
+    if (this.wasInsightSaved(barcode, 'productionProcess')) {
+      console.log(`Production process already saved for barcode: ${barcode}`);
+      return;
+    }
+
+    try {
+      await saveAIInsightsToProduct(barcode, { 
+        productionProcess: typeof process === 'string' ? process : JSON.stringify(process) 
+      });
+      this.markInsightSaved(barcode, 'productionProcess');
+      console.log(`✓ Production process saved to products database for barcode: ${barcode}`);
+    } catch (error) {
+      console.warn(`Failed to save production process for barcode ${barcode}:`, error);
+    }
+  }
+
   // Save all available insights for a product
   async saveAllProductInsights(barcode: string, product: any): Promise<void> {
     console.log(`🔄 Auto-saving all AI insights for product: ${barcode}`);
@@ -259,6 +277,11 @@ class SearchHistoryInsightsManager {
   
   async saveNutritionFact(barcode: string, fact: string) {
     await this.saveInsightToSearchHistory(barcode, 'nutritionFact', fact);
+  }
+  
+  async saveProductionProcess(barcode: string, process: any) {
+    const processString = typeof process === 'object' ? JSON.stringify(process) : process;
+    await this.saveInsightToSearchHistory(barcode, 'productionProcess', processString);
   }
   
   async saveAllInsights(barcode: string, product: any) {
