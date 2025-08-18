@@ -188,6 +188,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await sendEmailVerification(user.email, user.emailVerificationToken);
       }
 
+      // Send notification to all Admin users about new registration
+      try {
+        const adminUsers = await storage.getUsersByAccountType('Admin');
+        for (const admin of adminUsers) {
+          await storage.createNotification({
+            userId: admin.id,
+            type: 'info',
+            title: 'New User Registration',
+            message: `A new user "${user.username}" (${user.firstName} ${user.lastName}) has registered on the platform.`,
+            actionUrl: '/admin',
+            actionText: 'View Admin Panel',
+            isRead: false,
+            isArchived: false,
+            metadata: {
+              newUserId: user.id,
+              newUserUsername: user.username,
+              newUserEmail: user.email,
+              registrationDate: new Date().toISOString()
+            }
+          });
+        }
+        console.log(`Notifications sent to ${adminUsers.length} admin user(s) for new registration: ${user.username}`);
+      } catch (notificationError) {
+        console.error("Failed to send admin notifications for new user registration:", notificationError);
+        // Don't fail the registration if notification fails
+      }
+
       // Start session
       req.session.userId = user.id;
       req.session.user = sanitizeUser(user);

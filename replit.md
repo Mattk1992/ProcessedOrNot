@@ -26,8 +26,9 @@ ProcessedOrNot Scanner is built on a full-stack JavaScript/TypeScript architectu
     - **Search Result Visibility Management**: Comprehensive control over which sections appear in search results through 6 configurable toggle switches: NutriBot AI Insight, Fun Facts & Insights, Nutrition Spotlight & Analysis, Glycemic Impact, Nutrition Facts, and Processing Analysis & Ingredient Categories. Utilizes React Context for global state management across ProductResults and SearchHistoryView components. All toggles default to enabled state with settings persisted in localStorage.
     - **NutriBot AI Personalization**: Integrates user profile data (excluding PII) into NutriBot responses for personalized advice.
     - **AI Schedule Generation with Meal Times**: AI-powered nutrition schedule generator creates detailed daily schedules with specific food products and recipes. Automatically adapts to user's customized meal times, generating meals only for configured time slots. Provides comprehensive daily nutrition plans with portion sizes, preparation instructions, and calorie distribution across all user-defined meal periods.
-    - **Admin Panel**: Redesigned with tabs for Overview, Users, Products, Settings, Speech, Rewards, and Debug, including AI Management.
-    - **Role-Based Access Control**: Dashboard and admin features restricted to Admin users. 
+    - **Admin Panel**: Redesigned with tabs for Overview, Users, Products, Settings, Speech, Rewards, Releases, and Debug, including AI Management.
+    - **Role-Based Access Control**: Dashboard and admin features restricted to Admin users.
+    - **Admin Notification System**: Automatic notifications sent to all Admin users when new users register on the platform, including user details and direct links to admin panel. 
     - **Universal Account Type URL Modification System**: Comprehensive URL modification based on user account types:
       - Paid users: URLs automatically get "?paiduser=true" parameter
       - Regular users: URLs automatically get "?regularuser=true" parameter  
