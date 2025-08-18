@@ -1,8 +1,36 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Camera, Loader2, X, RotateCcw, ZoomIn, ZoomOut } from "lucide-react";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
+
+interface CameraSettings {
+  id: number;
+  timeout: number;
+  autoStopEnabled: boolean;
+  maxZoomLevel: number;
+  minZoomLevel: number;
+  defaultZoomLevel: number;
+  focusMode: string;
+  flashMode: string;
+  scanFrequency: number;
+  enableBeepSound: boolean;
+  enableVibration: boolean;
+  overlayOpacity: number;
+  scanAreaSize: number;
+  optimizeForCloseRange: boolean;
+  enhanceContrast: boolean;
+  adjustBrightness: number;
+  scanIntervalMs: number;
+  torchEnabled: boolean;
+  enableAutoFocus: boolean;
+  qualityPreset: string;
+  performanceMode: string;
+  errorRecoveryEnabled: boolean;
+  debugMode: boolean;
+  updatedAt: string;
+}
 
 interface EnhancedBarcodeScannerProps {
   onScan: (barcode: string) => void;
@@ -20,6 +48,19 @@ export default function EnhancedBarcodeScanner({ onScan, isLoading = false }: En
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Fetch user camera settings
+  const { data: cameraSettings } = useQuery<CameraSettings>({
+    queryKey: ['/api/user/camera-settings'],
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Apply default zoom level from settings when they load
+  useEffect(() => {
+    if (cameraSettings?.defaultZoomLevel) {
+      setZoomLevel(cameraSettings.defaultZoomLevel);
+    }
+  }, [cameraSettings]);
 
   // Enhanced barcode detection with quality analysis
   const analyzeImageQuality = useCallback((imageData: ImageData) => {
@@ -51,19 +92,60 @@ export default function EnhancedBarcodeScanner({ onScan, isLoading = false }: En
         device.label.toLowerCase().includes('rear')
       )?.deviceId || videoInputDevices[0].deviceId;
 
-      // Ultra-high quality constraints for barcode scanning
+      // Apply camera settings based on user preferences and quality preset
+      const getResolutionSettings = () => {
+        switch (cameraSettings?.qualityPreset) {
+          case 'ultra_high':
+            return { width: { ideal: 4096, min: 1920 }, height: { ideal: 2304, min: 1080 } };
+          case 'high':
+            return { width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } };
+          case 'medium':
+            return { width: { ideal: 1280, min: 854 }, height: { ideal: 720, min: 480 } };
+          case 'low':
+            return { width: { ideal: 854, min: 640 }, height: { ideal: 480, min: 360 } };
+          default:
+            return { width: { ideal: 1920, min: 1280 }, height: { ideal: 1080, min: 720 } };
+        }
+      };
+
+      const getFrameRateSettings = () => {
+        switch (cameraSettings?.performanceMode) {
+          case 'high_performance':
+            return { ideal: 60, min: 30 };
+          case 'balanced':
+            return { ideal: 30, min: 15 };
+          case 'battery_saver':
+            return { ideal: 15, min: 10 };
+          default:
+            return { ideal: 30, min: 15 };
+        }
+      };
+
       const constraints: MediaStreamConstraints = {
         video: {
           deviceId: { exact: selectedDeviceId },
-          width: { ideal: 4096, min: 1920 },
-          height: { ideal: 2304, min: 1080 },
+          ...getResolutionSettings(),
           facingMode: { ideal: 'environment' },
-          frameRate: { ideal: 60, min: 30 },
-          focusMode: { ideal: 'continuous' },
+          frameRate: getFrameRateSettings(),
+          focusMode: { ideal: cameraSettings?.enableAutoFocus ? 'continuous' : 'manual' },
           exposureMode: { ideal: 'manual' },
-          exposureCompensation: { ideal: 0.5 },
+          exposureCompensation: { ideal: cameraSettings?.adjustBrightness || 1.0 },
         } as any
       };
+
+      // Debug logging for camera settings integration
+      if (cameraSettings?.debugMode) {
+        console.log('Enhanced Barcode Scanner - Using camera settings:', {
+          qualityPreset: cameraSettings.qualityPreset,
+          performanceMode: cameraSettings.performanceMode,
+          enableAutoFocus: cameraSettings.enableAutoFocus,
+          adjustBrightness: cameraSettings.adjustBrightness,
+          defaultZoomLevel: cameraSettings.defaultZoomLevel,
+          maxZoomLevel: cameraSettings.maxZoomLevel,
+          minZoomLevel: cameraSettings.minZoomLevel,
+        });
+        console.log('Enhanced Barcode Scanner - Camera constraints:', constraints);
+      }
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
@@ -118,7 +200,7 @@ export default function EnhancedBarcodeScanner({ onScan, isLoading = false }: En
       setIsScanning(false);
       setIsCameraActive(false);
     }
-  }, [onScan, scanQuality, analyzeImageQuality]);
+  }, [onScan, scanQuality, analyzeImageQuality, cameraSettings]);
 
   const stopEnhancedCamera = useCallback(() => {
     if (codeReaderRef.current) {
@@ -138,8 +220,8 @@ export default function EnhancedBarcodeScanner({ onScan, isLoading = false }: En
     setIsScanning(false);
     setScanQuality(0);
     setDetectedFormat("");
-    setZoomLevel(1);
-  }, []);
+    setZoomLevel(cameraSettings?.defaultZoomLevel || 1);
+  }, [cameraSettings]);
 
   useEffect(() => {
     return () => {
@@ -191,8 +273,8 @@ export default function EnhancedBarcodeScanner({ onScan, isLoading = false }: En
           {/* Enhanced controls */}
           <div className="absolute bottom-4 right-4 flex flex-col gap-2">
             <Button
-              onClick={() => setZoomLevel(Math.min(zoomLevel + 0.5, 3))}
-              disabled={zoomLevel >= 3}
+              onClick={() => setZoomLevel(Math.min(zoomLevel + 0.5, cameraSettings?.maxZoomLevel || 3))}
+              disabled={zoomLevel >= (cameraSettings?.maxZoomLevel || 3)}
               variant="outline"
               size="sm"
               className="bg-black/80 text-white border-primary/40 w-10 h-10 p-0"
@@ -200,8 +282,8 @@ export default function EnhancedBarcodeScanner({ onScan, isLoading = false }: En
               <ZoomIn className="w-4 h-4" />
             </Button>
             <Button
-              onClick={() => setZoomLevel(Math.max(zoomLevel - 0.5, 1))}
-              disabled={zoomLevel <= 1}
+              onClick={() => setZoomLevel(Math.max(zoomLevel - 0.5, cameraSettings?.minZoomLevel || 1))}
+              disabled={zoomLevel <= (cameraSettings?.minZoomLevel || 1)}
               variant="outline"
               size="sm"
               className="bg-black/80 text-white border-primary/40 w-10 h-10 p-0"
@@ -241,10 +323,10 @@ export default function EnhancedBarcodeScanner({ onScan, isLoading = false }: En
             Stop Scanner
           </Button>
           <Button
-            onClick={() => setZoomLevel(1)}
+            onClick={() => setZoomLevel(cameraSettings?.defaultZoomLevel || 1)}
             variant="outline"
             className="flex-1 border-2 border-muted-foreground/20"
-            disabled={zoomLevel === 1}
+            disabled={zoomLevel === (cameraSettings?.defaultZoomLevel || 1)}
           >
             <RotateCcw className="w-4 h-4 mr-2" />
             Reset Zoom
@@ -253,7 +335,7 @@ export default function EnhancedBarcodeScanner({ onScan, isLoading = false }: En
       )}
       
       {/* Quality metrics display */}
-      {isCameraActive && (scanQuality > 0 || detectedFormat) && (
+      {isCameraActive && (scanQuality > 0 || detectedFormat || cameraSettings?.debugMode) && (
         <div className="p-3 bg-muted/30 rounded-lg border text-sm">
           <div className="flex justify-between items-center">
             {detectedFormat && (
@@ -264,6 +346,26 @@ export default function EnhancedBarcodeScanner({ onScan, isLoading = false }: En
                 Quality: {scanQuality}%
               </span>
             )}
+          </div>
+          {cameraSettings?.debugMode && (
+            <div className="mt-2 pt-2 border-t border-muted text-xs opacity-80">
+              <div className="grid grid-cols-2 gap-1">
+                <span>Quality: {cameraSettings.qualityPreset}</span>
+                <span>Performance: {cameraSettings.performanceMode}</span>
+                <span>Zoom: {zoomLevel}x ({cameraSettings.minZoomLevel}-{cameraSettings.maxZoomLevel})</span>
+                <span>Auto Focus: {cameraSettings.enableAutoFocus ? 'ON' : 'OFF'}</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Camera Settings Status */}
+      {cameraSettings && (
+        <div className="p-2 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700/30 text-xs text-green-700 dark:text-green-300">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <span>Camera settings applied - Quality: {cameraSettings.qualityPreset}, Performance: {cameraSettings.performanceMode}</span>
           </div>
         </div>
       )}
