@@ -2928,7 +2928,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           snackTime: "20:00",
           meal4Time: "10:00",
           meal5Time: "15:30",
-          meal6Time: "21:00"
+          meal6Time: "21:00",
+          snack1Time: "10:30",
+          snack2Time: "15:00"
         });
         return res.json(defaultMealTimes);
       }
@@ -2947,7 +2949,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const userId = req.session.userId;
-      const { breakfastTime, lunchTime, dinnerTime, snackTime, meal4Time, meal5Time, meal6Time } = req.body;
+      const { breakfastTime, lunchTime, dinnerTime, snackTime, meal4Time, meal5Time, meal6Time, snack1Time, snack2Time } = req.body;
 
       // Validate time format (HH:MM)
       const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
@@ -2972,6 +2974,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (meal6Time && !timeRegex.test(meal6Time)) {
         return res.status(400).json({ message: "Invalid meal6 time format" });
       }
+      if (snack1Time && !timeRegex.test(snack1Time)) {
+        return res.status(400).json({ message: "Invalid snack1 time format" });
+      }
+      if (snack2Time && !timeRegex.test(snack2Time)) {
+        return res.status(400).json({ message: "Invalid snack2 time format" });
+      }
 
       // Check if user meal times exist
       const existingMealTimes = await storage.getUserMealTimes(userId);
@@ -2986,7 +2994,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           snackTime,
           meal4Time,
           meal5Time,
-          meal6Time
+          meal6Time,
+          snack1Time,
+          snack2Time
         });
       } else {
         // Create new meal times
@@ -2998,7 +3008,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           snackTime,
           meal4Time,
           meal5Time,
-          meal6Time
+          meal6Time,
+          snack1Time,
+          snack2Time
         });
       }
       

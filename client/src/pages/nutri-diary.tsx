@@ -59,7 +59,7 @@ const diaryEntrySchema = z.object({
   processingExplanation: z.string().optional(),
   glycemicIndex: z.number().min(0).optional(),
   glycemicLoad: z.number().min(0).optional(),
-  mealType: z.enum(["breakfast", "lunch", "dinner", "snack", "meal4", "meal5", "meal6"]),
+  mealType: z.enum(["breakfast", "lunch", "dinner", "snack", "meal4", "meal5", "meal6", "snack1", "snack2"]),
   consumedAt: z.string(),
   notes: z.string().optional(),
 });
@@ -121,7 +121,9 @@ export default function NutriDiary() {
     snack: "20:00",
     meal4: "10:00",
     meal5: "15:30",
-    meal6: "21:00"
+    meal6: "21:00",
+    snack1: "10:30",
+    snack2: "15:00"
   });
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [isProductLookupActive, setIsProductLookupActive] = useState(false);
@@ -219,9 +221,10 @@ export default function NutriDiary() {
     enabled: isAuthenticated,
   });
 
-  // Generate dynamic meal types based on user's mealsPerDay setting
+  // Generate dynamic meal types based on user's mealsPerDay and snacksPerDay settings
   const mealTypes = useMemo(() => {
     const mealsPerDay = (onboardingData as any)?.mealsPerDay || 3;
+    const snacksPerDay = (onboardingData as any)?.snacksPerDay || 0;
     const baseMeals = ['breakfast', 'lunch', 'dinner'];
     let types = [...baseMeals];
     
@@ -229,6 +232,13 @@ export default function NutriDiary() {
     if (mealsPerDay > 3) {
       for (let i = 4; i <= Math.min(mealsPerDay, 6); i++) {
         types.push(`meal${i}`);
+      }
+    }
+    
+    // Add snack sections based on snacksPerDay setting
+    if (snacksPerDay > 0) {
+      for (let i = 1; i <= Math.min(snacksPerDay, 2); i++) {
+        types.push(`snack${i}`);
       }
     }
     
@@ -246,7 +256,9 @@ export default function NutriDiary() {
         snack: times.snackTime || "20:00",
         meal4: times.meal4Time || "10:00",
         meal5: times.meal5Time || "15:30",
-        meal6: times.meal6Time || "21:00"
+        meal6: times.meal6Time || "21:00",
+        snack1: times.snack1Time || "10:30",
+        snack2: times.snack2Time || "15:00"
       });
     }
   }, [savedMealTimes]);
@@ -302,6 +314,8 @@ export default function NutriDiary() {
         meal4Time: newMealTimes.meal4,
         meal5Time: newMealTimes.meal5,
         meal6Time: newMealTimes.meal6,
+        snack1Time: newMealTimes.snack1,
+        snack2Time: newMealTimes.snack2,
       };
       
       saveMealTimesMutation.mutate(mealTimesData);
@@ -481,6 +495,8 @@ export default function NutriDiary() {
       case 'meal4': return <Utensils className="w-5 h-5" />;
       case 'meal5': return <Utensils className="w-5 h-5" />;
       case 'meal6': return <Utensils className="w-5 h-5" />;
+      case 'snack1': return <Moon className="w-5 h-5" />;
+      case 'snack2': return <Moon className="w-5 h-5" />;
       default: return <Coffee className="w-5 h-5" />;
     }
   };
@@ -494,6 +510,8 @@ export default function NutriDiary() {
       case 'meal4': return 'Mid Morning';
       case 'meal5': return 'Afternoon Snack';
       case 'meal6': return 'Late Evening';
+      case 'snack1': return 'Snack 1';
+      case 'snack2': return 'Snack 2';
       default: return mealType.charAt(0).toUpperCase() + mealType.slice(1);
     }
   };
@@ -842,6 +860,8 @@ export default function NutriDiary() {
                               <SelectItem value="meal4">Mid Morning</SelectItem>
                               <SelectItem value="meal5">Afternoon Snack</SelectItem>
                               <SelectItem value="meal6">Late Evening</SelectItem>
+                              <SelectItem value="snack1">Snack 1</SelectItem>
+                              <SelectItem value="snack2">Snack 2</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />

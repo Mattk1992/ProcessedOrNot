@@ -590,8 +590,6 @@ export default function Onboarding() {
                       <SelectItem value="0">No snacks</SelectItem>
                       <SelectItem value="1">1 snack</SelectItem>
                       <SelectItem value="2">2 snacks</SelectItem>
-                      <SelectItem value="3">3 snacks</SelectItem>
-                      <SelectItem value="4">4+ snacks</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
