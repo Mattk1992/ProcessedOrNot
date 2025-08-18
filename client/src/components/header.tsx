@@ -2,6 +2,7 @@ import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_174962362
 import LanguageSwitcher from "./language-switcher";
 import HeaderDropdown from "./header-dropdown";
 import NotificationButton from "./notifications";
+import ThemeToggle from "./theme-toggle";
 
 interface HeaderProps {
   onStartTutorial?: () => void;
@@ -32,6 +33,9 @@ export default function Header({ onStartTutorial }: HeaderProps) {
           </div>
           
           <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+            <div className="hidden sm:block">
+              <ThemeToggle />
+            </div>
             <NotificationButton />
           </div>
         </div>
