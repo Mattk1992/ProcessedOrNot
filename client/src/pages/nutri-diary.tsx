@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { 
@@ -59,7 +59,7 @@ const diaryEntrySchema = z.object({
   processingExplanation: z.string().optional(),
   glycemicIndex: z.number().min(0).optional(),
   glycemicLoad: z.number().min(0).optional(),
-  mealType: z.enum(["breakfast", "lunch", "dinner", "snack"]),
+  mealType: z.enum(["breakfast", "lunch", "dinner", "snack", "meal4", "meal5", "meal6"]),
   consumedAt: z.string(),
   notes: z.string().optional(),
 });
@@ -118,7 +118,10 @@ export default function NutriDiary() {
     breakfast: "08:00",
     lunch: "13:00",
     dinner: "18:00",
-    snack: "20:00"
+    snack: "20:00",
+    meal4: "10:00",
+    meal5: "15:30",
+    meal6: "21:00"
   });
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [isProductLookupActive, setIsProductLookupActive] = useState(false);
@@ -210,6 +213,28 @@ export default function NutriDiary() {
     enabled: isAuthenticated,
   });
 
+  // Fetch user's onboarding data to get mealsPerDay setting
+  const { data: onboardingData } = useQuery({
+    queryKey: ["/api/onboarding"],
+    enabled: isAuthenticated,
+  });
+
+  // Generate dynamic meal types based on user's mealsPerDay setting
+  const mealTypes = useMemo(() => {
+    const mealsPerDay = (onboardingData as any)?.mealsPerDay || 3;
+    const baseMeals = ['breakfast', 'lunch', 'dinner'];
+    let types = [...baseMeals];
+    
+    // Add additional meals based on mealsPerDay setting
+    if (mealsPerDay > 3) {
+      for (let i = 4; i <= Math.min(mealsPerDay, 6); i++) {
+        types.push(`meal${i}`);
+      }
+    }
+    
+    return types;
+  }, [onboardingData]);
+
   // Update local state when saved meal times are loaded
   useEffect(() => {
     if (savedMealTimes) {
@@ -218,7 +243,10 @@ export default function NutriDiary() {
         breakfast: times.breakfastTime || "08:00",
         lunch: times.lunchTime || "13:00",
         dinner: times.dinnerTime || "18:00",
-        snack: times.snackTime || "20:00"
+        snack: times.snackTime || "20:00",
+        meal4: times.meal4Time || "10:00",
+        meal5: times.meal5Time || "15:30",
+        meal6: times.meal6Time || "21:00"
       });
     }
   }, [savedMealTimes]);
@@ -271,6 +299,9 @@ export default function NutriDiary() {
         lunchTime: newMealTimes.lunch,
         dinnerTime: newMealTimes.dinner,
         snackTime: newMealTimes.snack,
+        meal4Time: newMealTimes.meal4,
+        meal5Time: newMealTimes.meal5,
+        meal6Time: newMealTimes.meal6,
       };
       
       saveMealTimesMutation.mutate(mealTimesData);
@@ -447,7 +478,23 @@ export default function NutriDiary() {
       case 'lunch': return <Sun className="w-5 h-5" />;
       case 'dinner': return <Sunset className="w-5 h-5" />;
       case 'snack': return <Moon className="w-5 h-5" />;
+      case 'meal4': return <Utensils className="w-5 h-5" />;
+      case 'meal5': return <Utensils className="w-5 h-5" />;
+      case 'meal6': return <Utensils className="w-5 h-5" />;
       default: return <Coffee className="w-5 h-5" />;
+    }
+  };
+
+  const getMealDisplayName = (mealType: string) => {
+    switch (mealType) {
+      case 'breakfast': return 'Breakfast';
+      case 'lunch': return 'Lunch';
+      case 'dinner': return 'Dinner';
+      case 'snack': return 'Snack';
+      case 'meal4': return 'Mid Morning';
+      case 'meal5': return 'Afternoon Snack';
+      case 'meal6': return 'Late Evening';
+      default: return mealType.charAt(0).toUpperCase() + mealType.slice(1);
     }
   };
 
@@ -792,6 +839,9 @@ export default function NutriDiary() {
                               <SelectItem value="lunch">Lunch</SelectItem>
                               <SelectItem value="dinner">Dinner</SelectItem>
                               <SelectItem value="snack">Snack</SelectItem>
+                              <SelectItem value="meal4">Mid Morning</SelectItem>
+                              <SelectItem value="meal5">Afternoon Snack</SelectItem>
+                              <SelectItem value="meal6">Late Evening</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -970,7 +1020,7 @@ export default function NutriDiary() {
 
         {/* Diary Entries by Meal */}
         <div className="space-y-6">
-          {['breakfast', 'lunch', 'dinner', 'snack'].map((mealType) => {
+          {mealTypes.map((mealType) => {
             const mealEntries = getEntriesByMeal(mealType);
             const mealCalories = getMealTotal(mealType, 'calories');
             
@@ -982,7 +1032,7 @@ export default function NutriDiary() {
                       {getMealIcon(mealType)}
                       <div>
                         <div className="flex items-center space-x-3">
-                          <CardTitle className="capitalize">{mealType}</CardTitle>
+                          <CardTitle>{getMealDisplayName(mealType)}</CardTitle>
                           <Input
                             type="time"
                             value={mealTimes[mealType as keyof typeof mealTimes]}
@@ -1000,56 +1050,56 @@ export default function NutriDiary() {
                     </Badge>
                   </div>
                 </CardHeader>
-                
-                {mealEntries.length > 0 && (
-                  <CardContent>
-                    <div className="space-y-3">
-                      {mealEntries.map((entry) => (
-                        <div key={entry.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-1">
-                              <h4 className="font-medium">{entry.productName}</h4>
-                              {entry.productBrands && (
-                                <Badge variant="secondary" className="text-xs">
-                                  {entry.productBrands}
-                                </Badge>
-                              )}
-                              {entry.processingScore !== undefined && (
-                                <Badge 
-                                  variant={entry.processingScore <= 5 ? "default" : "destructive"}
-                                  className="text-xs"
-                                >
-                                  PS: {entry.processingScore}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {entry.servingSize} {entry.servingUnit} • {((entry.calories || 0) * entry.servingSize).toFixed(0)} cal
-                              {entry.notes && (
-                                <span className="ml-2 italic">"{entry.notes}"</span>
-                              )}
-                            </div>
+              
+              {mealEntries.length > 0 && (
+                <CardContent>
+                  <div className="space-y-3">
+                    {mealEntries.map((entry) => (
+                      <div key={entry.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h4 className="font-medium">{entry.productName}</h4>
+                            {entry.productBrands && (
+                              <Badge variant="secondary" className="text-xs">
+                                {entry.productBrands}
+                              </Badge>
+                            )}
+                            {entry.processingScore !== undefined && (
+                              <Badge 
+                                variant={entry.processingScore <= 5 ? "default" : "destructive"}
+                                className="text-xs"
+                              >
+                                PS: {entry.processingScore}
+                              </Badge>
+                            )}
                           </div>
-                          
-                          <div className="flex items-center space-x-2">
-                            <Button variant="ghost" size="sm">
-                              <Edit3 className="w-4 h-4" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm"
-                              onClick={() => deleteEntryMutation.mutate(entry.id)}
-                              disabled={deleteEntryMutation.isPending}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                          <div className="text-sm text-muted-foreground">
+                            {entry.servingSize} {entry.servingUnit} • {((entry.calories || 0) * entry.servingSize).toFixed(0)} cal
+                            {entry.notes && (
+                              <span className="ml-2 italic">"{entry.notes}"</span>
+                            )}
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                )}
-              </Card>
+                        
+                        <div className="flex items-center space-x-2">
+                          <Button variant="ghost" size="sm">
+                            <Edit3 className="w-4 h-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => deleteEntryMutation.mutate(entry.id)}
+                            disabled={deleteEntryMutation.isPending}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              )}
+            </Card>
             );
           })}
         </div>

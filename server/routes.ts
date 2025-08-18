@@ -2925,7 +2925,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           breakfastTime: "08:00",
           lunchTime: "13:00",
           dinnerTime: "18:00",
-          snackTime: "20:00"
+          snackTime: "20:00",
+          meal4Time: "10:00",
+          meal5Time: "15:30",
+          meal6Time: "21:00"
         });
         return res.json(defaultMealTimes);
       }
@@ -2944,7 +2947,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const userId = req.session.userId;
-      const { breakfastTime, lunchTime, dinnerTime, snackTime } = req.body;
+      const { breakfastTime, lunchTime, dinnerTime, snackTime, meal4Time, meal5Time, meal6Time } = req.body;
 
       // Validate time format (HH:MM)
       const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
@@ -2960,6 +2963,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (snackTime && !timeRegex.test(snackTime)) {
         return res.status(400).json({ message: "Invalid snack time format" });
       }
+      if (meal4Time && !timeRegex.test(meal4Time)) {
+        return res.status(400).json({ message: "Invalid meal4 time format" });
+      }
+      if (meal5Time && !timeRegex.test(meal5Time)) {
+        return res.status(400).json({ message: "Invalid meal5 time format" });
+      }
+      if (meal6Time && !timeRegex.test(meal6Time)) {
+        return res.status(400).json({ message: "Invalid meal6 time format" });
+      }
 
       // Check if user meal times exist
       const existingMealTimes = await storage.getUserMealTimes(userId);
@@ -2971,7 +2983,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           breakfastTime,
           lunchTime,
           dinnerTime,
-          snackTime
+          snackTime,
+          meal4Time,
+          meal5Time,
+          meal6Time
         });
       } else {
         // Create new meal times
@@ -2980,7 +2995,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           breakfastTime,
           lunchTime,
           dinnerTime,
-          snackTime
+          snackTime,
+          meal4Time,
+          meal5Time,
+          meal6Time
         });
       }
       

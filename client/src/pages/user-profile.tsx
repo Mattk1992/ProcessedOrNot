@@ -1018,8 +1018,8 @@ export default function UserProfile() {
                     {isEditingOnboarding ? (
                       <Input
                         type="number"
-                        min="1"
-                        max="10"
+                        min="3"
+                        max="6"
                         value={onboardingData.mealsPerDay || ""}
                         onChange={(e) => updateOnboardingFormData("mealsPerDay", parseInt(e.target.value) || undefined)}
                       />

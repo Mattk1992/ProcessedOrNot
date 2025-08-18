@@ -572,11 +572,10 @@ export default function Onboarding() {
                       <SelectValue placeholder="Number of meals" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">1 meal</SelectItem>
-                      <SelectItem value="2">2 meals</SelectItem>
                       <SelectItem value="3">3 meals</SelectItem>
                       <SelectItem value="4">4 meals</SelectItem>
-                      <SelectItem value="5">5+ meals</SelectItem>
+                      <SelectItem value="5">5 meals</SelectItem>
+                      <SelectItem value="6">6 meals</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

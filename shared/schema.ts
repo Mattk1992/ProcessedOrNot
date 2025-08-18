@@ -834,6 +834,9 @@ export const userMealTimes = pgTable("user_meal_times", {
   lunchTime: varchar("lunch_time", { length: 5 }).notNull().default("13:00"),
   dinnerTime: varchar("dinner_time", { length: 5 }).notNull().default("18:00"),
   snackTime: varchar("snack_time", { length: 5 }).notNull().default("20:00"),
+  meal4Time: varchar("meal4_time", { length: 5 }).notNull().default("10:00"), // Mid Morning
+  meal5Time: varchar("meal5_time", { length: 5 }).notNull().default("15:30"), // Afternoon Snack
+  meal6Time: varchar("meal6_time", { length: 5 }).notNull().default("21:00"), // Late Evening
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({
