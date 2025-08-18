@@ -291,6 +291,16 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
     enabled: !!product,
   });
 
+  const { data: productionProcess, isLoading: isLoadingProductionProcess } = useQuery<{ process: string }>({
+    queryKey: ["/api/products", barcode, "production-process", language],
+    queryFn: async () => {
+      const response = await fetch(`/api/products/${barcode}/production-process?language=${language}`);
+      if (!response.ok) throw new Error('Failed to get production process');
+      return response.json();
+    },
+    enabled: !!product,
+  });
+
   // Trigger both popups when product is found
   useEffect(() => {
     if (product && !isLoadingProduct && !productError) {
@@ -321,6 +331,14 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       searchHistoryInsightsManager.saveNutriBotInsight(product.barcode, nutriBotInsight.insight);
     }
   }, [nutriBotInsight?.insight, isLoadingInsight, product?.barcode]);
+
+  // Auto-save production process when loaded
+  useEffect(() => {
+    if (productionProcess?.process && !isLoadingProductionProcess && product?.barcode) {
+      productInsightsManager.saveProductionProcess(product.barcode, productionProcess.process);
+      searchHistoryInsightsManager.saveProductionProcess(product.barcode, productionProcess.process);
+    }
+  }, [productionProcess?.process, isLoadingProductionProcess, product?.barcode]);
 
   if (isLoadingProduct) {
     return (
@@ -1019,6 +1037,61 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               <div className="flex items-center space-x-3">
                 <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                 <p className="text-muted-foreground">{t('nutribot.insights.loading')}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Product Production Process Card */}
+      {visibilitySettings.showProductionProcess && productionProcess && typeof productionProcess === 'object' && 'process' in productionProcess && (
+        <Card className="glass-card border-2 border-purple-200/50 dark:border-purple-800/50 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
+          <CardHeader className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-t-lg">
+            <CardTitle className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center floating-animation">
+                <Settings className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">Product Production Process</h3>
+                <p className="text-sm text-white/80">Manufacturing and sustainability analysis</p>
+              </div>
+              <Info className="w-5 h-5 text-white/80 ml-auto" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 pb-6">
+            <div className="bg-gradient-to-br from-purple-50/50 to-indigo-50/30 dark:from-purple-900/20 dark:to-indigo-900/10 rounded-2xl p-6 border border-purple-200/30 dark:border-purple-700/30">
+              <div className="flex items-start space-x-3">
+                <Info className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
+                <div>
+                  <h5 className="font-medium mb-2 text-purple-800 dark:text-purple-200">Manufacturing Process</h5>
+                  <div className="text-sm text-purple-700 dark:text-purple-300 leading-relaxed whitespace-pre-wrap">
+                    {(productionProcess as { process: string }).process}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {visibilitySettings.showProductionProcess && isLoadingProductionProcess && (
+        <Card className="glass-card border-2 border-purple-200/50 dark:border-purple-800/50 shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-t-lg">
+            <CardTitle className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+                <Settings className="w-6 h-6 text-white animate-pulse" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold">Product Production Process</h3>
+                <p className="text-sm text-white/80">Analyzing manufacturing process...</p>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6 pb-6">
+            <div className="bg-gradient-to-br from-purple-50/50 to-indigo-50/30 dark:from-purple-900/20 dark:to-indigo-900/10 rounded-2xl p-6 border border-purple-200/30 dark:border-purple-700/30">
+              <div className="flex items-center space-x-3">
+                <div className="w-6 h-6 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-purple-600 dark:text-purple-400">Loading production process analysis...</p>
               </div>
             </div>
           </CardContent>
