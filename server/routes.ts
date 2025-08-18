@@ -4,7 +4,7 @@ import multer from "multer";
 import { storage } from "./storage";
 import { transcribeAudio, isVoiceTranscriptionAvailable } from "./lib/voice-transcription";
 import { smartProductLookup, cascadingProductLookup } from "./lib/product-lookup";
-import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider } from "./lib/openai";
+import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, analyzeCarbonFootprint, getUserAIProvider } from "./lib/openai";
 import { getNutriBotResponse, generateProductNutritionInsight, generateFunFacts, generateNutritionSpotlightInsights } from "./lib/nutribot";
 import { AIScheduleGenerator } from "./lib/ai-schedule-generator";
 import { 
@@ -1293,6 +1293,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error generating fun facts:", error);
       res.status(500).json({ 
         message: "Failed to generate fun facts" 
+      });
+    }
+  });
+
+  // Analyze carbon footprint
+  app.post("/api/analyze-carbon-footprint", async (req, res) => {
+    try {
+      const { productName, ingredients, nutriments, barcode, userId } = req.body;
+
+      if (!productName || !ingredients) {
+        return res.status(400).json({ 
+          message: "Product name and ingredients are required" 
+        });
+      }
+
+      // Get user's AI provider setting
+      const userAIProvider = await getUserAIProvider(userId);
+      
+      const carbonFootprintData = await analyzeCarbonFootprint(
+        ingredients,
+        productName,
+        nutriments || {},
+        'en', // Default to English for now
+        userAIProvider
+      );
+
+      // Update product and search history with carbon footprint data
+      if (barcode) {
+        try {
+          await storage.updateProductWithAIInsights(barcode, { 
+            carbonFootprint: carbonFootprintData.carbonFootprint,
+            carbonFootprintExplanation: carbonFootprintData.explanation
+          });
+          console.log(`Carbon footprint saved to product database for barcode: ${barcode}`);
+        } catch (saveError) {
+          console.warn("Failed to save carbon footprint to product database:", saveError);
+          // Continue without failing the request
+        }
+
+        // Also update search history if available
+        try {
+          await storage.updateSearchHistoryWithCarbonFootprint(barcode, {
+            carbonFootprint: carbonFootprintData.carbonFootprint,
+            carbonFootprintExplanation: carbonFootprintData.explanation
+          });
+          console.log(`Carbon footprint saved to search history for barcode: ${barcode}`);
+        } catch (saveError) {
+          console.warn("Failed to save carbon footprint to search history:", saveError);
+          // Continue without failing the request
+        }
+      }
+
+      res.json(carbonFootprintData);
+
+    } catch (error) {
+      console.error("Error analyzing carbon footprint:", error);
+      res.status(500).json({ 
+        message: "Failed to analyze carbon footprint",
+        error: error instanceof Error ? error.message : "Unknown error"
       });
     }
   });

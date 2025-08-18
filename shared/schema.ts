@@ -28,6 +28,8 @@ export const products = pgTable("products", {
   processingAnalysis: text("processing_analysis"), // Processing Analysis & Ingredient Categories
   ingredientCategories: jsonb("ingredient_categories"), // Categorized ingredients (ultra-processed, processed, minimally processed)
   productionProcess: text("production_process"), // Detailed production process of the food product
+  carbonFootprint: real("carbon_footprint"), // Carbon footprint in kg CO2 equivalent
+  carbonFootprintExplanation: text("carbon_footprint_explanation"), // Explanation of carbon footprint calculation
   
   // Media fields for future image/video uploads
   additionalImages: text("additional_images").array(), // URLs to additional product images
@@ -82,6 +84,8 @@ export const searchHistory = pgTable("search_history", {
   processingAnalysis: text("processing_analysis"), // Processing Analysis & Ingredient Categories
   ingredientCategories: jsonb("ingredient_categories"), // Categorized ingredients (ultra-processed, processed, minimally processed)
   productionProcess: text("production_process"), // Detailed production process of the food product
+  carbonFootprint: real("carbon_footprint"), // Carbon footprint in kg CO2 equivalent
+  carbonFootprintExplanation: text("carbon_footprint_explanation"), // Explanation of carbon footprint calculation
   
   // Error handling
   errorMessage: text("error_message"),

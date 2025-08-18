@@ -135,6 +135,8 @@ export interface IStorage {
     nutritionFact?: string;
     processingAnalysis?: string;
     ingredientCategories?: any;
+    carbonFootprint?: number;
+    carbonFootprintExplanation?: string;
   }): Promise<Product | undefined>;
   getProductsWithoutGlycemicIndex(): Promise<Product[]>;
   getAllProducts(limit?: number, offset?: number): Promise<Product[]>;
@@ -161,6 +163,10 @@ export interface IStorage {
     processingAnalysis?: string;
     ingredientCategories?: any;
   }): Promise<SearchHistory | undefined>;
+  updateSearchHistoryWithCarbonFootprint(barcode: string, carbonData: {
+    carbonFootprint: number;
+    carbonFootprintExplanation: string;
+  }): Promise<boolean>;
   clearAllSearchHistory(): Promise<void>;
 
   // Admin settings methods
@@ -742,6 +748,8 @@ export class DatabaseStorage implements IStorage {
     nutritionFact?: string;
     processingAnalysis?: string;
     ingredientCategories?: any;
+    carbonFootprint?: number;
+    carbonFootprintExplanation?: string;
   }): Promise<Product | undefined> {
     const updateData = {
       ...insights,
@@ -1021,6 +1029,27 @@ export class DatabaseStorage implements IStorage {
     
     console.log(`Updated search history record ${searchId} with AI insights`);
     return updatedRecord || undefined;
+  }
+
+  async updateSearchHistoryWithCarbonFootprint(barcode: string, carbonData: {
+    carbonFootprint: number;
+    carbonFootprintExplanation: string;
+  }): Promise<boolean> {
+    try {
+      const result = await db
+        .update(searchHistory)
+        .set({
+          carbonFootprint: carbonData.carbonFootprint,
+          carbonFootprintExplanation: carbonData.carbonFootprintExplanation
+        })
+        .where(eq(searchHistory.productBarcode, barcode));
+
+      console.log(`Updated search history with carbon footprint for barcode: ${barcode}`);
+      return true;
+    } catch (error) {
+      console.error("Failed to update search history with carbon footprint:", error);
+      return false;
+    }
   }
 
   // Admin settings methods

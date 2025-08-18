@@ -9,6 +9,7 @@ export interface SearchResultVisibilitySettings {
   showNutritionFacts: boolean;
   showProcessingAnalysis: boolean;
   showProductionProcess: boolean;
+  showCarbonFootprint: boolean;
 }
 
 // Default settings - all enabled by default
@@ -20,6 +21,7 @@ const defaultSettings: SearchResultVisibilitySettings = {
   showNutritionFacts: true,
   showProcessingAnalysis: true,
   showProductionProcess: true,
+  showCarbonFootprint: true,
 };
 
 interface SearchResultVisibilityContextType {

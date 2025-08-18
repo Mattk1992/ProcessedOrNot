@@ -300,3 +300,133 @@ Provide a detailed but accessible explanation that helps consumers understand ho
     return "Unable to analyze production process at this time";
   }
 }
+
+interface CarbonFootprintAnalysis {
+  carbonFootprint: number;
+  explanation: string;
+  breakdown: {
+    ingredients: number;
+    processing: number;
+    packaging: number;
+    transportation: number;
+  };
+  rating: 'excellent' | 'good' | 'moderate' | 'high' | 'very-high';
+  suggestions: string[];
+}
+
+export async function analyzeCarbonFootprint(
+  ingredientsText: string, 
+  productName: string, 
+  nutriments: any,
+  language: string = 'en', 
+  provider: string = 'ChatGPT'
+): Promise<CarbonFootprintAnalysis> {
+  try {
+    const languageInstructions: Record<string, string> = {
+      'en': 'Provide your analysis in English.',
+      'es': 'Proporciona tu análisis en español.',
+      'fr': 'Fournissez votre analyse en français.',
+      'de': 'Stellen Sie Ihre Analyse auf Deutsch bereit.',
+      'zh': '请用中文提供分析。',
+      'ja': '日本語で分析を提供してください.',
+      'nl': 'Geef je analyse in het Nederlands.'
+    };
+
+    const languageInstruction = languageInstructions[language] || languageInstructions['en'];
+
+    // Extract key nutritional data for context
+    const carbohydrates = nutriments?.carbohydrates_100g || nutriments?.carbs_g || 0;
+    const protein = nutriments?.proteins_100g || nutriments?.protein_g || 0;
+    const fat = nutriments?.fat_100g || nutriments?.fat_g || 0;
+    const fiber = nutriments?.fiber_100g || nutriments?.fiber_g || 0;
+
+    const prompt = `Calculate the carbon footprint for this food product. ${languageInstruction}
+
+Product: ${productName}
+Ingredients: ${ingredientsText}
+
+Nutritional Information (per 100g):
+- Carbohydrates: ${carbohydrates}g
+- Protein: ${protein}g
+- Fat: ${fat}g
+- Fiber: ${fiber}g
+
+Based on the ingredients and nutritional profile, calculate the carbon footprint considering:
+
+1. **Ingredient Sourcing**: Environmental impact of raw materials (agricultural practices, land use, water consumption)
+2. **Processing Impact**: Energy consumption in manufacturing, industrial processing steps
+3. **Packaging**: Materials used, manufacturing energy, recyclability
+4. **Transportation**: Typical distribution distances, refrigeration needs
+
+Provide a detailed carbon footprint analysis with:
+- Total CO2 equivalent emissions per 100g serving
+- Breakdown by category (ingredients, processing, packaging, transportation)
+- Sustainability rating (excellent <0.5kg, good 0.5-1kg, moderate 1-2kg, high 2-4kg, very-high >4kg)
+- Environmental impact explanation
+- Sustainability improvement suggestions
+
+Consider factors like:
+- Animal vs plant-based ingredients (meat/dairy have higher footprints)
+- Processing complexity (ultra-processed foods have higher footprints)
+- Packaging materials (plastic vs recyclable materials)
+- Typical source regions and transportation needs
+- Preservation methods and energy requirements
+
+Provide your response in JSON format:
+{
+  "carbonFootprint": number (kg CO2e per 100g),
+  "explanation": "detailed explanation of carbon footprint calculation and environmental impact",
+  "breakdown": {
+    "ingredients": number (kg CO2e from ingredient sourcing),
+    "processing": number (kg CO2e from manufacturing),
+    "packaging": number (kg CO2e from packaging materials),
+    "transportation": number (kg CO2e from distribution)
+  },
+  "rating": "excellent|good|moderate|high|very-high",
+  "suggestions": ["suggestion1", "suggestion2", "suggestion3"]
+}`;
+
+    const modelConfig = getModelConfig(provider);
+
+    const response = await openai.chat.completions.create({
+      model: modelConfig.model,
+      messages: [
+        {
+          role: "system",
+          content: "You are an environmental sustainability expert specializing in food carbon footprint analysis. Provide accurate, evidence-based assessments of environmental impact for food products based on scientific data and lifecycle assessment principles."
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      response_format: { type: "json_object" },
+      temperature: modelConfig.temperature,
+      max_tokens: modelConfig.maxTokens,
+    });
+
+    const content = response.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error("No response content received from OpenAI");
+    }
+
+    const result = JSON.parse(content) as CarbonFootprintAnalysis;
+    
+    // Validate and sanitize the response
+    return {
+      carbonFootprint: Math.max(0, result.carbonFootprint || 0),
+      explanation: result.explanation || "Carbon footprint analysis not available",
+      breakdown: {
+        ingredients: Math.max(0, result.breakdown?.ingredients || 0),
+        processing: Math.max(0, result.breakdown?.processing || 0),
+        packaging: Math.max(0, result.breakdown?.packaging || 0),
+        transportation: Math.max(0, result.breakdown?.transportation || 0),
+      },
+      rating: result.rating || 'moderate',
+      suggestions: Array.isArray(result.suggestions) ? result.suggestions : [],
+    };
+  } catch (error) {
+    console.error("Error analyzing carbon footprint with OpenAI:", error);
+    throw new Error("Failed to analyze carbon footprint");
+  }
+}

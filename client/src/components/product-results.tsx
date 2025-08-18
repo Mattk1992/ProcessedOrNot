@@ -17,6 +17,7 @@ import NutritionSpotlight from "./nutrition-spotlight";
 import FunFacts from "./fun-facts";
 import SocialShare from "./social-share";
 import NutritionFactPopup from "./nutrition-fact-popup";
+import CarbonFootprintMeter from "./carbon-footprint-meter";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useSearchResultVisibility } from "@/contexts/SearchResultVisibilityContext";
 import { useAuth } from "@/hooks/useAuth";
@@ -1112,6 +1113,20 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
             nutriments={product.nutriments as Record<string, any> | null}
             processingScore={product.processingScore || 0}
             barcode={barcode}
+          />
+        </div>
+      )}
+
+      {/* Carbon Footprint Meter */}
+      {visibilitySettings.showCarbonFootprint && (
+        <div className="slide-up">
+          <CarbonFootprintMeter 
+            productName={product.productName || "Unknown Product"}
+            ingredients={product.ingredientsText || ""}
+            nutriments={product.nutriments as Record<string, any> | null}
+            barcode={barcode}
+            existingFootprint={product.carbonFootprint}
+            existingExplanation={product.carbonFootprintExplanation}
           />
         </div>
       )}

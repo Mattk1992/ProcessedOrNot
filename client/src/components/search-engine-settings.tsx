@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Eye, EyeOff, Brain, Lightbulb, Activity, BarChart3, Apple, Beaker } from "lucide-react";
+import { Settings, Eye, EyeOff, Brain, Lightbulb, Activity, BarChart3, Apple, Beaker, Leaf } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSearchResultVisibility } from "@/contexts/SearchResultVisibilityContext";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -81,6 +81,15 @@ export default function SearchEngineSettings({ children }: SearchEngineSettingsP
       enabled: settings.showProductionProcess,
       setEnabled: (value: boolean) => updateSetting('showProductionProcess', value),
       color: 'text-indigo-600 dark:text-indigo-400'
+    },
+    {
+      id: 'showCarbonFootprint',
+      label: 'Carbon Footprint Meter',
+      description: 'Environmental impact analysis showing CO2 emissions and sustainability metrics',
+      icon: Leaf,
+      enabled: settings.showCarbonFootprint,
+      setEnabled: (value: boolean) => updateSetting('showCarbonFootprint', value),
+      color: 'text-emerald-600 dark:text-emerald-400'
     }
   ];
 
