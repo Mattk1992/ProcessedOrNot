@@ -90,19 +90,7 @@ export default function NutriDashboard() {
       <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
         <header className="backdrop-blur-md bg-background/80 border-b border-border/50 sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-3">
-                <img src={logoPath} alt="ProcessedOrNot Scanner" className="w-10 h-10 rounded-full" />
-                <div className="hidden sm:block">
-                  <h1 className="text-xl font-bold gradient-text">ProcessedOrNot</h1>
-                  <p className="text-xs text-muted-foreground">Nutri Dashboard</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <LanguageSwitcher />
-                <HeaderDropdown />
-              </div>
-            </div>
+
           </div>
         </header>
 
@@ -131,19 +119,7 @@ export default function NutriDashboard() {
       <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-background/90">
         <header className="backdrop-blur-md bg-background/80 border-b border-border/50 sticky top-0 z-40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-16">
-              <div className="flex items-center space-x-3">
-                <img src={logoPath} alt="ProcessedOrNot Scanner" className="w-10 h-10 rounded-full" />
-                <div className="hidden sm:block">
-                  <h1 className="text-xl font-bold gradient-text">ProcessedOrNot</h1>
-                  <p className="text-xs text-muted-foreground">Nutri Dashboard</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3">
-                <LanguageSwitcher />
-                <HeaderDropdown />
-              </div>
-            </div>
+
           </div>
         </header>
 

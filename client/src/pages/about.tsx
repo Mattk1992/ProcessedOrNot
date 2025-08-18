@@ -44,20 +44,7 @@ export default function About() {
       {/* Header */}
       <header className="glass-effect border-b border-border/50 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-6">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-3 text-foreground hover:text-primary transition-colors group">
-              <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-              <span className="font-medium">{t('about.backToHome')}</span>
-            </Link>
-            <div className="flex items-center space-x-4">
-              <img 
-                src={logoPath} 
-                alt="ProcessedOrNot Logo" 
-                className="w-10 h-10 rounded-xl shadow-lg"
-              />
-              <h1 className="text-xl font-bold gradient-text">{t('about.title')}</h1>
-            </div>
-          </div>
+
         </div>
       </header>
 
