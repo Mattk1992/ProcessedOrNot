@@ -1315,19 +1315,21 @@ export default function UserProfile() {
           </TabsContent>
         </Tabs>
 
-        {/* URL Modification Demonstration for Paid Users */}
-        <div className="mt-8 space-y-6">
-          <URLStatusDisplay />
-          <AccountTypeTester />
-          <NavigationWrapper className="max-w-4xl">
-            <div className="mb-4">
-              <h2 className="text-xl font-semibold">Additional URL Modification Examples</h2>
-              <p className="text-sm text-muted-foreground">
-                More examples of how URLs are automatically modified for paid users.
-              </p>
-            </div>
-          </NavigationWrapper>
-        </div>
+        {/* URL Modification Demonstration - Hidden for Regular Users */}
+        {user?.accountType !== 'Regular' && (
+          <div className="mt-8 space-y-6">
+            <URLStatusDisplay />
+            <AccountTypeTester />
+            <NavigationWrapper className="max-w-4xl">
+              <div className="mb-4">
+                <h2 className="text-xl font-semibold">Additional URL Modification Examples</h2>
+                <p className="text-sm text-muted-foreground">
+                  More examples of how URLs are automatically modified for paid users.
+                </p>
+              </div>
+            </NavigationWrapper>
+          </div>
+        )}
       </div>
     </div>
   );
