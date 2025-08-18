@@ -3,6 +3,7 @@ import LanguageSwitcher from "./language-switcher";
 import HeaderDropdown from "./header-dropdown";
 import NotificationButton from "./notifications";
 import ThemeToggle from "./theme-toggle";
+import { Link } from "wouter";
 
 interface HeaderProps {
   onStartTutorial?: () => void;
@@ -20,7 +21,7 @@ export default function Header({ onStartTutorial }: HeaderProps) {
             </div>
           </div>
           
-          <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0 justify-center">
+          <Link href="/" className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0 justify-center hover:opacity-90 transition-opacity cursor-pointer">
             <img 
               src={logoPath} 
               alt="ProcessedOrNot Logo" 
@@ -30,7 +31,7 @@ export default function Header({ onStartTutorial }: HeaderProps) {
               <h1 className="text-base sm:text-xl font-bold text-white truncate">ProcessedOrNot</h1>
               <p className="text-xs text-white/80 hidden lg:block">Smart Food Scanner</p>
             </div>
-          </div>
+          </Link>
           
           <div className="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
             <div className="hidden sm:block">
