@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight, User, Settings, Info, HelpCircle, LogIn, UserPlus, LogOut, Shield, Globe, PlayCircle, Zap, BookOpen, Mail, FileText, Share2, Lock, BarChart3, TrendingUp, Home, Camera, History, Database, Copyright } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/hooks/useAuth';
@@ -21,6 +21,19 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
   const { t } = useLanguage();
   const { isAuthenticated, user } = useAuth();
   const [, setLocation] = useLocation();
+
+  // Check if user is on mobile and authenticated
+  const isMobile = () => window.innerWidth < 640; // sm breakpoint
+
+  const handleDropdownClick = () => {
+    // In mobile view, if authenticated, redirect to dashboard instead of opening dropdown
+    if (isMobile() && isAuthenticated) {
+      setLocation('/nutri-dashboard');
+      return;
+    }
+    // Otherwise, toggle dropdown as normal
+    setIsOpen(!isOpen);
+  };
 
   const toggleGroup = (groupName: string, event: React.MouseEvent) => {
     event.stopPropagation();
@@ -231,7 +244,7 @@ export default function HeaderDropdown({ onStartTutorial }: HeaderDropdownProps 
   return (
     <div className="relative">
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleDropdownClick}
         className={`group flex items-center space-x-1 sm:space-x-3 px-2 sm:px-5 py-2 sm:py-3 bg-gradient-to-r from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 rounded-xl transition-all duration-300 backdrop-blur-md border border-white/20 shadow-lg hover:shadow-xl hover:scale-105 dropdown-button-glow touch-action-manipulation ${isOpen ? 'from-white/25 to-white/15 scale-105' : ''}`}
         aria-expanded={isOpen}
         aria-haspopup="true"
