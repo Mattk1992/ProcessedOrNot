@@ -103,11 +103,7 @@ export default function CarbonFootprintMeter({
   // Mutation to analyze carbon footprint
   const carbonFootprintMutation = useMutation({
     mutationFn: async (data: { productName: string; ingredients: string; nutriments: any; barcode: string; userId?: number }) => {
-      const response = await apiRequest(`/api/analyze-carbon-footprint`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      const response = await apiRequest('POST', '/api/analyze-carbon-footprint', data);
       return response.json();
     },
     onSuccess: (data: CarbonFootprintResult) => {
