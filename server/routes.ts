@@ -4273,5 +4273,237 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ==================== Release Management API Routes ====================
+
+  // Get all releases (public endpoint)
+  app.get('/api/releases', async (req: Request, res: Response) => {
+    try {
+      const releases = await storage.getPublishedReleases();
+      res.json(releases);
+    } catch (error) {
+      console.error('Error fetching releases:', error);
+      res.status(500).json({ message: 'Failed to fetch releases' });
+    }
+  });
+
+  // Get featured releases (public endpoint)
+  app.get('/api/releases/featured', async (req: Request, res: Response) => {
+    try {
+      const releases = await storage.getFeaturedReleases();
+      res.json(releases);
+    } catch (error) {
+      console.error('Error fetching featured releases:', error);
+      res.status(500).json({ message: 'Failed to fetch featured releases' });
+    }
+  });
+
+  // Get recent releases (public endpoint)
+  app.get('/api/releases/recent', async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const releases = await storage.getRecentReleases(limit);
+      res.json(releases);
+    } catch (error) {
+      console.error('Error fetching recent releases:', error);
+      res.status(500).json({ message: 'Failed to fetch recent releases' });
+    }
+  });
+
+  // Get release by ID (public endpoint)
+  app.get('/api/releases/:id', async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const release = await storage.getReleaseById(id);
+      
+      if (!release) {
+        return res.status(404).json({ message: 'Release not found' });
+      }
+
+      // Only return published releases to non-admin users
+      if (req.session.userId) {
+        const currentUser = await storage.getUser(req.session.userId);
+        if (!currentUser || currentUser.accountType !== 'Admin') {
+          if (release.status !== 'published' || !release.isPublic) {
+            return res.status(404).json({ message: 'Release not found' });
+          }
+        }
+      } else {
+        if (release.status !== 'published' || !release.isPublic) {
+          return res.status(404).json({ message: 'Release not found' });
+        }
+      }
+
+      res.json(release);
+    } catch (error) {
+      console.error('Error fetching release:', error);
+      res.status(500).json({ message: 'Failed to fetch release' });
+    }
+  });
+
+  // Admin-only routes for release management
+  app.get('/api/admin/releases', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const currentUser = await storage.getUser(req.session.userId);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: 'Access denied. Admin access required.' });
+      }
+
+      const releases = await storage.getAllReleases();
+      res.json(releases);
+    } catch (error) {
+      console.error('Error fetching admin releases:', error);
+      res.status(500).json({ message: 'Failed to fetch admin releases' });
+    }
+  });
+
+  app.post('/api/admin/releases', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const currentUser = await storage.getUser(req.session.userId);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: 'Access denied. Admin access required.' });
+      }
+
+      const release = await storage.createRelease(req.body);
+      res.status(201).json(release);
+    } catch (error) {
+      console.error('Error creating release:', error);
+      res.status(500).json({ message: 'Failed to create release' });
+    }
+  });
+
+  app.put('/api/admin/releases/:id', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const currentUser = await storage.getUser(req.session.userId);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: 'Access denied. Admin access required.' });
+      }
+
+      const id = parseInt(req.params.id);
+      const updated = await storage.updateRelease(id, req.body);
+
+      if (!updated) {
+        return res.status(404).json({ message: 'Release not found' });
+      }
+
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating release:', error);
+      res.status(500).json({ message: 'Failed to update release' });
+    }
+  });
+
+  app.delete('/api/admin/releases/:id', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const currentUser = await storage.getUser(req.session.userId);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: 'Access denied. Admin access required.' });
+      }
+
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteRelease(id);
+
+      if (!success) {
+        return res.status(404).json({ message: 'Release not found' });
+      }
+
+      res.json({ message: 'Release deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting release:', error);
+      res.status(500).json({ message: 'Failed to delete release' });
+    }
+  });
+
+  app.post('/api/admin/releases/:id/publish', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const currentUser = await storage.getUser(req.session.userId);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: 'Access denied. Admin access required.' });
+      }
+
+      const id = parseInt(req.params.id);
+      const published = await storage.publishRelease(id, req.session.userId);
+
+      if (!published) {
+        return res.status(404).json({ message: 'Release not found' });
+      }
+
+      // Send notification to all users when a release is published
+      if (published.status === 'published' && !published.notificationSent) {
+        try {
+          const users = await storage.getAllUsers();
+          const notifications = users.map(user => ({
+            userId: user.id,
+            type: 'info' as const,
+            title: `New Release: ${published.title}`,
+            message: published.description,
+            actionUrl: `/releases/${published.id}`,
+            actionText: 'View Release',
+            metadata: { releaseId: published.id, releaseVersion: published.version }
+          }));
+
+          // Create notifications for all users
+          await Promise.all(notifications.map(notification => 
+            storage.createNotification(notification)
+          ));
+
+          // Mark the release as having notifications sent
+          await storage.markReleaseNotificationSent(id);
+
+          console.log(`Sent release notifications to ${users.length} users for release: ${published.title}`);
+        } catch (notificationError) {
+          console.error('Error sending release notifications:', notificationError);
+          // Don't fail the entire request if notifications fail
+        }
+      }
+
+      res.json(published);
+    } catch (error) {
+      console.error('Error publishing release:', error);
+      res.status(500).json({ message: 'Failed to publish release' });
+    }
+  });
+
+  app.post('/api/admin/releases/:id/unpublish', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const currentUser = await storage.getUser(req.session.userId);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: 'Access denied. Admin access required.' });
+      }
+
+      const id = parseInt(req.params.id);
+      const unpublished = await storage.unpublishRelease(id);
+
+      if (!unpublished) {
+        return res.status(404).json({ message: 'Release not found' });
+      }
+
+      res.json(unpublished);
+    } catch (error) {
+      console.error('Error unpublishing release:', error);
+      res.status(500).json({ message: 'Failed to unpublish release' });
+    }
+  });
+
+  app.post('/api/admin/releases/:id/archive', requireAuth, async (req: Request, res: Response) => {
+    try {
+      const currentUser = await storage.getUser(req.session.userId);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: 'Access denied. Admin access required.' });
+      }
+
+      const id = parseInt(req.params.id);
+      const archived = await storage.archiveRelease(id);
+
+      if (!archived) {
+        return res.status(404).json({ message: 'Release not found' });
+      }
+
+      res.json(archived);
+    } catch (error) {
+      console.error('Error archiving release:', error);
+      res.status(500).json({ message: 'Failed to archive release' });
+    }
+  });
+
   return httpServer;
 }

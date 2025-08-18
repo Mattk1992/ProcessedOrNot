@@ -15,7 +15,8 @@ import {
   Info,
   Shield,
   User,
-  Bell
+  Bell,
+  Sparkles
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -254,6 +255,7 @@ export default function NutriDashboard() {
               <Link href="/nutri-dashboard/progress" className="text-muted-foreground hover:text-foreground transition-colors">Progress</Link>
               <Link href="/nutri-dashboard/profile" className="text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
               <Link href="/nutri-dashboard/settings" className="text-muted-foreground hover:text-foreground transition-colors">Settings</Link>
+              <Link href="/nutri-dashboard/releases" className="text-muted-foreground hover:text-foreground transition-colors">Releases</Link>
               <Link href="/nutri-dashboard/site-info" className="text-muted-foreground hover:text-foreground transition-colors">Site Info</Link>
             </nav>
 
@@ -306,6 +308,15 @@ export default function NutriDashboard() {
               <CardContent className="p-4 text-center">
                 <Activity className="w-8 h-8 text-orange-500 mx-auto mb-2" />
                 <p className="font-medium">Settings</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/nutri-dashboard/releases">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <Sparkles className="w-8 h-8 text-purple-500 mx-auto mb-2" />
+                <p className="font-medium">What's New</p>
               </CardContent>
             </Card>
           </Link>

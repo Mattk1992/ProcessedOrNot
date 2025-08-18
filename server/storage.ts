@@ -73,6 +73,9 @@ import {
   scheduleGenHistory,
   type ScheduleGenHistory,
   type InsertScheduleGenHistory,
+  releases,
+  type Release,
+  type InsertRelease,
   aiConfiguration,
   type AiConfiguration,
   type InsertAiConfiguration,
@@ -320,6 +323,23 @@ export interface IStorage {
   getRewardingSystemSettings(): Promise<RewardingSystemSettings>;
   updateRewardingSystemSettings(settings: Partial<InsertRewardingSystemSettings>): Promise<RewardingSystemSettings>;
   initializeDefaultRewardingSystemSettings(): Promise<RewardingSystemSettings>;
+
+  // Release management methods
+  getAllReleases(): Promise<Release[]>;
+  getPublishedReleases(): Promise<Release[]>;
+  getFeaturedReleases(): Promise<Release[]>;
+  getReleaseById(id: number): Promise<Release | undefined>;
+  getReleaseByVersion(version: string): Promise<Release | undefined>;
+  getRecentReleases(limit: number): Promise<Release[]>;
+  createRelease(release: InsertRelease): Promise<Release>;
+  updateRelease(id: number, updates: Partial<InsertRelease>): Promise<Release | undefined>;
+  deleteRelease(id: number): Promise<boolean>;
+  publishRelease(id: number, publishedBy: number): Promise<Release | undefined>;
+  unpublishRelease(id: number): Promise<Release | undefined>;
+  archiveRelease(id: number): Promise<Release | undefined>;
+  getReleasesByType(type: string): Promise<Release[]>;
+  getReleasesByPriority(priority: string): Promise<Release[]>;
+  markReleaseNotificationSent(id: number): Promise<Release | undefined>;
 
   // Calendar Entries methods
   createCalendarEntry(entry: InsertCalendarEntry): Promise<CalendarEntry>;
@@ -3070,6 +3090,150 @@ export class DatabaseStorage implements IStorage {
       modelUsage,
       featureUsage
     };
+  }
+
+  // ==================== Release Management Methods ====================
+
+  async getAllReleases(): Promise<Release[]> {
+    return await db.select().from(releases)
+      .orderBy(desc(releases.createdAt));
+  }
+
+  async getPublishedReleases(): Promise<Release[]> {
+    return await db.select().from(releases)
+      .where(and(
+        eq(releases.status, 'published'),
+        eq(releases.isPublic, true)
+      ))
+      .orderBy(desc(releases.releaseDate));
+  }
+
+  async getFeaturedReleases(): Promise<Release[]> {
+    return await db.select().from(releases)
+      .where(and(
+        eq(releases.status, 'published'),
+        eq(releases.isPublic, true),
+        eq(releases.isFeatured, true)
+      ))
+      .orderBy(desc(releases.releaseDate))
+      .limit(5);
+  }
+
+  async getReleaseById(id: number): Promise<Release | undefined> {
+    const [release] = await db.select().from(releases)
+      .where(eq(releases.id, id))
+      .limit(1);
+    return release || undefined;
+  }
+
+  async getReleaseByVersion(version: string): Promise<Release | undefined> {
+    const [release] = await db.select().from(releases)
+      .where(eq(releases.version, version))
+      .limit(1);
+    return release || undefined;
+  }
+
+  async getRecentReleases(limit: number = 10): Promise<Release[]> {
+    return await db.select().from(releases)
+      .where(and(
+        eq(releases.status, 'published'),
+        eq(releases.isPublic, true)
+      ))
+      .orderBy(desc(releases.releaseDate))
+      .limit(limit);
+  }
+
+  async createRelease(release: InsertRelease): Promise<Release> {
+    const [newRelease] = await db.insert(releases)
+      .values(release)
+      .returning();
+    return newRelease;
+  }
+
+  async updateRelease(id: number, updates: Partial<InsertRelease>): Promise<Release | undefined> {
+    const [updated] = await db
+      .update(releases)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(releases.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteRelease(id: number): Promise<boolean> {
+    const result = await db.delete(releases)
+      .where(eq(releases.id, id));
+    return result.rowCount > 0;
+  }
+
+  async publishRelease(id: number, publishedBy: number): Promise<Release | undefined> {
+    const [updated] = await db
+      .update(releases)
+      .set({
+        status: 'published',
+        publishedAt: new Date(),
+        publishedBy,
+        updatedAt: new Date()
+      })
+      .where(eq(releases.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async unpublishRelease(id: number): Promise<Release | undefined> {
+    const [updated] = await db
+      .update(releases)
+      .set({
+        status: 'draft',
+        updatedAt: new Date()
+      })
+      .where(eq(releases.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async archiveRelease(id: number): Promise<Release | undefined> {
+    const [updated] = await db
+      .update(releases)
+      .set({
+        status: 'archived',
+        updatedAt: new Date()
+      })
+      .where(eq(releases.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async getReleasesByType(type: string): Promise<Release[]> {
+    return await db.select().from(releases)
+      .where(and(
+        eq(releases.type, type),
+        eq(releases.status, 'published'),
+        eq(releases.isPublic, true)
+      ))
+      .orderBy(desc(releases.releaseDate));
+  }
+
+  async getReleasesByPriority(priority: string): Promise<Release[]> {
+    return await db.select().from(releases)
+      .where(and(
+        eq(releases.priority, priority),
+        eq(releases.status, 'published'),
+        eq(releases.isPublic, true)
+      ))
+      .orderBy(desc(releases.releaseDate));
+  }
+
+  async markReleaseNotificationSent(id: number): Promise<Release | undefined> {
+    const [updated] = await db
+      .update(releases)
+      .set({
+        notificationSent: true,
+        notificationSentAt: new Date(),
+        updatedAt: new Date()
+      })
+      .where(eq(releases.id, id))
+      .returning();
+    return updated || undefined;
   }
 }
 

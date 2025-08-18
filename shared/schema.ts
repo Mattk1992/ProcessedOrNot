@@ -636,6 +636,52 @@ export const insertDataChangeRequestSchema = createInsertSchema(dataChangeReques
 export type InsertDataChangeRequest = z.infer<typeof insertDataChangeRequestSchema>;
 export type DataChangeRequest = typeof dataChangeRequests.$inferSelect;
 
+// Releases table - for release notes and announcements
+export const releases = pgTable("releases", {
+  id: serial("id").primaryKey(),
+  version: varchar("version", { length: 50 }).notNull().unique(), // e.g., "v2.1.0", "v1.5.3"
+  title: text("title").notNull(), // Release title
+  description: text("description").notNull(), // Short description
+  content: text("content").notNull(), // Full release notes content (Markdown supported)
+  type: varchar("type", { length: 20 }).notNull().default('feature'), // 'feature', 'bugfix', 'security', 'breaking'
+  priority: varchar("priority", { length: 20 }).notNull().default('normal'), // 'low', 'normal', 'high', 'critical'
+  status: varchar("status", { length: 20 }).notNull().default('draft'), // 'draft', 'published', 'archived'
+  isPublic: boolean("is_public").notNull().default(true), // Whether visible to all users
+  isFeatured: boolean("is_featured").notNull().default(false), // Featured releases shown prominently
+  releaseDate: timestamp("release_date"), // Actual release date
+  publishedAt: timestamp("published_at"), // When the announcement was published
+  publishedBy: integer("published_by").references(() => users.id), // Admin who published
+  
+  // Notification tracking
+  notificationSent: boolean("notification_sent").notNull().default(false),
+  notificationSentAt: timestamp("notification_sent_at"),
+  
+  // Additional metadata
+  tags: text("tags").array(), // Tags for categorization
+  changelogUrl: text("changelog_url"), // External changelog URL
+  downloadUrl: text("download_url"), // Download link if applicable
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  versionIdx: index("releases_version_idx").on(table.version),
+  statusIdx: index("releases_status_idx").on(table.status),
+  typeIdx: index("releases_type_idx").on(table.type),
+  dateIdx: index("releases_date_idx").on(table.releaseDate),
+}));
+
+export const insertReleaseSchema = createInsertSchema(releases).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  notificationSent: true,
+  notificationSentAt: true,
+  publishedAt: true,
+});
+
+export type InsertRelease = z.infer<typeof insertReleaseSchema>;
+export type Release = typeof releases.$inferSelect;
+
 // Blog posts table
 export const blogPosts = pgTable("blog_posts", {
   id: serial("id").primaryKey(),
