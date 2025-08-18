@@ -178,12 +178,12 @@ export default function NutriDashboard() {
 
   const currentGoals = goals || defaultGoals;
   const progress = dailyProgress ? {
-    calories: dailyProgress.totalCalories || 0,
-    fat: dailyProgress.totalFat || 0,
-    carbs: dailyProgress.totalCarbohydrates || 0,
-    proteins: dailyProgress.totalProteins || 0,
-    salt: dailyProgress.totalSalt || 0,
-    fiber: dailyProgress.totalFiber || 0,
+    calories: dailyProgress.calories || 0,
+    fat: dailyProgress.fat || 0,
+    carbs: dailyProgress.carbs || 0,
+    proteins: dailyProgress.proteins || 0,
+    salt: dailyProgress.salt || 0,
+    fiber: dailyProgress.fiber || 0,
     averageProcessingScore: dailyProgress.averageProcessingScore || 0,
     entriesCount: dailyProgress.entriesCount || 0,
   } : {
@@ -510,7 +510,7 @@ export default function NutriDashboard() {
             </Card>
 
             {/* Recent Entries */}
-            {recentEntries && Array.isArray(recentEntries) && recentEntries.length > 0 && (
+            {(recentEntries as any[])?.length > 0 && (
               <Card>
                 <CardHeader>
                   <div className="flex items-center justify-between">
