@@ -17,7 +17,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Scan,
-  Loader2
+  Loader2,
+  Camera,
+  Settings
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -38,6 +40,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import BarcodeScanner from "@/components/barcode-scanner";
+import QuickCameraSettings from "@/components/quick-camera-settings";
 import logoPath from "@assets/ProcessedOrNot-Logo-2-zoom-round-512x512_1749623629090.png";
 
 const diaryEntrySchema = z.object({
@@ -756,24 +759,35 @@ export default function NutriDiary() {
                       </div>
                       
                       {!isProductLookupActive ? (
-                        <Button
-                          onClick={() => setIsProductLookupActive(true)}
-                          disabled={isLookingUpProduct}
-                          className="w-full"
-                          variant="outline"
-                        >
-                          {isLookingUpProduct ? (
-                            <>
-                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                              Looking up product...
-                            </>
-                          ) : (
-                            <>
-                              <Scan className="w-4 h-4 mr-2" />
-                              Start Barcode Scanner
-                            </>
-                          )}
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => setIsProductLookupActive(true)}
+                            disabled={isLookingUpProduct}
+                            className="flex-1 bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white font-semibold py-3 px-4 rounded-2xl transition-all duration-200 flex items-center justify-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+                          >
+                            {isLookingUpProduct ? (
+                              <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                <span className="text-sm">Starting Camera...</span>
+                              </>
+                            ) : (
+                              <>
+                                <Camera className="w-4 h-4" />
+                                <span className="text-sm">Scan with Camera</span>
+                              </>
+                            )}
+                          </Button>
+                          
+                          <QuickCameraSettings>
+                            <Button
+                              variant="outline"
+                              className="border-2 border-primary/20 text-primary hover:bg-primary/10 py-3 px-3 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
+                              title="Quick Camera Settings"
+                            >
+                              <Settings className="w-4 h-4" />
+                            </Button>
+                          </QuickCameraSettings>
+                        </div>
                       ) : (
                         <div className="space-y-4">
                           <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
