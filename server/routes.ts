@@ -2739,11 +2739,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const userId = req.session.userId;
-      const entry = { ...req.body, userId };
       
-      const created = await storage.createDiaryEntry(entry);
+      // Validate and transform data properly like the working endpoint
+      const validatedData = insertDiaryEntrySchema.parse({
+        ...req.body,
+        userId: userId,
+        consumedAt: req.body.consumedAt ? new Date(req.body.consumedAt) : new Date(),
+      });
+      
+      console.log("Creating diary entry with validated data:", validatedData);
+      const created = await storage.createDiaryEntry(validatedData);
       res.status(201).json(created);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        console.error("Diary entry validation error:", error.errors);
+        console.error("Request body:", req.body);
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors,
+          receivedData: req.body
+        });
+      }
       console.error("Error creating diary entry:", error);
       res.status(500).json({ message: "Failed to create diary entry" });
     }
