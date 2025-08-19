@@ -100,6 +100,7 @@ export interface IStorage {
   createUser(user: RegisterUser): Promise<User>;
   updateUser(id: number, updates: Partial<InsertUser>): Promise<User | undefined>;
   verifyUserCredentials(username: string, password: string): Promise<User | null>;
+  changePassword(userId: number, currentPassword: string, newPassword: string): Promise<boolean>;
   
   // Password reset methods
   setPasswordResetToken(email: string, token: string): Promise<boolean>;
@@ -527,6 +528,29 @@ export class DatabaseStorage implements IStorage {
     await this.updateUser(user.id, { lastLoginAt: new Date() });
     
     return user;
+  }
+
+  async changePassword(userId: number, currentPassword: string, newPassword: string): Promise<boolean> {
+    const user = await this.getUserById(userId);
+    if (!user) return false;
+    
+    // Verify current password
+    const isValidPassword = await verifyPassword(currentPassword, user.passwordHash);
+    if (!isValidPassword) return false;
+    
+    // Hash new password
+    const hashedPassword = await hashPassword(newPassword);
+    
+    // Update password
+    const result = await db
+      .update(users)
+      .set({
+        passwordHash: hashedPassword,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId));
+    
+    return (result.rowCount ?? 0) > 0;
   }
 
   // Password reset methods

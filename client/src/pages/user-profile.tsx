@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import ChangePasswordDialog from "@/components/change-password-dialog";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { 
@@ -536,17 +537,20 @@ export default function UserProfile() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2">
-                <Button variant="outline" className="justify-start">
-                  <Mail className="w-4 h-4 mr-2" />
-                  Change Password
-                </Button>
+                <ChangePasswordDialog>
+                  <Button variant="outline" className="justify-start">
+                    <Mail className="w-4 h-4 mr-2" />
+                    Change Password
+                  </Button>
+                </ChangePasswordDialog>
                 <Button variant="outline" className="justify-start">
                   <Shield className="w-4 h-4 mr-2" />
                   Two-Factor Authentication
                 </Button>
               </div>
               <p className="text-sm text-muted-foreground mt-4">
-                These features are coming soon. For now, you can change your password by using the "Forgot Password" option on the login page.
+                <strong>Change Password:</strong> Click the button above to securely change your password.<br />
+                <strong>Two-Factor Authentication:</strong> This feature is coming soon for enhanced security.
               </p>
             </CardContent>
           </Card>

@@ -414,6 +414,18 @@ export const resetPasswordSchema = z.object({
   path: ["confirmPassword"],
 });
 
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z.string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, 
+      "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character"),
+  confirmPassword: z.string(),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
   createdAt: true,
@@ -424,6 +436,7 @@ export type RegisterUser = z.infer<typeof registerUserSchema>;
 export type LoginUser = z.infer<typeof loginUserSchema>;
 export type ForgotPassword = z.infer<typeof forgotPasswordSchema>;
 export type ResetPassword = z.infer<typeof resetPasswordSchema>;
+export type ChangePassword = z.infer<typeof changePasswordSchema>;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 

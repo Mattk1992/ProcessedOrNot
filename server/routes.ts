@@ -13,11 +13,13 @@ import {
   loginUserSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  changePasswordSchema,
   insertDiaryEntrySchema,
   type RegisterUser,
   type LoginUser,
   type ForgotPassword,
   type ResetPassword,
+  type ChangePassword,
   type InsertSearchHistory,
   type InsertDiaryEntry
 } from "@shared/schema";
@@ -505,6 +507,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       console.error("Reset password error:", error);
       res.status(500).json({ message: "Password reset failed" });
+    }
+  });
+
+  // Change password endpoint
+  app.post("/api/auth/change-password", requireAuth, async (req: any, res) => {
+    try {
+      const validatedData = changePasswordSchema.parse(req.body);
+      
+      const success = await storage.changePassword(
+        req.session.userId!,
+        validatedData.currentPassword,
+        validatedData.newPassword
+      );
+      
+      if (!success) {
+        return res.status(400).json({ 
+          message: "Current password is incorrect"
+        });
+      }
+
+      res.json({ 
+        message: "Password changed successfully"
+      });
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors
+        });
+      }
+      console.error("Change password error:", error);
+      res.status(500).json({ message: "Password change failed" });
     }
   });
 
