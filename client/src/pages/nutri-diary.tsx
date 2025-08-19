@@ -337,12 +337,13 @@ export default function NutriDiary() {
     enabled: isAuthenticated,
   });
 
-  // Product lookup function
+  // Product lookup function with cascading database fallback
   const handleProductLookup = async (input: string) => {
     setIsLookingUpProduct(true);
     setProductLookupError("");
     
     try {
+      // Use the cascading database fallback system
       const response = await fetch(`/api/products/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -355,8 +356,10 @@ export default function NutriDiary() {
       
       const data = await response.json();
       
-      if (data.product) {
-        const product = data.product;
+      if (data && data.productName) {
+        // Product found in cascading database system - auto-fill Manual Entry tab
+        const product = data;
+        
         // Populate form with product data
         form.setValue("productBarcode", input || "");
         form.setValue("productName", product.productName || "");
@@ -367,36 +370,99 @@ export default function NutriDiary() {
         form.setValue("glycemicIndex", product.glycemicIndex || undefined);
         form.setValue("glycemicLoad", product.glycemicLoad || undefined);
         
-        // Extract nutritional data from nutriments
+        // Extract nutritional data from nutriments object
         if (product.nutriments) {
           const nutriments = product.nutriments;
-          form.setValue("calories", nutriments.energy_kcal || nutriments['energy-kcal'] || 0);
-          form.setValue("fat", nutriments.fat || 0);
-          form.setValue("saturatedFat", nutriments.saturated_fat || nutriments['saturated-fat'] || 0);
-          form.setValue("carbohydrates", nutriments.carbohydrates || 0);
-          form.setValue("sugars", nutriments.sugars || 0);
-          form.setValue("proteins", nutriments.proteins || 0);
-          form.setValue("salt", nutriments.salt || 0);
-          form.setValue("fiber", nutriments.fiber || 0);
+          form.setValue("calories", 
+            nutriments.energy_kcal || 
+            nutriments['energy-kcal'] || 
+            nutriments.energy_kcal_100g || 
+            nutriments['energy-kcal_100g'] || 
+            0);
+          form.setValue("fat", 
+            nutriments.fat || 
+            nutriments.fat_100g || 
+            0);
+          form.setValue("saturatedFat", 
+            nutriments.saturated_fat || 
+            nutriments['saturated-fat'] || 
+            nutriments.saturated_fat_100g || 
+            nutriments['saturated-fat_100g'] || 
+            0);
+          form.setValue("carbohydrates", 
+            nutriments.carbohydrates || 
+            nutriments.carbohydrates_100g || 
+            0);
+          form.setValue("sugars", 
+            nutriments.sugars || 
+            nutriments.sugars_100g || 
+            0);
+          form.setValue("proteins", 
+            nutriments.proteins || 
+            nutriments.proteins_100g || 
+            0);
+          form.setValue("salt", 
+            nutriments.salt || 
+            nutriments.salt_100g || 
+            nutriments.sodium || 
+            nutriments.sodium_100g || 
+            0);
+          form.setValue("fiber", 
+            nutriments.fiber || 
+            nutriments.fiber_100g || 
+            nutriments.fibre || 
+            nutriments.fibre_100g || 
+            0);
         }
         
+        // Success message with database source
+        const source = data.lookupSource || data.source || "Cascading Database System";
         toast({
           title: "Product Found",
-          description: `Found ${product.productName} from ${data.source}`,
+          description: `Found "${product.productName}" from ${source}. Form auto-filled in Manual Entry tab.`,
+          duration: 5000,
         });
         
+        // Switch to Manual Entry tab and deactivate scanner
         setIsProductLookupActive(false);
+        
+        // Auto-switch to manual entry tab to show the filled form
+        const manualTabTrigger = document.querySelector('[value="manual"]') as HTMLElement;
+        if (manualTabTrigger) {
+          manualTabTrigger.click();
+        }
+        
       } else {
-        const errorMsg = data.error || "Product not found in our databases";
+        // Product not found in any database - show helpful error
+        const errorMsg = data?.error || "Product not found in any of our food databases";
         setProductLookupError(errorMsg);
         toast({
           title: "Product Not Found",
-          description: "This product isn't in our databases yet. You can add it manually below.",
+          description: "This product isn't in our databases yet. Please fill in the details manually in the Manual Entry tab.",
           variant: "default",
+          duration: 6000,
         });
+        
+        // Auto-switch to manual entry tab for user to add manually
+        const manualTabTrigger = document.querySelector('[value="manual"]') as HTMLElement;
+        if (manualTabTrigger) {
+          manualTabTrigger.click();
+        }
+        
+        // Pre-fill barcode if it was scanned
+        if (input && /^[0-9]{8,14}$/.test(input.trim())) {
+          form.setValue("productBarcode", input);
+        }
       }
     } catch (error: any) {
-      setProductLookupError(error.message || "Failed to lookup product");
+      const errorMsg = error.message || "Failed to lookup product";
+      setProductLookupError(errorMsg);
+      toast({
+        title: "Lookup Failed",
+        description: "Unable to search databases. Please try again or add the product manually.",
+        variant: "destructive",
+        duration: 6000,
+      });
     } finally {
       setIsLookingUpProduct(false);
     }
@@ -631,6 +697,15 @@ export default function NutriDiary() {
                         </Button>
                       ) : (
                         <div className="space-y-4">
+                          <div className="p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md">
+                            <p className="text-sm text-blue-700 dark:text-blue-300 font-medium mb-1">
+                              Cascading Database Search Active
+                            </p>
+                            <p className="text-xs text-blue-600 dark:text-blue-400">
+                              Scanning through USDA, OpenFoodFacts, and 20+ food databases for the most accurate product data.
+                            </p>
+                          </div>
+                          
                           <BarcodeScanner
                             onScan={handleProductLookup}
                             isLoading={isLookingUpProduct}
@@ -650,28 +725,44 @@ export default function NutriDiary() {
                       )}
                       
                       {productLookupError && (
-                        <div className="p-3 bg-muted/50 border border-border rounded-md">
-                          <p className="text-sm text-muted-foreground">{productLookupError}</p>
-                          <div className="flex gap-2 mt-2">
+                        <div className="p-3 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-md">
+                          <div className="flex items-start gap-2">
+                            <AlertCircle className="w-4 h-4 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <p className="text-sm text-orange-700 dark:text-orange-300 font-medium">
+                                Product Not Found in Databases
+                              </p>
+                              <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                                Searched through all available food databases but couldn't find this product.
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2 mt-3">
                             <Button
                               onClick={() => {
                                 setProductLookupError("");
-                                // Switch to manual entry tab
-                                const manualTab = document.querySelector('[value="manual"]') as HTMLElement;
-                                manualTab?.click();
+                                setIsProductLookupActive(true);
                               }}
                               size="sm"
-                              className="h-auto py-1"
+                              variant="outline"
+                              className="text-orange-700 border-orange-300 hover:bg-orange-100"
                             >
-                              Enter Manually
+                              <Scan className="w-3 h-3 mr-1" />
+                              Try Again
                             </Button>
                             <Button
-                              onClick={() => setProductLookupError("")}
-                              variant="outline"
+                              onClick={() => {
+                                setProductLookupError("");
+                                setIsProductLookupActive(false);
+                                // Switch to manual entry
+                                const manualTab = document.querySelector('[value="manual"]') as HTMLElement;
+                                if (manualTab) manualTab.click();
+                              }}
                               size="sm"
-                              className="h-auto py-1"
+                              className="bg-orange-600 hover:bg-orange-700"
                             >
-                              Try Again
+                              <Edit3 className="w-3 h-3 mr-1" />
+                              Add Manually
                             </Button>
                           </div>
                         </div>
@@ -682,19 +773,48 @@ export default function NutriDiary() {
                   <TabsContent value="manual">
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="productName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Product Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Greek Yogurt" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                        {/* Auto-fill indicator */}
+                        {form.watch("productBarcode") && (
+                          <div className="p-3 bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800 rounded-md">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                              <p className="text-sm text-green-700 dark:text-green-300 font-medium">
+                                Form auto-filled from cascading database search
+                              </p>
+                            </div>
+                            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+                              Product data populated automatically. Review and adjust as needed.
+                            </p>
+                          </div>
+                        )}
+                        
+                        <FormField
+                          control={form.control}
+                          name="productBarcode"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Barcode (optional)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., 1234567890123" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <FormField
+                          control={form.control}
+                          name="productName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Product Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., Greek Yogurt" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                     
                     <FormField
                       control={form.control}
