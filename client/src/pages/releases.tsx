@@ -172,22 +172,6 @@ export default function ReleasesPage() {
       {/* Header */}
       <header className="backdrop-blur-md bg-background/80 border-b border-border/50 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-3">
-              <img src={logoPath} alt="ProcessedOrNot Scanner" className="w-10 h-10 rounded-full" />
-              <div className="hidden sm:block">
-                <h1 className="text-xl font-bold gradient-text flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-purple-500" />
-                  What's New
-                </h1>
-                <p className="text-xs text-muted-foreground">Discover the latest features and improvements</p>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <LanguageSwitcher />
-              <HeaderDropdown />
-            </div>
-          </div>
         </div>
       </header>
 
