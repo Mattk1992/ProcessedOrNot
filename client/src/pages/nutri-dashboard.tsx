@@ -151,8 +151,11 @@ export default function NutriDashboard() {
 
   // Dashboard is now available to all authenticated users
 
+  // Use user's dailyCaloriesGoal from their profile if available, otherwise use goals API
+  const userCaloriesGoal = user?.dailyCaloriesGoal || goals?.dailyCalories || 2000;
+
   const defaultGoals: NutritionGoals = {
-    dailyCalories: 2000,
+    dailyCalories: userCaloriesGoal, // Use user's preference from Nutrition & Diet Preferences
     dailyFat: 65,
     dailyCarbs: 300,
     dailyProteins: 50,
@@ -161,7 +164,10 @@ export default function NutriDashboard() {
     maxProcessingScore: 5,
   };
 
-  const currentGoals = goals || defaultGoals;
+  const currentGoals = goals ? {
+    ...goals,
+    dailyCalories: userCaloriesGoal, // Always prioritize user's Daily Calories Goal from profile
+  } : defaultGoals;
   const progress = dailyProgress ? {
     calories: dailyProgress.calories || 0,
     fat: dailyProgress.fat || 0,
