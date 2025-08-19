@@ -10,7 +10,11 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Settings, Bot, ArrowLeft, Save, Sparkles, Brain, Zap, Cpu, Camera, Trash2, AlertTriangle, ExternalLink } from "lucide-react";
+import { Settings, Bot, ArrowLeft, Save, Sparkles, Brain, Zap, Cpu, Camera, Trash2, AlertTriangle, ExternalLink, Bell, Search, Video } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
+import QuickCameraSettings from "@/components/quick-camera-settings";
+import SearchEngineSettings from "@/components/search-engine-settings";
 import { Link, useLocation } from "wouter";
 import HeaderDropdown from "@/components/header-dropdown";
 import LanguageSwitcher from "@/components/language-switcher";
@@ -97,6 +101,7 @@ export default function SettingsPage() {
   const queryClient = useQueryClient();
   const [selectedAIProvider, setSelectedAIProvider] = useState<string>("");
   const [selectedBarcodeScannerSystem, setSelectedBarcodeScannerSystem] = useState<string>("");
+  const [activeTab, setActiveTab] = useState<string>("notifications");
   
   // Check if user is admin or paid user
   const isAdmin = user?.accountType === 'Admin';
@@ -243,10 +248,43 @@ export default function SettingsPage() {
           </Badge>
         </div>
 
-        {/* AI Provider Settings - Admin/Paid only */}
-        {(isAdmin || isPaidUser) && (
-          <div className="max-w-4xl">
-            <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+        {/* Settings Tabs */}
+        <div className="max-w-4xl">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className={`grid w-full ${(isAdmin || isPaidUser) ? 'grid-cols-2 lg:grid-cols-5' : 'grid-cols-2 lg:grid-cols-4'}`}>
+              {(isAdmin || isPaidUser) && (
+                <TabsTrigger value="ai-settings" className="flex items-center gap-2">
+                  <Brain className="h-4 w-4" />
+                  <span className="hidden sm:inline">AI Settings</span>
+                  <span className="sm:hidden">AI</span>
+                </TabsTrigger>
+              )}
+              <TabsTrigger value="notifications" className="flex items-center gap-2">
+                <Bell className="h-4 w-4" />
+                <span className="hidden sm:inline">Notifications</span>
+                <span className="sm:hidden">Notif</span>
+              </TabsTrigger>
+              <TabsTrigger value="camera" className="flex items-center gap-2">
+                <Video className="h-4 w-4" />
+                <span className="hidden sm:inline">Camera</span>
+                <span className="sm:hidden">Cam</span>
+              </TabsTrigger>
+              <TabsTrigger value="search-engine" className="flex items-center gap-2">
+                <Search className="h-4 w-4" />
+                <span className="hidden sm:inline">Search Engine</span>
+                <span className="sm:hidden">Search</span>
+              </TabsTrigger>
+              <TabsTrigger value="account" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Account</span>
+                <span className="sm:hidden">Acct</span>
+              </TabsTrigger>
+            </TabsList>
+
+            {/* AI Settings Tab */}
+            {(isAdmin || isPaidUser) && (
+              <TabsContent value="ai-settings" className="space-y-6 mt-6">
+                <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center gap-2 text-xl">
                 <Zap className="h-6 w-6 text-yellow-500" />
@@ -378,15 +416,11 @@ export default function SettingsPage() {
                   )}
                 </>
               )}
-            </CardContent>
-          </Card>
-        </div>
-        )}
+                </CardContent>
+                </Card>
 
-        {/* Barcode Scanner System Settings Card - Admin/Paid only */}
-        {(isAdmin || isPaidUser) && (
-          <div className="max-w-4xl mt-6">
-            <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+                {/* Barcode Scanner System Settings */}
+                <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Camera className="h-5 w-5" />
@@ -480,13 +514,142 @@ export default function SettingsPage() {
                   </div>
                 </>
               )}
-            </CardContent>
-          </Card>
-        </div>
-        )}
+                </CardContent>
+                </Card>
+              </TabsContent>
+            )}
 
-        {/* Account Management Settings */}
-        <div className="max-w-4xl mt-6">
+            {/* Notifications Settings Tab */}
+            <TabsContent value="notifications" className="space-y-6 mt-6">
+              <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="h-5 w-5" />
+                    Notification Settings
+                  </CardTitle>
+                  <CardDescription>
+                    Manage your notification preferences and alerts
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="email-notifications">Email Notifications</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receive email updates about your account and activity
+                        </p>
+                      </div>
+                      <Switch id="email-notifications" />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="product-alerts">Product Alerts</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Get notified about product recalls and safety alerts
+                        </p>
+                      </div>
+                      <Switch id="product-alerts" defaultChecked />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="nutrition-reminders">Nutrition Reminders</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receive daily nutrition tips and meal reminders
+                        </p>
+                      </div>
+                      <Switch id="nutrition-reminders" />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="weekly-reports">Weekly Reports</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Get weekly summaries of your nutrition progress
+                        </p>
+                      </div>
+                      <Switch id="weekly-reports" />
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="marketing-emails">Marketing Communications</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Receive updates about new features and promotions
+                        </p>
+                      </div>
+                      <Switch id="marketing-emails" />
+                    </div>
+                  </div>
+                  
+                  <div className="pt-4">
+                    <Button className="w-full sm:w-auto">
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Notification Settings
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Camera Settings Tab */}
+            <TabsContent value="camera" className="space-y-6 mt-6">
+              <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Video className="h-5 w-5" />
+                    Camera Settings
+                  </CardTitle>
+                  <CardDescription>
+                    Configure camera and barcode scanning preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <QuickCameraSettings>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Camera className="h-4 w-4 mr-2" />
+                      Configure Camera Settings
+                    </Button>
+                  </QuickCameraSettings>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Search Engine Settings Tab */}
+            <TabsContent value="search-engine" className="space-y-6 mt-6">
+              <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Search className="h-5 w-5" />
+                    Search Engine Settings
+                  </CardTitle>
+                  <CardDescription>
+                    Customize search result visibility and content preferences
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <SearchEngineSettings>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Settings className="h-4 w-4 mr-2" />
+                      Configure Search Settings
+                    </Button>
+                  </SearchEngineSettings>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Account Management Tab */}
+            <TabsContent value="account" className="space-y-6 mt-6">
           <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
@@ -578,7 +741,9 @@ export default function SettingsPage() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
