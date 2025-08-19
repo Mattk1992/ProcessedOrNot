@@ -364,12 +364,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update user profile endpoint
   app.put("/api/auth/profile", requireAuth, async (req, res) => {
     try {
-      const { firstName, lastName, email } = req.body;
+      const { firstName, lastName, email, dailyCaloriesGoal } = req.body;
       const userId = req.session.userId;
 
       // Basic validation
       if (email && !email.includes('@')) {
         return res.status(400).json({ message: "Invalid email format" });
+      }
+      
+      if (dailyCaloriesGoal !== undefined && (typeof dailyCaloriesGoal !== 'number' || dailyCaloriesGoal < 1200 || dailyCaloriesGoal > 5000)) {
+        return res.status(400).json({ message: "Daily calories goal must be between 1200 and 5000" });
       }
 
       // Check if email is already taken by another user
@@ -385,6 +389,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (firstName !== undefined) updateData.firstName = firstName;
       if (lastName !== undefined) updateData.lastName = lastName;
       if (email !== undefined) updateData.email = email;
+      if (dailyCaloriesGoal !== undefined) updateData.dailyCaloriesGoal = dailyCaloriesGoal;
       updateData.updatedAt = new Date();
 
       const updatedUser = await storage.updateUser(userId, updateData);

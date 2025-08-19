@@ -369,6 +369,8 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
   // Add onboarding completion flag
   onboardingCompleted: boolean("onboarding_completed").default(false),
+  // Nutrition & Diet Preferences
+  dailyCaloriesGoal: integer("daily_calories_goal").default(2000),
 });
 
 // User Authentication Schemas

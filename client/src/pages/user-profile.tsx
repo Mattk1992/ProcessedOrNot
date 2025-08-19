@@ -37,6 +37,7 @@ interface UpdateUserData {
   firstName?: string;
   lastName?: string;
   email?: string;
+  dailyCaloriesGoal?: number;
 }
 
 interface OnboardingData {
@@ -97,7 +98,8 @@ export default function UserProfile() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
-    email: ""
+    email: "",
+    dailyCaloriesGoal: 2000
   });
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
   const autoSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -115,7 +117,8 @@ export default function UserProfile() {
       setFormData({
         firstName: user.firstName || "",
         lastName: user.lastName || "",
-        email: user.email || ""
+        email: user.email || "",
+        dailyCaloriesGoal: user.dailyCaloriesGoal || 2000
       });
     }
   }, [user]);
@@ -406,6 +409,26 @@ export default function UserProfile() {
                   ) : (
                     <p className="py-2 px-3 bg-muted rounded-md">
                       {user.email || "Not set"}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="dailyCaloriesGoal">Daily Calories Goal</Label>
+                  <p className="text-sm text-muted-foreground mb-2">Target daily calorie intake</p>
+                  {isEditing ? (
+                    <Input
+                      id="dailyCaloriesGoal"
+                      type="number"
+                      min="1200"
+                      max="5000"
+                      value={formData.dailyCaloriesGoal || ""}
+                      onChange={(e) => setFormData({...formData, dailyCaloriesGoal: parseInt(e.target.value) || 2000})}
+                      placeholder="2000"
+                    />
+                  ) : (
+                    <p className="py-2 px-3 bg-muted rounded-md">
+                      {formData.dailyCaloriesGoal ? `${formData.dailyCaloriesGoal} calories` : "2000 calories (default)"}
                     </p>
                   )}
                 </div>
@@ -1094,6 +1117,8 @@ export default function UserProfile() {
                     )}
                   </div>
                 </div>
+
+
               </CardContent>
             </Card>
           </TabsContent>
