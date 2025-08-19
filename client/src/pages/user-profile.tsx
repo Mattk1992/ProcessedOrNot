@@ -250,7 +250,14 @@ export default function UserProfile() {
 
   const handleOnboardingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    // Save onboarding data
     updateOnboardingMutation.mutate(onboardingData);
+    // Also save profile data (including dailyCaloriesGoal) if it has changed
+    if (formData.dailyCaloriesGoal !== user.dailyCaloriesGoal) {
+      updateProfileMutation.mutate({
+        dailyCaloriesGoal: formData.dailyCaloriesGoal
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -442,25 +449,7 @@ export default function UserProfile() {
                   )}
                 </div>
 
-                <div>
-                  <Label htmlFor="dailyCaloriesGoal">Daily Calories Goal</Label>
-                  <p className="text-sm text-muted-foreground mb-2">Target daily calorie intake</p>
-                  {isEditing ? (
-                    <Input
-                      id="dailyCaloriesGoal"
-                      type="number"
-                      min="1200"
-                      max="5000"
-                      value={formData.dailyCaloriesGoal || ""}
-                      onChange={(e) => setFormData({...formData, dailyCaloriesGoal: parseInt(e.target.value) || 2000})}
-                      placeholder="2000"
-                    />
-                  ) : (
-                    <p className="py-2 px-3 bg-muted rounded-md">
-                      {formData.dailyCaloriesGoal ? `${formData.dailyCaloriesGoal} calories` : "2000 calories (default)"}
-                    </p>
-                  )}
-                </div>
+
 
                 <div className="flex gap-2 pt-4">
                   {isEditing ? (
@@ -1038,6 +1027,26 @@ export default function UserProfile() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                <div>
+                  <Label htmlFor="dailyCaloriesGoal">Daily Calories Goal</Label>
+                  <p className="text-sm text-muted-foreground mb-2">Target daily calorie intake</p>
+                  {isEditingOnboarding ? (
+                    <Input
+                      id="dailyCaloriesGoal"
+                      type="number"
+                      min="1200"
+                      max="5000"
+                      value={formData.dailyCaloriesGoal || ""}
+                      onChange={(e) => setFormData({...formData, dailyCaloriesGoal: parseInt(e.target.value) || 2000})}
+                      placeholder="2000"
+                    />
+                  ) : (
+                    <p className="py-2 px-3 bg-muted rounded-md">
+                      {formData.dailyCaloriesGoal ? `${formData.dailyCaloriesGoal} calories` : "2000 calories (default)"}
+                    </p>
+                  )}
+                </div>
+
                 <div>
                   <Label>Dietary Restrictions</Label>
                   <p className="text-sm text-muted-foreground mb-2">Select all that apply</p>
