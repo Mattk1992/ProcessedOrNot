@@ -41,6 +41,7 @@ import NutriProfile from "@/pages/nutri-profile";
 import NutritionCalendar from "@/pages/nutrition-calendar";
 import UserProfile from "@/pages/user-profile";
 import PublicUserProfile from "@/pages/public-user-profile";
+import LevelingPage from "@/pages/leveling";
 import Releases from "@/pages/releases";
 
 import Onboarding from "@/pages/onboarding";
@@ -133,6 +134,8 @@ function Router() {
         <Route path="/auth" component={Auth} />
         <Route path="/profile" component={UserProfile} />
         <Route path="/user/:id" component={PublicUserProfile} />
+        <Route path="/leveling" component={LevelingPage} />
+        <Route path="/levels" component={LevelingPage} />
         <Route path="/onboarding" component={Onboarding} />
         <Route path="/nutri-dashboard/settings" component={Settings} />
         <Route path="/nutri-dashboard/site-info" component={SiteInfo} />
