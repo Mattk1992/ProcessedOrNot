@@ -691,6 +691,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get public user profile by ID
+  app.get("/api/users/:id", async (req: Request, res: Response) => {
+    try {
+      const userId = parseInt(req.params.id, 10);
+      if (isNaN(userId)) {
+        return res.status(400).json({ message: "Invalid user ID" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Return only safe, public information
+      const publicUser = {
+        id: user.id,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        accountType: user.accountType,
+        createdAt: user.createdAt
+      };
+
+      res.json(publicUser);
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "Failed to get user profile" });
+    }
+  });
+
   app.get("/api/admin/products/:barcode", requireAuth, async (req: any, res) => {
     try {
       // Check if current user is admin
