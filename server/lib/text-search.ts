@@ -53,7 +53,7 @@ For example:
 - "Chocolate" → ["chocolate", "cocoa", "dark chocolate", "milk chocolate", "chocolate bar"]`;
 
     const keywordResponse = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: "gpt-4o-mini", // Using ChatGPT Nano model for cost-effective keyword optimization
       messages: [
         { role: "system", content: "You are a food search optimization specialist. Help users find the best search terms for food databases." },
         { role: "user", content: keywordPrompt }
@@ -96,7 +96,7 @@ Provide realistic nutritional values based on typical products of this type. Thi
     
     try {
       const productResponse = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: "gpt-4o-mini", // Using ChatGPT Nano model for cost-effective nutritional analysis
         messages: [
           { role: "system", content: "You are a nutrition expert. Provide realistic nutritional information for typical food products based on established nutritional databases." },
           { role: "user", content: productAnalysisPrompt }

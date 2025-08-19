@@ -129,6 +129,7 @@ export default function NutriDiary() {
   const [isProductLookupActive, setIsProductLookupActive] = useState(false);
   const [isLookingUpProduct, setIsLookingUpProduct] = useState(false);
   const [productLookupError, setProductLookupError] = useState<string>("");
+  const [textSearchQuery, setTextSearchQuery] = useState<string>("");
 
   // Date navigation functions
   const goToPreviousDay = () => {
@@ -416,15 +417,18 @@ export default function NutriDiary() {
         }
         
         // Success message with database source
-        const source = data.lookupSource || data.source || "Cascading Database System";
+        const source = data.lookupSource || data.source || "AI Text Search";
+        const searchType = /^[0-9]{8,14}$/.test(input.trim()) ? "Barcode" : "Text Search";
+        
         toast({
           title: "Product Found",
-          description: `Found "${product.productName}" from ${source}. Form auto-filled in Manual Entry tab.`,
+          description: `Found "${product.productName}" via ${searchType} (${source}). Form auto-filled in Manual Entry tab.`,
           duration: 5000,
         });
         
         // Switch to Manual Entry tab and deactivate scanner
         setIsProductLookupActive(false);
+        setTextSearchQuery(""); // Clear search query after successful lookup
         
         // Auto-switch to manual entry tab to show the filled form
         const manualTabTrigger = document.querySelector('[value="manual"]') as HTMLElement;
@@ -449,10 +453,15 @@ export default function NutriDiary() {
           manualTabTrigger.click();
         }
         
-        // Pre-fill barcode if it was scanned
+        // Pre-fill barcode if it was scanned, otherwise pre-fill product name if it was a text search
         if (input && /^[0-9]{8,14}$/.test(input.trim())) {
           form.setValue("productBarcode", input);
+        } else if (input && input.trim()) {
+          form.setValue("productName", input.trim());
         }
+        
+        // Clear search query
+        setTextSearchQuery("");
       }
     } catch (error: any) {
       const errorMsg = error.message || "Failed to lookup product";
@@ -670,11 +679,81 @@ export default function NutriDiary() {
                   </TabsList>
                   
                   <TabsContent value="scan" className="space-y-4">
-                    <div className="text-center space-y-4">
-                      <h3 className="font-semibold">Scan Product Barcode</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Scan a barcode to automatically fill in product information
-                      </p>
+                    <div className="space-y-4">
+                      <div className="text-center">
+                        <h3 className="font-semibold">Product Search</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Scan a barcode or search by product name
+                        </p>
+                      </div>
+                      
+                      {/* Text Search Section */}
+                      <div className="space-y-3">
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Search by product name (e.g., Greek Yogurt, Apple, Coca Cola)"
+                            value={textSearchQuery}
+                            onChange={(e) => setTextSearchQuery(e.target.value)}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && textSearchQuery.trim()) {
+                                handleProductLookup(textSearchQuery.trim());
+                              }
+                            }}
+                            className="flex-1"
+                            disabled={isLookingUpProduct}
+                          />
+                          <Button
+                            onClick={() => textSearchQuery.trim() && handleProductLookup(textSearchQuery.trim())}
+                            disabled={isLookingUpProduct || !textSearchQuery.trim()}
+                            size="default"
+                          >
+                            {isLookingUpProduct ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Search className="w-4 h-4" />
+                            )}
+                          </Button>
+                          {textSearchQuery && !isLookingUpProduct && (
+                            <Button
+                              onClick={() => setTextSearchQuery("")}
+                              variant="outline"
+                              size="default"
+                            >
+                              ✕
+                            </Button>
+                          )}
+                        </div>
+                        
+                        {isLookingUpProduct && textSearchQuery && (
+                          <div className="p-3 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800 rounded-md">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
+                              <p className="text-sm text-purple-700 dark:text-purple-300 font-medium">
+                                AI-Powered Text Search Active
+                              </p>
+                            </div>
+                            <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                              🧠 Step 1: Optimizing search keywords with ChatGPT Nano<br/>
+                              📊 Step 2: Generating realistic nutritional data<br/>  
+                              📝 Step 3: Auto-filling Manual Entry form
+                            </p>
+                          </div>
+                        )}
+                        
+                        {!isLookingUpProduct && textSearchQuery && (
+                          <div className="p-2 bg-muted/50 border rounded-md">
+                            <p className="text-xs text-muted-foreground">
+                              AI Text Search will analyze "{textSearchQuery}" to generate optimized keywords and nutritional data
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-px bg-border"></div>
+                        <span className="text-xs text-muted-foreground uppercase">OR</span>
+                        <div className="flex-1 h-px bg-border"></div>
+                      </div>
                       
                       {!isProductLookupActive ? (
                         <Button
