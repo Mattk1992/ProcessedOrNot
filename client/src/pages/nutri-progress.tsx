@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { 
   TrendingUp, 
@@ -20,6 +20,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 import HeaderDropdown from "@/components/header-dropdown";
 import LanguageSwitcher from "@/components/language-switcher";
 import { useAuth } from "@/hooks/useAuth";
@@ -44,6 +50,7 @@ interface WeightEntry {
   muscleMass?: number;
   recordedAt: string;
   notes?: string;
+  createdAt: string;
 }
 
 interface DailyStats {
@@ -60,9 +67,16 @@ interface DailyStats {
 export default function NutriProgress() {
   const { user, isAuthenticated } = useAuth();
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [timeRange, setTimeRange] = useState("7"); // days
   const [progressType, setProgressType] = useState("weight");
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isWeightDialogOpen, setIsWeightDialogOpen] = useState(false);
+  const [weightFormData, setWeightFormData] = useState({
+    weight: "",
+    notes: "",
+    recordedAt: new Date().toISOString().split('T')[0]
+  });
 
   // Fetch progress statistics
   const { data: progressStats } = useQuery<ProgressStats>({
@@ -72,7 +86,7 @@ export default function NutriProgress() {
 
   // Fetch weight entries
   const { data: weightEntries } = useQuery<WeightEntry[]>({
-    queryKey: ["/api/nutrition/weight-entries", timeRange],
+    queryKey: ["/api/weight-entries"],
     enabled: isAuthenticated,
   });
 
@@ -81,6 +95,66 @@ export default function NutriProgress() {
     queryKey: ["/api/nutrition/daily-stats", selectedDate],
     enabled: isAuthenticated,
   });
+
+  // Create weight entry mutation
+  const createWeightEntryMutation = useMutation({
+    mutationFn: async (data: { weight: number; notes?: string; recordedAt?: string }) => {
+      const response = await apiRequest("POST", "/api/weight-entries", data);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Weight Entry Added",
+        description: "Your weight has been recorded successfully.",
+      });
+      setIsWeightDialogOpen(false);
+      setWeightFormData({
+        weight: "",
+        notes: "",
+        recordedAt: new Date().toISOString().split('T')[0]
+      });
+      // Invalidate weight entries to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["/api/weight-entries"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to add weight entry",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleWeightSubmit = () => {
+    if (!weightFormData.weight) {
+      toast({
+        title: "Error",
+        description: "Please enter your weight",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const weight = parseFloat(weightFormData.weight);
+    if (isNaN(weight) || weight <= 0 || weight > 1000) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid weight (1-1000 kg)",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createWeightEntryMutation.mutate({
+      weight: weight,
+      notes: weightFormData.notes || undefined,
+      recordedAt: weightFormData.recordedAt ? new Date(weightFormData.recordedAt).toISOString() : undefined
+    });
+  };
 
   // Authentication check
   if (!isAuthenticated) {
@@ -358,6 +432,9 @@ export default function NutriProgress() {
                           <p className="text-muted-foreground">
                             {new Date(entry.recordedAt).toLocaleDateString()}
                           </p>
+                          {entry.notes && (
+                            <p className="text-xs text-muted-foreground">{entry.notes}</p>
+                          )}
                         </div>
                         {entry.bodyFat && (
                           <Badge variant="outline">
@@ -371,11 +448,70 @@ export default function NutriProgress() {
                   <div className="text-center py-4 text-muted-foreground">
                     <Scale className="w-8 h-8 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">No weight entries yet</p>
-                    <Link href="/nutri-profile">
-                      <Button variant="outline" size="sm" className="mt-2">
-                        Add Weight Entry
-                      </Button>
-                    </Link>
+                    <Dialog open={isWeightDialogOpen} onOpenChange={setIsWeightDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" size="sm" className="mt-2">
+                          Add Weight Entry
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Add Weight Entry</DialogTitle>
+                          <DialogDescription>
+                            Record your current weight to track your progress.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="space-y-4">
+                          <div>
+                            <Label htmlFor="weight">Weight (kg)</Label>
+                            <Input
+                              id="weight"
+                              type="number"
+                              min="1"
+                              max="1000"
+                              step="0.1"
+                              placeholder="70.5"
+                              value={weightFormData.weight}
+                              onChange={(e) => setWeightFormData(prev => ({ ...prev, weight: e.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="recordedAt">Date</Label>
+                            <Input
+                              id="recordedAt"
+                              type="date"
+                              value={weightFormData.recordedAt}
+                              onChange={(e) => setWeightFormData(prev => ({ ...prev, recordedAt: e.target.value }))}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="notes">Notes (optional)</Label>
+                            <Textarea
+                              id="notes"
+                              placeholder="Any notes about this weight entry..."
+                              value={weightFormData.notes}
+                              onChange={(e) => setWeightFormData(prev => ({ ...prev, notes: e.target.value }))}
+                            />
+                          </div>
+                          <div className="flex gap-2 pt-4">
+                            <Button 
+                              onClick={handleWeightSubmit}
+                              disabled={createWeightEntryMutation.isPending}
+                              className="flex-1"
+                            >
+                              {createWeightEntryMutation.isPending ? "Adding..." : "Add Entry"}
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              onClick={() => setIsWeightDialogOpen(false)}
+                              className="flex-1"
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 )}
               </CardContent>
@@ -431,12 +567,71 @@ export default function NutriProgress() {
                   </Button>
                 </Link>
                 
-                <Link href="/nutri-profile">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Scale className="w-4 h-4 mr-2" />
-                    Record Weight
-                  </Button>
-                </Link>
+                <Dialog open={isWeightDialogOpen} onOpenChange={setIsWeightDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                      <Scale className="w-4 h-4 mr-2" />
+                      Record Weight
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Add Weight Entry</DialogTitle>
+                      <DialogDescription>
+                        Record your current weight to track your progress.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="weight-quick">Weight (kg)</Label>
+                        <Input
+                          id="weight-quick"
+                          type="number"
+                          min="1"
+                          max="1000"
+                          step="0.1"
+                          placeholder="70.5"
+                          value={weightFormData.weight}
+                          onChange={(e) => setWeightFormData(prev => ({ ...prev, weight: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="recordedAt-quick">Date</Label>
+                        <Input
+                          id="recordedAt-quick"
+                          type="date"
+                          value={weightFormData.recordedAt}
+                          onChange={(e) => setWeightFormData(prev => ({ ...prev, recordedAt: e.target.value }))}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="notes-quick">Notes (optional)</Label>
+                        <Textarea
+                          id="notes-quick"
+                          placeholder="Any notes about this weight entry..."
+                          value={weightFormData.notes}
+                          onChange={(e) => setWeightFormData(prev => ({ ...prev, notes: e.target.value }))}
+                        />
+                      </div>
+                      <div className="flex gap-2 pt-4">
+                        <Button 
+                          onClick={handleWeightSubmit}
+                          disabled={createWeightEntryMutation.isPending}
+                          className="flex-1"
+                        >
+                          {createWeightEntryMutation.isPending ? "Adding..." : "Add Entry"}
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setIsWeightDialogOpen(false)}
+                          className="flex-1"
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 
                 <Link href="/nutri-profile">
                   <Button variant="outline" className="w-full justify-start">

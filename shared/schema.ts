@@ -1179,3 +1179,34 @@ export const insertUserOnboardingSchema = createInsertSchema(userOnboarding).omi
 
 export type InsertUserOnboarding = z.infer<typeof insertUserOnboardingSchema>;
 export type UserOnboarding = typeof userOnboarding.$inferSelect;
+
+// User Weight Entries table - for tracking weight over time
+export const userWeightEntries = pgTable("user_weight_entries", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  weight: real("weight").notNull(), // weight in kg
+  recordedAt: timestamp("recorded_at").defaultNow().notNull(),
+  notes: text("notes"), // optional notes for the weight entry
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("weight_entries_user_id_idx").on(table.userId),
+  recordedAtIdx: index("weight_entries_recorded_at_idx").on(table.recordedAt),
+}));
+
+export const insertUserWeightEntrySchema = createInsertSchema(userWeightEntries).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  userId: z.number().optional(), // userId is handled by the backend
+  recordedAt: z.union([z.string(), z.date()]).transform((val) => {
+    if (typeof val === 'string') {
+      return new Date(val);
+    }
+    return val;
+  }).optional(),
+});
+
+export type InsertUserWeightEntry = z.infer<typeof insertUserWeightEntrySchema>;
+export type UserWeightEntry = typeof userWeightEntries.$inferSelect;

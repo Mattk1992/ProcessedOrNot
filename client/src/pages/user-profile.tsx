@@ -167,6 +167,26 @@ export default function UserProfile() {
     },
   });
 
+  // Create weight entry mutation
+  const createWeightEntryMutation = useMutation({
+    mutationFn: async (data: { weight: number; notes?: string }) => {
+      const response = await apiRequest("POST", "/api/weight-entries", data);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message);
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      // Invalidate weight entries to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["/api/weight-entries"] });
+    },
+    onError: (error: any) => {
+      console.error("Failed to create weight entry:", error);
+      // Don't show error toast for weight entry creation as it's secondary
+    },
+  });
+
   const updateOnboardingMutation = useMutation({
     mutationFn: async (data: OnboardingData) => {
       const response = await apiRequest("POST", "/api/onboarding", data);
@@ -176,10 +196,19 @@ export default function UserProfile() {
       }
       return await response.json();
     },
-    onSuccess: () => {
+    onSuccess: (result, variables) => {
       setIsSaving(false);
       setLastSaved(new Date());
       setIsEditingOnboarding(false);
+      
+      // If weight was updated and is different from previous, create a weight entry
+      if (variables.weight && existingOnboardingData?.weight !== variables.weight) {
+        createWeightEntryMutation.mutate({
+          weight: variables.weight,
+          notes: "Updated from Basic Information"
+        });
+      }
+      
       // Invalidate onboarding cache to refresh data
       queryClient.invalidateQueries({ queryKey: ["/api/onboarding"] });
     },

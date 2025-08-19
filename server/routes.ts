@@ -3692,6 +3692,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Weight Entry endpoints
+  // Create a new weight entry
+  app.post("/api/weight-entries", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const { insertUserWeightEntrySchema } = await import("@shared/schema");
+      
+      const validatedData = insertUserWeightEntrySchema.parse({
+        ...req.body,
+        userId: userId
+      });
+
+      const weightEntry = await storage.createWeightEntry(validatedData);
+      
+      res.status(201).json({
+        message: "Weight entry created successfully",
+        entry: weightEntry
+      });
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        console.error("Weight entry validation error:", error.errors);
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors
+        });
+      }
+      console.error("Create weight entry error:", error);
+      res.status(500).json({ message: "Failed to create weight entry" });
+    }
+  });
+
+  // Get weight entries for a user
+  app.get("/api/weight-entries", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const entries = await storage.getWeightEntriesByUser(userId);
+      res.json(entries);
+    } catch (error) {
+      console.error("Get weight entries error:", error);
+      res.status(500).json({ message: "Failed to get weight entries" });
+    }
+  });
+
+  // Get latest weight entry for a user
+  app.get("/api/weight-entries/latest", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const entry = await storage.getLatestWeightEntry(userId);
+      res.json(entry || null);
+    } catch (error) {
+      console.error("Get latest weight entry error:", error);
+      res.status(500).json({ message: "Failed to get latest weight entry" });
+    }
+  });
+
+  // Update a weight entry
+  app.put("/api/weight-entries/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const entryId = parseInt(req.params.id);
+      
+      // Verify the entry belongs to the user
+      const existingEntry = await storage.getWeightEntriesByUser(userId);
+      const entryToUpdate = existingEntry.find(entry => entry.id === entryId);
+      
+      if (!entryToUpdate) {
+        return res.status(404).json({ message: "Weight entry not found or unauthorized" });
+      }
+
+      const { insertUserWeightEntrySchema } = await import("@shared/schema");
+      const validatedData = insertUserWeightEntrySchema.partial().parse(req.body);
+
+      const updatedEntry = await storage.updateWeightEntry(entryId, validatedData);
+      
+      if (!updatedEntry) {
+        return res.status(404).json({ message: "Weight entry not found" });
+      }
+      
+      res.json({
+        message: "Weight entry updated successfully",
+        entry: updatedEntry
+      });
+    } catch (error: any) {
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ 
+          message: "Validation error",
+          errors: error.errors
+        });
+      }
+      console.error("Update weight entry error:", error);
+      res.status(500).json({ message: "Failed to update weight entry" });
+    }
+  });
+
+  // Delete a weight entry
+  app.delete("/api/weight-entries/:id", requireAuth, async (req, res) => {
+    try {
+      const userId = req.session.userId!;
+      const entryId = parseInt(req.params.id);
+      
+      const success = await storage.deleteWeightEntry(entryId, userId);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Weight entry not found or unauthorized" });
+      }
+      
+      res.json({ message: "Weight entry deleted successfully" });
+    } catch (error) {
+      console.error("Delete weight entry error:", error);
+      res.status(500).json({ message: "Failed to delete weight entry" });
+    }
+  });
+
   // Add to nutrition diary endpoint
   app.post("/api/nutrition-diary", requireAuth, async (req, res) => {
     try {

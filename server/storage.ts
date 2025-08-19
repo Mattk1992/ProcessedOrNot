@@ -64,6 +64,9 @@ import {
   userOnboarding,
   type UserOnboarding,
   type InsertUserOnboarding,
+  userWeightEntries,
+  type UserWeightEntry,
+  type InsertUserWeightEntry,
   rewardingSystemSettings,
   type RewardingSystemSettings,
   type InsertRewardingSystemSettings,
@@ -373,6 +376,14 @@ export interface IStorage {
     modelUsage: Record<string, number>;
     featureUsage: Record<string, number>;
   }>;
+
+  // User Weight Entry methods
+  createWeightEntry(entry: InsertUserWeightEntry): Promise<UserWeightEntry>;
+  getWeightEntriesByUser(userId: number): Promise<UserWeightEntry[]>;
+  getLatestWeightEntry(userId: number): Promise<UserWeightEntry | undefined>;
+  updateWeightEntry(id: number, updates: Partial<InsertUserWeightEntry>): Promise<UserWeightEntry | undefined>;
+  deleteWeightEntry(id: number, userId: number): Promise<boolean>;
+  updateUserCurrentWeight(userId: number, weight: number): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3287,6 +3298,94 @@ export class DatabaseStorage implements IStorage {
       .where(eq(releases.id, id))
       .returning();
     return updated || undefined;
+  }
+
+  // Weight Entry methods
+  async createWeightEntry(entry: InsertUserWeightEntry): Promise<UserWeightEntry> {
+    const entryWithUserId = {
+      ...entry,
+      userId: entry.userId!
+    };
+    
+    const [weightEntry] = await db
+      .insert(userWeightEntries)
+      .values(entryWithUserId)
+      .returning();
+    
+    // Update user's current weight in onboarding if available
+    if (weightEntry.weight) {
+      await this.updateUserCurrentWeight(weightEntry.userId, weightEntry.weight);
+    }
+    
+    return weightEntry;
+  }
+
+  async getWeightEntriesByUser(userId: number): Promise<UserWeightEntry[]> {
+    return await db
+      .select()
+      .from(userWeightEntries)
+      .where(eq(userWeightEntries.userId, userId))
+      .orderBy(desc(userWeightEntries.recordedAt));
+  }
+
+  async getLatestWeightEntry(userId: number): Promise<UserWeightEntry | undefined> {
+    const [entry] = await db
+      .select()
+      .from(userWeightEntries)
+      .where(eq(userWeightEntries.userId, userId))
+      .orderBy(desc(userWeightEntries.recordedAt))
+      .limit(1);
+    return entry || undefined;
+  }
+
+  async updateWeightEntry(id: number, updates: Partial<InsertUserWeightEntry>): Promise<UserWeightEntry | undefined> {
+    const updateData = {
+      ...updates,
+      updatedAt: new Date()
+    };
+    
+    const [updated] = await db
+      .update(userWeightEntries)
+      .set(updateData)
+      .where(eq(userWeightEntries.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteWeightEntry(id: number, userId: number): Promise<boolean> {
+    const result = await db
+      .delete(userWeightEntries)
+      .where(and(
+        eq(userWeightEntries.id, id),
+        eq(userWeightEntries.userId, userId)
+      ));
+    return (result.rowCount ?? 0) > 0;
+  }
+
+  async updateUserCurrentWeight(userId: number, weight: number): Promise<boolean> {
+    try {
+      // Update weight in user onboarding if exists
+      const onboardingExists = await db
+        .select({ id: userOnboarding.id })
+        .from(userOnboarding)
+        .where(eq(userOnboarding.userId, userId))
+        .limit(1);
+
+      if (onboardingExists.length > 0) {
+        await db
+          .update(userOnboarding)
+          .set({ 
+            weight: weight,
+            updatedAt: new Date() 
+          })
+          .where(eq(userOnboarding.userId, userId));
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating user current weight:', error);
+      return false;
+    }
   }
 }
 
