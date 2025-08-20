@@ -33,6 +33,7 @@ import Privacy from "@/pages/privacy";
 import Terms from "@/pages/terms";
 import Copyright from "@/pages/copyright";
 import SocialMedia from "@/pages/social-media";
+import Subscription from "@/pages/subscription";
 import NotFound from "@/pages/not-found";
 import NutriDashboard from "@/pages/nutri-dashboard";
 import NutriDiary from "@/pages/nutri-diary";
@@ -149,6 +150,7 @@ function Router() {
         <Route path="/terms" component={Terms} />
         <Route path="/copyright" component={Copyright} />
         <Route path="/social-media" component={SocialMedia} />
+        <Route path="/subscription" component={Subscription} />
         
         {/* Nutrition Tracking Pages */}
         <Route path="/nutri-dashboard" component={NutriDashboard} />
