@@ -3328,10 +3328,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const settings = req.body;
+      console.log(`Saving camera settings for user ${userId}:`, settings);
       const updatedSettings = await storage.updateUserCameraSettings(userId, settings);
+      console.log(`Camera settings saved successfully for user ${userId}`);
       res.json(updatedSettings);
     } catch (error) {
       console.error("Error updating user camera settings:", error);
+      console.error("Stack trace:", error.stack);
       res.status(500).json({ message: "Failed to update camera settings" });
     }
   });

@@ -997,42 +997,6 @@ export class DatabaseStorage implements IStorage {
     return searchRecord;
   }
 
-  async updateSearchHistoryWithAIInsights(
-    barcode: string,
-    aiInsights: {
-      nutriBotInsight?: string;
-      funFacts?: string;
-      nutritionSpotlight?: string;
-      ingredientsList?: any;
-      glycemicImpact?: string;
-      nutritionFact?: string;
-      processingAnalysis?: string;
-      ingredientCategories?: any;
-    }
-  ): Promise<boolean> {
-    try {
-      const result = await db
-        .update(searchHistory)
-        .set({
-          nutriBotInsight: aiInsights.nutriBotInsight || undefined,
-          funFacts: aiInsights.funFacts || undefined,
-          nutritionSpotlight: aiInsights.nutritionSpotlight || undefined,
-          ingredientsList: aiInsights.ingredientsList || undefined,
-          glycemicImpact: aiInsights.glycemicImpact || undefined,
-          nutritionFact: aiInsights.nutritionFact || undefined,
-          processingAnalysis: aiInsights.processingAnalysis || undefined,
-          ingredientCategories: aiInsights.ingredientCategories || undefined,
-        })
-        .where(eq(searchHistory.productBarcode, barcode))
-        .returning();
-      
-      console.log(`Updated search history with AI insights for barcode: ${barcode}`);
-      return result.length > 0;
-    } catch (error) {
-      console.error('Error updating search history with AI insights:', error);
-      return false;
-    }
-  }
 
   async updateSearchHistoryWithAIInsights(
     searchId: string, 
@@ -2735,11 +2699,7 @@ export class DatabaseStorage implements IStorage {
   async createUserOnboarding(onboarding: InsertUserOnboarding): Promise<UserOnboarding> {
     const [created] = await db
       .insert(userOnboarding)
-      .values({
-        ...onboarding,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      })
+      .values(onboarding)
       .returning();
     
     return created;
