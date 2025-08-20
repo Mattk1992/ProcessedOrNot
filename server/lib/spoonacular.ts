@@ -5,12 +5,8 @@ export async function fetchProductFromSpoonacular(barcode: string): Promise<Inse
   try {
     console.log(`Fetching product from Spoonacular for barcode: ${barcode}`);
     
-    // Spoonacular requires an API key
-    const apiKey = process.env.SPOONACULAR_API_KEY;
-    if (!apiKey) {
-      console.log('Spoonacular API key not found in environment variables');
-      return null;
-    }
+    // Spoonacular API key
+    const apiKey = '44085552033e4e5ab6423508f3a6415b';
     
     // Search for product by UPC
     const response = await fetch(`https://api.spoonacular.com/food/products/upc/${barcode}?apiKey=${apiKey}`, {

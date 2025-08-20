@@ -93,9 +93,54 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Agri-food Data lookup failed:', error);
   }
 
-  // 2. USDA FoodData Central (Secondary)
+  // 2. Spoonacular (Secondary)
   try {
-    console.log('2. Trying USDA FoodData Central (Secondary)...');
+    console.log('2. Trying Spoonacular (Secondary)...');
+    const spoonacularProduct = await fetchProductFromSpoonacular(barcode);
+    
+    if (spoonacularProduct) {
+      // Analyze ingredients if available
+      if (spoonacularProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            spoonacularProduct.ingredientsText,
+            spoonacularProduct.productName || "Unknown Product",
+            'en',
+            userAIProvider
+          );
+          spoonacularProduct.processingScore = analysis.score;
+          spoonacularProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze Spoonacular ingredients:", error);
+          spoonacularProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+
+        // Analyze production process
+        try {
+          const productionProcess = await analyzeProductionProcess(
+            spoonacularProduct.ingredientsText,
+            spoonacularProduct.productName || "Unknown Product",
+            spoonacularProduct.nutriments || {},
+            'en',
+            userAIProvider
+          );
+          spoonacularProduct.productionProcess = productionProcess;
+        } catch (error) {
+          console.error("Failed to analyze Spoonacular production process:", error);
+          spoonacularProduct.productionProcess = "Unable to analyze production process at this time";
+        }
+      }
+
+      console.log('Found product in Spoonacular');
+      return { product: spoonacularProduct, source: 'Spoonacular' };
+    }
+  } catch (error) {
+    console.error('Spoonacular lookup failed:', error);
+  }
+
+  // 3. USDA FoodData Central (Tertiary)
+  try {
+    console.log('3. Trying USDA FoodData Central (Tertiary)...');
     const usdaProduct = await fetchProductFromUSDA(barcode);
     
     if (usdaProduct) {
@@ -138,9 +183,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('USDA lookup failed:', error);
   }
 
-  // 3. OpenFoodFacts (Tertiary)
+  // 4. OpenFoodFacts (Quaternary)
   try {
-    console.log('3. Trying OpenFoodFacts (Tertiary)...');
+    console.log('4. Trying OpenFoodFacts (Quaternary)...');
     const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
     
     if (openFoodFactsData && openFoodFactsData.status === 1) {
@@ -228,9 +273,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('OpenFoodFacts lookup failed:', error);
   }
 
-  // 4. FoodDB.ca
+  // 5. FoodDB.ca
   try {
-    console.log('4. Trying FoodDB.ca...');
+    console.log('5. Trying FoodDB.ca...');
     const foodDBCAProduct = await fetchProductFromFoodDBCA(barcode);
     
     if (foodDBCAProduct) {
@@ -273,9 +318,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('FoodDB.ca lookup failed:', error);
   }
 
-  // 5. USDA FDC
+  // 6. USDA FDC
   try {
-    console.log('5. Trying USDA FDC...');
+    console.log('6. Trying USDA FDC...');
     const usdaFDCProduct = await fetchProductFromUSDAFDC(barcode);
     
     if (usdaFDCProduct) {
@@ -301,9 +346,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('USDA FDC lookup failed:', error);
   }
 
-  // 6. OpenNutrition
+  // 7. OpenNutrition
   try {
-    console.log('6. Trying OpenNutrition...');
+    console.log('7. Trying OpenNutrition...');
     const openNutritionProduct = await fetchProductFromOpenNutrition(barcode);
     
     if (openNutritionProduct) {
@@ -329,9 +374,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('OpenNutrition lookup failed:', error);
   }
 
-  // 7. Nutritionix
+  // 8. Nutritionix
   try {
-    console.log('7. Trying Nutritionix...');
+    console.log('8. Trying Nutritionix...');
     const nutritionixProduct = await fetchProductFromNutritionix(barcode);
     
     if (nutritionixProduct) {
@@ -355,34 +400,6 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     }
   } catch (error) {
     console.error('Nutritionix lookup failed:', error);
-  }
-
-  // 8. Spoonacular
-  try {
-    console.log('8. Trying Spoonacular...');
-    const spoonacularProduct = await fetchProductFromSpoonacular(barcode);
-    
-    if (spoonacularProduct) {
-      // Analyze ingredients if available
-      if (spoonacularProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            spoonacularProduct.ingredientsText,
-            spoonacularProduct.productName || "Unknown Product"
-          );
-          spoonacularProduct.processingScore = analysis.score;
-          spoonacularProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze Spoonacular ingredients:", error);
-          spoonacularProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-      }
-
-      console.log('Found product in Spoonacular');
-      return { product: spoonacularProduct, source: 'Spoonacular' };
-    }
-  } catch (error) {
-    console.error('Spoonacular lookup failed:', error);
   }
 
   // 9. API Ninjas
