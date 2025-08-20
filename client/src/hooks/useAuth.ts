@@ -11,6 +11,7 @@ interface AuthUser {
   createdAt: string;
   lastLoginAt?: string;
   onboardingCompleted?: boolean;
+  dailyCaloriesGoal?: number;
 }
 
 interface AuthResponse {

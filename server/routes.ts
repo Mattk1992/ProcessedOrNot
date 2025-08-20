@@ -3701,6 +3701,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         result = await storage.createUserOnboarding({ ...validatedData, userId });
       }
 
+      // If macronutrient percentages were provided, save them to userGoals table
+      if (validatedData.dailyCarbsPercentage !== undefined || 
+          validatedData.dailyFatPercentage !== undefined || 
+          validatedData.dailyProteinPercentage !== undefined) {
+        
+        const goalUpdates: any = {};
+        if (validatedData.dailyCarbsPercentage !== undefined) {
+          goalUpdates.dailyCarbsPercentage = validatedData.dailyCarbsPercentage;
+        }
+        if (validatedData.dailyFatPercentage !== undefined) {
+          goalUpdates.dailyFatPercentage = validatedData.dailyFatPercentage;
+        }
+        if (validatedData.dailyProteinPercentage !== undefined) {
+          goalUpdates.dailyProteinPercentage = validatedData.dailyProteinPercentage;
+        }
+
+        // Check if user goals already exist
+        const existingGoals = await storage.getUserGoals(userId);
+        if (existingGoals) {
+          await storage.updateUserGoals(userId, goalUpdates);
+        } else {
+          await storage.createUserGoals({ ...goalUpdates, userId });
+        }
+      }
+
       // If this is the completion request, mark as complete
       if (req.body.isCompleted) {
         await storage.markOnboardingComplete(userId);

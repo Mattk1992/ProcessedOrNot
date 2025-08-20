@@ -778,6 +778,10 @@ export const userGoals = pgTable("user_goals", {
   dailyProteins: real("daily_proteins").default(50),
   dailySalt: real("daily_salt").default(6),
   dailyFiber: real("daily_fiber").default(25),
+  // Daily Macronutrients Percentage Goals (must sum to 100%)
+  dailyCarbsPercentage: integer("daily_carbs_percentage").default(55),
+  dailyFatPercentage: integer("daily_fat_percentage").default(30),
+  dailyProteinPercentage: integer("daily_protein_percentage").default(15),
   maxProcessingScore: integer("max_processing_score").default(5), // Target max processing score
   activityLevel: varchar("activity_level", { length: 20 }).default("moderate"), // 'sedentary', 'light', 'moderate', 'active', 'very_active'
   weightGoal: varchar("weight_goal", { length: 20 }).default("maintain"), // 'lose', 'maintain', 'gain'
@@ -1110,6 +1114,11 @@ export const userOnboarding = pgTable("user_onboarding", {
   snacksPerDay: integer("snacks_per_day").default(2), // Number of snacks
   cookingSkill: varchar("cooking_skill", { length: 20 }), // 'beginner', 'intermediate', 'advanced', 'expert'
   cookingFrequency: varchar("cooking_frequency", { length: 20 }), // 'never', 'rarely', 'sometimes', 'often', 'always'
+  
+  // Daily Macronutrients Goals (percentages, must sum to 100%)
+  dailyCarbsPercentage: integer("daily_carbs_percentage").default(55),
+  dailyFatPercentage: integer("daily_fat_percentage").default(30),
+  dailyProteinPercentage: integer("daily_protein_percentage").default(15),
   
   // Support System
   familySupport: boolean("family_support").default(false), // Has family support for diet goals

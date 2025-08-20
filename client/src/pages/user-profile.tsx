@@ -74,6 +74,11 @@ interface OnboardingData {
   cookingSkill?: string;
   cookingFrequency?: string;
   
+  // Daily Macronutrients Goals (percentages must sum to 100%)
+  dailyCarbsPercentage?: number;
+  dailyFatPercentage?: number;
+  dailyProteinPercentage?: number;
+  
   // Support System
   familySupport?: boolean;
   friendsSupport?: boolean;
@@ -202,7 +207,7 @@ export default function UserProfile() {
       setIsEditingOnboarding(false);
       
       // If weight was updated and is different from previous, create a weight entry
-      if (variables.weight && existingOnboardingData?.weight !== variables.weight) {
+      if (variables.weight && (existingOnboardingData as OnboardingData)?.weight !== variables.weight) {
         createWeightEntryMutation.mutate({
           weight: variables.weight,
           notes: "Updated from Basic Information"
@@ -253,7 +258,7 @@ export default function UserProfile() {
     // Save onboarding data
     updateOnboardingMutation.mutate(onboardingData);
     // Also save profile data (including dailyCaloriesGoal) if it has changed
-    if (formData.dailyCaloriesGoal !== user.dailyCaloriesGoal) {
+    if (formData.dailyCaloriesGoal !== user?.dailyCaloriesGoal) {
       updateProfileMutation.mutate({
         dailyCaloriesGoal: formData.dailyCaloriesGoal
       });
@@ -265,7 +270,8 @@ export default function UserProfile() {
       setFormData({
         firstName: user.firstName || "",
         lastName: user.lastName || "",
-        email: user.email || ""
+        email: user.email || "",
+        dailyCaloriesGoal: user.dailyCaloriesGoal || 2000
       });
     }
     setIsEditing(false);
@@ -1044,6 +1050,81 @@ export default function UserProfile() {
                     <p className="py-2 px-3 bg-muted rounded-md">
                       {formData.dailyCaloriesGoal ? `${formData.dailyCaloriesGoal} calories` : "2000 calories (default)"}
                     </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label>Daily Macronutrients Goal</Label>
+                  <p className="text-sm text-muted-foreground mb-2">Set your daily macronutrient distribution (must add up to 100%)</p>
+                  {isEditingOnboarding ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="dailyCarbsPercentage">Carbohydrates (%)</Label>
+                          <Input
+                            id="dailyCarbsPercentage"
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={onboardingData.dailyCarbsPercentage || 55}
+                            onChange={(e) => updateOnboardingFormData("dailyCarbsPercentage", parseInt(e.target.value) || 0)}
+                            placeholder="55"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="dailyFatPercentage">Fat (%)</Label>
+                          <Input
+                            id="dailyFatPercentage"
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={onboardingData.dailyFatPercentage || 30}
+                            onChange={(e) => updateOnboardingFormData("dailyFatPercentage", parseInt(e.target.value) || 0)}
+                            placeholder="30"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="dailyProteinPercentage">Protein (%)</Label>
+                          <Input
+                            id="dailyProteinPercentage"
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={onboardingData.dailyProteinPercentage || 15}
+                            onChange={(e) => updateOnboardingFormData("dailyProteinPercentage", parseInt(e.target.value) || 0)}
+                            placeholder="15"
+                          />
+                        </div>
+                      </div>
+                      {(() => {
+                        const total = (onboardingData.dailyCarbsPercentage || 55) + 
+                                    (onboardingData.dailyFatPercentage || 30) + 
+                                    (onboardingData.dailyProteinPercentage || 15);
+                        return total !== 100 ? (
+                          <p className="text-sm text-red-500">
+                            Total: {total}% - Must equal 100%
+                          </p>
+                        ) : (
+                          <p className="text-sm text-green-600">
+                            Total: {total}% ✓
+                          </p>
+                        );
+                      })()}
+                    </div>
+                  ) : (
+                    <div className="py-2 px-3 bg-muted rounded-md">
+                      <div className="grid grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium">Carbohydrates:</span> {onboardingData.dailyCarbsPercentage || 55}%
+                        </div>
+                        <div>
+                          <span className="font-medium">Fat:</span> {onboardingData.dailyFatPercentage || 30}%
+                        </div>
+                        <div>
+                          <span className="font-medium">Protein:</span> {onboardingData.dailyProteinPercentage || 15}%
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
 
