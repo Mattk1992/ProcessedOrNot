@@ -2,6 +2,7 @@ import { InsertProduct } from "@shared/schema";
 import { fetchProductFromAgrifoodData } from "./agri-food-data";
 import { fetchProductFromOpenFoodFacts } from "./openfoodfacts";
 import { fetchProductFromUSDA } from "./usda";
+import { fetchProductFromEdamam } from "./edamam";
 import { fetchProductFromUPCDatabase } from "./upc";
 import { fetchProductFromEFSA } from "./efsa";
 import { fetchProductFromHealthCanada } from "./health-canada";
@@ -138,9 +139,54 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Spoonacular lookup failed:', error);
   }
 
-  // 3. USDA FoodData Central (Tertiary)
+  // 3. Edamam Food Database (Tertiary)
   try {
-    console.log('3. Trying USDA FoodData Central (Tertiary)...');
+    console.log('3. Trying Edamam Food Database (Tertiary)...');
+    const edamamProduct = await fetchProductFromEdamam(barcode);
+    
+    if (edamamProduct) {
+      // Analyze ingredients if available
+      if (edamamProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            edamamProduct.ingredientsText,
+            edamamProduct.productName || "Unknown Product",
+            'en',
+            userAIProvider
+          );
+          edamamProduct.processingScore = analysis.score;
+          edamamProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze Edamam ingredients:", error);
+          edamamProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+
+        // Analyze production process
+        try {
+          const productionProcess = await analyzeProductionProcess(
+            edamamProduct.ingredientsText,
+            edamamProduct.productName || "Unknown Product",
+            edamamProduct.nutriments || {},
+            'en',
+            userAIProvider
+          );
+          edamamProduct.productionProcess = productionProcess;
+        } catch (error) {
+          console.error("Failed to analyze Edamam production process:", error);
+          edamamProduct.productionProcess = "Unable to analyze production process at this time";
+        }
+      }
+
+      console.log('Found product in Edamam Food Database');
+      return { product: edamamProduct, source: 'Edamam' };
+    }
+  } catch (error) {
+    console.error('Edamam lookup failed:', error);
+  }
+
+  // 4. USDA FoodData Central (Quaternary)
+  try {
+    console.log('4. Trying USDA FoodData Central (Quaternary)...');
     const usdaProduct = await fetchProductFromUSDA(barcode);
     
     if (usdaProduct) {
@@ -183,9 +229,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('USDA lookup failed:', error);
   }
 
-  // 4. OpenFoodFacts (Quaternary)
+  // 5. OpenFoodFacts (Quinary)
   try {
-    console.log('4. Trying OpenFoodFacts (Quaternary)...');
+    console.log('5. Trying OpenFoodFacts (Quinary)...');
     const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
     
     if (openFoodFactsData && openFoodFactsData.status === 1) {
@@ -273,9 +319,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('OpenFoodFacts lookup failed:', error);
   }
 
-  // 5. FoodDB.ca
+  // 6. FoodDB.ca
   try {
-    console.log('5. Trying FoodDB.ca...');
+    console.log('6. Trying FoodDB.ca...');
     const foodDBCAProduct = await fetchProductFromFoodDBCA(barcode);
     
     if (foodDBCAProduct) {
@@ -318,9 +364,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('FoodDB.ca lookup failed:', error);
   }
 
-  // 6. USDA FDC
+  // 7. USDA FDC
   try {
-    console.log('6. Trying USDA FDC...');
+    console.log('7. Trying USDA FDC...');
     const usdaFDCProduct = await fetchProductFromUSDAFDC(barcode);
     
     if (usdaFDCProduct) {
@@ -346,9 +392,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('USDA FDC lookup failed:', error);
   }
 
-  // 7. OpenNutrition
+  // 8. OpenNutrition
   try {
-    console.log('7. Trying OpenNutrition...');
+    console.log('8. Trying OpenNutrition...');
     const openNutritionProduct = await fetchProductFromOpenNutrition(barcode);
     
     if (openNutritionProduct) {
@@ -374,9 +420,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('OpenNutrition lookup failed:', error);
   }
 
-  // 8. Nutritionix
+  // 9. Nutritionix
   try {
-    console.log('8. Trying Nutritionix...');
+    console.log('9. Trying Nutritionix...');
     const nutritionixProduct = await fetchProductFromNutritionix(barcode);
     
     if (nutritionixProduct) {
@@ -402,9 +448,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Nutritionix lookup failed:', error);
   }
 
-  // 9. API Ninjas
+  // 10. API Ninjas
   try {
-    console.log('9. Trying API Ninjas...');
+    console.log('10. Trying API Ninjas...');
     const apiNinjasProduct = await fetchProductFromAPINinjas(barcode);
     
     if (apiNinjasProduct) {
@@ -430,9 +476,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('API Ninjas lookup failed:', error);
   }
 
-  // 10. FoodData Central (USDA)
+  // 11. FoodData Central (USDA)
   try {
-    console.log('10. Trying FoodData Central (USDA)...');
+    console.log('11. Trying FoodData Central (USDA)...');
     const foodDataCentralProduct = await fetchProductFromFoodDataCentral(barcode);
     
     if (foodDataCentralProduct) {
@@ -458,9 +504,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('FoodData Central lookup failed:', error);
   }
 
-  // 11. EFSA (European Food Safety Authority)
+  // 12. EFSA (European Food Safety Authority)
   try {
-    console.log('11. Trying EFSA (European Food Safety Authority)...');
+    console.log('12. Trying EFSA (European Food Safety Authority)...');
     const efsaProduct = await fetchProductFromEFSA(barcode);
     
     if (efsaProduct) {
@@ -486,9 +532,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('EFSA lookup failed:', error);
   }
 
-  // 12. Health Canada Food Database
+  // 13. Health Canada Food Database
   try {
-    console.log('12. Trying Health Canada Food Database...');
+    console.log('13. Trying Health Canada Food Database...');
     const healthCanadaProduct = await fetchProductFromHealthCanada(barcode);
     
     if (healthCanadaProduct) {
@@ -514,9 +560,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Health Canada lookup failed:', error);
   }
 
-  // 13. EAN Search
+  // 14. EAN Search
   try {
-    console.log('13. Trying EAN Search...');
+    console.log('14. Trying EAN Search...');
     const eanSearchProduct = await fetchProductFromEANSearch(barcode);
     
     if (eanSearchProduct) {
@@ -527,9 +573,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('EAN Search lookup failed:', error);
   }
 
-  // 14. UPC Database
+  // 15. UPC Database
   try {
-    console.log('14. Trying UPC Database...');
+    console.log('15. Trying UPC Database...');
     const upcProduct = await fetchProductFromUPCDatabase(barcode);
     
     if (upcProduct) {
@@ -540,7 +586,7 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('UPC Database lookup failed:', error);
   }
 
-  // 15. All lookups failed
+  // 16. All lookups failed
   console.log('All database lookups failed for barcode:', barcode);
   return { 
     product: null, 
