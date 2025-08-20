@@ -1,4 +1,5 @@
 import { InsertProduct } from "@shared/schema";
+import { fetchProductFromAgrifoodData } from "./agri-food-data";
 import { fetchProductFromOpenFoodFacts } from "./openfoodfacts";
 import { fetchProductFromUSDA } from "./usda";
 import { fetchProductFromUPCDatabase } from "./upc";
@@ -47,9 +48,54 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
   // Get user's AI provider setting
   const userAIProvider = await getUserAIProvider(userId);
 
-  // 1. USDA FoodData Central (Primary)
+  // 1. Agri-food Data (Primary)
   try {
-    console.log('1. Trying USDA FoodData Central (Primary)...');
+    console.log('1. Trying Agri-food Data (Primary)...');
+    const agrifoodProduct = await fetchProductFromAgrifoodData(barcode);
+    
+    if (agrifoodProduct) {
+      // Analyze ingredients if available
+      if (agrifoodProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            agrifoodProduct.ingredientsText,
+            agrifoodProduct.productName || "Unknown Product",
+            'en',
+            userAIProvider
+          );
+          agrifoodProduct.processingScore = analysis.score;
+          agrifoodProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze Agri-food Data ingredients:", error);
+          agrifoodProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+
+        // Analyze production process
+        try {
+          const productionProcess = await analyzeProductionProcess(
+            agrifoodProduct.ingredientsText,
+            agrifoodProduct.productName || "Unknown Product",
+            agrifoodProduct.nutriments || {},
+            'en',
+            userAIProvider
+          );
+          agrifoodProduct.productionProcess = productionProcess;
+        } catch (error) {
+          console.error("Failed to analyze Agri-food Data production process:", error);
+          agrifoodProduct.productionProcess = "Unable to analyze production process at this time";
+        }
+      }
+
+      console.log('Found product in Agri-food Data');
+      return { product: agrifoodProduct, source: 'Agri-food Data' };
+    }
+  } catch (error) {
+    console.error('Agri-food Data lookup failed:', error);
+  }
+
+  // 2. USDA FoodData Central (Secondary)
+  try {
+    console.log('2. Trying USDA FoodData Central (Secondary)...');
     const usdaProduct = await fetchProductFromUSDA(barcode);
     
     if (usdaProduct) {
@@ -92,9 +138,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('USDA lookup failed:', error);
   }
 
-  // 2. OpenFoodFacts (Secondary)
+  // 3. OpenFoodFacts (Tertiary)
   try {
-    console.log('2. Trying OpenFoodFacts (Secondary)...');
+    console.log('3. Trying OpenFoodFacts (Tertiary)...');
     const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
     
     if (openFoodFactsData && openFoodFactsData.status === 1) {
@@ -182,9 +228,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('OpenFoodFacts lookup failed:', error);
   }
 
-  // 3. FoodDB.ca
+  // 4. FoodDB.ca
   try {
-    console.log('3. Trying FoodDB.ca...');
+    console.log('4. Trying FoodDB.ca...');
     const foodDBCAProduct = await fetchProductFromFoodDBCA(barcode);
     
     if (foodDBCAProduct) {
@@ -227,9 +273,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('FoodDB.ca lookup failed:', error);
   }
 
-  // 4. USDA FDC
+  // 5. USDA FDC
   try {
-    console.log('4. Trying USDA FDC...');
+    console.log('5. Trying USDA FDC...');
     const usdaFDCProduct = await fetchProductFromUSDAFDC(barcode);
     
     if (usdaFDCProduct) {
@@ -255,9 +301,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('USDA FDC lookup failed:', error);
   }
 
-  // 5. OpenNutrition
+  // 6. OpenNutrition
   try {
-    console.log('5. Trying OpenNutrition...');
+    console.log('6. Trying OpenNutrition...');
     const openNutritionProduct = await fetchProductFromOpenNutrition(barcode);
     
     if (openNutritionProduct) {
@@ -283,9 +329,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('OpenNutrition lookup failed:', error);
   }
 
-  // 6. Nutritionix
+  // 7. Nutritionix
   try {
-    console.log('6. Trying Nutritionix...');
+    console.log('7. Trying Nutritionix...');
     const nutritionixProduct = await fetchProductFromNutritionix(barcode);
     
     if (nutritionixProduct) {
@@ -311,9 +357,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Nutritionix lookup failed:', error);
   }
 
-  // 7. Spoonacular
+  // 8. Spoonacular
   try {
-    console.log('7. Trying Spoonacular...');
+    console.log('8. Trying Spoonacular...');
     const spoonacularProduct = await fetchProductFromSpoonacular(barcode);
     
     if (spoonacularProduct) {
@@ -339,9 +385,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Spoonacular lookup failed:', error);
   }
 
-  // 8. API Ninjas
+  // 9. API Ninjas
   try {
-    console.log('8. Trying API Ninjas...');
+    console.log('9. Trying API Ninjas...');
     const apiNinjasProduct = await fetchProductFromAPINinjas(barcode);
     
     if (apiNinjasProduct) {
@@ -367,9 +413,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('API Ninjas lookup failed:', error);
   }
 
-  // 9. FoodData Central (USDA)
+  // 10. FoodData Central (USDA)
   try {
-    console.log('9. Trying FoodData Central (USDA)...');
+    console.log('10. Trying FoodData Central (USDA)...');
     const foodDataCentralProduct = await fetchProductFromFoodDataCentral(barcode);
     
     if (foodDataCentralProduct) {
@@ -395,9 +441,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('FoodData Central lookup failed:', error);
   }
 
-  // 10. EFSA (European Food Safety Authority)
+  // 11. EFSA (European Food Safety Authority)
   try {
-    console.log('10. Trying EFSA (European Food Safety Authority)...');
+    console.log('11. Trying EFSA (European Food Safety Authority)...');
     const efsaProduct = await fetchProductFromEFSA(barcode);
     
     if (efsaProduct) {
@@ -423,9 +469,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('EFSA lookup failed:', error);
   }
 
-  // 11. Health Canada Food Database
+  // 12. Health Canada Food Database
   try {
-    console.log('11. Trying Health Canada Food Database...');
+    console.log('12. Trying Health Canada Food Database...');
     const healthCanadaProduct = await fetchProductFromHealthCanada(barcode);
     
     if (healthCanadaProduct) {
@@ -451,9 +497,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Health Canada lookup failed:', error);
   }
 
-  // 12. EAN Search
+  // 13. EAN Search
   try {
-    console.log('12. Trying EAN Search...');
+    console.log('13. Trying EAN Search...');
     const eanSearchProduct = await fetchProductFromEANSearch(barcode);
     
     if (eanSearchProduct) {
@@ -464,9 +510,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('EAN Search lookup failed:', error);
   }
 
-  // 13. UPC Database
+  // 14. UPC Database
   try {
-    console.log('13. Trying UPC Database...');
+    console.log('14. Trying UPC Database...');
     const upcProduct = await fetchProductFromUPCDatabase(barcode);
     
     if (upcProduct) {
@@ -477,7 +523,7 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('UPC Database lookup failed:', error);
   }
 
-  // 14. All lookups failed
+  // 15. All lookups failed
   console.log('All database lookups failed for barcode:', barcode);
   return { 
     product: null, 
