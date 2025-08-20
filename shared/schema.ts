@@ -862,6 +862,18 @@ export const userMealTimes = pgTable("user_meal_times", {
   meal6Time: varchar("meal6_time", { length: 5 }).notNull().default("21:00"), // Late Evening
   snack1Time: varchar("snack1_time", { length: 5 }).notNull().default("10:30"), // Snack 1
   snack2Time: varchar("snack2_time", { length: 5 }).notNull().default("15:00"), // Snack 2
+  
+  // Daily % Division fields (must sum to 100%)
+  breakfastPercent: integer("breakfast_percent").notNull().default(10),
+  lunchPercent: integer("lunch_percent").notNull().default(35),
+  dinnerPercent: integer("dinner_percent").notNull().default(55),
+  snackPercent: integer("snack_percent").notNull().default(0),
+  meal4Percent: integer("meal4_percent").notNull().default(0), // Mid Morning
+  meal5Percent: integer("meal5_percent").notNull().default(0), // Afternoon Snack
+  meal6Percent: integer("meal6_percent").notNull().default(0), // Late Evening
+  snack1Percent: integer("snack1_percent").notNull().default(0), // Snack 1
+  snack2Percent: integer("snack2_percent").notNull().default(0), // Snack 2
+  
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => ({

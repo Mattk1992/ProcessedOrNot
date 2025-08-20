@@ -3081,7 +3081,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const userId = req.session.userId;
-      const { breakfastTime, lunchTime, dinnerTime, snackTime, meal4Time, meal5Time, meal6Time, snack1Time, snack2Time } = req.body;
+      const { 
+        breakfastTime, lunchTime, dinnerTime, snackTime, meal4Time, meal5Time, meal6Time, snack1Time, snack2Time,
+        breakfastPercent, lunchPercent, dinnerPercent, snackPercent, meal4Percent, meal5Percent, meal6Percent, snack1Percent, snack2Percent
+      } = req.body;
 
       // Validate time format (HH:MM)
       const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
@@ -3118,7 +3121,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       let mealTimes;
       if (existingMealTimes) {
-        // Update existing meal times
+        // Update existing meal times and percentages
         mealTimes = await storage.updateUserMealTimes(userId, {
           breakfastTime,
           lunchTime,
@@ -3128,10 +3131,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           meal5Time,
           meal6Time,
           snack1Time,
-          snack2Time
+          snack2Time,
+          breakfastPercent,
+          lunchPercent,
+          dinnerPercent,
+          snackPercent,
+          meal4Percent,
+          meal5Percent,
+          meal6Percent,
+          snack1Percent,
+          snack2Percent
         });
       } else {
-        // Create new meal times
+        // Create new meal times and percentages
         mealTimes = await storage.createUserMealTimes({
           userId,
           breakfastTime,
@@ -3142,7 +3154,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           meal5Time,
           meal6Time,
           snack1Time,
-          snack2Time
+          snack2Time,
+          breakfastPercent,
+          lunchPercent,
+          dinnerPercent,
+          snackPercent,
+          meal4Percent,
+          meal5Percent,
+          meal6Percent,
+          snack1Percent,
+          snack2Percent
         });
       }
       

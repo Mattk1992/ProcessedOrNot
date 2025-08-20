@@ -128,6 +128,29 @@ export default function NutriDiary() {
     snack1: "10:30",
     snack2: "15:00"
   });
+  const [mealPercentages, setMealPercentages] = useState({
+    breakfast: 10,
+    lunch: 35,
+    dinner: 55,
+    snack: 0,
+    meal4: 0,
+    meal5: 0,
+    meal6: 0,
+    snack1: 0,
+    snack2: 0
+  });
+  const [originalMealPercentages, setOriginalMealPercentages] = useState({
+    breakfast: 10,
+    lunch: 35,
+    dinner: 55,
+    snack: 0,
+    meal4: 0,
+    meal5: 0,
+    meal6: 0,
+    snack1: 0,
+    snack2: 0
+  });
+  const [showSaveButton, setShowSaveButton] = useState(false);
   const [saveTimeout, setSaveTimeout] = useState<NodeJS.Timeout | null>(null);
   const [isProductLookupActive, setIsProductLookupActive] = useState(false);
   const [isLookingUpProduct, setIsLookingUpProduct] = useState(false);
@@ -264,6 +287,21 @@ export default function NutriDiary() {
         snack1: times.snack1Time || "10:30",
         snack2: times.snack2Time || "15:00"
       });
+      
+      const loadedPercentages = {
+        breakfast: times.breakfastPercent || 10,
+        lunch: times.lunchPercent || 35,
+        dinner: times.dinnerPercent || 55,
+        snack: times.snackPercent || 0,
+        meal4: times.meal4Percent || 0,
+        meal5: times.meal5Percent || 0,
+        meal6: times.meal6Percent || 0,
+        snack1: times.snack1Percent || 0,
+        snack2: times.snack2Percent || 0,
+      };
+      
+      setMealPercentages(loadedPercentages);
+      setOriginalMealPercentages(loadedPercentages);
     }
   }, [savedMealTimes]);
 
@@ -326,6 +364,81 @@ export default function NutriDiary() {
     }, 1500);
 
     setSaveTimeout(timeoutId);
+  };
+
+  // Handle meal percentage changes
+  const handleMealPercentageChange = (mealType: string, newPercent: number) => {
+    const newPercentages = { ...mealPercentages, [mealType]: newPercent };
+    setMealPercentages(newPercentages);
+    
+    // Check if values have changed from original
+    const hasChanges = Object.keys(newPercentages).some(
+      key => newPercentages[key as keyof typeof newPercentages] !== originalMealPercentages[key as keyof typeof originalMealPercentages]
+    );
+    
+    setShowSaveButton(hasChanges);
+  };
+
+  const calculatePercentageTotal = () => {
+    return Object.values(mealPercentages).reduce((sum, percent) => sum + percent, 0);
+  };
+
+  const isValidPercentageDistribution = () => {
+    return calculatePercentageTotal() === 100;
+  };
+
+  // Mutation to save meal percentages
+  const saveMealPercentagesMutation = useMutation({
+    mutationFn: async (percentageData: any) => {
+      const response = await fetch("/api/nutrition/meal-times", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(percentageData),
+      });
+      if (!response.ok) throw new Error("Failed to save meal percentages");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/nutrition/meal-times"] });
+      setOriginalMealPercentages(mealPercentages);
+      setShowSaveButton(false);
+      toast({
+        title: "Success",
+        description: "Meal percentages saved successfully",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save meal percentages",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSaveMealPercentages = () => {
+    if (!isValidPercentageDistribution()) {
+      toast({
+        title: "Invalid Distribution",
+        description: "Daily % Division must add up to 100%",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const percentageData = {
+      breakfastPercent: mealPercentages.breakfast,
+      lunchPercent: mealPercentages.lunch,
+      dinnerPercent: mealPercentages.dinner,
+      snackPercent: mealPercentages.snack,
+      meal4Percent: mealPercentages.meal4,
+      meal5Percent: mealPercentages.meal5,
+      meal6Percent: mealPercentages.meal6,
+      snack1Percent: mealPercentages.snack1,
+      snack2Percent: mealPercentages.snack2,
+    };
+    
+    saveMealPercentagesMutation.mutate(percentageData);
   };
 
   // Fetch diary entries for selected date
@@ -1251,6 +1364,52 @@ export default function NutriDiary() {
           </Card>
         </div>
 
+        {/* Daily % Division Summary and Save Button */}
+        {showSaveButton && (
+          <Card className="bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="text-sm">
+                    <span className="font-medium">Total Distribution:</span>
+                    <span className={`ml-2 font-bold ${
+                      calculatePercentageTotal() === 100 
+                        ? 'text-green-600 dark:text-green-400' 
+                        : 'text-red-600 dark:text-red-400'
+                    }`}>
+                      {calculatePercentageTotal()}%
+                    </span>
+                  </div>
+                  {!isValidPercentageDistribution() && (
+                    <div className="text-sm text-red-600 dark:text-red-400">
+                      ⚠️ Must equal 100% to save
+                    </div>
+                  )}
+                </div>
+                <div className="flex space-x-2">
+                  <Button
+                    onClick={() => {
+                      setMealPercentages(originalMealPercentages);
+                      setShowSaveButton(false);
+                    }}
+                    variant="outline"
+                    size="sm"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveMealPercentages}
+                    disabled={!isValidPercentageDistribution() || saveMealPercentagesMutation.isPending}
+                    size="sm"
+                  >
+                    {saveMealPercentagesMutation.isPending ? "Saving..." : "Save Changes"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Diary Entries by Meal */}
         <div className="space-y-6">
           {mealTypes.map((mealType) => {
@@ -1272,6 +1431,18 @@ export default function NutriDiary() {
                             onChange={(e) => handleMealTimeChange(mealType, e.target.value)}
                             className="w-20 h-8 text-sm"
                           />
+                        </div>
+                        <div className="flex items-center space-x-2 mt-2">
+                          <span className="text-sm text-muted-foreground">Daily % Division:</span>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="100"
+                            value={mealPercentages[mealType as keyof typeof mealPercentages]}
+                            onChange={(e) => handleMealPercentageChange(mealType, parseInt(e.target.value) || 0)}
+                            className="w-16 h-8 text-sm"
+                          />
+                          <span className="text-sm text-muted-foreground">%</span>
                         </div>
                         <CardDescription>
                           {mealEntries.length} items • {mealCalories.toFixed(0)} calories
