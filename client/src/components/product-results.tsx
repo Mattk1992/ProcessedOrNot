@@ -525,7 +525,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                       <div className="text-2xl font-bold text-foreground mb-1">
                         {(() => {
                           const nutrients = product.nutriments as Record<string, any>;
-                          return nutrients?.energy_100g ? String(nutrients.energy_100g) : "N/A";
+                          return nutrients?.energy_100g ? String(Math.round(nutrients.energy_100g / 4.184)) : "N/A";
                         })()}
                       </div>
                       <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.energy'))}</div>
@@ -843,7 +843,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                           <div className="flex justify-between items-center">
                             <span className="text-sm font-medium text-muted-foreground">Energy per 100g:</span>
                             <span className="text-sm font-semibold">
-                              {nutrients.energy_100g ? `${nutrients.energy_100g} kcal` : 'N/A'}
+                              {nutrients.energy_100g ? `${Math.round(nutrients.energy_100g / 4.184)} kcal` : 'N/A'}
                             </span>
                           </div>
                           <div className="flex justify-between items-center">
@@ -1290,7 +1290,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                     <tr className="hover:bg-muted/30 transition-colors">
                       <td className="py-4 text-foreground font-medium">{t('nutrition.facts.energy')}</td>
                       <td className="py-4 text-right text-muted-foreground font-mono">
-                        {(product.nutriments as any).energy_100g ? `${(product.nutriments as any).energy_100g} kcal` : "N/A"}
+                        {(product.nutriments as any).energy_100g ? `${Math.round((product.nutriments as any).energy_100g / 4.184)} kcal` : "N/A"}
                       </td>
                     </tr>
                     <tr className="hover:bg-muted/30 transition-colors">
@@ -1476,7 +1476,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                             <span>Calories:</span>
                             <span className="font-mono">
                               {(product.nutriments as any)?.energy_100g 
-                                ? Math.round(((product.nutriments as any).energy_100g * parseFloat(portionAmount)) / 100)
+                                ? Math.round((Math.round((product.nutriments as any).energy_100g / 4.184) * parseFloat(portionAmount)) / 100)
                                 : "N/A"}
                             </span>
                           </div>
@@ -1748,7 +1748,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                         <p className="text-2xl font-bold text-primary">
                           {(() => {
                             const nutrients = product.nutriments as Record<string, any>;
-                            return nutrients?.energy_100g ? String(nutrients.energy_100g) : "N/A";
+                            return nutrients?.energy_100g ? String(Math.round(nutrients.energy_100g / 4.184)) : "N/A";
                           })()}
                         </p>
                         <p className="text-xs text-muted-foreground font-medium">Calories</p>

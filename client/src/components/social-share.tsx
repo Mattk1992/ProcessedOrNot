@@ -82,7 +82,7 @@ export default function SocialShare({
           ${nutriments ? `
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-top: 20px;">
               <div style="text-align: center;">
-                <div style="font-size: 20px; font-weight: bold;">${Math.round(nutriments.energy_100g || 0)}</div>
+                <div style="font-size: 20px; font-weight: bold;">${Math.round((nutriments.energy_100g || 0) / 4.184)}</div>
                 <div style="font-size: 12px; opacity: 0.8;">${t('nutrition.energy')} (kcal)</div>
               </div>
               <div style="text-align: center;">

@@ -554,7 +554,9 @@ export default function SearchHistoryView() {
                               return (
                                 <div key={index} className="bg-white/60 dark:bg-black/20 rounded-xl p-4 text-center">
                                   <div className="text-2xl font-bold text-orange-700 dark:text-orange-300 mb-1">
-                                    {typeof value === 'number' ? value.toFixed(1) : String(value)}
+                                    {typeof value === 'number' ? 
+                                      (nutrient.key === 'energy_100g' ? (value / 4.184).toFixed(1) : value.toFixed(1))
+                                      : String(value)}
                                     <span className="text-sm font-normal">{nutrient.unit}</span>
                                   </div>
                                   <div className="text-xs text-orange-600 dark:text-orange-400 font-medium">{nutrient.label}</div>
