@@ -49,99 +49,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
   // Get user's AI provider setting
   const userAIProvider = await getUserAIProvider(userId);
 
-  // 1. Agri-food Data (Primary)
+  // 1. Edamam Food Database (Primary)
   try {
-    console.log('1. Trying Agri-food Data (Primary)...');
-    const agrifoodProduct = await fetchProductFromAgrifoodData(barcode);
-    
-    if (agrifoodProduct) {
-      // Analyze ingredients if available
-      if (agrifoodProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            agrifoodProduct.ingredientsText,
-            agrifoodProduct.productName || "Unknown Product",
-            'en',
-            userAIProvider
-          );
-          agrifoodProduct.processingScore = analysis.score;
-          agrifoodProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze Agri-food Data ingredients:", error);
-          agrifoodProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-
-        // Analyze production process
-        try {
-          const productionProcess = await analyzeProductionProcess(
-            agrifoodProduct.ingredientsText,
-            agrifoodProduct.productName || "Unknown Product",
-            agrifoodProduct.nutriments || {},
-            'en',
-            userAIProvider
-          );
-          agrifoodProduct.productionProcess = productionProcess;
-        } catch (error) {
-          console.error("Failed to analyze Agri-food Data production process:", error);
-          agrifoodProduct.productionProcess = "Unable to analyze production process at this time";
-        }
-      }
-
-      console.log('Found product in Agri-food Data');
-      return { product: agrifoodProduct, source: 'Agri-food Data' };
-    }
-  } catch (error) {
-    console.error('Agri-food Data lookup failed:', error);
-  }
-
-  // 2. Spoonacular (Secondary)
-  try {
-    console.log('2. Trying Spoonacular (Secondary)...');
-    const spoonacularProduct = await fetchProductFromSpoonacular(barcode);
-    
-    if (spoonacularProduct) {
-      // Analyze ingredients if available
-      if (spoonacularProduct.ingredientsText) {
-        try {
-          const analysis = await analyzeIngredients(
-            spoonacularProduct.ingredientsText,
-            spoonacularProduct.productName || "Unknown Product",
-            'en',
-            userAIProvider
-          );
-          spoonacularProduct.processingScore = analysis.score;
-          spoonacularProduct.processingExplanation = analysis.explanation;
-        } catch (error) {
-          console.error("Failed to analyze Spoonacular ingredients:", error);
-          spoonacularProduct.processingExplanation = "Unable to analyze ingredients at this time";
-        }
-
-        // Analyze production process
-        try {
-          const productionProcess = await analyzeProductionProcess(
-            spoonacularProduct.ingredientsText,
-            spoonacularProduct.productName || "Unknown Product",
-            spoonacularProduct.nutriments || {},
-            'en',
-            userAIProvider
-          );
-          spoonacularProduct.productionProcess = productionProcess;
-        } catch (error) {
-          console.error("Failed to analyze Spoonacular production process:", error);
-          spoonacularProduct.productionProcess = "Unable to analyze production process at this time";
-        }
-      }
-
-      console.log('Found product in Spoonacular');
-      return { product: spoonacularProduct, source: 'Spoonacular' };
-    }
-  } catch (error) {
-    console.error('Spoonacular lookup failed:', error);
-  }
-
-  // 3. Edamam Food Database (Tertiary)
-  try {
-    console.log('3. Trying Edamam Food Database (Tertiary)...');
+    console.log('1. Trying Edamam Food Database (Primary)...');
     const edamamProduct = await fetchProductFromEdamam(barcode);
     
     if (edamamProduct) {
@@ -152,7 +62,8 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
             edamamProduct.ingredientsText,
             edamamProduct.productName || "Unknown Product",
             'en',
-            userAIProvider
+            userAIProvider,
+            userId
           );
           edamamProduct.processingScore = analysis.score;
           edamamProduct.processingExplanation = analysis.explanation;
@@ -168,7 +79,8 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
             edamamProduct.productName || "Unknown Product",
             edamamProduct.nutriments || {},
             'en',
-            userAIProvider
+            userAIProvider,
+            userId
           );
           edamamProduct.productionProcess = productionProcess;
         } catch (error) {
@@ -182,6 +94,100 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     }
   } catch (error) {
     console.error('Edamam lookup failed:', error);
+  }
+
+  // 2. Agri-food Data (Secondary)
+  try {
+    console.log('2. Trying Agri-food Data (Secondary)...');
+    const agrifoodProduct = await fetchProductFromAgrifoodData(barcode);
+    
+    if (agrifoodProduct) {
+      // Analyze ingredients if available
+      if (agrifoodProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            agrifoodProduct.ingredientsText,
+            agrifoodProduct.productName || "Unknown Product",
+            'en',
+            userAIProvider,
+            userId
+          );
+          agrifoodProduct.processingScore = analysis.score;
+          agrifoodProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze Agri-food Data ingredients:", error);
+          agrifoodProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+
+        // Analyze production process
+        try {
+          const productionProcess = await analyzeProductionProcess(
+            agrifoodProduct.ingredientsText,
+            agrifoodProduct.productName || "Unknown Product",
+            agrifoodProduct.nutriments || {},
+            'en',
+            userAIProvider,
+            userId
+          );
+          agrifoodProduct.productionProcess = productionProcess;
+        } catch (error) {
+          console.error("Failed to analyze Agri-food Data production process:", error);
+          agrifoodProduct.productionProcess = "Unable to analyze production process at this time";
+        }
+      }
+
+      console.log('Found product in Agri-food Data');
+      return { product: agrifoodProduct, source: 'Agri-food Data' };
+    }
+  } catch (error) {
+    console.error('Agri-food Data lookup failed:', error);
+  }
+
+  // 3. Spoonacular (Tertiary)
+  try {
+    console.log('3. Trying Spoonacular (Tertiary)...');
+    const spoonacularProduct = await fetchProductFromSpoonacular(barcode);
+    
+    if (spoonacularProduct) {
+      // Analyze ingredients if available
+      if (spoonacularProduct.ingredientsText) {
+        try {
+          const analysis = await analyzeIngredients(
+            spoonacularProduct.ingredientsText,
+            spoonacularProduct.productName || "Unknown Product",
+            'en',
+            userAIProvider,
+            userId
+          );
+          spoonacularProduct.processingScore = analysis.score;
+          spoonacularProduct.processingExplanation = analysis.explanation;
+        } catch (error) {
+          console.error("Failed to analyze Spoonacular ingredients:", error);
+          spoonacularProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+
+        // Analyze production process
+        try {
+          const productionProcess = await analyzeProductionProcess(
+            spoonacularProduct.ingredientsText,
+            spoonacularProduct.productName || "Unknown Product",
+            spoonacularProduct.nutriments || {},
+            'en',
+            userAIProvider,
+            userId
+          );
+          spoonacularProduct.productionProcess = productionProcess;
+        } catch (error) {
+          console.error("Failed to analyze Spoonacular production process:", error);
+          spoonacularProduct.productionProcess = "Unable to analyze production process at this time";
+        }
+      }
+
+      console.log('Found product in Spoonacular');
+      return { product: spoonacularProduct, source: 'Spoonacular' };
+    }
+  } catch (error) {
+    console.error('Spoonacular lookup failed:', error);
   }
 
   // 4. USDA FoodData Central (Quaternary)
