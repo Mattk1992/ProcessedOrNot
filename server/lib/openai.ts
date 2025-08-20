@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { ProcessingAnalysis, GlycemicAnalysis } from "@shared/schema";
 import { storage } from "../storage";
+import { savePromptHistory, extractTokenUsage, generateSessionId, type PromptHistoryContext } from "./prompt-history";
 
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 // ChatGPT Nano uses "gpt-4o-mini" for ultra-fast responses
@@ -41,7 +42,9 @@ export async function getUserAIProvider(userId?: number): Promise<string> {
   }
 }
 
-export async function analyzeIngredients(ingredientsText: string, productName: string, language: string = 'en', provider: string = 'ChatGPT'): Promise<ProcessingAnalysis> {
+export async function analyzeIngredients(ingredientsText: string, productName: string, language: string = 'en', provider: string = 'ChatGPT', userId?: number): Promise<ProcessingAnalysis> {
+  const startTime = Date.now();
+  
   try {
     const languageInstructions: Record<string, string> = {
       'en': 'Provide your analysis in English.',
@@ -81,6 +84,7 @@ Provide your response in JSON format with this structure:
   }
 }`;
 
+    const systemPrompt = "You are a food science expert specializing in analyzing food processing levels. Provide accurate, evidence-based assessments of ingredient processing levels.";
     const modelConfig = getModelConfig(provider);
 
     const response = await openai.chat.completions.create({
@@ -88,7 +92,7 @@ Provide your response in JSON format with this structure:
       messages: [
         {
           role: "system",
-          content: "You are a food science expert specializing in analyzing food processing levels. Provide accurate, evidence-based assessments of ingredient processing levels."
+          content: systemPrompt
         },
         {
           role: "user",
@@ -100,9 +104,12 @@ Provide your response in JSON format with this structure:
       max_tokens: modelConfig.maxTokens,
     });
 
-    const result = JSON.parse(response.choices[0].message.content || "{}");
+    const content = response.choices[0].message.content || "{}";
+    const result = JSON.parse(content);
+    const endTime = Date.now();
+    const tokenUsage = extractTokenUsage(response);
 
-    return {
+    const processedResult = {
       score: Math.max(0, Math.min(10, Math.round(result.score || 0))),
       explanation: result.explanation || "Unable to analyze ingredients",
       categories: {
@@ -111,8 +118,64 @@ Provide your response in JSON format with this structure:
         minimallyProcessed: result.categories?.minimallyProcessed || [],
       },
     };
+
+    // Save to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'ingredients_analysis',
+      aiModel: modelConfig.model,
+      userPrompt: prompt,
+      systemPrompt,
+      fullPrompt: `${systemPrompt}\n\nUser: ${prompt}`,
+      requestData: {
+        productName,
+        language,
+        provider,
+        ingredientsLength: ingredientsText.length
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: content,
+      processedResponse: JSON.stringify(processedResult),
+      parsedData: processedResult,
+      ...tokenUsage,
+      generationTimeMs: endTime - startTime,
+      status: 'success',
+      responseLength: content.length,
+      parseSuccess: true
+    });
+
+    return processedResult;
   } catch (error) {
+    const endTime = Date.now();
     console.error("Error analyzing ingredients with OpenAI:", error);
+    
+    // Save error to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'ingredients_analysis',
+      aiModel: getModelConfig(provider).model,
+      userPrompt: `Analyze ingredients for: ${productName}`,
+      requestData: {
+        productName,
+        language,
+        provider,
+        ingredientsLength: ingredientsText.length
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: '',
+      status: 'error',
+      errorMessage: (error as Error).message,
+      generationTimeMs: endTime - startTime,
+      responseLength: 0,
+      parseSuccess: false
+    });
+    
     throw new Error("Failed to analyze ingredients processing level");
   }
 }
@@ -122,8 +185,11 @@ export async function analyzeGlycemicIndex(
   productName: string, 
   nutriments: any,
   language: string = 'en',
-  provider: string = 'ChatGPT'
+  provider: string = 'ChatGPT',
+  userId?: number
 ): Promise<GlycemicAnalysis> {
+  const startTime = Date.now();
+  
   try {
     const languageInstructions: Record<string, string> = {
       'en': 'Provide your analysis in English.',
@@ -184,6 +250,7 @@ Provide your response in JSON format:
   "impactDescription": "description of blood sugar impact in the requested language"
 }`;
 
+    const systemPrompt = "You are a nutrition expert specializing in glycemic index assessment. Provide accurate, evidence-based estimates of how foods affect blood glucose levels.";
     const modelConfig = getModelConfig(provider);
 
     const response = await openai.chat.completions.create({
@@ -191,7 +258,7 @@ Provide your response in JSON format:
       messages: [
         {
           role: "system",
-          content: "You are a nutrition expert specializing in glycemic index assessment. Provide accurate, evidence-based estimates of how foods affect blood glucose levels."
+          content: systemPrompt
         },
         {
           role: "user",
@@ -203,7 +270,10 @@ Provide your response in JSON format:
       max_tokens: modelConfig.maxTokens,
     });
 
-    const result = JSON.parse(response.choices[0].message.content || "{}");
+    const content = response.choices[0].message.content || "{}";
+    const result = JSON.parse(content);
+    const endTime = Date.now();
+    const tokenUsage = extractTokenUsage(response);
 
     // Determine category based on GI
     let category: 'Low' | 'Medium' | 'High' = 'Low';
@@ -211,15 +281,76 @@ Provide your response in JSON format:
     if (gi >= 70) category = 'High';
     else if (gi >= 56) category = 'Medium';
 
-    return {
+    const processedResult = {
       glycemicIndex: Math.max(0, Math.min(100, Math.round(result.glycemicIndex || 0))),
       glycemicLoad: Math.max(0, Math.min(40, Math.round(result.glycemicLoad || 0))),
       explanation: result.explanation || "Unable to analyze glycemic impact",
       category,
       impactDescription: result.impactDescription || "No impact description available",
     };
+
+    // Save to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'glycemic_analysis',
+      aiModel: modelConfig.model,
+      userPrompt: prompt,
+      systemPrompt,
+      fullPrompt: `${systemPrompt}\n\nUser: ${prompt}`,
+      requestData: {
+        productName,
+        language,
+        provider,
+        nutritionData: {
+          carbohydrates,
+          sugars,
+          fiber,
+          protein,
+          fat
+        }
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: content,
+      processedResponse: JSON.stringify(processedResult),
+      parsedData: processedResult,
+      ...tokenUsage,
+      generationTimeMs: endTime - startTime,
+      status: 'success',
+      responseLength: content.length,
+      parseSuccess: true
+    });
+
+    return processedResult;
   } catch (error) {
+    const endTime = Date.now();
     console.error("Error analyzing glycemic index with OpenAI:", error);
+    
+    // Save error to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'glycemic_analysis',
+      aiModel: getModelConfig(provider).model,
+      userPrompt: `Analyze glycemic index for: ${productName}`,
+      requestData: {
+        productName,
+        language,
+        provider
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: '',
+      status: 'error',
+      errorMessage: (error as Error).message,
+      generationTimeMs: endTime - startTime,
+      responseLength: 0,
+      parseSuccess: false
+    });
+    
     throw new Error("Failed to analyze glycemic index");
   }
 }
@@ -229,8 +360,11 @@ export async function analyzeProductionProcess(
   productName: string, 
   nutriments: any,
   language: string = 'en',
-  provider: string = 'ChatGPT'
+  provider: string = 'ChatGPT',
+  userId?: number
 ): Promise<string> {
+  const startTime = Date.now();
+  
   try {
     const languageInstructions: Record<string, string> = {
       'en': 'Provide your analysis in English.',
@@ -274,6 +408,7 @@ Based on the ingredients and nutritional profile, provide a comprehensive descri
 
 Provide a detailed but accessible explanation that helps consumers understand how their food is made from farm to table. Focus on being educational and informative rather than judgmental about the production methods.`;
 
+    const systemPrompt = "You are a food science and manufacturing expert. Provide detailed, accurate explanations of food production processes that are educational and help consumers understand how their food is made.";
     const modelConfig = getModelConfig(provider);
 
     const response = await openai.chat.completions.create({
@@ -281,7 +416,7 @@ Provide a detailed but accessible explanation that helps consumers understand ho
       messages: [
         {
           role: "system",
-          content: "You are a food science and manufacturing expert. Provide detailed, accurate explanations of food production processes that are educational and help consumers understand how their food is made."
+          content: systemPrompt
         },
         {
           role: "user",
@@ -293,10 +428,69 @@ Provide a detailed but accessible explanation that helps consumers understand ho
     });
 
     const productionProcess = response.choices[0].message.content || "Unable to analyze production process";
+    const endTime = Date.now();
+    const tokenUsage = extractTokenUsage(response);
+
+    // Save to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'production_process_analysis',
+      aiModel: modelConfig.model,
+      userPrompt: prompt,
+      systemPrompt,
+      fullPrompt: `${systemPrompt}\n\nUser: ${prompt}`,
+      requestData: {
+        productName,
+        language,
+        provider,
+        nutritionData: {
+          carbohydrates,
+          protein,
+          fat,
+          fiber
+        }
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: productionProcess,
+      processedResponse: productionProcess,
+      ...tokenUsage,
+      generationTimeMs: endTime - startTime,
+      status: 'success',
+      responseLength: productionProcess.length,
+      parseSuccess: true
+    });
     
     return productionProcess;
   } catch (error) {
+    const endTime = Date.now();
     console.error("Error analyzing production process with OpenAI:", error);
+    
+    // Save error to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'production_process_analysis',
+      aiModel: getModelConfig(provider).model,
+      userPrompt: `Analyze production process for: ${productName}`,
+      requestData: {
+        productName,
+        language,
+        provider
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: '',
+      status: 'error',
+      errorMessage: (error as Error).message,
+      generationTimeMs: endTime - startTime,
+      responseLength: 0,
+      parseSuccess: false
+    });
+    
     return "Unable to analyze production process at this time";
   }
 }
@@ -319,8 +513,11 @@ export async function analyzeCarbonFootprint(
   productName: string, 
   nutriments: any,
   language: string = 'en', 
-  provider: string = 'ChatGPT'
+  provider: string = 'ChatGPT',
+  userId?: number
 ): Promise<CarbonFootprintAnalysis> {
+  const startTime = Date.now();
+  
   try {
     const languageInstructions: Record<string, string> = {
       'en': 'Provide your analysis in English.',
@@ -386,6 +583,7 @@ Provide your response in JSON format:
   "suggestions": ["suggestion1", "suggestion2", "suggestion3"]
 }`;
 
+    const systemPrompt = "You are an environmental sustainability expert specializing in food carbon footprint analysis. Provide accurate, evidence-based assessments of environmental impact for food products based on scientific data and lifecycle assessment principles.";
     const modelConfig = getModelConfig(provider);
 
     const response = await openai.chat.completions.create({
@@ -393,7 +591,7 @@ Provide your response in JSON format:
       messages: [
         {
           role: "system",
-          content: "You are an environmental sustainability expert specializing in food carbon footprint analysis. Provide accurate, evidence-based assessments of environmental impact for food products based on scientific data and lifecycle assessment principles."
+          content: systemPrompt
         },
         {
           role: "user",
@@ -411,9 +609,11 @@ Provide your response in JSON format:
     }
 
     const result = JSON.parse(content) as CarbonFootprintAnalysis;
+    const endTime = Date.now();
+    const tokenUsage = extractTokenUsage(response);
     
     // Validate and sanitize the response
-    return {
+    const processedResult = {
       carbonFootprint: Math.max(0, result.carbonFootprint || 0),
       explanation: result.explanation || "Carbon footprint analysis not available",
       breakdown: {
@@ -425,8 +625,68 @@ Provide your response in JSON format:
       rating: result.rating || 'moderate',
       suggestions: Array.isArray(result.suggestions) ? result.suggestions : [],
     };
+
+    // Save to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'carbon_footprint_analysis',
+      aiModel: modelConfig.model,
+      userPrompt: prompt,
+      systemPrompt,
+      fullPrompt: `${systemPrompt}\n\nUser: ${prompt}`,
+      requestData: {
+        productName,
+        language,
+        provider,
+        nutritionData: {
+          carbohydrates,
+          protein,
+          fat,
+          fiber
+        }
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: content,
+      processedResponse: JSON.stringify(processedResult),
+      parsedData: processedResult,
+      ...tokenUsage,
+      generationTimeMs: endTime - startTime,
+      status: 'success',
+      responseLength: content.length,
+      parseSuccess: true
+    });
+
+    return processedResult;
   } catch (error) {
+    const endTime = Date.now();
     console.error("Error analyzing carbon footprint with OpenAI:", error);
+    
+    // Save error to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'carbon_footprint_analysis',
+      aiModel: getModelConfig(provider).model,
+      userPrompt: `Analyze carbon footprint for: ${productName}`,
+      requestData: {
+        productName,
+        language,
+        provider
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: '',
+      status: 'error',
+      errorMessage: (error as Error).message,
+      generationTimeMs: endTime - startTime,
+      responseLength: 0,
+      parseSuccess: false
+    });
+    
     throw new Error("Failed to analyze carbon footprint");
   }
 }

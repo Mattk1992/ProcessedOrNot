@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { savePromptHistory, extractTokenUsage, generateSessionId, type PromptHistoryContext } from "./prompt-history";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -61,7 +62,10 @@ GUIDELINES:
 Remember: You're a supportive companion on their health journey, making nutrition enjoyable and achievable!`;
 }
 
-export async function getNutriBotResponse(message: string, history: ChatMessage[], language: string = 'en', extraInfo?: string): Promise<string> {
+export async function getNutriBotResponse(message: string, history: ChatMessage[], language: string = 'en', extraInfo?: string, userId?: number, sessionId?: string): Promise<string> {
+  const startTime = Date.now();
+  const actualSessionId = sessionId || generateSessionId();
+  
   try {
     // Convert chat history to OpenAI format
     const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
@@ -79,6 +83,9 @@ export async function getNutriBotResponse(message: string, history: ChatMessage[
     // Add the current user message
     messages.push({ role: "user", content: message });
 
+    const systemPrompt = getNutriBotSystemPrompt(language, extraInfo);
+    const fullPrompt = messages.map(m => `${m.role}: ${m.content}`).join('\n\n');
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages,
@@ -88,15 +95,73 @@ export async function getNutriBotResponse(message: string, history: ChatMessage[
       frequency_penalty: 0.1,
     });
 
-    return response.choices[0].message.content || "I'm sorry, I didn't catch that. Could you ask me about nutrition in a different way?";
+    const aiResponse = response.choices[0].message.content || "I'm sorry, I didn't catch that. Could you ask me about nutrition in a different way?";
+    const endTime = Date.now();
+    const tokenUsage = extractTokenUsage(response);
+
+    // Save to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: actualSessionId,
+      feature: 'nutribot_chat',
+      aiModel: 'gpt-4o',
+      userPrompt: message,
+      systemPrompt,
+      fullPrompt,
+      requestData: {
+        language,
+        historyLength: history.length,
+        hasExtraInfo: !!extraInfo
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse,
+      processedResponse: aiResponse,
+      ...tokenUsage,
+      generationTimeMs: endTime - startTime,
+      status: 'success',
+      responseLength: aiResponse.length,
+      parseSuccess: true
+    });
+
+    return aiResponse;
 
   } catch (error) {
+    const endTime = Date.now();
     console.error('NutriBot API error:', error);
+    
+    // Save error to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: actualSessionId,
+      feature: 'nutribot_chat',
+      aiModel: 'gpt-4o',
+      userPrompt: message,
+      systemPrompt: getNutriBotSystemPrompt(language, extraInfo),
+      requestData: {
+        language,
+        historyLength: history.length,
+        hasExtraInfo: !!extraInfo
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: '',
+      status: 'error',
+      errorMessage: (error as Error).message,
+      generationTimeMs: endTime - startTime,
+      responseLength: 0,
+      parseSuccess: false
+    });
+    
     throw new Error('Failed to generate response from NutriBot');
   }
 }
 
-export async function generateFunFacts(productName: string, ingredients: string, nutriments: Record<string, any> | null, processingScore: number, language: string = 'en'): Promise<Array<{title: string, fact: string, category: string}>> {
+export async function generateFunFacts(productName: string, ingredients: string, nutriments: Record<string, any> | null, processingScore: number, language: string = 'en', userId?: number): Promise<Array<{title: string, fact: string, category: string}>> {
+  const startTime = Date.now();
+  
   try {
     const nutritionData = nutriments ? Object.entries(nutriments)
       .filter(([key, value]) => typeof value === 'number' && value > 0)
@@ -120,10 +185,12 @@ Make each fact engaging, educational, and memorable. Each fact should be 1-2 sen
 
 Return as JSON array: [{"title": "Fact Title", "fact": "The actual fact text", "category": "nutrition|history|processing|environment"}]`;
 
+    const systemPrompt = getNutriBotSystemPrompt(language) + " Always respond with valid JSON format.";
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
-        { role: "system", content: getNutriBotSystemPrompt(language) + " Always respond with valid JSON format." },
+        { role: "system", content: systemPrompt },
         { role: "user", content: prompt }
       ],
       max_tokens: 500,
@@ -135,15 +202,74 @@ Return as JSON array: [{"title": "Fact Title", "fact": "The actual fact text", "
     if (!content) throw new Error('No content generated');
     
     const result = JSON.parse(content);
-    return Array.isArray(result) ? result : result.facts || [];
+    const facts = Array.isArray(result) ? result : result.facts || [];
+    const endTime = Date.now();
+    const tokenUsage = extractTokenUsage(response);
+
+    // Save to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'fun_facts_generation',
+      aiModel: 'gpt-4o',
+      userPrompt: prompt,
+      systemPrompt,
+      fullPrompt: `${systemPrompt}\n\nUser: ${prompt}`,
+      requestData: {
+        productName,
+        language,
+        processingScore,
+        hasNutriments: !!nutriments
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: content,
+      processedResponse: JSON.stringify(facts),
+      parsedData: facts,
+      ...tokenUsage,
+      generationTimeMs: endTime - startTime,
+      status: 'success',
+      responseLength: content.length,
+      parseSuccess: true
+    });
+
+    return facts;
 
   } catch (error) {
+    const endTime = Date.now();
     console.error('Fun facts generation error:', error);
+    
+    // Save error to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'fun_facts_generation',
+      aiModel: 'gpt-4o',
+      userPrompt: `Generate fun facts for: ${productName}`,
+      requestData: {
+        productName,
+        language,
+        processingScore,
+        hasNutriments: !!nutriments
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: '',
+      status: 'error',
+      errorMessage: (error as Error).message,
+      generationTimeMs: endTime - startTime,
+      responseLength: 0,
+      parseSuccess: false
+    });
+    
     throw new Error('Failed to generate fun facts');
   }
 }
 
-export async function generateNutritionSpotlightInsights(productName: string, nutriments: Record<string, any>, processingScore: number, language: string = 'en'): Promise<any> {
+export async function generateNutritionSpotlightInsights(productName: string, nutriments: Record<string, any>, processingScore: number, language: string = 'en', userId?: number): Promise<any> {
+  const startTime = Date.now();
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
   const languageInstructions = {
@@ -157,14 +283,9 @@ export async function generateNutritionSpotlightInsights(productName: string, nu
   };
 
   const instruction = languageInstructions[language as keyof typeof languageInstructions] || languageInstructions['en'];
-
+  
   try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        {
-          role: "system",
-          content: `You are a nutrition expert. ${instruction}. Analyze nutrition data and provide insights in JSON format. Focus on 3-4 key nutrients only.
+    const systemPrompt = `You are a nutrition expert. ${instruction}. Analyze nutrition data and provide insights in JSON format. Focus on 3-4 key nutrients only.
 
 Return JSON:
 {
@@ -181,15 +302,24 @@ Return JSON:
   ],
   "overallAssessment": "brief summary",
   "healthScore": number_1_to_10
-}`
-        },
-        {
-          role: "user",
-          content: `Analyze the nutrition data for "${productName}":
+}`;
+
+    const userPrompt = `Analyze the nutrition data for "${productName}":
 Nutrients: ${JSON.stringify(nutriments)}
 Processing Score: ${processingScore}/10
 
-Provide detailed insights about the key nutrients, their health impacts, and overall nutritional assessment.`
+Provide detailed insights about the key nutrients, their health impacts, and overall nutritional assessment.`;
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt
+        },
+        {
+          role: "user",
+          content: userPrompt
         }
       ],
       response_format: { type: "json_object" },
@@ -197,15 +327,75 @@ Provide detailed insights about the key nutrients, their health impacts, and ove
       max_tokens: 800
     });
 
-    const result = JSON.parse(response.choices[0].message.content || '{}');
+    const content = response.choices[0].message.content || '{}';
+    const result = JSON.parse(content);
+    const endTime = Date.now();
+    const tokenUsage = extractTokenUsage(response);
+
+    // Save to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'nutrition_spotlight',
+      aiModel: 'gpt-4o',
+      userPrompt,
+      systemPrompt,
+      fullPrompt: `${systemPrompt}\n\nUser: ${userPrompt}`,
+      requestData: {
+        productName,
+        language,
+        processingScore,
+        nutrientCount: Object.keys(nutriments).length
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: content,
+      processedResponse: JSON.stringify(result),
+      parsedData: result,
+      ...tokenUsage,
+      generationTimeMs: endTime - startTime,
+      status: 'success',
+      responseLength: content.length,
+      parseSuccess: true
+    });
+
     return result;
   } catch (error) {
+    const endTime = Date.now();
     console.error('Error generating nutrition spotlight insights:', error);
+    
+    // Save error to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'nutrition_spotlight',
+      aiModel: 'gpt-4o',
+      userPrompt: `Generate nutrition spotlight for: ${productName}`,
+      requestData: {
+        productName,
+        language,
+        processingScore,
+        nutrientCount: Object.keys(nutriments).length
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: '',
+      status: 'error',
+      errorMessage: (error as Error).message,
+      generationTimeMs: endTime - startTime,
+      responseLength: 0,
+      parseSuccess: false
+    });
+    
     throw error;
   }
 }
 
-export async function generateProductNutritionInsight(productName: string, ingredients: string, processingScore: number, language: string = 'en'): Promise<string> {
+export async function generateProductNutritionInsight(productName: string, ingredients: string, processingScore: number, language: string = 'en', userId?: number): Promise<string> {
+  const startTime = Date.now();
+  
   try {
     const prompt = `As NutriBot, provide a friendly nutritional insight about this product:
     
@@ -220,20 +410,79 @@ Give a brief, encouraging assessment covering:
 
 Keep it conversational, supportive, and actionable (2-3 sentences max).`;
 
+    const systemPrompt = getNutriBotSystemPrompt(language);
+
     const response = await openai.chat.completions.create({
       model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
-        { role: "system", content: getNutriBotSystemPrompt(language) },
+        { role: "system", content: systemPrompt },
         { role: "user", content: prompt }
       ],
       max_tokens: 200,
       temperature: 0.7,
     });
 
-    return response.choices[0].message.content || "This product looks interesting! Feel free to ask me any specific questions about its nutrition.";
+    const aiResponse = response.choices[0].message.content || "This product looks interesting! Feel free to ask me any specific questions about its nutrition.";
+    const endTime = Date.now();
+    const tokenUsage = extractTokenUsage(response);
+
+    // Save to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'nutribot_product_insight',
+      aiModel: 'gpt-4o',
+      userPrompt: prompt,
+      systemPrompt,
+      fullPrompt: `${systemPrompt}\n\nUser: ${prompt}`,
+      requestData: {
+        productName,
+        language,
+        processingScore,
+        hasIngredients: !!ingredients
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse,
+      processedResponse: aiResponse,
+      ...tokenUsage,
+      generationTimeMs: endTime - startTime,
+      status: 'success',
+      responseLength: aiResponse.length,
+      parseSuccess: true
+    });
+
+    return aiResponse;
 
   } catch (error) {
+    const endTime = Date.now();
     console.error('NutriBot insight generation error:', error);
+    
+    // Save error to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'nutribot_product_insight',
+      aiModel: 'gpt-4o',
+      userPrompt: `Generate insight for: ${productName}`,
+      requestData: {
+        productName,
+        language,
+        processingScore,
+        hasIngredients: !!ingredients
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: '',
+      status: 'error',
+      errorMessage: (error as Error).message,
+      generationTimeMs: endTime - startTime,
+      responseLength: 0,
+      parseSuccess: false
+    });
+    
     return "I'd love to help you understand this product better! Ask me any questions about its ingredients or nutrition.";
   }
 }

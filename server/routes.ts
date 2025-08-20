@@ -998,7 +998,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             productData.ingredientsText,
             productData.productName || "Unknown Product",
             language || 'en',
-            userAIProvider
+            userAIProvider,
+            user?.id
           );
           productData.processingScore = analysis.score;
           productData.processingExplanation = analysis.explanation;
@@ -1015,7 +1016,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               productData.productName || "Unknown Product",
               productData.nutriments,
               language || 'en',
-              userAIProvider
+              userAIProvider,
+              user?.id
             );
             productData.glycemicIndex = glycemicAnalysis.glycemicIndex;
             productData.glycemicLoad = glycemicAnalysis.glycemicLoad;
@@ -1067,7 +1069,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const analysis = await analyzeIngredients(
         product.ingredientsText,
         product.productName || "Unknown Product",
-        (language as string) || 'en'
+        (language as string) || 'en',
+        'ChatGPT',
+        req.session?.userId
       );
 
       // Automatically save processing analysis and ingredient categories to products database
@@ -1116,7 +1120,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         product.ingredientsText,
         product.productName || "Unknown Product",
         product.nutriments,
-        (language as string) || 'en'
+        (language as string) || 'en',
+        'ChatGPT',
+        req.session?.userId
       );
 
       // Automatically save glycemic impact to products database
@@ -1246,7 +1252,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const response = await getNutriBotResponse(message.trim(), history || [], language || 'en', extraInfo);
+      const response = await getNutriBotResponse(message.trim(), history || [], language || 'en', extraInfo, userId);
       res.json({ response });
 
     } catch (error) {
@@ -1274,7 +1280,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         product.productName || "Unknown Product",
         product.ingredientsText || "No ingredients available",
         product.processingScore || 0,
-        (language as string) || 'en'
+        (language as string) || 'en',
+        req.session?.userId
       );
 
       // Automatically save NutriBot insight to products database
@@ -1314,7 +1321,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         product.ingredientsText || "No ingredients available",
         product.nutriments || null,
         product.processingScore || 0,
-        (language as string) || 'en'
+        (language as string) || 'en',
+        req.session?.userId
       );
 
       // Automatically save fun facts to products database
@@ -1355,7 +1363,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         productName,
         nutriments || {},
         'en', // Default to English for now
-        userAIProvider
+        userAIProvider,
+        userId
       );
 
       // Update product and search history with carbon footprint data
@@ -1413,7 +1422,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         product.productName || "Unknown Product",
         product.nutriments,
         product.processingScore || 0,
-        (language as string) || 'en'
+        (language as string) || 'en',
+        req.session?.userId
       );
 
       // Automatically save nutrition spotlight to products database
@@ -1457,7 +1467,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         product.productName || "Unknown Product",
         product.nutriments || {},
         (language as string) || 'en',
-        userAIProvider
+        userAIProvider,
+        user?.id
       );
 
       // Automatically save production process to products database
@@ -1721,7 +1732,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const glycemicAnalysis = await analyzeGlycemicIndex(
               product.ingredientsText || "",
               product.productName || "Unknown Product", 
-              product.nutriments
+              product.nutriments,
+              'en',
+              'ChatGPT',
+              req.session?.userId
             );
             
             await storage.updateProduct(product.barcode, {
@@ -2129,7 +2143,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const glycemicAnalysis = await analyzeGlycemicIndex(
         ingredientsText || "",
         productName || "Test Product",
-        nutriments || {}
+        nutriments || {},
+        'en',
+        'ChatGPT'
       );
 
       res.json({
@@ -2160,7 +2176,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             const glycemicAnalysis = await analyzeGlycemicIndex(
               product.ingredientsText || "",
               product.productName || "Unknown Product", 
-              product.nutriments
+              product.nutriments,
+              'en',
+              'ChatGPT'
             );
             
             await storage.updateProduct(product.barcode, {
