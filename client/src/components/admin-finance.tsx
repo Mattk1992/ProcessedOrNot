@@ -15,9 +15,11 @@ import {
   BarChart3,
   Crown,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  Server
 } from "lucide-react";
 import AdminSubscriptionManagement from "./admin-subscription-management";
+import AdminWebsiteCosts from "./admin-website-costs";
 
 interface FinanceStats {
   totalRevenue: number;
@@ -67,7 +69,7 @@ export default function AdminFinance() {
   return (
     <div className="space-y-6">
       <Tabs value={activeFinanceTab} onValueChange={setActiveFinanceTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 p-1 rounded-xl">
+        <TabsList className="grid w-full grid-cols-5 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 p-1 rounded-xl">
           <TabsTrigger 
             value="overview" 
             className="flex items-center gap-2 py-2 px-3 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-green-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white"
@@ -90,8 +92,15 @@ export default function AdminFinance() {
             <span className="hidden sm:inline">Payments</span>
           </TabsTrigger>
           <TabsTrigger 
+            value="website-costs" 
+            className="flex items-center gap-2 py-2 px-3 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-amber-600 data-[state=active]:text-white"
+          >
+            <Server className="w-4 h-4" />
+            <span className="hidden sm:inline">Costs</span>
+          </TabsTrigger>
+          <TabsTrigger 
             value="settings" 
-            className="flex items-center gap-2 py-2 px-3 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-600 data-[state=active]:text-white"
+            className="flex items-center gap-2 py-2 px-3 rounded-lg transition-all duration-300 data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-500 data-[state=active]:to-gray-600 data-[state=active]:text-white"
           >
             <Settings className="w-4 h-4" />
             <span className="hidden sm:inline">Settings</span>
@@ -308,6 +317,11 @@ export default function AdminFinance() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        {/* Website Costs Tab */}
+        <TabsContent value="website-costs" className="mt-6">
+          <AdminWebsiteCosts />
         </TabsContent>
 
         {/* Finance Settings Tab */}
