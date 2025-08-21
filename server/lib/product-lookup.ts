@@ -295,13 +295,24 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
       const product = openFoodFactsData.product;
       
       // Create product data structure first
+      // Process nutriments to ensure proper calories mapping
+      let processedNutriments = null;
+      if (product.nutriments) {
+        processedNutriments = { ...product.nutriments };
+        
+        // OpenFoodFacts typically provides energy_100g in kJ, convert to kcal for consistency
+        if (processedNutriments.energy_100g && !processedNutriments.energy_kcal_100g) {
+          processedNutriments.energy_kcal_100g = processedNutriments.energy_100g / 4.184;
+        }
+      }
+      
       const productData: InsertProduct = {
         barcode,
         productName: product.product_name || null,
         brands: product.brands || null,
         imageUrl: product.image_url || null,
         ingredientsText: product.ingredients_text || null,
-        nutriments: product.nutriments || null,
+        nutriments: processedNutriments,
         processingScore: 0,
         processingExplanation: "No ingredients available for analysis",
         glycemicIndex: null,
