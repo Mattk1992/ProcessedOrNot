@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Crown, Zap, Shield, Star, ArrowRight } from "lucide-react";
+import { CheckCircle, Crown, Zap, Shield, Star, ArrowRight, Info } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "wouter";
 
@@ -266,6 +266,37 @@ export default function SubscriptionPage() {
             </Card>
           </div>
         </div>
+
+        {/* Admin Site Info Button */}
+        {user?.accountType === 'Admin' && (
+          <div className="max-w-3xl mx-auto mt-12 mb-8">
+            <Card className="border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-amber-100 dark:bg-amber-800/30 rounded-lg">
+                      <Info className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-amber-800 dark:text-amber-200">
+                        Admin Access
+                      </h3>
+                      <p className="text-amber-600 dark:text-amber-300 text-sm">
+                        Access site information and administrative tools
+                      </p>
+                    </div>
+                  </div>
+                  <Link href="/site-info">
+                    <Button variant="outline" className="border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-600 dark:text-amber-300 dark:hover:bg-amber-800/30">
+                      <Info className="w-4 h-4 mr-2" />
+                      Site Info
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* CTA Section */}
         <div className="text-center mt-16">
