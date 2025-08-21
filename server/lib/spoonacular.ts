@@ -33,7 +33,8 @@ export async function fetchProductFromSpoonacular(barcode: string): Promise<Inse
       data.nutrition.nutrients.forEach((nutrient: any) => {
         switch (nutrient.name?.toLowerCase()) {
           case 'calories':
-            nutrients.energy_100g = nutrient.amount * 4.184; // Convert kcal to kJ
+            nutrients.energy_kcal_100g = nutrient.amount; // Store as kcal
+            nutrients.energy_100g = nutrient.amount * 4.184; // Also store as kJ for compatibility
             break;
           case 'fat':
             nutrients.fat_100g = nutrient.amount;
