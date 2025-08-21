@@ -4512,19 +4512,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const startTime = Date.now();
       const databaseResults = [];
 
-      // Test against each selected database (simplified for demo)
+      // Import individual database functions
+      const { fetchProductFromOpenFoodFacts } = await import("./lib/openfoodfacts");
+      const { fetchProductFromUSDA } = await import("./lib/usda");
+      const { fetchProductFromUPCDatabase } = await import("./lib/upc");
+      const { fetchProductFromEFSA } = await import("./lib/efsa");
+      const { fetchProductFromEdamam } = await import("./lib/edamam");
+      const { fetchProductFromAPINinjas } = await import("./lib/api-ninjas");
+
+      // Map database IDs to their lookup functions
+      const databaseLookupMap: { [key: string]: (barcode: string) => Promise<any> } = {
+        'openfoodfacts': async (barcode: string) => {
+          const result = await fetchProductFromOpenFoodFacts(barcode);
+          return result ? { name: result.product?.product_name, productName: result.product?.product_name } : null;
+        },
+        'usda-fdc': fetchProductFromUSDA,
+        'upc-database': fetchProductFromUPCDatabase,
+        'efsa': fetchProductFromEFSA,
+        'fooddb-ca': async (barcode: string) => {
+          const result = await fetchProductFromEdamam(barcode);
+          return result;
+        },
+        'api-ninjas': fetchProductFromAPINinjas
+      };
+
+      // Test against each selected database individually
       for (const databaseId of databases) {
         const dbStartTime = Date.now();
         
         try {
-          const result = await smartProductLookup(barcode);
+          const lookupFunction = databaseLookupMap[databaseId];
+          if (!lookupFunction) {
+            // Database not implemented yet
+            databaseResults.push({
+              databaseName: getDatabaseName(databaseId),
+              responseTime: Date.now() - dbStartTime,
+              productFound: false,
+              productData: null,
+              error: 'Database not implemented'
+            });
+            continue;
+          }
+
+          const result = await lookupFunction(barcode);
           const dbEndTime = Date.now();
           
           databaseResults.push({
             databaseName: getDatabaseName(databaseId),
             responseTime: dbEndTime - dbStartTime,
-            productFound: !!result && !!result.product && !!result.product.name,
-            productData: result?.product || null,
+            productFound: !!result && (!!result.name || !!result.productName),
+            productData: result || null,
             error: null
           });
         } catch (error) {
