@@ -5,7 +5,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import ThemeToggle from "@/components/theme-toggle";
 import Layout from "@/components/layout";
 import { useEffect, useState } from "react";
 import { initGA } from "./lib/analytics";
@@ -205,7 +204,6 @@ function App() {
               <TooltipProvider>
                 <Toaster />
                 <Router />
-                <ThemeToggle />
                 <AdConsentBanner />
               </TooltipProvider>
             </AdManagerProvider>
