@@ -8,7 +8,8 @@ import {
   Users,
   ExternalLink,
   ArrowLeft,
-  Apple
+  Apple,
+  Smartphone
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -113,7 +114,7 @@ export default function SiteInfo() {
         {/* Main App Access */}
         <div className="mb-12">
           <h3 className="text-xl font-semibold mb-6">Main App Access</h3>
-          <div className="grid grid-cols-1 gap-6 max-w-md">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
             <Link href="/">
               <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group border-2 border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-900/10">
                 <CardHeader className="pb-4">
@@ -132,6 +133,29 @@ export default function SiteInfo() {
                 <CardContent>
                   <CardDescription className="text-sm">
                     Access the main ProcessedOrNot Scanner app for barcode scanning and food analysis
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/apps">
+              <Card className="hover:shadow-lg transition-all duration-200 cursor-pointer group border-2 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-3 rounded-lg bg-blue-100 dark:bg-blue-900/20 group-hover:bg-blue-200 dark:group-hover:bg-blue-800/30 transition-colors">
+                      <Smartphone className="w-8 h-8 text-blue-500" />
+                    </div>
+                    <div className="flex-1">
+                      <CardTitle className="flex items-center justify-between text-lg">
+                        Mobile Apps
+                        <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </CardTitle>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm">
+                    Download our mobile apps for Android and iOS to scan products on the go
                   </CardDescription>
                 </CardContent>
               </Card>

@@ -52,6 +52,7 @@ import { AdManagerProvider, AdConsentBanner } from "@/components/ads";
 import { SearchResultVisibilityProvider } from "@/contexts/SearchResultVisibilityContext";
 import AdSettings from "@/pages/ad-settings";
 import SiteInfo from "@/pages/site-info";
+import Apps from "@/pages/apps";
 import AdPlacementGuidelinesPage from "@/pages/ad-placement-guidelines";
 import AdComplianceDashboard from "@/pages/ad-compliance-dashboard";
 import GPTConfigPage from "@/pages/gpt-config";
@@ -135,6 +136,8 @@ function Router() {
         <Route path="/onboarding" component={Onboarding} />
         <Route path="/nutri-dashboard/settings" component={Settings} />
         <Route path="/nutri-dashboard/site-info" component={SiteInfo} />
+        <Route path="/site-info" component={SiteInfo} />
+        <Route path="/apps" component={Apps} />
         <Route path="/admin" component={Admin} />
         <Route path="/admin-search-history" component={AdminSearchHistory} />
         <Route path="/admin-product-database" component={AdminProductDatabase} />
