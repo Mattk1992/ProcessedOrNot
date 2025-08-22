@@ -969,7 +969,11 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                       <h4 className="text-lg font-semibold text-foreground mb-4">{title}</h4>
                       <div className="space-y-3">
                         {availableNutrients.map((nutrient, index) => {
-                          const value = nutrients[nutrient.key];
+                          const rawValue = nutrients[nutrient.key];
+                          // Convert energy from kJ to kcal for OpenFoodFacts data
+                          const value = nutrient.key === 'energy_100g' && typeof rawValue === 'number' 
+                            ? Math.round(rawValue / 4.184) 
+                            : rawValue;
                           return (
                             <div key={index} className={`flex justify-between items-center ${nutrient.indent ? 'ml-4' : ''}`}>
                               <span className="text-sm text-muted-foreground flex items-center">
