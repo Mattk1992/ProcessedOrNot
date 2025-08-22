@@ -1354,6 +1354,43 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
         </Card>
       </div>
 
+      {/* Settings & Add Missing Data Buttons */}
+      <div className="slide-up">
+        <Card className="glass-effect border-2 border-blue-200/50 dark:border-blue-800/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+          <CardContent className="pt-6 pb-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <Settings className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">Product Management</h3>
+                  <p className="text-sm text-muted-foreground">Customize settings and enhance product data</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={handleEditProduct}
+                  variant="outline"
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20 px-4 py-2"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Add Missing Data
+                </Button>
+                <Button 
+                  onClick={() => setShowAnalysisSettings(true)}
+                  variant="outline"
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20 px-4 py-2"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Ingredients Card */}
       {product.ingredientsText && (
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
@@ -2218,27 +2255,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
             </div>
           </ScrollArea>
 
-          <div className="flex justify-between pt-4 border-t">
-            <div className="flex gap-2">
-              <Button 
-                onClick={handleEditProduct}
-                variant="outline"
-                size="sm"
-                className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20"
-              >
-                <Edit className="w-3 h-3 mr-1" />
-                Add Missing Data
-              </Button>
-              <Button 
-                onClick={() => setShowAnalysisSettings(true)}
-                variant="outline"
-                size="sm"
-                className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20"
-              >
-                <Settings className="w-3 h-3 mr-1" />
-                Settings
-              </Button>
-            </div>
+          <div className="flex justify-end pt-4 border-t">
             <Button variant="outline" onClick={() => setShowProductAnalysis(false)}>
               Close Analysis
             </Button>
