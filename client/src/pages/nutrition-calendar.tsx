@@ -755,6 +755,107 @@ export default function NutritionCalendar() {
                             </div>
                           )}
                           
+                          {/* Display detailed daily schedule if available */}
+                          {entry.dailySchedule && Array.isArray(entry.dailySchedule) && (
+                            <div className="mt-4 space-y-4">
+                              <h4 className="font-semibold text-lg flex items-center gap-2">
+                                <Clock className="w-5 h-5" />
+                                Daily Meal Plans
+                              </h4>
+                              
+                              {entry.dailySchedule.map((daySchedule: any) => {
+                                const scheduleDate = new Date(daySchedule.date);
+                                const isCurrentDay = isSameDay(scheduleDate, currentDate);
+                                
+                                if (isCurrentDay && daySchedule.meals) {
+                                  return (
+                                    <div key={daySchedule.day} className="border rounded-lg p-4 bg-background">
+                                      <div className="flex items-center justify-between mb-3">
+                                        <h5 className="font-medium text-md">
+                                          Day {daySchedule.day} - {format(scheduleDate, "MMM dd")}
+                                        </h5>
+                                        <div className="text-sm text-muted-foreground">
+                                          Total: {daySchedule.dailyTotalCalories || 0} cal
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="space-y-3">
+                                        {daySchedule.meals.map((meal: any, mealIndex: number) => (
+                                          <div key={mealIndex} className="border rounded p-3 bg-muted/50">
+                                            <div className="flex items-center justify-between mb-2">
+                                              <h6 className="font-medium text-sm flex items-center gap-1">
+                                                <TrendingUp className="w-4 h-4" />
+                                                {meal.name} - {meal.time}
+                                              </h6>
+                                              <span className="text-xs text-muted-foreground">
+                                                {meal.totalCalories} cal
+                                              </span>
+                                            </div>
+                                            
+                                            {meal.foods && meal.foods.length > 0 && (
+                                              <div className="space-y-2">
+                                                {meal.foods.map((food: any, foodIndex: number) => (
+                                                  <div key={foodIndex} className="flex items-center justify-between text-xs">
+                                                    <div className="flex-1">
+                                                      <div className="font-medium">{food.item}</div>
+                                                      <div className="text-muted-foreground">{food.portion}</div>
+                                                      {food.preparation && (
+                                                        <div className="text-muted-foreground italic">
+                                                          {food.preparation}
+                                                        </div>
+                                                      )}
+                                                    </div>
+                                                    <div className="text-right text-muted-foreground min-w-0 ml-2">
+                                                      <div>{food.calories} cal</div>
+                                                      <div className="flex gap-1 text-xs">
+                                                        <span className="text-green-600">P:{food.protein}g</span>
+                                                        <span className="text-orange-600">C:{food.carbs}g</span>
+                                                        <span className="text-purple-600">F:{food.fat}g</span>
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            )}
+                                            
+                                            {meal.notes && (
+                                              <div className="mt-2 text-xs text-muted-foreground italic">
+                                                Note: {meal.notes}
+                                              </div>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                      
+                                      {/* Daily totals breakdown */}
+                                      <div className="mt-3 pt-3 border-t">
+                                        <div className="grid grid-cols-4 gap-2 text-xs text-center">
+                                          <div>
+                                            <div className="font-medium">{daySchedule.dailyTotalCalories || 0}</div>
+                                            <div className="text-muted-foreground">Calories</div>
+                                          </div>
+                                          <div>
+                                            <div className="font-medium text-green-600">{daySchedule.dailyTotalProtein || 0}g</div>
+                                            <div className="text-muted-foreground">Protein</div>
+                                          </div>
+                                          <div>
+                                            <div className="font-medium text-orange-600">{daySchedule.dailyTotalCarbs || 0}g</div>
+                                            <div className="text-muted-foreground">Carbs</div>
+                                          </div>
+                                          <div>
+                                            <div className="font-medium text-purple-600">{daySchedule.dailyTotalFat || 0}g</div>
+                                            <div className="text-muted-foreground">Fat</div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                                return null;
+                              })}
+                            </div>
+                          )}
+
                           {entry.specialNotes && (
                             <div className="text-sm text-muted-foreground bg-muted p-3 rounded">
                               <strong>Notes:</strong> {entry.specialNotes}

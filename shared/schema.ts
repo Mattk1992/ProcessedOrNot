@@ -1016,6 +1016,9 @@ export const calendarEntries = pgTable("calendar_entries", {
   timeMeal14: varchar("time_meal_14", { length: 5 }),
   timeMeal15: varchar("time_meal_15", { length: 5 }),
   
+  // Detailed daily schedule with meals and food items (AI-generated data)
+  dailySchedule: jsonb("daily_schedule"), // Stores the detailed meal plans with foods, portions, and nutritional breakdowns
+  
   // Status and tracking
   status: varchar("status", { length: 20 }).default("active").notNull(), // 'active', 'completed', 'paused', 'cancelled'
   progress: real("progress").default(0), // percentage 0-100

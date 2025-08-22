@@ -4541,7 +4541,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         dailyProtein: generationResult.schedule.dailyProtein,
         dailyCarbs: generationResult.schedule.dailyCarbs,
         dailyFat: generationResult.schedule.dailyFat,
-        specialNotes: generationResult.schedule.specialNotes
+        specialNotes: generationResult.schedule.specialNotes,
+        dailySchedule: generationResult.schedule.dailySchedule // Save the detailed daily meal plans
       });
 
       // Save generation history
