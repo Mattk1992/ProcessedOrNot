@@ -124,6 +124,26 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
           }
         }
 
+        // Analyze glycemic index if we have nutrition data
+        if (edamamProduct.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              edamamProduct.ingredientsText || "",
+              edamamProduct.productName || "Unknown Product",
+              edamamProduct.nutriments,
+              'en',
+              userAIProvider,
+              userId
+            );
+            edamamProduct.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            edamamProduct.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            edamamProduct.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze Edamam glycemic index:", error);
+            edamamProduct.glycemicExplanation = "Unable to analyze glycemic impact at this time";
+          }
+        }
+
         console.log('Found sufficient product data in Edamam Food Database');
         return { product: edamamProduct, source: 'Edamam' };
       }
@@ -173,6 +193,26 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
           } catch (error) {
             console.error("Failed to analyze Agri-food Data production process:", error);
             agrifoodProduct.productionProcess = "Unable to analyze production process at this time";
+          }
+        }
+
+        // Analyze glycemic index if we have nutrition data
+        if (agrifoodProduct.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              agrifoodProduct.ingredientsText || "",
+              agrifoodProduct.productName || "Unknown Product",
+              agrifoodProduct.nutriments,
+              'en',
+              userAIProvider,
+              userId
+            );
+            agrifoodProduct.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            agrifoodProduct.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            agrifoodProduct.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze Agri-food Data glycemic index:", error);
+            agrifoodProduct.glycemicExplanation = "Unable to analyze glycemic impact at this time";
           }
         }
 
@@ -228,6 +268,26 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
           }
         }
 
+        // Analyze glycemic index if we have nutrition data
+        if (spoonacularProduct.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              spoonacularProduct.ingredientsText || "",
+              spoonacularProduct.productName || "Unknown Product",
+              spoonacularProduct.nutriments,
+              'en',
+              userAIProvider,
+              userId
+            );
+            spoonacularProduct.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            spoonacularProduct.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            spoonacularProduct.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze Spoonacular glycemic index:", error);
+            spoonacularProduct.glycemicExplanation = "Unable to analyze glycemic impact at this time";
+          }
+        }
+
         console.log('Found sufficient product data in Spoonacular');
         return { product: spoonacularProduct, source: 'Spoonacular' };
       }
@@ -253,7 +313,8 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
               usdaProduct.ingredientsText,
               usdaProduct.productName || "Unknown Product",
               'en',
-              userAIProvider
+              userAIProvider,
+              userId
             );
             usdaProduct.processingScore = analysis.score;
             usdaProduct.processingExplanation = analysis.explanation;
@@ -269,12 +330,33 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
               usdaProduct.productName || "Unknown Product",
               usdaProduct.nutriments || {},
               'en',
-              userAIProvider
+              userAIProvider,
+              userId
             );
             usdaProduct.productionProcess = productionProcess;
           } catch (error) {
             console.error("Failed to analyze USDA production process:", error);
             usdaProduct.productionProcess = "Unable to analyze production process at this time";
+          }
+        }
+
+        // Analyze glycemic index if we have nutrition data
+        if (usdaProduct.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              usdaProduct.ingredientsText || "",
+              usdaProduct.productName || "Unknown Product",
+              usdaProduct.nutriments,
+              'en',
+              userAIProvider,
+              userId
+            );
+            usdaProduct.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            usdaProduct.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            usdaProduct.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze USDA glycemic index:", error);
+            usdaProduct.glycemicExplanation = "Unable to analyze glycemic impact at this time";
           }
         }
 
@@ -351,7 +433,8 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
               product.product_name || "Unknown Product",
               product.nutriments,
               'en',
-              userAIProvider
+              userAIProvider,
+              userId
             );
             productData.glycemicIndex = glycemicAnalysis.glycemicIndex;
             productData.glycemicLoad = glycemicAnalysis.glycemicLoad;
@@ -370,7 +453,8 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
               product.product_name || "Unknown Product",
               product.nutriments || {},
               'en',
-              userAIProvider
+              userAIProvider,
+              userId
             );
           } catch (error) {
             console.error("Failed to analyze production process:", error);
@@ -403,7 +487,8 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
               foodDBCAProduct.ingredientsText,
               foodDBCAProduct.productName || "Unknown Product",
               'en',
-              userAIProvider
+              userAIProvider,
+              userId
             );
             foodDBCAProduct.processingScore = analysis.score;
             foodDBCAProduct.processingExplanation = analysis.explanation;
@@ -419,12 +504,33 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
               foodDBCAProduct.productName || "Unknown Product",
               foodDBCAProduct.nutriments || {},
               'en',
-              userAIProvider
+              userAIProvider,
+              userId
             );
             foodDBCAProduct.productionProcess = productionProcess;
           } catch (error) {
             console.error("Failed to analyze FoodDB.ca production process:", error);
             foodDBCAProduct.productionProcess = "Unable to analyze production process at this time";
+          }
+        }
+
+        // Analyze glycemic index if we have nutrition data
+        if (foodDBCAProduct.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              foodDBCAProduct.ingredientsText || "",
+              foodDBCAProduct.productName || "Unknown Product",
+              foodDBCAProduct.nutriments,
+              'en',
+              userAIProvider,
+              userId
+            );
+            foodDBCAProduct.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            foodDBCAProduct.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            foodDBCAProduct.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze FoodDB.ca glycemic index:", error);
+            foodDBCAProduct.glycemicExplanation = "Unable to analyze glycemic impact at this time";
           }
         }
 
@@ -447,13 +553,54 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         try {
           const analysis = await analyzeIngredients(
             usdaFDCProduct.ingredientsText,
-            usdaFDCProduct.productName || "Unknown Product"
+            usdaFDCProduct.productName || "Unknown Product",
+            'en',
+            userAIProvider,
+            userId
           );
           usdaFDCProduct.processingScore = analysis.score;
           usdaFDCProduct.processingExplanation = analysis.explanation;
         } catch (error) {
           console.error("Failed to analyze USDA FDC ingredients:", error);
           usdaFDCProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+
+        // Analyze production process if available
+        if (usdaFDCProduct.ingredientsText) {
+          try {
+            const productionProcess = await analyzeProductionProcess(
+              usdaFDCProduct.ingredientsText,
+              usdaFDCProduct.productName || "Unknown Product",
+              usdaFDCProduct.nutriments || {},
+              'en',
+              userAIProvider,
+              userId
+            );
+            usdaFDCProduct.productionProcess = productionProcess;
+          } catch (error) {
+            console.error("Failed to analyze USDA FDC production process:", error);
+            usdaFDCProduct.productionProcess = "Unable to analyze production process at this time";
+          }
+        }
+
+        // Analyze glycemic index if we have nutrition data
+        if (usdaFDCProduct.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              usdaFDCProduct.ingredientsText || "",
+              usdaFDCProduct.productName || "Unknown Product",
+              usdaFDCProduct.nutriments,
+              'en',
+              userAIProvider,
+              userId
+            );
+            usdaFDCProduct.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            usdaFDCProduct.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            usdaFDCProduct.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze USDA FDC glycemic index:", error);
+            usdaFDCProduct.glycemicExplanation = "Unable to analyze glycemic impact at this time";
+          }
         }
       }
 
@@ -475,13 +622,54 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         try {
           const analysis = await analyzeIngredients(
             openNutritionProduct.ingredientsText,
-            openNutritionProduct.productName || "Unknown Product"
+            openNutritionProduct.productName || "Unknown Product",
+            'en',
+            userAIProvider,
+            userId
           );
           openNutritionProduct.processingScore = analysis.score;
           openNutritionProduct.processingExplanation = analysis.explanation;
         } catch (error) {
           console.error("Failed to analyze OpenNutrition ingredients:", error);
           openNutritionProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+
+        // Analyze production process if available
+        if (openNutritionProduct.ingredientsText) {
+          try {
+            const productionProcess = await analyzeProductionProcess(
+              openNutritionProduct.ingredientsText,
+              openNutritionProduct.productName || "Unknown Product",
+              openNutritionProduct.nutriments || {},
+              'en',
+              userAIProvider,
+              userId
+            );
+            openNutritionProduct.productionProcess = productionProcess;
+          } catch (error) {
+            console.error("Failed to analyze OpenNutrition production process:", error);
+            openNutritionProduct.productionProcess = "Unable to analyze production process at this time";
+          }
+        }
+
+        // Analyze glycemic index if we have nutrition data
+        if (openNutritionProduct.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              openNutritionProduct.ingredientsText || "",
+              openNutritionProduct.productName || "Unknown Product",
+              openNutritionProduct.nutriments,
+              'en',
+              userAIProvider,
+              userId
+            );
+            openNutritionProduct.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            openNutritionProduct.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            openNutritionProduct.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze OpenNutrition glycemic index:", error);
+            openNutritionProduct.glycemicExplanation = "Unable to analyze glycemic impact at this time";
+          }
         }
       }
 
@@ -503,13 +691,54 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         try {
           const analysis = await analyzeIngredients(
             nutritionixProduct.ingredientsText,
-            nutritionixProduct.productName || "Unknown Product"
+            nutritionixProduct.productName || "Unknown Product",
+            'en',
+            userAIProvider,
+            userId
           );
           nutritionixProduct.processingScore = analysis.score;
           nutritionixProduct.processingExplanation = analysis.explanation;
         } catch (error) {
           console.error("Failed to analyze Nutritionix ingredients:", error);
           nutritionixProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+
+        // Analyze production process if available
+        if (nutritionixProduct.ingredientsText) {
+          try {
+            const productionProcess = await analyzeProductionProcess(
+              nutritionixProduct.ingredientsText,
+              nutritionixProduct.productName || "Unknown Product",
+              nutritionixProduct.nutriments || {},
+              'en',
+              userAIProvider,
+              userId
+            );
+            nutritionixProduct.productionProcess = productionProcess;
+          } catch (error) {
+            console.error("Failed to analyze Nutritionix production process:", error);
+            nutritionixProduct.productionProcess = "Unable to analyze production process at this time";
+          }
+        }
+
+        // Analyze glycemic index if we have nutrition data
+        if (nutritionixProduct.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              nutritionixProduct.ingredientsText || "",
+              nutritionixProduct.productName || "Unknown Product",
+              nutritionixProduct.nutriments,
+              'en',
+              userAIProvider,
+              userId
+            );
+            nutritionixProduct.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            nutritionixProduct.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            nutritionixProduct.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze Nutritionix glycemic index:", error);
+            nutritionixProduct.glycemicExplanation = "Unable to analyze glycemic impact at this time";
+          }
         }
       }
 
@@ -531,13 +760,54 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         try {
           const analysis = await analyzeIngredients(
             apiNinjasProduct.ingredientsText,
-            apiNinjasProduct.productName || "Unknown Product"
+            apiNinjasProduct.productName || "Unknown Product",
+            'en',
+            userAIProvider,
+            userId
           );
           apiNinjasProduct.processingScore = analysis.score;
           apiNinjasProduct.processingExplanation = analysis.explanation;
         } catch (error) {
           console.error("Failed to analyze API Ninjas ingredients:", error);
           apiNinjasProduct.processingExplanation = "Unable to analyze ingredients at this time";
+        }
+
+        // Analyze production process if available
+        if (apiNinjasProduct.ingredientsText) {
+          try {
+            const productionProcess = await analyzeProductionProcess(
+              apiNinjasProduct.ingredientsText,
+              apiNinjasProduct.productName || "Unknown Product",
+              apiNinjasProduct.nutriments || {},
+              'en',
+              userAIProvider,
+              userId
+            );
+            apiNinjasProduct.productionProcess = productionProcess;
+          } catch (error) {
+            console.error("Failed to analyze API Ninjas production process:", error);
+            apiNinjasProduct.productionProcess = "Unable to analyze production process at this time";
+          }
+        }
+
+        // Analyze glycemic index if we have nutrition data
+        if (apiNinjasProduct.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              apiNinjasProduct.ingredientsText || "",
+              apiNinjasProduct.productName || "Unknown Product",
+              apiNinjasProduct.nutriments,
+              'en',
+              userAIProvider,
+              userId
+            );
+            apiNinjasProduct.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            apiNinjasProduct.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            apiNinjasProduct.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze API Ninjas glycemic index:", error);
+            apiNinjasProduct.glycemicExplanation = "Unable to analyze glycemic impact at this time";
+          }
         }
       }
 
