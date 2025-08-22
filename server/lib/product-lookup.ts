@@ -78,6 +78,9 @@ export async function smartProductLookup(input: string, filters?: { includeBrand
 export async function cascadingProductLookup(barcode: string, userId?: number): Promise<ProductLookupResult> {
   console.log(`Starting cascading lookup for barcode: ${barcode}`);
 
+  // Track product names found during cascade for potential text search fallback
+  const foundProductNames: string[] = [];
+
   // Get user's AI provider setting
   const userAIProvider = await getUserAIProvider(userId);
 
@@ -87,6 +90,12 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     const edamamProduct = await fetchProductFromEdamam(barcode);
     
     if (edamamProduct) {
+      // Track product name if found
+      if (edamamProduct.productName && !foundProductNames.includes(edamamProduct.productName)) {
+        foundProductNames.push(edamamProduct.productName);
+        console.log(`Collected product name from Edamam: ${edamamProduct.productName}`);
+      }
+
       // Check if product data is sufficient
       if (!isProductDataSufficient(edamamProduct)) {
         console.log('Edamam product has insufficient data, continuing cascade...');
@@ -189,6 +198,12 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         dataSource: 'OpenFoodFacts'
       };
 
+      // Track product name if found
+      if (productData.productName && !foundProductNames.includes(productData.productName)) {
+        foundProductNames.push(productData.productName);
+        console.log(`Collected product name from OpenFoodFacts: ${productData.productName}`);
+      }
+
       // Check if product data is sufficient
       if (!isProductDataSufficient(productData)) {
         console.log('OpenFoodFacts product has insufficient data, continuing cascade...');
@@ -262,6 +277,12 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     const agrifoodProduct = await fetchProductFromAgrifoodData(barcode);
     
     if (agrifoodProduct) {
+      // Track product name if found
+      if (agrifoodProduct.productName && !foundProductNames.includes(agrifoodProduct.productName)) {
+        foundProductNames.push(agrifoodProduct.productName);
+        console.log(`Collected product name from Agri-food Data: ${agrifoodProduct.productName}`);
+      }
+
       // Check if product data is sufficient
       if (!isProductDataSufficient(agrifoodProduct)) {
         console.log('Agri-food Data product has insufficient data, continuing cascade...');
@@ -478,6 +499,12 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     const usdaProduct = await fetchProductFromUSDA(barcode);
     
     if (usdaProduct) {
+      // Track product name if found
+      if (usdaProduct.productName && !foundProductNames.includes(usdaProduct.productName)) {
+        foundProductNames.push(usdaProduct.productName);
+        console.log(`Collected product name from USDA: ${usdaProduct.productName}`);
+      }
+
       // Check if product data is sufficient
       if (!isProductDataSufficient(usdaProduct)) {
         console.log('USDA product has insufficient data, continuing cascade...');
@@ -995,6 +1022,12 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     const upcProduct = await fetchProductFromUPCDatabase(barcode);
     
     if (upcProduct) {
+      // Track product name if found
+      if (upcProduct.productName && !foundProductNames.includes(upcProduct.productName)) {
+        foundProductNames.push(upcProduct.productName);
+        console.log(`Collected product name from UPC Database: ${upcProduct.productName}`);
+      }
+
       console.log('Found product in UPC Database');
       return { product: upcProduct, source: 'UPC Database' };
     }
@@ -1002,7 +1035,35 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('UPC Database lookup failed:', error);
   }
 
-  // 17. All lookups failed
+  // 17. Text search fallback using collected product names
+  if (foundProductNames.length > 0) {
+    console.log(`Attempting text search fallback with collected product names: ${foundProductNames.join(', ')}`);
+    
+    // Try each collected product name for text search
+    for (const productName of foundProductNames) {
+      try {
+        console.log(`Trying text search for product name: ${productName}`);
+        const textSearchResult = await searchProductByText(productName, undefined, userId);
+        
+        if (textSearchResult.product) {
+          console.log(`Successfully found product via text search using name: ${productName}`);
+          // Update the barcode to match the original barcode searched
+          textSearchResult.product.barcode = barcode;
+          return {
+            product: textSearchResult.product,
+            source: `${textSearchResult.source} (via text search fallback)`,
+            error: undefined
+          };
+        }
+      } catch (error) {
+        console.error(`Text search failed for product name "${productName}":`, error);
+      }
+    }
+    
+    console.log('Text search fallback failed for all collected product names');
+  }
+
+  // 18. All lookups failed
   console.log('All database lookups failed for barcode:', barcode);
   return { 
     product: null, 
