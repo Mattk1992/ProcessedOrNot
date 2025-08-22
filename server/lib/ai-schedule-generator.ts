@@ -77,26 +77,62 @@ export class AIScheduleGenerator {
   private static formatUserProfile(profile: UserOnboarding): string {
     const profileData = [];
     
+    // Handle both camelCase and snake_case field names due to database mapping issues
+    const getField = (camelCase: string, snakeCase: string) => {
+      return (profile as any)[camelCase] || (profile as any)[snakeCase];
+    };
+    
     if (profile.age) profileData.push(`Age: ${profile.age}`);
     if (profile.gender) profileData.push(`Gender: ${profile.gender}`);
     if (profile.height) profileData.push(`Height: ${profile.height} cm`);
     if (profile.weight) profileData.push(`Weight: ${profile.weight} kg`);
-    if (profile.activityLevel) profileData.push(`Activity Level: ${profile.activityLevel}`);
-    if (profile.weightGoals) profileData.push(`Weight Goals: ${profile.weightGoals}`);
-    if (profile.targetWeight) profileData.push(`Target Weight: ${profile.targetWeight} kg`);
-    if (profile.healthGoals?.length) profileData.push(`Health Goals: ${profile.healthGoals.join(', ')}`);
-    if (profile.medicalConditions?.length) profileData.push(`Medical Conditions: ${profile.medicalConditions.join(', ')}`);
+    
+    const activityLevel = getField('activityLevel', 'activity_level');
+    if (activityLevel) profileData.push(`Activity Level: ${activityLevel}`);
+    
+    const weightGoals = getField('weightGoals', 'weight_goals');
+    if (weightGoals) profileData.push(`Weight Goals: ${weightGoals}`);
+    
+    const targetWeight = getField('targetWeight', 'target_weight');
+    if (targetWeight) profileData.push(`Target Weight: ${targetWeight} kg`);
+    
+    const healthGoals = getField('healthGoals', 'health_goals');
+    if (healthGoals?.length) profileData.push(`Health Goals: ${healthGoals.join(', ')}`);
+    
+    const medicalConditions = getField('medicalConditions', 'medical_conditions');
+    if (medicalConditions?.length) profileData.push(`Medical Conditions: ${medicalConditions.join(', ')}`);
+    
     if (profile.allergies?.length) profileData.push(`Allergies: ${profile.allergies.join(', ')}`);
-    if (profile.foodPreferences?.length) profileData.push(`Food Preferences: ${profile.foodPreferences.join(', ')}`);
-    if (profile.dietaryRestrictions?.length) profileData.push(`Dietary Restrictions: ${profile.dietaryRestrictions.join(', ')}`);
-    if (profile.exerciseFrequency) profileData.push(`Exercise Frequency: ${profile.exerciseFrequency}`);
-    if (profile.exerciseTypes?.length) profileData.push(`Exercise Types: ${profile.exerciseTypes.join(', ')}`);
-    if (profile.mealsPerDay) profileData.push(`Meals Per Day: ${profile.mealsPerDay}`);
-    if (profile.cookingSkill) profileData.push(`Cooking Skill: ${profile.cookingSkill}`);
-    if (profile.cookingFrequency) profileData.push(`Cooking Frequency: ${profile.cookingFrequency}`);
-    if (profile.sleepHours) profileData.push(`Sleep Hours: ${profile.sleepHours}`);
-    if (profile.stressLevel) profileData.push(`Stress Level: ${profile.stressLevel}`);
-    if (profile.waterIntake) profileData.push(`Water Intake: ${profile.waterIntake} glasses/day`);
+    
+    const foodPreferences = getField('foodPreferences', 'food_preferences');
+    if (foodPreferences?.length) profileData.push(`Food Preferences: ${foodPreferences.join(', ')}`);
+    
+    const dietaryRestrictions = getField('dietaryRestrictions', 'dietary_restrictions');
+    if (dietaryRestrictions?.length) profileData.push(`Dietary Restrictions: ${dietaryRestrictions.join(', ')}`);
+    
+    const exerciseFrequency = getField('exerciseFrequency', 'exercise_frequency');
+    if (exerciseFrequency) profileData.push(`Exercise Frequency: ${exerciseFrequency}`);
+    
+    const exerciseTypes = getField('exerciseTypes', 'exercise_types');
+    if (exerciseTypes?.length) profileData.push(`Exercise Types: ${exerciseTypes.join(', ')}`);
+    
+    const mealsPerDay = getField('mealsPerDay', 'meals_per_day');
+    if (mealsPerDay) profileData.push(`Meals Per Day: ${mealsPerDay}`);
+    
+    const cookingSkill = getField('cookingSkill', 'cooking_skill');
+    if (cookingSkill) profileData.push(`Cooking Skill: ${cookingSkill}`);
+    
+    const cookingFrequency = getField('cookingFrequency', 'cooking_frequency');
+    if (cookingFrequency) profileData.push(`Cooking Frequency: ${cookingFrequency}`);
+    
+    const sleepHours = getField('sleepHours', 'sleep_hours');
+    if (sleepHours) profileData.push(`Sleep Hours: ${sleepHours}`);
+    
+    const stressLevel = getField('stressLevel', 'stress_level');
+    if (stressLevel) profileData.push(`Stress Level: ${stressLevel}`);
+    
+    const waterIntake = getField('waterIntake', 'water_intake');
+    if (waterIntake) profileData.push(`Water Intake: ${waterIntake} glasses/day`);
     
     return profileData.join('\n');
   }

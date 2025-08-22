@@ -2793,6 +2793,8 @@ export class DatabaseStorage implements IStorage {
       .from(userOnboarding)
       .where(eq(userOnboarding.userId, userId));
     
+    // The Drizzle ORM should automatically map database columns to camelCase properties
+    // If this is not happening, the onboarding object should already have the correct structure
     return onboarding || undefined;
   }
 
