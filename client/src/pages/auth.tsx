@@ -75,7 +75,7 @@ export default function Auth() {
       
       // Small delay to allow auth state to update before redirect
       setTimeout(() => {
-        window.location.href = "/";
+        window.location.href = "/nutri-dashboard";
       }, 200);
     },
     onError: (error: any) => {
@@ -102,10 +102,10 @@ export default function Auth() {
         title: t("auth.register.success") || "Account created successfully",
         description: t("auth.register.verificationSent") || "Please check your email for verification",
       });
-      // Invalidate auth cache and redirect to home page
+      // Invalidate auth cache and redirect to dashboard
       queryClient.invalidateQueries({ queryKey: ["/api/auth/me"] });
       setTimeout(() => {
-        setLocation("/");
+        setLocation("/nutri-dashboard");
       }, 100);
     },
     onError: (error: any) => {
