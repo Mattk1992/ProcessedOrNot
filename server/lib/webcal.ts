@@ -221,3 +221,22 @@ export function generateHttpsWebcalUrl(userId: number, baseUrl: string): string 
   const token = Buffer.from(`${userId}-${Date.now()}`).toString('base64url');
   return `${baseUrl}/api/webcal/${userId}/${token}.ics`;
 }
+
+export async function generateWebcalUrls(userId: number, entries: any[]): Promise<{
+  webcalUrl: string;
+  httpsUrl: string;
+  instructions: any;
+}> {
+  // Generate base URL (we'll use a default since we don't have access to req here)
+  const baseUrl = process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000';
+  
+  return {
+    webcalUrl: generateWebcalUrl(userId, baseUrl),
+    httpsUrl: generateHttpsWebcalUrl(userId, baseUrl),
+    instructions: {
+      ios: 'Tap the webcal link to automatically add to your iOS Calendar app',
+      android: 'Copy the HTTPS URL and import it into Google Calendar or your preferred calendar app',
+      desktop: 'Copy the webcal link and add it as a calendar subscription in your calendar application'
+    }
+  };
+}
