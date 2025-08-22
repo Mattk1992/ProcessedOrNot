@@ -5224,7 +5224,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Recipe search API endpoint
   app.post("/api/recipes/search", ensureSession, async (req: any, res) => {
     try {
-      const { query } = req.body;
+      const { 
+        query, 
+        category, 
+        cuisine, 
+        difficulty, 
+        cookingTime, 
+        maxCalories, 
+        minCalories, 
+        dietaryRestrictions 
+      } = req.body;
 
       if (!query || typeof query !== 'string' || query.trim().length === 0) {
         return res.status(400).json({ 
@@ -5233,10 +5242,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      console.log(`Recipe search request: "${query}" from user ${req.session.userId}`);
+      console.log(`Recipe search request: "${query}" with filters:`, {
+        category, cuisine, difficulty, cookingTime, maxCalories, minCalories, dietaryRestrictions
+      }, `from user ${req.session.userId}`);
 
-      // Use cascading recipe search system
-      const searchResult = await cascadingRecipeSearch(query.trim(), req.session.userId);
+      // Use cascading recipe search system with filters
+      const searchResult = await cascadingRecipeSearch(
+        query.trim(), 
+        req.session.userId, 
+        {
+          category,
+          cuisine,
+          difficulty,
+          cookingTime,
+          maxCalories,
+          minCalories,
+          dietaryRestrictions
+        }
+      );
 
       if (searchResult.error && searchResult.recipes.length === 0) {
         return res.status(404).json({
@@ -5251,6 +5274,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         recipes: searchResult.recipes,
         source: searchResult.source,
         query: query.trim(),
+        filters: { category, cuisine, difficulty, cookingTime, maxCalories, minCalories, dietaryRestrictions },
         total: searchResult.recipes.length
       });
 

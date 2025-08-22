@@ -27,15 +27,41 @@ interface RecipeLookupResult {
   error?: string;
 }
 
+interface SearchFilters {
+  category?: string;
+  cuisine?: string;
+  difficulty?: string;
+  cookingTime?: string;
+  maxCalories?: number;
+  minCalories?: number;
+  dietaryRestrictions?: string[];
+}
+
 /**
  * Search for recipes using The Meal DB API
  */
-async function searchTheMealDB(query: string): Promise<RecipeLookupResult> {
-  console.log(`Searching The Meal DB for: ${query}`);
+async function searchTheMealDB(query: string, filters?: SearchFilters): Promise<RecipeLookupResult> {
+  console.log(`Searching The Meal DB for: ${query}`, filters ? `with filters: ${JSON.stringify(filters)}` : '');
   
   try {
-    // Search by recipe name
-    const searchUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`;
+    let searchUrl: string;
+    let isFilteredSearch = false;
+    
+    // Try category-specific search first if category filter is provided
+    if (filters?.category) {
+      searchUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?c=${encodeURIComponent(filters.category)}`;
+      isFilteredSearch = true;
+    }
+    // Try area/cuisine-specific search if cuisine filter is provided
+    else if (filters?.cuisine) {
+      searchUrl = `https://www.themealdb.com/api/json/v1/1/filter.php?a=${encodeURIComponent(filters.cuisine)}`;
+      isFilteredSearch = true;
+    }
+    // Default to name search
+    else {
+      searchUrl = `https://www.themealdb.com/api/json/v1/1/search.php?s=${encodeURIComponent(query)}`;
+    }
+    
     const response = await fetch(searchUrl);
     
     if (!response.ok) {
@@ -49,7 +75,39 @@ async function searchTheMealDB(query: string): Promise<RecipeLookupResult> {
       return { recipes: [], source: "The Meal DB" };
     }
 
-    const recipes: Recipe[] = data.meals.map((meal: any) => {
+    let meals = data.meals;
+    
+    // If we did a filtered search, we need to get full details and filter by name
+    if (isFilteredSearch) {
+      // Filter meals by query text match in title
+      meals = meals.filter((meal: any) => 
+        meal.strMeal.toLowerCase().includes(query.toLowerCase())
+      );
+      
+      // Limit results for performance
+      meals = meals.slice(0, 10);
+      
+      // Get detailed information for filtered results
+      const detailedMeals = [];
+      for (const meal of meals) {
+        try {
+          const detailUrl = `https://www.themealdb.com/api/json/v1/1/lookup.php?i=${meal.idMeal}`;
+          const detailResponse = await fetch(detailUrl);
+          if (detailResponse.ok) {
+            const detailData = await detailResponse.json();
+            if (detailData.meals && detailData.meals[0]) {
+              detailedMeals.push(detailData.meals[0]);
+            }
+          }
+        } catch (error) {
+          console.warn(`Failed to fetch details for recipe ${meal.idMeal}:`, error);
+          detailedMeals.push(meal); // Add basic info if detailed fetch fails
+        }
+      }
+      meals = detailedMeals;
+    }
+
+    const recipes: Recipe[] = meals.map((meal: any) => {
       // Extract ingredients with measurements
       const ingredients: string[] = [];
       for (let i = 1; i <= 20; i++) {
@@ -109,8 +167,8 @@ async function searchTheMealDB(query: string): Promise<RecipeLookupResult> {
 /**
  * Search for recipes by ingredient using The Meal DB API
  */
-async function searchTheMealDBByIngredient(ingredient: string): Promise<RecipeLookupResult> {
-  console.log(`Searching The Meal DB by ingredient: ${ingredient}`);
+async function searchTheMealDBByIngredient(ingredient: string, filters?: SearchFilters): Promise<RecipeLookupResult> {
+  console.log(`Searching The Meal DB by ingredient: ${ingredient}`, filters ? `with filters: ${JSON.stringify(filters)}` : '');
   
   try {
     // Search by main ingredient
@@ -226,8 +284,8 @@ async function searchTheMealDBByIngredient(ingredient: string): Promise<RecipeLo
 /**
  * Generate recipes using AI when database search fails
  */
-async function generateRecipesWithAI(query: string, userId?: number): Promise<RecipeLookupResult> {
-  console.log(`Generating recipes with AI for: ${query}`);
+async function generateRecipesWithAI(query: string, userId?: number, filters?: SearchFilters): Promise<RecipeLookupResult> {
+  console.log(`Generating recipes with AI for: ${query}`, filters ? `with filters: ${JSON.stringify(filters)}` : '');
   
   try {
     // Get user's AI provider setting
@@ -241,7 +299,30 @@ async function generateRecipesWithAI(query: string, userId?: number): Promise<Re
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    const prompt = `Generate 3-5 recipe suggestions for "${query}". Return a JSON array of recipes with the following structure for each recipe:
+    // Build filter requirements for the AI prompt
+    let filterRequirements = '';
+    if (filters) {
+      const requirements = [];
+      if (filters.category) requirements.push(`Category: ${filters.category}`);
+      if (filters.cuisine) requirements.push(`Cuisine: ${filters.cuisine}`);
+      if (filters.difficulty) requirements.push(`Difficulty: ${filters.difficulty}`);
+      if (filters.cookingTime) {
+        if (filters.cookingTime === 'Under 30 min') requirements.push('Cooking time: under 30 minutes');
+        else if (filters.cookingTime === '30-60 min') requirements.push('Cooking time: 30-60 minutes');
+        else if (filters.cookingTime === 'Over 1 hour') requirements.push('Cooking time: over 1 hour');
+      }
+      if (filters.maxCalories) requirements.push(`Maximum calories per serving: ${filters.maxCalories}`);
+      if (filters.minCalories) requirements.push(`Minimum calories per serving: ${filters.minCalories}`);
+      if (filters.dietaryRestrictions && filters.dietaryRestrictions.length > 0) {
+        requirements.push(`Dietary requirements: ${filters.dietaryRestrictions.join(', ')}`);
+      }
+      
+      if (requirements.length > 0) {
+        filterRequirements = `\n\nIMPORTANT REQUIREMENTS:\n${requirements.join('\n')}`;
+      }
+    }
+
+    const prompt = `Generate 3-5 recipe suggestions for "${query}".${filterRequirements} Return a JSON array of recipes with the following structure for each recipe:
 
 {
   "id": "unique_id",
@@ -322,16 +403,105 @@ Focus on practical, achievable recipes with clear instructions. Include estimate
 }
 
 /**
+ * Apply filters to recipe results
+ */
+function applyRecipeFilters(recipes: Recipe[], filters?: SearchFilters): Recipe[] {
+  if (!filters) return recipes;
+  
+  return recipes.filter(recipe => {
+    // Category filter
+    if (filters.category && recipe.category !== filters.category) {
+      return false;
+    }
+    
+    // Cuisine filter
+    if (filters.cuisine && recipe.cuisine !== filters.cuisine) {
+      return false;
+    }
+    
+    // Difficulty filter
+    if (filters.difficulty && recipe.difficulty !== filters.difficulty) {
+      return false;
+    }
+    
+    // Cooking time filter
+    if (filters.cookingTime && recipe.cookingTime) {
+      const timeMatch = {
+        "Under 30 min": (time: string) => {
+          const minutes = parseInt(time.match(/\d+/)?.[0] || "0");
+          return minutes < 30;
+        },
+        "30-60 min": (time: string) => {
+          const minutes = parseInt(time.match(/\d+/)?.[0] || "0");
+          return minutes >= 30 && minutes <= 60;
+        },
+        "Over 1 hour": (time: string) => {
+          const minutes = parseInt(time.match(/\d+/)?.[0] || "0");
+          return minutes > 60;
+        }
+      };
+      
+      if (!timeMatch[filters.cookingTime as keyof typeof timeMatch]?.(recipe.cookingTime)) {
+        return false;
+      }
+    }
+    
+    // Calorie filter
+    if (recipe.calories) {
+      if (filters.minCalories && recipe.calories < filters.minCalories) {
+        return false;
+      }
+      if (filters.maxCalories && recipe.calories > filters.maxCalories) {
+        return false;
+      }
+    }
+    
+    // Dietary restrictions filter
+    if (filters.dietaryRestrictions && filters.dietaryRestrictions.length > 0) {
+      const recipeText = `${recipe.title} ${recipe.description || ''} ${recipe.category || ''} ${recipe.ingredients?.join(' ') || ''}`.toLowerCase();
+      
+      const hasRequiredDietary = filters.dietaryRestrictions.every(dietary => {
+        switch (dietary) {
+          case "Vegetarian":
+            return recipe.category === "Vegetarian" || recipeText.includes('vegetarian');
+          case "Vegan":
+            return recipe.category === "Vegan" || recipeText.includes('vegan');
+          case "Gluten-Free":
+            return recipeText.includes('gluten-free') || recipeText.includes('gluten free');
+          case "Dairy-Free":
+            return recipeText.includes('dairy-free') || recipeText.includes('dairy free');
+          case "Low-Carb":
+            return recipeText.includes('low-carb') || recipeText.includes('low carb');
+          case "Keto":
+            return recipeText.includes('keto') || recipeText.includes('ketogenic');
+          default:
+            return true;
+        }
+      });
+      
+      if (!hasRequiredDietary) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+}
+
+/**
  * Main recipe search function with cascading database fallback
  */
-export async function cascadingRecipeSearch(query: string, userId?: number): Promise<RecipeLookupResult> {
-  console.log(`Starting cascading recipe search for: ${query}`);
+export async function cascadingRecipeSearch(query: string, userId?: number, filters?: SearchFilters): Promise<RecipeLookupResult> {
+  console.log(`Starting cascading recipe search for: ${query}`, filters ? `with filters: ${JSON.stringify(filters)}` : '');
 
-  // Step 1: Search The Meal DB by recipe name
-  const mealDBResult = await searchTheMealDB(query);
+  // Step 1: Search The Meal DB by recipe name (with filters if applicable)
+  const mealDBResult = await searchTheMealDB(query, filters);
   if (mealDBResult.recipes.length > 0) {
-    console.log(`Found recipes in The Meal DB, returning ${mealDBResult.recipes.length} results`);
-    return mealDBResult;
+    const filteredRecipes = applyRecipeFilters(mealDBResult.recipes, filters);
+    if (filteredRecipes.length > 0) {
+      console.log(`Found ${filteredRecipes.length} filtered recipes in The Meal DB`);
+      return { ...mealDBResult, recipes: filteredRecipes };
+    }
   }
 
   // Step 2: Search The Meal DB by ingredient if it looks like an ingredient
@@ -340,25 +510,30 @@ export async function cascadingRecipeSearch(query: string, userId?: number): Pro
   
   const hasIngredient = words.some(word => commonIngredients.includes(word));
   if (hasIngredient) {
-    const ingredientResult = await searchTheMealDBByIngredient(query);
+    const ingredientResult = await searchTheMealDBByIngredient(query, filters);
     if (ingredientResult.recipes.length > 0) {
-      console.log(`Found recipes by ingredient in The Meal DB, returning ${ingredientResult.recipes.length} results`);
-      return ingredientResult;
+      const filteredRecipes = applyRecipeFilters(ingredientResult.recipes, filters);
+      if (filteredRecipes.length > 0) {
+        console.log(`Found ${filteredRecipes.length} filtered recipes by ingredient in The Meal DB`);
+        return { ...ingredientResult, recipes: filteredRecipes };
+      }
     }
   }
 
-  // Step 3: Generate recipes with AI
-  const aiResult = await generateRecipesWithAI(query, userId);
+  // Step 3: Generate recipes with AI (includes filter requirements in prompt)
+  const aiResult = await generateRecipesWithAI(query, userId, filters);
   if (aiResult.recipes.length > 0) {
-    console.log(`Generated recipes with AI, returning ${aiResult.recipes.length} results`);
-    return aiResult;
+    // AI recipes should already match filters from the prompt, but apply filters as backup
+    const filteredRecipes = applyRecipeFilters(aiResult.recipes, filters);
+    console.log(`Generated ${filteredRecipes.length} filtered recipes with AI`);
+    return { ...aiResult, recipes: filteredRecipes };
   }
 
   // Step 4: No results found
-  console.log(`No recipes found for: ${query}`);
+  console.log(`No recipes found for: ${query} with the specified filters`);
   return {
     recipes: [],
     source: "No results",
-    error: `No recipes found for "${query}". Try different search terms or ingredients.`
+    error: `No recipes found for "${query}" with the selected filters. Try adjusting your search criteria.`
   };
 }

@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Clock, Users, ChefHat, ExternalLink, ArrowLeft, Loader2 } from "lucide-react";
+import { Search, Clock, Users, ChefHat, ExternalLink, ArrowLeft, Loader2, Filter, X } from "lucide-react";
 import { format } from "date-fns";
 
 interface Recipe {
@@ -39,6 +42,32 @@ export default function Recipes() {
   const [searchResults, setSearchResults] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  
+  // Filter states
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [selectedCuisine, setSelectedCuisine] = useState<string>("");
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>("");
+  const [selectedCookingTime, setSelectedCookingTime] = useState<string>("");
+  const [calorieRange, setCalorieRange] = useState<number[]>([0, 1000]);
+  const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
+  
+  // Filter options
+  const categories = [
+    "Beef", "Chicken", "Dessert", "Lamb", "Miscellaneous", "Pasta", "Pork",
+    "Seafood", "Side", "Starter", "Vegan", "Vegetarian", "Breakfast", "Goat"
+  ];
+  
+  const cuisines = [
+    "American", "British", "Canadian", "Chinese", "Croatian", "Dutch", "Egyptian",
+    "French", "Greek", "Indian", "Irish", "Italian", "Jamaican", "Japanese",
+    "Kenyan", "Malaysian", "Mexican", "Moroccan", "Polish", "Portuguese",
+    "Russian", "Spanish", "Thai", "Tunisian", "Turkish", "Vietnamese"
+  ];
+  
+  const difficulties = ["Easy", "Medium", "Hard"];
+  const cookingTimes = ["Under 30 min", "30-60 min", "Over 1 hour"];
+  const dietaryOptions = ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Low-Carb", "Keto"];
 
   // Redirect if not authenticated
   if (!isAuthenticated) {
@@ -61,12 +90,23 @@ export default function Recipes() {
     setSelectedRecipe(null);
 
     try {
+      const searchParams = {
+        query: searchQuery,
+        category: selectedCategory,
+        cuisine: selectedCuisine,
+        difficulty: selectedDifficulty,
+        cookingTime: selectedCookingTime,
+        maxCalories: calorieRange[1],
+        minCalories: calorieRange[0],
+        dietaryRestrictions: dietaryRestrictions
+      };
+      
       const response = await fetch('/api/recipes/search', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ query: searchQuery }),
+        body: JSON.stringify(searchParams),
       });
 
       if (!response.ok) {
@@ -74,12 +114,17 @@ export default function Recipes() {
       }
 
       const data = await response.json();
-      setSearchResults(data.recipes || []);
+      let results = data.recipes || [];
+      
+      // Apply client-side filters for AI-generated recipes
+      results = applyClientSideFilters(results);
+      
+      setSearchResults(results);
 
-      if (!data.recipes || data.recipes.length === 0) {
+      if (results.length === 0) {
         toast({
           title: "No Recipes Found",
-          description: `No recipes found for "${searchQuery}". Try searching for different ingredients or recipe names.`,
+          description: `No recipes found for "${searchQuery}" with the selected filters. Try adjusting your search criteria.`,
         });
       }
     } catch (error) {
@@ -94,6 +139,108 @@ export default function Recipes() {
       setIsSearching(false);
     }
   };
+  
+  const applyClientSideFilters = (recipes: Recipe[]): Recipe[] => {
+    return recipes.filter(recipe => {
+      // Category filter
+      if (selectedCategory && recipe.category !== selectedCategory) {
+        return false;
+      }
+      
+      // Cuisine filter
+      if (selectedCuisine && recipe.cuisine !== selectedCuisine) {
+        return false;
+      }
+      
+      // Difficulty filter
+      if (selectedDifficulty && recipe.difficulty !== selectedDifficulty) {
+        return false;
+      }
+      
+      // Cooking time filter
+      if (selectedCookingTime && recipe.cookingTime) {
+        const timeMatch = {
+          "Under 30 min": (time: string) => {
+            const minutes = parseInt(time.match(/\d+/)?.[0] || "0");
+            return minutes < 30;
+          },
+          "30-60 min": (time: string) => {
+            const minutes = parseInt(time.match(/\d+/)?.[0] || "0");
+            return minutes >= 30 && minutes <= 60;
+          },
+          "Over 1 hour": (time: string) => {
+            const minutes = parseInt(time.match(/\d+/)?.[0] || "0");
+            return minutes > 60;
+          }
+        };
+        
+        if (!timeMatch[selectedCookingTime as keyof typeof timeMatch]?.(recipe.cookingTime)) {
+          return false;
+        }
+      }
+      
+      // Calorie filter
+      if (recipe.calories && (recipe.calories < calorieRange[0] || recipe.calories > calorieRange[1])) {
+        return false;
+      }
+      
+      // Dietary restrictions filter
+      if (dietaryRestrictions.length > 0) {
+        const recipeText = `${recipe.title} ${recipe.description || ''} ${recipe.category || ''} ${recipe.ingredients?.join(' ') || ''}`.toLowerCase();
+        
+        const hasRequiredDietary = dietaryRestrictions.every(dietary => {
+          switch (dietary) {
+            case "Vegetarian":
+              return recipe.category === "Vegetarian" || recipeText.includes('vegetarian');
+            case "Vegan":
+              return recipe.category === "Vegan" || recipeText.includes('vegan');
+            case "Gluten-Free":
+              return recipeText.includes('gluten-free') || recipeText.includes('gluten free');
+            case "Dairy-Free":
+              return recipeText.includes('dairy-free') || recipeText.includes('dairy free');
+            case "Low-Carb":
+              return recipeText.includes('low-carb') || recipeText.includes('low carb');
+            case "Keto":
+              return recipeText.includes('keto') || recipeText.includes('ketogenic');
+            default:
+              return true;
+          }
+        });
+        
+        if (!hasRequiredDietary) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+  };
+  
+  const clearFilters = () => {
+    setSelectedCategory("");
+    setSelectedCuisine("");
+    setSelectedDifficulty("");
+    setSelectedCookingTime("");
+    setCalorieRange([0, 1000]);
+    setDietaryRestrictions([]);
+  };
+  
+  const handleDietaryChange = (dietary: string, checked: boolean) => {
+    if (checked) {
+      setDietaryRestrictions(prev => [...prev, dietary]);
+    } else {
+      setDietaryRestrictions(prev => prev.filter(d => d !== dietary));
+    }
+  };
+  
+  const activeFiltersCount = [
+    selectedCategory,
+    selectedCuisine,
+    selectedDifficulty,
+    selectedCookingTime,
+    ...(calorieRange[0] > 0 || calorieRange[1] < 1000 ? ["calories"] : []),
+    ...dietaryRestrictions
+  ].filter(Boolean).length;
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -135,43 +282,186 @@ export default function Recipes() {
         {/* Search Section */}
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Search className="w-5 h-5" />
-              Recipe Search
+            <CardTitle className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Search className="w-5 h-5" />
+                Recipe Search
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center gap-2"
+              >
+                <Filter className="w-4 h-4" />
+                Filters
+                {activeFiltersCount > 0 && (
+                  <Badge variant="secondary" className="ml-1">
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+              </Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <Label htmlFor="search" className="sr-only">
-                  Search for recipes
-                </Label>
-                <Input
-                  id="search"
-                  placeholder="Search for recipes by name, ingredient, or cuisine (e.g., 'chicken pasta', 'vegetarian', 'chocolate cake')"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  disabled={isSearching}
-                />
+            <div className="space-y-4">
+              {/* Main Search Input */}
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <Label htmlFor="search" className="sr-only">
+                    Search for recipes
+                  </Label>
+                  <Input
+                    id="search"
+                    placeholder="Search for recipes by name, ingredient, or cuisine (e.g., 'chicken pasta', 'vegetarian', 'chocolate cake')"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    disabled={isSearching}
+                  />
+                </div>
+                <Button 
+                  onClick={handleSearch} 
+                  disabled={isSearching || !searchQuery.trim()}
+                  className="min-w-[100px]"
+                >
+                  {isSearching ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="w-4 h-4 mr-2" />
+                      Search
+                    </>
+                  )}
+                </Button>
               </div>
-              <Button 
-                onClick={handleSearch} 
-                disabled={isSearching || !searchQuery.trim()}
-                className="min-w-[100px]"
-              >
-                {isSearching ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Searching...
-                  </>
-                ) : (
-                  <>
-                    <Search className="w-4 h-4 mr-2" />
-                    Search
-                  </>
-                )}
-              </Button>
+              
+              {/* Advanced Filters */}
+              {showFilters && (
+                <div className="border-t pt-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm">Advanced Filters</h4>
+                    {activeFiltersCount > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearFilters}
+                        className="text-sm"
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        Clear All
+                      </Button>
+                    )}
+                  </div>
+                  
+                  {/* Filter Row 1: Category and Cuisine */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium">Category</Label>
+                      <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Any category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Any category</SelectItem>
+                          {categories.map(category => (
+                            <SelectItem key={category} value={category}>{category}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-sm font-medium">Cuisine</Label>
+                      <Select value={selectedCuisine} onValueChange={setSelectedCuisine}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Any cuisine" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Any cuisine</SelectItem>
+                          {cuisines.map(cuisine => (
+                            <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  {/* Filter Row 2: Difficulty and Cooking Time */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium">Difficulty</Label>
+                      <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Any difficulty" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Any difficulty</SelectItem>
+                          {difficulties.map(difficulty => (
+                            <SelectItem key={difficulty} value={difficulty}>{difficulty}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label className="text-sm font-medium">Cooking Time</Label>
+                      <Select value={selectedCookingTime} onValueChange={setSelectedCookingTime}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue placeholder="Any duration" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">Any duration</SelectItem>
+                          {cookingTimes.map(time => (
+                            <SelectItem key={time} value={time}>{time}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  {/* Filter Row 3: Calorie Range */}
+                  <div>
+                    <Label className="text-sm font-medium">Calorie Range (per serving)</Label>
+                    <div className="mt-2 px-2">
+                      <Slider
+                        value={calorieRange}
+                        onValueChange={setCalorieRange}
+                        min={0}
+                        max={1000}
+                        step={50}
+                        className="w-full"
+                      />
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>{calorieRange[0]} cal</span>
+                        <span>{calorieRange[1]} cal</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Filter Row 4: Dietary Restrictions */}
+                  <div>
+                    <Label className="text-sm font-medium mb-2 block">Dietary Preferences</Label>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                      {dietaryOptions.map(dietary => (
+                        <div key={dietary} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={dietary}
+                            checked={dietaryRestrictions.includes(dietary)}
+                            onCheckedChange={(checked) => handleDietaryChange(dietary, checked as boolean)}
+                          />
+                          <Label htmlFor={dietary} className="text-sm font-normal">
+                            {dietary}
+                          </Label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
             
             <div className="mt-3 text-sm text-gray-600 dark:text-gray-400">
