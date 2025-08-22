@@ -21,7 +21,7 @@ import { fetchProductFromOpenNutrition } from "./opennutrition";
 import { fetchProductFromNutritionix } from "./nutritionix";
 import { fetchProductFromSpoonacular } from "./spoonacular";
 import { fetchProductFromAPINinjas } from "./api-ninjas";
-import { fetchProductFromFdcBranded } from "./fetch-fdc-branded";
+import { fetchProductFromLeda } from "./leda";
 import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider } from "./openai";
 import { isBarcode, searchProductByText } from "./text-search";
 
@@ -297,9 +297,81 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Spoonacular lookup failed:', error);
   }
 
-  // 4. USDA FoodData Central (Quaternary)
+  // 4. Leda (Quaternary)
   try {
-    console.log('4. Trying USDA FoodData Central (Quaternary)...');
+    console.log('4. Trying Leda (Quaternary)...');
+    const ledaProduct = await fetchProductFromLeda(barcode);
+    
+    if (ledaProduct) {
+      // Check if product data is sufficient
+      if (!isProductDataSufficient(ledaProduct)) {
+        console.log('Leda product has insufficient data, continuing cascade...');
+      } else {
+        // Analyze ingredients if available
+        if (ledaProduct.ingredientsText) {
+          try {
+            const analysis = await analyzeIngredients(
+              ledaProduct.ingredientsText,
+              ledaProduct.productName || "Unknown Product",
+              'en',
+              userAIProvider,
+              userId
+            );
+            ledaProduct.processingScore = analysis.score;
+            ledaProduct.processingExplanation = analysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze Leda ingredients:", error);
+            ledaProduct.processingExplanation = "Unable to analyze ingredients at this time";
+          }
+
+          // Analyze production process
+          try {
+            const productionProcess = await analyzeProductionProcess(
+              ledaProduct.ingredientsText,
+              ledaProduct.productName || "Unknown Product",
+              ledaProduct.nutriments || {},
+              'en',
+              userAIProvider,
+              userId
+            );
+            ledaProduct.productionProcess = productionProcess;
+          } catch (error) {
+            console.error("Failed to analyze Leda production process:", error);
+            ledaProduct.productionProcess = "Unable to analyze production process at this time";
+          }
+        }
+
+        // Analyze glycemic index if we have nutrition data
+        if (ledaProduct.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              ledaProduct.ingredientsText || "",
+              ledaProduct.productName || "Unknown Product",
+              ledaProduct.nutriments,
+              'en',
+              userAIProvider,
+              userId
+            );
+            ledaProduct.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            ledaProduct.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            ledaProduct.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze Leda glycemic index:", error);
+            ledaProduct.glycemicExplanation = "Unable to analyze glycemic impact at this time";
+          }
+        }
+
+        console.log('Found sufficient product data in Leda');
+        return { product: ledaProduct, source: 'Leda' };
+      }
+    }
+  } catch (error) {
+    console.error('Leda lookup failed:', error);
+  }
+
+  // 5. USDA FoodData Central (Quinary)
+  try {
+    console.log('5. Trying USDA FoodData Central (Quinary)...');
     const usdaProduct = await fetchProductFromUSDA(barcode);
     
     if (usdaProduct) {
@@ -369,81 +441,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('USDA lookup failed:', error);
   }
 
-  // 5. FoodData Central Branded Foods (Local Database)
+  // 6. OpenFoodFacts (Senary)
   try {
-    console.log('5. Trying FoodData Central Branded Foods (Local Database)...');
-    const fdcBrandedProduct = await fetchProductFromFdcBranded(barcode);
-    
-    if (fdcBrandedProduct) {
-      // Check if product data is sufficient
-      if (!isProductDataSufficient(fdcBrandedProduct)) {
-        console.log('FDC Branded product has insufficient data, continuing cascade...');
-      } else {
-        // Analyze ingredients if available
-        if (fdcBrandedProduct.ingredientsText) {
-          try {
-            const analysis = await analyzeIngredients(
-              fdcBrandedProduct.ingredientsText,
-              fdcBrandedProduct.productName || "Unknown Product",
-              'en',
-              userAIProvider,
-              userId
-            );
-            fdcBrandedProduct.processingScore = analysis.score;
-            fdcBrandedProduct.processingExplanation = analysis.explanation;
-          } catch (error) {
-            console.error("Failed to analyze FDC Branded ingredients:", error);
-            fdcBrandedProduct.processingExplanation = "Unable to analyze ingredients at this time";
-          }
-
-          // Analyze production process
-          try {
-            const productionProcess = await analyzeProductionProcess(
-              fdcBrandedProduct.ingredientsText,
-              fdcBrandedProduct.productName || "Unknown Product",
-              fdcBrandedProduct.nutriments || {},
-              'en',
-              userAIProvider,
-              userId
-            );
-            fdcBrandedProduct.productionProcess = productionProcess;
-          } catch (error) {
-            console.error("Failed to analyze FDC Branded production process:", error);
-            fdcBrandedProduct.productionProcess = "Unable to analyze production process at this time";
-          }
-        }
-
-        // Analyze glycemic index if we have nutrition data
-        if (fdcBrandedProduct.nutriments) {
-          try {
-            const glycemicAnalysis = await analyzeGlycemicIndex(
-              fdcBrandedProduct.ingredientsText || "",
-              fdcBrandedProduct.productName || "Unknown Product",
-              fdcBrandedProduct.nutriments,
-              'en',
-              userAIProvider,
-              userId
-            );
-            fdcBrandedProduct.glycemicIndex = glycemicAnalysis.glycemicIndex;
-            fdcBrandedProduct.glycemicLoad = glycemicAnalysis.glycemicLoad;
-            fdcBrandedProduct.glycemicExplanation = glycemicAnalysis.explanation;
-          } catch (error) {
-            console.error("Failed to analyze FDC Branded glycemic index:", error);
-            fdcBrandedProduct.glycemicExplanation = "Unable to analyze glycemic impact at this time";
-          }
-        }
-
-        console.log('Found sufficient product data in FoodData Central Branded Foods');
-        return { product: fdcBrandedProduct, source: 'FDC Branded Foods' };
-      }
-    }
-  } catch (error) {
-    console.error('FDC Branded Foods lookup failed:', error);
-  }
-
-  // 6. OpenFoodFacts (Quinary)
-  try {
-    console.log('6. Trying OpenFoodFacts (Quinary)...');
+    console.log('6. Trying OpenFoodFacts (Senary)...');
     const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
     
     if (openFoodFactsData && openFoodFactsData.status === 1) {
@@ -543,9 +543,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('OpenFoodFacts lookup failed:', error);
   }
 
-  // 6. FoodDB.ca
+  // 7. FoodDB.ca
   try {
-    console.log('6. Trying FoodDB.ca...');
+    console.log('7. Trying FoodDB.ca...');
     const foodDBCAProduct = await fetchProductFromFoodDBCA(barcode);
     
     if (foodDBCAProduct) {
@@ -615,9 +615,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('FoodDB.ca lookup failed:', error);
   }
 
-  // 7. USDA FDC
+  // 8. USDA FDC
   try {
-    console.log('7. Trying USDA FDC...');
+    console.log('8. Trying USDA FDC...');
     const usdaFDCProduct = await fetchProductFromUSDAFDC(barcode);
     
     if (usdaFDCProduct) {
@@ -684,9 +684,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('USDA FDC lookup failed:', error);
   }
 
-  // 8. OpenNutrition
+  // 9. OpenNutrition
   try {
-    console.log('8. Trying OpenNutrition...');
+    console.log('9. Trying OpenNutrition...');
     const openNutritionProduct = await fetchProductFromOpenNutrition(barcode);
     
     if (openNutritionProduct) {
@@ -753,9 +753,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('OpenNutrition lookup failed:', error);
   }
 
-  // 9. Nutritionix
+  // 10. Nutritionix
   try {
-    console.log('9. Trying Nutritionix...');
+    console.log('10. Trying Nutritionix...');
     const nutritionixProduct = await fetchProductFromNutritionix(barcode);
     
     if (nutritionixProduct) {
@@ -822,9 +822,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Nutritionix lookup failed:', error);
   }
 
-  // 10. API Ninjas
+  // 11. API Ninjas
   try {
-    console.log('10. Trying API Ninjas...');
+    console.log('11. Trying API Ninjas...');
     const apiNinjasProduct = await fetchProductFromAPINinjas(barcode);
     
     if (apiNinjasProduct) {
@@ -891,9 +891,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('API Ninjas lookup failed:', error);
   }
 
-  // 11. FoodData Central (USDA)
+  // 12. FoodData Central (USDA)
   try {
-    console.log('11. Trying FoodData Central (USDA)...');
+    console.log('12. Trying FoodData Central (USDA)...');
     const foodDataCentralProduct = await fetchProductFromFoodDataCentral(barcode);
     
     if (foodDataCentralProduct) {
@@ -919,9 +919,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('FoodData Central lookup failed:', error);
   }
 
-  // 12. EFSA (European Food Safety Authority)
+  // 13. EFSA (European Food Safety Authority)
   try {
-    console.log('12. Trying EFSA (European Food Safety Authority)...');
+    console.log('13. Trying EFSA (European Food Safety Authority)...');
     const efsaProduct = await fetchProductFromEFSA(barcode);
     
     if (efsaProduct) {
@@ -947,9 +947,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('EFSA lookup failed:', error);
   }
 
-  // 13. Health Canada Food Database
+  // 14. Health Canada Food Database
   try {
-    console.log('13. Trying Health Canada Food Database...');
+    console.log('14. Trying Health Canada Food Database...');
     const healthCanadaProduct = await fetchProductFromHealthCanada(barcode);
     
     if (healthCanadaProduct) {
@@ -975,9 +975,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Health Canada lookup failed:', error);
   }
 
-  // 14. EAN Search
+  // 15. EAN Search
   try {
-    console.log('14. Trying EAN Search...');
+    console.log('15. Trying EAN Search...');
     const eanSearchProduct = await fetchProductFromEANSearch(barcode);
     
     if (eanSearchProduct) {
@@ -988,9 +988,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('EAN Search lookup failed:', error);
   }
 
-  // 15. UPC Database
+  // 16. UPC Database
   try {
-    console.log('15. Trying UPC Database...');
+    console.log('16. Trying UPC Database...');
     const upcProduct = await fetchProductFromUPCDatabase(barcode);
     
     if (upcProduct) {
@@ -1001,7 +1001,7 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('UPC Database lookup failed:', error);
   }
 
-  // 16. All lookups failed
+  // 17. All lookups failed
   console.log('All database lookups failed for barcode:', barcode);
   return { 
     product: null, 

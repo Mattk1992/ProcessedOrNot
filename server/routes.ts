@@ -30,6 +30,13 @@ import session from "express-session";
 import pgSession from "connect-pg-simple";
 import { pool } from "./db";
 import { z } from "zod";
+import { fetchProductFromOpenFoodFacts } from "./lib/openfoodfacts";
+import { fetchProductFromUSDA } from "./lib/usda";
+import { fetchProductFromUPCDatabase } from "./lib/upc";
+import { fetchProductFromEFSA } from "./lib/efsa";
+import { fetchProductFromEdamam } from "./lib/edamam";
+import { fetchProductFromAPINinjas } from "./lib/api-ninjas";
+import { fetchProductFromLeda } from "./lib/leda";
 
 
 
@@ -59,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Initialize PostgreSQL session store
   const PgSession = pgSession(session);
-  
+
   // Configure basic session middleware
   app.use(session({
     store: new PgSession({
@@ -84,7 +91,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       req.session = {};
     }
     req.session.reward_count = 0;
-    
+
     // Save session to database immediately
     req.session.save((err: any) => {
       if (err) {
@@ -163,7 +170,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       'recommend based on', 'suggest based on', 'considering my', 'given my',
       'nutrition summary', 'food log', 'meal log', 'eating log'
     ];
-    
+
     return historyKeywords.some(keyword => lowercaseMessage.includes(keyword));
   }
 
@@ -184,7 +191,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/register", async (req, res) => {
     try {
       const validatedData = registerUserSchema.parse(req.body);
-      
+
       // Check if username or email already exists
       const existingUsername = await storage.getUserByUsername(validatedData.username);
       if (existingUsername) {
@@ -204,7 +211,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Create new user
       const user = await storage.createUser(validatedData);
-      
+
       // Send email verification
       if (user.emailVerificationToken) {
         await sendEmailVerification(user.email, user.emailVerificationToken);
@@ -247,7 +254,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("Session save error after registration:", err);
           return res.status(500).json({ message: "Registration session creation failed" });
         }
-        
+
         console.log("Registration successful for user:", user.id, "Session saved:", req.session.id);
         res.status(201).json({
           message: "Registration successful",
@@ -272,10 +279,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = loginUserSchema.parse(req.body);
       console.log("Login attempt for username:", validatedData.username);
-      
+
       const user = await storage.verifyUserCredentials(validatedData.username, validatedData.password);
       console.log("User verification result:", user ? `User ${user.id} found` : "User not found or invalid password");
-      
+
       if (!user) {
         return res.status(401).json({ 
           message: "Invalid username or password"
@@ -301,7 +308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.error("Session save error after login:", err);
           return res.status(500).json({ message: "Login session creation failed" });
         }
-        
+
         console.log("Login successful for user:", user.id, "Session saved:", req.session.id);
         res.json({
           message: "Login successful",
@@ -361,7 +368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.session.destroy(() => {});
         return res.status(401).json({ message: "User not found" });
       }
-      
+
       // Update user's last login time to maintain session activity (throttled to once per 5 minutes)
       // Temporarily disabled to prevent errors
       // const now = new Date();
@@ -391,7 +398,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (email && !email.includes('@')) {
         return res.status(400).json({ message: "Invalid email format" });
       }
-      
+
       if (dailyCaloriesGoal !== undefined && (typeof dailyCaloriesGoal !== 'number' || dailyCaloriesGoal < 1200 || dailyCaloriesGoal > 5000)) {
         return res.status(400).json({ message: "Daily calories goal must be between 1200 and 5000" });
       }
@@ -445,7 +452,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         accountType,
         updatedAt: new Date()
       });
-      
+
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -480,7 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/forgot-password", async (req, res) => {
     try {
       const validatedData = forgotPasswordSchema.parse(req.body);
-      
+
       const user = await storage.getUserByEmail(validatedData.email);
       if (!user) {
         // Don't reveal if email exists for security
@@ -512,7 +519,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/reset-password", async (req, res) => {
     try {
       const validatedData = resetPasswordSchema.parse(req.body);
-      
+
       const success = await storage.resetPassword(validatedData.token, validatedData.password);
       if (!success) {
         return res.status(400).json({ 
@@ -539,13 +546,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/change-password", requireAuth, async (req: any, res) => {
     try {
       const validatedData = changePasswordSchema.parse(req.body);
-      
+
       const success = await storage.changePassword(
         req.session.userId!,
         validatedData.currentPassword,
         validatedData.newPassword
       );
-      
+
       if (!success) {
         return res.status(400).json({ 
           message: "Current password is incorrect"
@@ -695,7 +702,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const totalCount = await storage.getProductCount();
-      
+
       res.json({
         products,
         pagination: {
@@ -721,7 +728,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const barcode = req.params.barcode;
       const product = await storage.getProductByBarcode(barcode);
-      
+
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
@@ -749,7 +756,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedUpdates = partialSchema.parse(updates);
 
       const updatedProduct = await storage.updateProduct(barcode, validatedUpdates);
-      
+
       if (!updatedProduct) {
         return res.status(404).json({ message: "Product not found" });
       }
@@ -774,7 +781,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const barcode = req.params.barcode;
       const deleted = await storage.deleteProduct(barcode);
-      
+
       if (!deleted) {
         return res.status(404).json({ message: "Product not found" });
       }
@@ -798,7 +805,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedProduct = insertProductSchema.parse(req.body);
 
       const newProduct = await storage.createProduct(validatedProduct);
-      
+
       res.status(201).json({ 
         message: "Product created successfully",
         product: newProduct 
@@ -809,7 +816,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // CSV Upload for FoodData Central Branded Foods
+  // CSV Upload for FoodData Central branded foods
   app.post("/api/admin/fdc-branded-foods/upload-csv", requireAuth, csvUpload.single('csvFile'), async (req: any, res) => {
     try {
       // Check if current user is admin
@@ -822,25 +829,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "CSV file is required" });
       }
 
-      const csvContent = req.file.buffer.toString('utf-8').replace(/^\uFEFF/, ''); // Remove BOM
+      const csvContent = req.file.buffer.toString('utf-8');
       const lines = csvContent.split('\n').filter(line => line.trim());
-      
+
       if (lines.length < 2) {
         return res.status(400).json({ message: "CSV file must contain header and at least one data row" });
       }
 
-      // Parse CSV headers - handle the specific FDC format with doubled quotes and semicolons
-      let headerLine = lines[0].replace(/;+$/g, ''); // Remove trailing semicolons
-      if (headerLine.startsWith('"') && headerLine.endsWith('"')) {
-        headerLine = headerLine.slice(1, -1); // Remove outer quotes
-      }
-      
-      // Split on ,"" pattern to handle the doubled quotes
-      const headers = headerLine.split(/,""/).map(h => {
-        return h.replace(/^"*/g, '').replace(/"*$/g, '').trim();
-      }).filter(h => h.length > 0);
-      
-      console.log('Parsed headers:', headers);
+      // Parse CSV headers
+      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
       const dataRows = lines.slice(1);
 
       // Parse and validate data
@@ -849,25 +846,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       for (let i = 0; i < dataRows.length; i++) {
         try {
-          // Handle the specific FDC CSV format with doubled quotes and semicolons
-          let rowData = dataRows[i].replace(/;+$/g, ''); // Remove trailing semicolons
-          if (rowData.startsWith('"') && rowData.endsWith('"')) {
-            rowData = rowData.slice(1, -1); // Remove outer quotes
-          }
-          
-          // Split on ,"" pattern and clean up each cell
-          const row = rowData.split(/,""/).map(cell => {
-            return cell.replace(/^"*/g, '').replace(/"*$/g, '').trim();
-          });
-          
-          // Ensure we have the right number of columns
-          while (row.length < headers.length) {
-            row.push('');
-          }
-          
+          const row = dataRows[i].split(',').map(cell => cell.trim().replace(/"/g, ''));
+
           // Create food data object from CSV row
           const foodData: any = {};
-          
+
           // Map CSV columns to database fields
           headers.forEach((header, index) => {
             const value = row[index];
@@ -904,12 +887,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 case 'description':
                 case 'product_name':
                 case 'name':
-                case 'short_description':
                   foodData.description = value;
-                  break;
-                case 'data_source':
-                case 'datasource':
-                  foodData.dataSource = value;
                   break;
                 case 'ingredients':
                 case 'ingredients_text':
@@ -964,13 +942,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             continue;
           }
           if (!foodData.description) {
-            // Try to use brand owner + brand name as description if no description provided
-            if (foodData.brandOwner) {
-              foodData.description = foodData.brandOwner + (foodData.brandName ? ` ${foodData.brandName}` : '') + ' Product';
-            } else {
-              errors.push(`Row ${i + 2}: description is required`);
-              continue;
-            }
+            errors.push(`Row ${i + 2}: description is required`);
+            continue;
           }
 
           // Validate the food data against the schema
@@ -1024,7 +997,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/products/search", ensureSession, async (req: any, res) => {
     try {
       const { query, filters } = req.body;
-      
+
       if (!query || typeof query !== 'string') {
         return res.status(400).json({ message: "Query is required" });
       }
@@ -1048,11 +1021,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use smart lookup system with filters
       const user = (req.session as any).user;
       const lookupResult = await smartProductLookup(query, filters, user?.id);
-      
+
       // Determine search input type
       const isBarcode = /^[0-9]{8,14}$/.test(query.trim());
       const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
-      
+
       if (!lookupResult.product) {
         // Track failed search history
         try {
@@ -1067,7 +1040,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (historyError) {
           console.warn("Failed to track search history for failed lookup:", historyError);
         }
-        
+
         return res.status(404).json({ 
           message: lookupResult.error || "Product not found",
           source: lookupResult.source,
@@ -1082,7 +1055,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const savedProduct = await storage.createProduct(productData);
-      
+
       // Track successful search history with complete product data
       try {
         await storage.createSearchHistoryWithResult(
@@ -1096,7 +1069,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (historyError) {
         console.warn("Failed to track search history for successful lookup:", historyError);
       }
-      
+
       // Include source information in response
       res.json({
         ...savedProduct,
@@ -1135,11 +1108,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use smart lookup system (auto-detects barcode vs text)
       const user = (req.session as any).user;
       const lookupResult = await smartProductLookup(barcode, undefined, user?.id);
-      
+
       // Determine search input type
       const isBarcode = /^[0-9]{8,14}$/.test(barcode.trim());
       const searchInputType = isBarcode ? 'BarcodeInput' : 'TextInput';
-      
+
       if (!lookupResult.product) {
         // Track failed search history
         try {
@@ -1154,7 +1127,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (historyError) {
           console.warn("Failed to track search history for failed lookup:", historyError);
         }
-        
+
         return res.status(404).json({ 
           message: lookupResult.error || "Product not found in any database",
           source: lookupResult.source,
@@ -1169,7 +1142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const savedProduct = await storage.createProduct(productData);
-      
+
       // Track successful search history with complete product data
       try {
         await storage.createSearchHistoryWithResult(
@@ -1183,7 +1156,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } catch (historyError) {
         console.warn("Failed to track search history for successful lookup:", historyError);
       }
-      
+
       // Include source information in response
       res.json({
         ...savedProduct,
@@ -1314,7 +1287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (analysis.categories) {
           insightsToSave.ingredientCategories = JSON.stringify(analysis.categories);
         }
-        
+
         if (Object.keys(insightsToSave).length > 0) {
           await storage.updateProductWithAIInsights(barcode, insightsToSave);
           console.log(`Processing analysis saved to product database for barcode: ${barcode}`);
@@ -1394,31 +1367,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       let extraInfo = '';
-      
+
       // If user is authenticated, fetch their profile data for personalization
       if (req.session?.userId) {
         try {
           const userId = req.session.userId;
-          
+
           // Check if the user's message indicates they need nutrition history context
           const needsNutritionHistory = isNutritionHistoryRelevant(message);
-          
+
           const dataPromises = [
             storage.getUserGoals(userId),
             storage.getUserProfile(userId),
             storage.getUserOnboarding(userId)
           ];
-          
+
           // Add nutrition diary fetch if relevant
           if (needsNutritionHistory) {
             dataPromises.push(storage.getDiaryEntries(userId, undefined, 15));
           }
-          
+
           const [userGoals, userProfile, userOnboarding, nutritionDiary] = await Promise.all(dataPromises);
-          
+
           // Build extra info string from user data (excluding name, username, email, password)
           const infoItems = [];
-          
+
           // Add nutrition diary history if relevant and available
           if (needsNutritionHistory && nutritionDiary && nutritionDiary.length > 0) {
             const recentEntries = nutritionDiary.slice(0, 10); // Last 10 entries for context
@@ -1428,7 +1401,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             }).join('\n');
             infoItems.push(`RECENT NUTRITION DIARY:\n${diaryInfo}`);
           }
-          
+
           if (userGoals) {
             infoItems.push(`Health Goals: Daily calories ${userGoals.dailyCalories}, fat ${userGoals.dailyFat}g, carbs ${userGoals.dailyCarbs}g, proteins ${userGoals.dailyProteins}g, salt ${userGoals.dailySalt}g, fiber ${userGoals.dailyFiber}g`);
             infoItems.push(`Activity Level: ${userGoals.activityLevel}`);
@@ -1440,14 +1413,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
               infoItems.push(`Health Conditions: ${userGoals.healthConditions.join(', ')}`);
             }
           }
-          
+
           if (userProfile) {
             if (userProfile.gender) infoItems.push(`Gender: ${userProfile.gender}`);
             if (userProfile.height) infoItems.push(`Height: ${userProfile.height}cm`);
             if (userProfile.weight) infoItems.push(`Weight: ${userProfile.weight}kg`);
             if (userProfile.units) infoItems.push(`Preferred Units: ${userProfile.units}`);
           }
-          
+
           if (userOnboarding) {
             if (userOnboarding.age) infoItems.push(`Age: ${userOnboarding.age}`);
             if (userOnboarding.medicalConditions?.length) {
@@ -1475,7 +1448,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               infoItems.push(`Food Dislikes: ${userOnboarding.foodDislikes.join(', ')}`);
             }
           }
-          
+
           extraInfo = infoItems.join('\n');
         } catch (error) {
           console.log('Could not fetch user profile data for NutriBot personalization:', error);
@@ -1588,7 +1561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get user's AI provider setting
       const userAIProvider = await getUserAIProvider(userId);
-      
+
       const carbonFootprintData = await analyzeCarbonFootprint(
         ingredients,
         productName,
@@ -1722,7 +1695,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Search History API Routes
-  
+
   // Get search history for authenticated user
   app.get("/api/search-history", async (req, res) => {
     try {
@@ -1748,14 +1721,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const allHistory = await storage.getAllSearchHistory();
       const barcodeSearches = allHistory.filter(record => record.searchInputType === 'BarcodeInput');
       const textSearches = allHistory.filter(record => record.searchInputType === 'TextInput');
-      
+
       const stats = {
         totalSearches: allHistory.length,
         barcodeSearches: barcodeSearches.length,
         textSearches: textSearches.length,
         recentSearches: allHistory.slice(0, 10) // Last 10 searches
       };
-      
+
       res.json(stats);
     } catch (error) {
       console.error("Error fetching search history stats:", error);
@@ -1770,13 +1743,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { searchId } = req.params;
       const searchRecord = await storage.getSearchHistoryBySearchId(searchId);
-      
+
       if (!searchRecord) {
         return res.status(404).json({ 
           message: "Search record not found" 
         });
       }
-      
+
       res.json(searchRecord);
     } catch (error) {
       console.error("Error fetching search record:", error);
@@ -1800,13 +1773,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const searchRecord = await storage.getSearchHistoryById(historyId, userId);
-      
+
       if (!searchRecord) {
         return res.status(404).json({ 
           message: "Search record not found" 
         });
       }
-      
+
       res.json(searchRecord);
     } catch (error) {
       console.error("Error fetching search record by ID:", error);
@@ -1840,7 +1813,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updated = await storage.updateSearchHistoryWithAIInsights(barcode, filteredInsights);
-      
+
       if (!updated) {
         return res.status(404).json({ error: "Search history record not found for barcode" });
       }
@@ -1881,7 +1854,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedRecord = await storage.updateSearchHistoryWithAIInsights(searchId, filteredInsights);
-      
+
       if (!updatedRecord) {
         return res.status(404).json({ error: "Search history record not found" });
       }
@@ -1922,7 +1895,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const updatedProduct = await storage.updateProductWithAIInsights(barcode, filteredInsights);
-      
+
       if (!updatedProduct) {
         return res.status(404).json({ error: "Product not found" });
       }
@@ -1968,7 +1941,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               'ChatGPT',
               req.session?.userId
             );
-            
+
             await storage.updateProduct(product.barcode, {
               glycemicIndex: glycemicAnalysis.glycemicIndex,
               glycemicLoad: glycemicAnalysis.glycemicLoad,
@@ -2034,14 +2007,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const searchHistory = await storage.getAllSearchHistory();
-      
+
       // Calculate statistics
       const totalSearches = searchHistory.length;
       const successfulSearches = searchHistory.filter(s => s.resultFound).length;
       const failedSearches = totalSearches - successfulSearches;
       const barcodeSearches = searchHistory.filter(s => s.searchInputType === 'BarcodeInput').length;
       const textSearches = searchHistory.filter(s => s.searchInputType === 'TextInput').length;
-      
+
       // Calculate average processing score
       const scoresWithValues = searchHistory.filter(s => s.processingScore !== null && s.processingScore !== undefined);
       const averageProcessingScore = scoresWithValues.length > 0 
@@ -2054,7 +2027,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const key = s.searchInput;
         searchCounts[key] = (searchCounts[key] || 0) + 1;
       });
-      
+
       const mostSearchedProducts = Object.entries(searchCounts)
         .map(([searchInput, count]) => ({ searchInput, count }))
         .sort((a, b) => b.count - a.count)
@@ -2064,14 +2037,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const dateCounts: Record<string, number> = {};
       const last30Days = new Date();
       last30Days.setDate(last30Days.getDate() - 30);
-      
+
       searchHistory
         .filter(s => new Date(s.createdAt) >= last30Days)
         .forEach(s => {
           const date = new Date(s.createdAt).toISOString().split('T')[0];
           dateCounts[date] = (dateCounts[date] || 0) + 1;
         });
-      
+
       const searchesByDate = Object.entries(dateCounts)
         .map(([date, count]) => ({ date, count }))
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -2084,7 +2057,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const source = s.dataSource || 'Unknown';
           sourceCounts[source] = (sourceCounts[source] || 0) + 1;
         });
-      
+
       const searchesBySource = Object.entries(sourceCounts)
         .map(([source, count]) => ({ source, count }))
         .sort((a, b) => b.count - a.count);
@@ -2131,14 +2104,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const searchHistory = await storage.getAllSearchHistory();
-      
+
       // Create CSV content
       const headers = [
         'Search ID', 'Search Input', 'Search Type', 'Result Found', 'Product Name', 
         'Product Brands', 'Processing Score', 'Glycemic Index', 'Data Source', 
         'Lookup Source', 'Error Message', 'Created At'
       ];
-      
+
       const csvRows = [
         headers.join(','),
         ...searchHistory.map(item => [
@@ -2156,11 +2129,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           item.createdAt
         ].join(','))
       ];
-      
+
       const csvContent = csvRows.join('\n');
-      
+
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="search-history-${new Date().toISOString().split('T')[0]}.csv"`);
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+
       res.send(csvContent);
     } catch (error) {
       console.error("Error exporting search history:", error);
@@ -2327,12 +2304,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session?.userId) {
         return res.status(401).json({ error: "Authentication required" });
       }
-      
+
       const user = await storage.getUserById(req.session.userId);
       if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ error: "Admin access required" });
       }
-      
+
       const settings = await storage.getRewardingSystemSettings();
       res.json(settings);
     } catch (error) {
@@ -2347,12 +2324,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!req.session?.userId) {
         return res.status(401).json({ error: "Authentication required" });
       }
-      
+
       const user = await storage.getUserById(req.session.userId);
       if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ error: "Admin access required" });
       }
-      
+
       const updates = req.body;
       const settings = await storage.updateRewardingSystemSettings(updates);
       res.json(settings);
@@ -2366,7 +2343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/debug/glycemic", async (req, res) => {
     try {
       const { ingredientsText, productName, nutriments } = req.body;
-      
+
       if (!ingredientsText && !productName && !nutriments) {
         return res.status(400).json({ error: "Need at least one of: ingredientsText, productName, or nutriments" });
       }
@@ -2397,7 +2374,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/debug/fix-glycemic", async (req, res) => {
     try {
       const products = await storage.getProductsWithoutGlycemicIndex();
-      
+
       let analyzed = 0;
       let failed = 0;
 
@@ -2411,7 +2388,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               'en',
               'ChatGPT'
             );
-            
+
             await storage.updateProduct(product.barcode, {
               glycemicIndex: glycemicAnalysis.glycemicIndex,
               glycemicLoad: glycemicAnalysis.glycemicLoad,
@@ -2476,7 +2453,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { type, title, message, actionUrl, actionText, metadata } = req.body;
-      
+
       if (!type || !title || !message) {
         return res.status(400).json({ message: "Type, title, and message are required" });
       }
@@ -2600,14 +2577,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const blogPost = await storage.getBlogPostById(id);
-      
+
       if (!blogPost) {
         return res.status(404).json({ message: "Blog post not found" });
       }
 
       // Increment view count
       await storage.incrementViewCount(id);
-      
+
       res.json(blogPost);
     } catch (error) {
       console.error("Error fetching blog post:", error);
@@ -2618,14 +2595,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/blog/slug/:slug", async (req, res) => {
     try {
       const blogPost = await storage.getBlogPostBySlug(req.params.slug);
-      
+
       if (!blogPost) {
         return res.status(404).json({ message: "Blog post not found" });
       }
 
       // Increment view count
       await storage.incrementViewCount(blogPost.id);
-      
+
       res.json(blogPost);
     } catch (error) {
       console.error("Error fetching blog post:", error);
@@ -2641,7 +2618,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { title, content, author, tags, excerpt, slug, isPublished } = req.body;
-      
+
       if (!title || !content || !author) {
         return res.status(400).json({ message: "Title, content, and author are required" });
       }
@@ -2678,7 +2655,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const id = parseInt(req.params.id);
       const existingPost = await storage.getBlogPostById(id);
-      
+
       if (!existingPost) {
         return res.status(404).json({ message: "Blog post not found" });
       }
@@ -2689,7 +2666,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { title, content, author, tags, excerpt, slug, isPublished } = req.body;
-      
+
       // Parse tags if provided as string
       const parsedTags = typeof tags === 'string' ? 
         tags.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0) : 
@@ -2725,7 +2702,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const id = parseInt(req.params.id);
       const existingPost = await storage.getBlogPostById(id);
-      
+
       if (!existingPost) {
         return res.status(404).json({ message: "Blog post not found" });
       }
@@ -2736,7 +2713,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const success = await storage.deleteBlogPost(id);
-      
+
       if (!success) {
         return res.status(404).json({ message: "Failed to delete blog post" });
       }
@@ -2801,7 +2778,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const adminSetting = await storage.getAdminSetting('default_ai_provider');
           defaultValue = adminSetting?.settingValue || 'ChatGPT';
         }
-        
+
         return res.json({ 
           settingKey: req.params.key,
           settingValue: defaultValue,
@@ -2824,7 +2801,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { settingKey, settingValue } = req.body;
-      
+
       if (!settingKey || !settingValue) {
         return res.status(400).json({ message: "Setting key and value are required" });
       }
@@ -2890,7 +2867,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Transcribe the audio using Assembly AI
       const transcript = await transcribeAudio(req.file.buffer);
-      
+
       res.json({ 
         transcript,
         success: true,
@@ -2930,7 +2907,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Reset reward count when reward URL is visited
   app.post("/api/rewards/reset", ensureSession, (req: any, res) => {
     const { rewardParam } = req.body;
-    
+
     // Verify the reward parameter matches expected value
     if (rewardParam === "product-search") {
       resetRewardCount(req);
@@ -2988,14 +2965,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     try {
       const userId = req.session.userId;
-      
+
       // Validate and transform data properly like the working endpoint
       const validatedData = insertDiaryEntrySchema.parse({
         ...req.body,
         userId: userId,
         consumedAt: req.body.consumedAt ? new Date(req.body.consumedAt) : new Date(),
       });
-      
+
       console.log("Creating diary entry with validated data:", validatedData);
       const created = await storage.createDiaryEntry(validatedData);
       res.status(201).json(created);
@@ -3022,11 +2999,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const updated = await storage.updateDiaryEntry(id, req.body);
-      
+
       if (!updated) {
         return res.status(404).json({ message: "Entry not found" });
       }
-      
+
       res.json(updated);
     } catch (error) {
       console.error("Error updating diary entry:", error);
@@ -3042,11 +3019,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const deleted = await storage.deleteDiaryEntry(id);
-      
+
       if (!deleted) {
         return res.status(404).json({ message: "Entry not found" });
       }
-      
+
       res.json({ success: true });
     } catch (error) {
       console.error("Error deleting diary entry:", error);
@@ -3063,7 +3040,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const goals = await storage.getUserGoals(userId);
-      
+
       if (!goals) {
         // Return default goals if none exist
         return res.json({
@@ -3078,7 +3055,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           weightGoal: 'maintain'
         });
       }
-      
+
       res.json(goals);
     } catch (error) {
       console.error("Error fetching user goals:", error);
@@ -3094,7 +3071,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const goals = { ...req.body, userId };
-      
+
       const created = await storage.createUserGoals(goals);
       res.status(201).json(created);
     } catch (error) {
@@ -3111,11 +3088,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const updated = await storage.updateUserGoals(userId, req.body);
-      
+
       if (!updated) {
         return res.status(404).json({ message: "Goals not found" });
       }
-      
+
       res.json(updated);
     } catch (error) {
       console.error("Error updating user goals:", error);
@@ -3147,7 +3124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const profile = { ...req.body, userId };
-      
+
       const created = await storage.createUserProfile(profile);
       res.status(201).json(created);
     } catch (error) {
@@ -3164,11 +3141,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const updated = await storage.updateUserProfile(userId, req.body);
-      
+
       if (!updated) {
         return res.status(404).json({ message: "Profile not found" });
       }
-      
+
       res.json(updated);
     } catch (error) {
       console.error("Error updating user profile:", error);
@@ -3185,7 +3162,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const { limit } = req.query;
-      
+
       if (limit) {
         const entries = await storage.getRecentWeightEntries(userId, parseInt(limit as string));
         res.json(entries);
@@ -3207,7 +3184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const entry = { ...req.body, userId };
-      
+
       const created = await storage.createWeightEntry(entry);
       res.status(201).json(created);
     } catch (error) {
@@ -3226,7 +3203,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session.userId;
       const { date } = req.query;
       const targetDate = date ? date as string : new Date().toISOString().split('T')[0];
-      
+
       const progress = await storage.getDailyNutritionProgress(userId, targetDate);
       res.json(progress);
     } catch (error) {
@@ -3244,7 +3221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const limit = parseInt(req.query.limit as string) || 5;
-      
+
       const entries = await storage.getRecentDiaryEntries(userId, limit);
       res.json(entries);
     } catch (error) {
@@ -3262,7 +3239,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const date = req.params.date || new Date().toISOString().split('T')[0];
-      
+
       const dailyStats = await storage.getDailyNutritionStats(userId, date);
       res.json(dailyStats);
     } catch (error) {
@@ -3280,7 +3257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const mealTimes = await storage.getUserMealTimes(userId);
-      
+
       if (!mealTimes) {
         // Create default meal times if they don't exist
         const defaultMealTimes = await storage.createUserMealTimes({
@@ -3297,7 +3274,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         return res.json(defaultMealTimes);
       }
-      
+
       res.json(mealTimes);
     } catch (error) {
       console.error("Error fetching meal times:", error);
@@ -3349,7 +3326,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Check if user meal times exist
       const existingMealTimes = await storage.getUserMealTimes(userId);
-      
+
       let mealTimes;
       if (existingMealTimes) {
         // Update existing meal times and percentages
@@ -3397,7 +3374,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           snack2Percent
         });
       }
-      
+
       res.json(mealTimes);
     } catch (error) {
       console.error("Error saving meal times:", error);
@@ -3505,7 +3482,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ==================== CAMERA SETTINGS ROUTES ====================
-  
+
   // Get camera settings
   app.get("/api/admin/camera-settings", requireAuth, requireAdmin, async (req: any, res) => {
     try {
@@ -3541,7 +3518,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ==================== USER CAMERA SETTINGS ROUTES ====================
-  
+
   // Get user-specific camera settings
   app.get("/api/user/camera-settings", requireAuth, async (req: any, res) => {
     try {
@@ -3583,7 +3560,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // ==================== DEBUG ROUTES ====================
-  
+
   // Debug Routes for cascading database testing
   app.post("/api/debug/cascading-test", requireAuth, requireAdmin, async (req: any, res) => {
     try {
@@ -3630,11 +3607,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const menuItem = await storage.updateMenuItem(id, req.body);
-      
+
       if (!menuItem) {
         return res.status(404).json({ message: "Menu item not found" });
       }
-      
+
       res.json(menuItem);
     } catch (error: any) {
       console.error('Error updating menu item:', error);
@@ -3715,10 +3692,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/admin/speech-status", requireAuth, requireAdmin, async (req: any, res) => {
     try {
       const settings = await storage.getSpeechSettings();
-      
+
       let status = 'error';
       let message = 'Service unavailable';
-      
+
       if (settings.enabled && settings.apiKey) {
         try {
           // Simple check if AssemblyAI service is available
@@ -3761,7 +3738,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/admin/speech-test", requireAuth, requireAdmin, async (req: any, res) => {
     try {
       const settings = await storage.getSpeechSettings();
-      
+
       if (!settings.enabled) {
         return res.status(400).json({ message: "Speech-to-Text service is disabled" });
       }
@@ -3772,7 +3749,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Test the connection
       const available = await isVoiceTranscriptionAvailable();
-      
+
       if (available) {
         res.json({ 
           message: "Connection test successful! AssemblyAI service is working correctly.",
@@ -3797,7 +3774,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/webcal/:userId/:token.ics", async (req, res) => {
     try {
       const { userId, token } = req.params;
-      
+
       // Basic token validation (in production, use proper JWT or similar)
       if (!userId || !token) {
         return res.status(400).json({ message: 'Invalid webcal URL' });
@@ -3842,7 +3819,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
-      
+
       res.send(icalContent);
     } catch (error) {
       console.error('Error generating webcal feed:', error);
@@ -3855,9 +3832,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const baseUrl = `${req.protocol}://${req.get('host')}`;
-      
+
       const { generateWebcalUrl, generateHttpsWebcalUrl } = await import('./lib/webcal');
-      
+
       res.json({
         webcalUrl: generateWebcalUrl(userId, baseUrl),
         httpsUrl: generateHttpsWebcalUrl(userId, baseUrl),
@@ -3936,12 +3913,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId!;
       const { insertUserOnboardingSchema } = await import("@shared/schema");
-      
+
       console.log('Onboarding request body:', JSON.stringify(req.body, null, 2));
-      
+
       // Remove database-only fields that shouldn't be validated
       const { id, createdAt, updatedAt, ...requestData } = req.body;
-      
+
       const validatedData = insertUserOnboardingSchema.parse(requestData);
 
       // Check if onboarding already exists
@@ -3960,7 +3937,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (validatedData.dailyCarbsPercentage !== undefined || 
           validatedData.dailyFatPercentage !== undefined || 
           validatedData.dailyProteinPercentage !== undefined) {
-        
+
         const goalUpdates: any = {};
         if (validatedData.dailyCarbsPercentage !== undefined) {
           goalUpdates.dailyCarbsPercentage = validatedData.dailyCarbsPercentage;
@@ -4012,14 +3989,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId!;
       const { insertUserWeightEntrySchema } = await import("@shared/schema");
-      
+
       const validatedData = insertUserWeightEntrySchema.parse({
         ...req.body,
         userId: userId
       });
 
       const weightEntry = await storage.createWeightEntry(validatedData);
-      
+
       res.status(201).json({
         message: "Weight entry created successfully",
         entry: weightEntry
@@ -4066,11 +4043,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId!;
       const entryId = parseInt(req.params.id);
-      
+
       // Verify the entry belongs to the user
       const existingEntry = await storage.getWeightEntriesByUser(userId);
       const entryToUpdate = existingEntry.find(entry => entry.id === entryId);
-      
+
       if (!entryToUpdate) {
         return res.status(404).json({ message: "Weight entry not found or unauthorized" });
       }
@@ -4079,11 +4056,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertUserWeightEntrySchema.partial().parse(req.body);
 
       const updatedEntry = await storage.updateWeightEntry(entryId, validatedData);
-      
+
       if (!updatedEntry) {
         return res.status(404).json({ message: "Weight entry not found" });
       }
-      
+
       res.json({
         message: "Weight entry updated successfully",
         entry: updatedEntry
@@ -4105,13 +4082,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId!;
       const entryId = parseInt(req.params.id);
-      
+
       const success = await storage.deleteWeightEntry(entryId, userId);
-      
+
       if (!success) {
         return res.status(404).json({ message: "Weight entry not found or unauthorized" });
       }
-      
+
       res.json({ message: "Weight entry deleted successfully" });
     } catch (error) {
       console.error("Delete weight entry error:", error);
@@ -4135,7 +4112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const diaryEntry = await storage.createDiaryEntry(validatedData);
-      
+
       res.status(201).json({
         message: "Product added to nutrition diary successfully",
         entry: diaryEntry
@@ -4165,7 +4142,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const { date, limit = '50' } = req.query;
       const entries = await storage.getDiaryEntries(userId, date as string, parseInt(limit as string));
-      
+
       res.json(entries);
     } catch (error) {
       console.error("Get diary entries error:", error);
@@ -4178,17 +4155,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.session.userId;
       const entryId = parseInt(req.params.id);
-      
+
       if (!userId) {
         return res.status(401).json({ message: "Authentication required" });
       }
 
       const success = await storage.deleteDiaryEntry(entryId, userId);
-      
+
       if (!success) {
         return res.status(404).json({ message: "Diary entry not found or unauthorized" });
       }
-      
+
       res.json({ message: "Diary entry deleted successfully" });
     } catch (error) {
       console.error("Delete diary entry error:", error);
@@ -4481,7 +4458,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Get user meal times
       const userMealTimes = await storage.getUserMealTimes(req.session.userId);
-      
+
       // Include meal times in form data
       const formDataWithMealTimes = {
         ...req.body,
@@ -4504,7 +4481,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         req.ip,
         req.get('User-Agent')
       );
-      
+
       // Create calendar entry from generated schedule
       const calendarEntry = await storage.createCalendarEntry({
         userId: req.session.userId,
@@ -4548,7 +4525,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error("Error generating AI schedule:", error);
-      
+
       // Save failed generation attempt if we have user ID
       if (req.session.userId) {
         try {
@@ -4591,7 +4568,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI Management & Configuration endpoints
-  
+
   // Get AI configuration
   app.get('/api/admin/ai-config', async (req, res) => {
     try {
@@ -4605,7 +4582,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const config = await storage.getOrCreateAiConfiguration();
-      
+
       // Transform database format to frontend format
       const response = {
         analysisAI: {
@@ -4637,7 +4614,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { analysisAI } = req.body;
-      
+
       if (!analysisAI) {
         return res.status(400).json({ message: "Invalid configuration data" });
       }
@@ -4652,7 +4629,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const updatedConfig = await storage.updateAiConfiguration(updates, req.session.userId);
-      
+
       if (!updatedConfig) {
         return res.status(500).json({ message: "Failed to update configuration" });
       }
@@ -4677,13 +4654,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { model } = req.body;
-      
+
       if (!model) {
         return res.status(400).json({ message: "Model parameter is required" });
       }
 
       const startTime = Date.now();
-      
+
       // Test the AI model with a simple request
       const OpenAI = require('openai');
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -4705,7 +4682,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const responseTime = Date.now() - startTime;
-      
+
       if (response.choices[0].message.content?.includes('Connection successful')) {
         res.json({
           success: true,
@@ -4750,6 +4727,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { fetchProductFromEFSA } = await import("./lib/efsa");
       const { fetchProductFromEdamam } = await import("./lib/edamam");
       const { fetchProductFromAPINinjas } = await import("./lib/api-ninjas");
+      const { fetchProductFromLeda } = await import("./lib/leda");
 
       // Map database IDs to their lookup functions
       const databaseLookupMap: { [key: string]: (barcode: string) => Promise<any> } = {
@@ -4764,13 +4742,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const result = await fetchProductFromEdamam(barcode);
           return result;
         },
-        'api-ninjas': fetchProductFromAPINinjas
+        'api-ninjas': fetchProductFromAPINinjas,
+        'leda': fetchProductFromLeda
       };
 
       // Test against each selected database individually
       for (const databaseId of databases) {
         const dbStartTime = Date.now();
-        
+
         try {
           const lookupFunction = databaseLookupMap[databaseId];
           if (!lookupFunction) {
@@ -4787,7 +4766,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           const result = await lookupFunction(barcode);
           const dbEndTime = Date.now();
-          
+
           databaseResults.push({
             databaseName: getDatabaseName(databaseId),
             responseTime: dbEndTime - dbStartTime,
@@ -4797,7 +4776,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         } catch (error) {
           const dbEndTime = Date.now();
-          
+
           databaseResults.push({
             databaseName: getDatabaseName(databaseId),
             responseTime: dbEndTime - dbStartTime,
@@ -4838,9 +4817,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       'upc-database': 'UPC Database',
       'australia-food': 'Australian Food Database',
       'health-canada': 'Health Canada',
-      'efsa': 'EFSA Database'
+      'efsa': 'EFSA Database',
+      'leda': 'Leda'
     };
-    
+
     return names[databaseId] || databaseId;
   }
 
@@ -4849,7 +4829,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const limit = parseInt(req.query.limit as string) || 50;
       const promptHistory = await storage.getPromptHistoryByUser(req.session.userId, limit);
-      
+
       res.json(promptHistory);
     } catch (error) {
       console.error('Error fetching prompt history:', error);
@@ -4877,7 +4857,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const feature = req.params.feature;
       const limit = parseInt(req.query.limit as string) || 100;
-      
+
       // Only allow admin users to view feature-specific history
       const currentUser = await storage.getUser(req.session.userId);
       if (!currentUser || currentUser.accountType !== 'Admin') {
@@ -4933,7 +4913,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const release = await storage.getReleaseById(id);
-      
+
       if (!release) {
         return res.status(404).json({ message: 'Release not found' });
       }
