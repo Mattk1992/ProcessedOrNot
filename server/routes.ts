@@ -5349,6 +5349,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Save recipe API endpoint
+  app.post("/api/recipes/save", requireAuth, async (req: any, res) => {
+    try {
+      const { recipe } = req.body;
+      
+      if (!recipe || !recipe.id || !recipe.title) {
+        return res.status(400).json({ 
+          message: "Recipe data is required with id and title",
+          success: false
+        });
+      }
+
+      // Check if recipe is already saved
+      const existingRecipe = await storage.getSavedRecipeByUserAndRecipeId(req.session.userId, recipe.id);
+      if (existingRecipe) {
+        return res.status(409).json({
+          message: "Recipe is already saved",
+          success: false,
+          savedRecipe: existingRecipe
+        });
+      }
+
+      // Prepare recipe data for saving
+      const recipeToSave = {
+        userId: req.session.userId,
+        recipeId: recipe.id,
+        title: recipe.title,
+        description: recipe.description || null,
+        image: recipe.image || null,
+        cookingTime: recipe.cookingTime || null,
+        servings: recipe.servings || null,
+        difficulty: recipe.difficulty || null,
+        ingredients: recipe.ingredients || null,
+        instructions: recipe.instructions || null,
+        source: recipe.source || "Unknown",
+        sourceUrl: recipe.sourceUrl || null,
+        category: recipe.category || null,
+        cuisine: recipe.cuisine || null,
+        calories: recipe.calories || null,
+        protein: recipe.protein || null,
+        carbs: recipe.carbs || null,
+        fat: recipe.fat || null,
+        rating: null,
+        notes: null,
+        tags: null,
+        isFavorite: false
+      };
+
+      const savedRecipe = await storage.saveRecipe(recipeToSave);
+      console.log(`Recipe "${recipe.title}" saved for user ${req.session.userId}`);
+
+      res.json({
+        message: "Recipe saved successfully",
+        success: true,
+        savedRecipe: savedRecipe
+      });
+
+    } catch (error) {
+      console.error("Recipe save error:", error);
+      res.status(500).json({ 
+        message: "Failed to save recipe. Please try again.",
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Get saved recipes API endpoint
+  app.get("/api/recipes/saved", requireAuth, async (req: any, res) => {
+    try {
+      const savedRecipes = await storage.getSavedRecipesByUser(req.session.userId);
+      
+      res.json({
+        success: true,
+        savedRecipes: savedRecipes,
+        total: savedRecipes.length
+      });
+
+    } catch (error) {
+      console.error("Get saved recipes error:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch saved recipes. Please try again.",
+        success: false,
+        savedRecipes: [],
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Delete saved recipe API endpoint
+  app.delete("/api/recipes/saved/:id", requireAuth, async (req: any, res) => {
+    try {
+      const recipeId = parseInt(req.params.id);
+      
+      if (isNaN(recipeId)) {
+        return res.status(400).json({ 
+          message: "Invalid recipe ID",
+          success: false
+        });
+      }
+
+      const deleted = await storage.deleteSavedRecipe(recipeId, req.session.userId);
+      
+      if (!deleted) {
+        return res.status(404).json({
+          message: "Recipe not found or already deleted",
+          success: false
+        });
+      }
+
+      res.json({
+        message: "Recipe removed from saved list",
+        success: true
+      });
+
+    } catch (error) {
+      console.error("Delete saved recipe error:", error);
+      res.status(500).json({ 
+        message: "Failed to delete saved recipe. Please try again.",
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Check if recipe is saved API endpoint
+  app.get("/api/recipes/is-saved/:recipeId", requireAuth, async (req: any, res) => {
+    try {
+      const { recipeId } = req.params;
+      
+      if (!recipeId) {
+        return res.status(400).json({ 
+          message: "Recipe ID is required",
+          success: false
+        });
+      }
+
+      const isSaved = await storage.isRecipeSaved(req.session.userId, recipeId);
+      
+      res.json({
+        success: true,
+        isSaved: isSaved
+      });
+
+    } catch (error) {
+      console.error("Check recipe saved error:", error);
+      res.status(500).json({ 
+        message: "Failed to check recipe status",
+        success: false,
+        isSaved: false,
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Serve app-ads.txt file for mobile app advertising verification
   app.get('/app-ads.txt', (req, res) => {
     res.set('Content-Type', 'text/plain');

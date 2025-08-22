@@ -1358,3 +1358,44 @@ export const insertRecipeSearchHistorySchema = createInsertSchema(recipeSearchHi
 
 export type InsertRecipeSearchHistory = z.infer<typeof insertRecipeSearchHistorySchema>;
 export type RecipeSearchHistory = typeof recipeSearchHistory.$inferSelect;
+
+// Saved Recipes table - for users to save their favorite recipes
+export const savedRecipes = pgTable("saved_recipes", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(), // Foreign key to users table
+  recipeId: text("recipe_id").notNull(), // Original recipe ID from source (MealDB, etc.)
+  title: text("title").notNull(),
+  description: text("description"),
+  image: text("image"),
+  cookingTime: text("cooking_time"),
+  servings: text("servings"),
+  difficulty: text("difficulty"),
+  ingredients: text("ingredients").array(), // Array of ingredients
+  instructions: text("instructions").array(), // Array of cooking steps
+  source: text("source").notNull(), // Source of the recipe (MealDB, etc.)
+  sourceUrl: text("source_url"),
+  category: text("category"),
+  cuisine: text("cuisine"),
+  calories: integer("calories"),
+  protein: real("protein"),
+  carbs: real("carbs"),
+  fat: real("fat"),
+  rating: integer("rating"), // User's personal rating 1-5
+  notes: text("notes"), // User's personal notes about the recipe
+  tags: text("tags").array(), // User-defined tags
+  isFavorite: boolean("is_favorite").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("saved_recipes_user_id_idx").on(table.userId),
+  userRecipeIdx: index("saved_recipes_user_recipe_idx").on(table.userId, table.recipeId),
+}));
+
+export const insertSavedRecipeSchema = createInsertSchema(savedRecipes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSavedRecipe = z.infer<typeof insertSavedRecipeSchema>;
+export type SavedRecipe = typeof savedRecipes.$inferSelect;

@@ -93,7 +93,10 @@ import {
   type InsertPromptHistory,
   recipeSearchHistory,
   type RecipeSearchHistory,
-  type InsertRecipeSearchHistory
+  type InsertRecipeSearchHistory,
+  savedRecipes,
+  type SavedRecipe,
+  type InsertSavedRecipe
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -407,6 +410,15 @@ export interface IStorage {
   getRecipeSearchHistoryById(id: number): Promise<RecipeSearchHistory | undefined>;
   deleteRecipeSearchHistory(id: number, userId?: number): Promise<boolean>;
   getRecentRecipeSearchHistory(userId: number, limit: number): Promise<RecipeSearchHistory[]>;
+
+  // Saved Recipes methods
+  saveRecipe(savedRecipe: InsertSavedRecipe): Promise<SavedRecipe>;
+  getSavedRecipesByUser(userId: number): Promise<SavedRecipe[]>;
+  getSavedRecipeById(id: number, userId: number): Promise<SavedRecipe | undefined>;
+  updateSavedRecipe(id: number, userId: number, updates: Partial<InsertSavedRecipe>): Promise<SavedRecipe | undefined>;
+  deleteSavedRecipe(id: number, userId: number): Promise<boolean>;
+  isRecipeSaved(userId: number, recipeId: string): Promise<boolean>;
+  getSavedRecipeByUserAndRecipeId(userId: number, recipeId: string): Promise<SavedRecipe | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3532,6 +3544,108 @@ export class DatabaseStorage implements IStorage {
         .limit(limit);
     } catch (error) {
       console.error('Error fetching recent recipe search history:', error);
+      throw error;
+    }
+  }
+
+  // ==================== Saved Recipes Methods ====================
+
+  async saveRecipe(savedRecipe: InsertSavedRecipe): Promise<SavedRecipe> {
+    try {
+      const [created] = await db
+        .insert(savedRecipes)
+        .values(savedRecipe)
+        .returning();
+      
+      return created;
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+      throw error;
+    }
+  }
+
+  async getSavedRecipesByUser(userId: number): Promise<SavedRecipe[]> {
+    try {
+      return await db
+        .select()
+        .from(savedRecipes)
+        .where(eq(savedRecipes.userId, userId))
+        .orderBy(desc(savedRecipes.createdAt));
+    } catch (error) {
+      console.error('Error fetching saved recipes:', error);
+      throw error;
+    }
+  }
+
+  async getSavedRecipeById(id: number, userId: number): Promise<SavedRecipe | undefined> {
+    try {
+      const [recipe] = await db
+        .select()
+        .from(savedRecipes)
+        .where(and(eq(savedRecipes.id, id), eq(savedRecipes.userId, userId)))
+        .limit(1);
+      
+      return recipe || undefined;
+    } catch (error) {
+      console.error('Error fetching saved recipe by ID:', error);
+      throw error;
+    }
+  }
+
+  async updateSavedRecipe(id: number, userId: number, updates: Partial<InsertSavedRecipe>): Promise<SavedRecipe | undefined> {
+    try {
+      const [updated] = await db
+        .update(savedRecipes)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(and(eq(savedRecipes.id, id), eq(savedRecipes.userId, userId)))
+        .returning();
+      
+      return updated || undefined;
+    } catch (error) {
+      console.error('Error updating saved recipe:', error);
+      throw error;
+    }
+  }
+
+  async deleteSavedRecipe(id: number, userId: number): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(savedRecipes)
+        .where(and(eq(savedRecipes.id, id), eq(savedRecipes.userId, userId)));
+      
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error('Error deleting saved recipe:', error);
+      throw error;
+    }
+  }
+
+  async isRecipeSaved(userId: number, recipeId: string): Promise<boolean> {
+    try {
+      const [recipe] = await db
+        .select({ id: savedRecipes.id })
+        .from(savedRecipes)
+        .where(and(eq(savedRecipes.userId, userId), eq(savedRecipes.recipeId, recipeId)))
+        .limit(1);
+      
+      return !!recipe;
+    } catch (error) {
+      console.error('Error checking if recipe is saved:', error);
+      return false;
+    }
+  }
+
+  async getSavedRecipeByUserAndRecipeId(userId: number, recipeId: string): Promise<SavedRecipe | undefined> {
+    try {
+      const [recipe] = await db
+        .select()
+        .from(savedRecipes)
+        .where(and(eq(savedRecipes.userId, userId), eq(savedRecipes.recipeId, recipeId)))
+        .limit(1);
+      
+      return recipe || undefined;
+    } catch (error) {
+      console.error('Error fetching saved recipe by user and recipe ID:', error);
       throw error;
     }
   }

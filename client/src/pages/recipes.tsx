@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Clock, Users, ChefHat, ExternalLink, ArrowLeft, Loader2, Filter, X } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+import { Search, Clock, Users, ChefHat, ExternalLink, ArrowLeft, Loader2, Filter, X, Heart, HeartHandshake } from "lucide-react";
 import { format } from "date-fns";
 
 interface Recipe {
@@ -37,12 +39,14 @@ export default function Recipes() {
   const { user, isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  const [savedRecipeIds, setSavedRecipeIds] = useState<Set<string>>(new Set());
   
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -231,6 +235,59 @@ export default function Recipes() {
     } else {
       setDietaryRestrictions(prev => prev.filter(d => d !== dietary));
     }
+  };
+
+  // Save recipe mutation
+  const saveRecipeMutation = useMutation({
+    mutationFn: async (recipe: Recipe) => {
+      const response = await apiRequest('POST', '/api/recipes/save', { recipe });
+      return response;
+    },
+    onSuccess: (data, recipe) => {
+      setSavedRecipeIds(prev => new Set([...prev, recipe.id]));
+      toast({
+        title: "Recipe Saved",
+        description: `"${recipe.title}" has been saved to your recipe collection.`,
+      });
+      // Invalidate saved recipes cache
+      queryClient.invalidateQueries({ queryKey: ['/api/recipes/saved'] });
+    },
+    onError: (error: any, recipe) => {
+      if (error.status === 409) {
+        toast({
+          title: "Already Saved",
+          description: `"${recipe.title}" is already in your saved recipes.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Save Failed",
+          description: error.message || "Failed to save recipe. Please try again.",
+          variant: "destructive",
+        });
+      }
+    },
+  });
+
+  const handleSaveRecipe = (recipe: Recipe) => {
+    if (user?.accountType === 'Regular') {
+      toast({
+        title: "Premium Feature",
+        description: "Saving recipes is available for Paid and Admin users.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (savedRecipeIds.has(recipe.id)) {
+      toast({
+        title: "Already Saved",
+        description: "This recipe is already in your collection.",
+      });
+      return;
+    }
+
+    saveRecipeMutation.mutate(recipe);
   };
   
   const activeFiltersCount = [
@@ -647,9 +704,29 @@ export default function Recipes() {
               {searchResults.map((recipe) => (
                 <Card
                   key={recipe.id}
-                  className="cursor-pointer hover:shadow-lg transition-shadow"
+                  className="cursor-pointer hover:shadow-lg transition-shadow relative"
                   onClick={() => setSelectedRecipe(recipe)}
                 >
+                  {/* Save Button */}
+                  <Button
+                    size="sm"
+                    variant={savedRecipeIds.has(recipe.id) ? "default" : "secondary"}
+                    className="absolute top-2 right-2 z-10 px-2 py-1 h-auto min-w-0 shadow-lg"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent triggering the card click
+                      handleSaveRecipe(recipe);
+                    }}
+                    disabled={saveRecipeMutation.isPending}
+                  >
+                    {saveRecipeMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : savedRecipeIds.has(recipe.id) ? (
+                      <Heart className="w-4 h-4 fill-current" />
+                    ) : (
+                      <Heart className="w-4 h-4" />
+                    )}
+                  </Button>
+
                   {recipe.image && (
                     <div className="aspect-video overflow-hidden rounded-t-lg">
                       <img
