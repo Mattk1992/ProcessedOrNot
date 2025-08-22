@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLocation } from "wouter";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,8 +51,37 @@ export default function SavedRecipes() {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRecipe, setSelectedRecipe] = useState<SavedRecipe | null>(null);
-  const [savedRecipes, setSavedRecipes] = useState<SavedRecipe[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+  
+  // Fetch saved recipes
+  const { data: savedRecipesData, isLoading, error } = useQuery({
+    queryKey: ['/api/recipes/saved'],
+    enabled: isAuthenticated && user?.accountType !== 'Regular',
+  });
+  
+  const savedRecipes = savedRecipesData?.savedRecipes || [];
+
+  // Delete saved recipe mutation
+  const deleteRecipeMutation = useMutation({
+    mutationFn: async (recipeId: string) => {
+      const response = await apiRequest('DELETE', `/api/recipes/saved/${recipeId}`);
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/recipes/saved'] });
+      toast({
+        title: "Recipe removed",
+        description: "Recipe has been removed from your saved list.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to remove recipe.",
+        variant: "destructive",
+      });
+    },
+  });
 
   // Redirect if not authenticated
   if (!isAuthenticated) {
@@ -99,11 +130,7 @@ export default function SavedRecipes() {
   );
 
   const handleRemoveRecipe = (recipeId: string) => {
-    setSavedRecipes(prev => prev.filter(r => r.id !== recipeId));
-    toast({
-      title: "Recipe removed",
-      description: "Recipe has been removed from your saved list.",
-    });
+    deleteRecipeMutation.mutate(recipeId);
   };
 
   const getDifficultyColor = (difficulty?: string) => {
