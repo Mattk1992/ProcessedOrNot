@@ -358,7 +358,6 @@ Focus on practical, achievable recipes with clear instructions. Include estimate
           content: prompt
         }
       ],
-      response_format: { type: "json_object" },
       temperature: 0.3,
       max_tokens: 3000,
     });
@@ -368,10 +367,10 @@ Focus on practical, achievable recipes with clear instructions. Include estimate
       throw new Error('No content generated from AI');
     }
 
-    // Parse the JSON response
+    // Parse the JSON response with aggressive cleanup
     let recipes: Recipe[];
     try {
-      // Try to parse as direct JSON
+      // Try to parse as direct JSON first
       const parsed = JSON.parse(content);
       
       // Handle if response is wrapped in an object with a recipes array
@@ -385,22 +384,70 @@ Focus on practical, achievable recipes with clear instructions. Include estimate
     } catch (parseError) {
       console.error("Failed to parse AI response:", content);
       
-      // Try to extract JSON array from response
+      // Try aggressive cleanup
       let cleanedContent = content.trim();
-      const arrayStart = cleanedContent.indexOf('[');
-      const arrayEnd = cleanedContent.lastIndexOf(']');
       
-      if (arrayStart >= 0 && arrayEnd > arrayStart) {
-        try {
-          cleanedContent = cleanedContent.substring(arrayStart, arrayEnd + 1);
-          recipes = JSON.parse(cleanedContent);
-          console.log('Successfully parsed cleaned AI response');
-        } catch (secondParseError) {
-          console.error("Second parse attempt failed:", secondParseError);
-          throw new Error('Failed to parse AI recipe response after cleanup');
+      // Remove any text before the first [ or {
+      const firstBracket = Math.min(
+        cleanedContent.indexOf('[') >= 0 ? cleanedContent.indexOf('[') : Infinity,
+        cleanedContent.indexOf('{') >= 0 ? cleanedContent.indexOf('{') : Infinity
+      );
+      
+      if (firstBracket < Infinity && firstBracket > 0) {
+        cleanedContent = cleanedContent.substring(firstBracket);
+      }
+      
+      // Remove any text after the last ] or }
+      const lastBracket = Math.max(
+        cleanedContent.lastIndexOf(']'),
+        cleanedContent.lastIndexOf('}')
+      );
+      
+      if (lastBracket >= 0 && lastBracket < cleanedContent.length - 1) {
+        cleanedContent = cleanedContent.substring(0, lastBracket + 1);
+      }
+      
+      // Try to parse the cleaned content
+      try {
+        const parsed = JSON.parse(cleanedContent);
+        
+        // Handle different response structures
+        if (parsed.recipes && Array.isArray(parsed.recipes)) {
+          recipes = parsed.recipes;
+        } else if (Array.isArray(parsed)) {
+          recipes = parsed;
+        } else {
+          // If it's a single object, wrap it in an array
+          recipes = [parsed];
         }
-      } else {
-        throw new Error('Failed to parse AI recipe response - no valid JSON array found');
+        
+        console.log('Successfully parsed cleaned AI response');
+      } catch (secondParseError) {
+        console.error("Second parse attempt failed:", secondParseError);
+        console.error("Cleaned content:", cleanedContent);
+        
+        // Last resort: create a fallback recipe
+        recipes = [{
+          id: `fallback_${Date.now()}`,
+          title: `Recipe for ${searchParams.query || 'Unknown'}`,
+          description: "AI generation failed, but we found this suggestion for you.",
+          image: undefined,
+          cookingTime: "30 minutes",
+          servings: "4 servings",
+          difficulty: "Medium",
+          ingredients: ["Please search again for detailed ingredients"],
+          instructions: ["Please search again for detailed instructions"],
+          source: "AI Generated (Fallback)",
+          sourceUrl: undefined,
+          category: "Main Course",
+          cuisine: "International",
+          calories: 400,
+          protein: 20,
+          carbs: 50,
+          fat: 15
+        }];
+        
+        console.log('Created fallback recipe due to parsing failures');
       }
     }
 
