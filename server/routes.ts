@@ -4633,11 +4633,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "success"
       });
 
+      // Automatically regenerate webcal URLs to sync new AI schedule data
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const { generateWebcalUrl, generateHttpsWebcalUrl } = await import('./lib/webcal');
+      
+      const webcalUrls = {
+        webcalUrl: generateWebcalUrl(req.session.userId, baseUrl),
+        httpsUrl: generateHttpsWebcalUrl(req.session.userId, baseUrl),
+        instructions: {
+          ios: "Copy the webcal:// URL and open it in Safari on your iPhone/iPad. It will automatically add to your Calendar app.",
+          android: "Copy the HTTPS URL and import it in Google Calendar or your preferred calendar app.",
+          desktop: "Copy the HTTPS URL and add it as a calendar subscription in Outlook, Apple Calendar, or Google Calendar."
+        }
+      };
+
       res.json({
         success: true,
         calendarEntry,
         schedule: generationResult.schedule,
-        generationTimeMs: generationResult.generationTimeMs
+        generationTimeMs: generationResult.generationTimeMs,
+        webcalUrls // Include generated webcal URLs in response
       });
 
     } catch (error) {

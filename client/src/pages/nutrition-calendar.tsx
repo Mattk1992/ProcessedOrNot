@@ -239,9 +239,15 @@ export default function NutritionCalendar() {
       queryClient.invalidateQueries({ queryKey: ['/api/calendar/entries'] });
       setIsScheduleDialogOpen(false);
       resetForm();
+      
+      // Automatically update webcal URLs if they were returned
+      if (data.webcalUrls) {
+        setWebcalUrls(data.webcalUrls);
+      }
+      
       toast({
         title: "AI Schedule Generated!",
-        description: `Successfully created "${data.schedule?.title || 'your schedule'}" with personalized recommendations.`,
+        description: `Successfully created "${data.schedule?.title || 'your schedule'}" with personalized recommendations. Calendar feed updated automatically.`,
       });
     },
     onError: (error: any) => {
