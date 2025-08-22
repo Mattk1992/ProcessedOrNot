@@ -4460,6 +4460,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add recipe to calendar
+  app.post('/api/calendar/add-recipe', async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const { recipe, date, time } = req.body;
+
+      if (!recipe || !date || !time) {
+        return res.status(400).json({ message: "Recipe, date, and time are required" });
+      }
+
+      // Validate date format (YYYY-MM-DD)
+      const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+      if (!dateRegex.test(date)) {
+        return res.status(400).json({ message: "Invalid date format. Use YYYY-MM-DD" });
+      }
+
+      // Validate time format (HH:MM)
+      const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+      if (!timeRegex.test(time)) {
+        return res.status(400).json({ message: "Invalid time format. Use HH:MM" });
+      }
+
+      // Create a calendar entry for this recipe
+      const entryData = {
+        userId: req.session.userId,
+        title: `🍽️ ${recipe.title}`,
+        description: `Recipe: ${recipe.title}\n\n` +
+                    (recipe.description ? `${recipe.description}\n\n` : '') +
+                    (recipe.cookingTime ? `⏱️ Cooking Time: ${recipe.cookingTime}\n` : '') +
+                    (recipe.servings ? `👥 Servings: ${recipe.servings}\n` : '') +
+                    (recipe.difficulty ? `📊 Difficulty: ${recipe.difficulty}\n` : '') +
+                    (recipe.calories ? `🔥 Calories: ${recipe.calories}\n` : '') +
+                    (recipe.sourceUrl ? `\n🔗 Recipe Source: ${recipe.sourceUrl}` : ''),
+        type: 'recipe',
+        date: date,
+        startDate: date,
+        endDate: date,
+        time: time,
+        goal: `Cook ${recipe.title}`,
+        duration: 1,
+        dailyCalories: recipe.calories || null,
+        recipeData: {
+          id: recipe.id,
+          title: recipe.title,
+          description: recipe.description,
+          image: recipe.image,
+          cookingTime: recipe.cookingTime,
+          servings: recipe.servings,
+          difficulty: recipe.difficulty,
+          ingredients: recipe.ingredients,
+          instructions: recipe.instructions,
+          source: recipe.source,
+          sourceUrl: recipe.sourceUrl,
+          category: recipe.category,
+          cuisine: recipe.cuisine,
+          calories: recipe.calories,
+          protein: recipe.protein,
+          carbs: recipe.carbs,
+          fat: recipe.fat
+        }
+      };
+
+      const entry = await storage.createCalendarEntry(entryData);
+      
+      // Generate updated webcal URLs for the user
+      try {
+        const webcalLib = await import('./lib/webcal');
+        const entries = await storage.getCalendarEntries(req.session.userId);
+        const webcalUrls = await webcalLib.generateWebcalUrls(req.session.userId, entries);
+        
+        res.json({
+          success: true,
+          message: "Recipe added to calendar successfully",
+          entry: entry,
+          webcalUrls: webcalUrls
+        });
+      } catch (webcalError) {
+        console.error("Error generating webcal URLs:", webcalError);
+        // Still return success for the main operation
+        res.json({
+          success: true,
+          message: "Recipe added to calendar successfully",
+          entry: entry
+        });
+      }
+    } catch (error) {
+      console.error("Error adding recipe to calendar:", error);
+      res.status(500).json({ 
+        message: "Failed to add recipe to calendar",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Update a calendar entry
   app.put('/api/calendar/entries/:id', requireAuth, async (req: Request, res: Response) => {
     try {

@@ -12,7 +12,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Search, Clock, Users, ChefHat, ExternalLink, ArrowLeft, Loader2, Filter, X, Heart, HeartHandshake } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Search, Clock, Users, ChefHat, ExternalLink, ArrowLeft, Loader2, Filter, X, Heart, HeartHandshake, Calendar, CalendarPlus } from "lucide-react";
 import { format } from "date-fns";
 
 interface Recipe {
@@ -47,6 +48,10 @@ export default function Recipes() {
   const [hasSearched, setHasSearched] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [savedRecipeIds, setSavedRecipeIds] = useState<Set<string>>(new Set());
+  const [showCalendarDialog, setShowCalendarDialog] = useState(false);
+  const [selectedCalendarRecipe, setSelectedCalendarRecipe] = useState<Recipe | null>(null);
+  const [calendarDate, setCalendarDate] = useState("");
+  const [calendarTime, setCalendarTime] = useState("");
   
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -288,6 +293,75 @@ export default function Recipes() {
     }
 
     saveRecipeMutation.mutate(recipe);
+  };
+
+  // Add to Calendar mutation
+  const addToCalendarMutation = useMutation({
+    mutationFn: async ({ recipe, date, time }: { recipe: Recipe, date: string, time: string }) => {
+      const response = await apiRequest('POST', '/api/calendar/add-recipe', {
+        recipe,
+        date,
+        time
+      });
+      return response;
+    },
+    onSuccess: (data, { recipe }) => {
+      toast({
+        title: "Added to Calendar",
+        description: `"${recipe.title}" has been scheduled for ${calendarDate} at ${calendarTime}.`,
+      });
+      setShowCalendarDialog(false);
+      setSelectedCalendarRecipe(null);
+      setCalendarDate("");
+      setCalendarTime("");
+      // Invalidate calendar cache
+      queryClient.invalidateQueries({ queryKey: ['/api/calendar'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error Adding to Calendar",
+        description: error.message || "Failed to add recipe to calendar.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAddToCalendar = (recipe: Recipe) => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to add recipes to your calendar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedCalendarRecipe(recipe);
+    setShowCalendarDialog(true);
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    setCalendarDate(today);
+    // Set default time to current time
+    const now = new Date();
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+    setCalendarTime(currentTime);
+  };
+
+  const handleCalendarSubmit = () => {
+    if (!selectedCalendarRecipe || !calendarDate || !calendarTime) {
+      toast({
+        title: "Missing Information",
+        description: "Please select both date and time.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    addToCalendarMutation.mutate({
+      recipe: selectedCalendarRecipe,
+      date: calendarDate,
+      time: calendarTime
+    });
   };
   
   const activeFiltersCount = [
@@ -707,25 +781,41 @@ export default function Recipes() {
                   className="cursor-pointer hover:shadow-lg transition-shadow relative"
                   onClick={() => setSelectedRecipe(recipe)}
                 >
-                  {/* Save Button */}
-                  <Button
-                    size="sm"
-                    variant={savedRecipeIds.has(recipe.id) ? "default" : "secondary"}
-                    className="absolute top-2 right-2 z-10 px-2 py-1 h-auto min-w-0 shadow-lg"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent triggering the card click
-                      handleSaveRecipe(recipe);
-                    }}
-                    disabled={saveRecipeMutation.isPending}
-                  >
-                    {saveRecipeMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : savedRecipeIds.has(recipe.id) ? (
-                      <Heart className="w-4 h-4 fill-current" />
-                    ) : (
-                      <Heart className="w-4 h-4" />
-                    )}
-                  </Button>
+                  {/* Action Buttons */}
+                  <div className="absolute top-2 right-2 z-10 flex gap-1">
+                    {/* Add to Calendar Button */}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="px-2 py-1 h-auto min-w-0 shadow-lg bg-white dark:bg-gray-800"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering the card click
+                        handleAddToCalendar(recipe);
+                      }}
+                    >
+                      <CalendarPlus className="w-4 h-4" />
+                    </Button>
+                    
+                    {/* Save Button */}
+                    <Button
+                      size="sm"
+                      variant={savedRecipeIds.has(recipe.id) ? "default" : "secondary"}
+                      className="px-2 py-1 h-auto min-w-0 shadow-lg"
+                      onClick={(e) => {
+                        e.stopPropagation(); // Prevent triggering the card click
+                        handleSaveRecipe(recipe);
+                      }}
+                      disabled={saveRecipeMutation.isPending}
+                    >
+                      {saveRecipeMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : savedRecipeIds.has(recipe.id) ? (
+                        <Heart className="w-4 h-4 fill-current" />
+                      ) : (
+                        <Heart className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
 
                   {recipe.image && (
                     <div className="aspect-video overflow-hidden rounded-t-lg">
@@ -816,6 +906,81 @@ export default function Recipes() {
             </CardContent>
           </Card>
         )}
+
+        {/* Add to Calendar Dialog */}
+        <Dialog open={showCalendarDialog} onOpenChange={setShowCalendarDialog}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Add Recipe to Calendar</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 p-4">
+              {selectedCalendarRecipe && (
+                <div className="mb-4">
+                  <h4 className="font-semibold text-lg">{selectedCalendarRecipe.title}</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {selectedCalendarRecipe.cookingTime && `Cooking time: ${selectedCalendarRecipe.cookingTime}`}
+                    {selectedCalendarRecipe.servings && ` • Serves: ${selectedCalendarRecipe.servings}`}
+                  </p>
+                </div>
+              )}
+              
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="calendar-date" className="text-sm font-medium">
+                    Date
+                  </Label>
+                  <Input
+                    id="calendar-date"
+                    type="date"
+                    value={calendarDate}
+                    onChange={(e) => setCalendarDate(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="calendar-time" className="text-sm font-medium">
+                    Time
+                  </Label>
+                  <Input
+                    id="calendar-time"
+                    type="time"
+                    value={calendarTime}
+                    onChange={(e) => setCalendarTime(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCalendarDialog(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCalendarSubmit}
+                  disabled={addToCalendarMutation.isPending || !calendarDate || !calendarTime}
+                  className="flex-1"
+                >
+                  {addToCalendarMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <Calendar className="w-4 h-4 mr-2" />
+                      Add to Calendar
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
