@@ -1158,13 +1158,13 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                 <Factory className="w-6 h-6 text-purple-600 dark:text-purple-400 mt-1 flex-shrink-0" />
                 <div className="flex-1">
                   <h5 className="font-semibold mb-4 text-purple-800 dark:text-purple-200 text-lg">How This Product Is Made</h5>
-                  <div className="prose prose-sm max-w-none">
-                    <div className="text-sm text-purple-700 dark:text-purple-300 leading-relaxed space-y-4">
+                  <div className="w-full max-w-none">
+                    <div className="text-base text-purple-700 dark:text-purple-300 leading-relaxed space-y-6 min-h-0">
                       {productionProcess?.process?.split('\n\n').map((paragraph, index) => {
                         // Handle markdown headers
                         if (paragraph.startsWith('###')) {
                           return (
-                            <h4 key={index} className="font-semibold text-base text-purple-800 dark:text-purple-200 mt-6 mb-3 border-b border-purple-200/50 pb-2">
+                            <h4 key={index} className="font-semibold text-lg text-purple-800 dark:text-purple-200 mt-8 mb-4 border-b border-purple-200/50 pb-3">
                               {paragraph.replace('###', '').trim()}
                             </h4>
                           );
@@ -1172,7 +1172,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                         // Handle markdown subheaders
                         if (paragraph.startsWith('##')) {
                           return (
-                            <h3 key={index} className="font-bold text-lg text-purple-800 dark:text-purple-200 mt-8 mb-4">
+                            <h3 key={index} className="font-bold text-xl text-purple-800 dark:text-purple-200 mt-10 mb-5">
                               {paragraph.replace('##', '').trim()}
                             </h3>
                           );
@@ -1180,7 +1180,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                         // Handle markdown main headers
                         if (paragraph.startsWith('#')) {
                           return (
-                            <h2 key={index} className="font-bold text-xl text-purple-800 dark:text-purple-200 mt-6 mb-4">
+                            <h2 key={index} className="font-bold text-2xl text-purple-800 dark:text-purple-200 mt-8 mb-6">
                               {paragraph.replace('#', '').trim()}
                             </h2>
                           );
@@ -1189,15 +1189,15 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                         if (paragraph.includes('- **') || paragraph.includes('• ')) {
                           const lines = paragraph.split('\n');
                           return (
-                            <div key={index} className="space-y-2">
+                            <div key={index} className="space-y-4">
                               {lines.map((line, lineIndex) => {
                                 if (line.trim().startsWith('- **') || line.trim().startsWith('• ')) {
                                   const content = line.replace(/^[•-]\s*\*\*(.*?)\*\*:?\s*/, '');
                                   const title = line.match(/\*\*(.*?)\*\*/)?.[1] || '';
                                   return (
-                                    <div key={lineIndex} className="flex items-start space-x-2 ml-4">
-                                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
-                                      <div>
+                                    <div key={lineIndex} className="flex items-start space-x-3 ml-4">
+                                      <div className="w-3 h-3 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                                      <div className="text-base">
                                         <span className="font-medium text-purple-800 dark:text-purple-200">{title}:</span>
                                         <span className="ml-2">{content}</span>
                                       </div>
@@ -1205,7 +1205,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                                   );
                                 } else if (line.trim()) {
                                   return (
-                                    <p key={lineIndex} className="ml-6 text-sm">
+                                    <p key={lineIndex} className="ml-8 text-base leading-relaxed">
                                       {line.trim()}
                                     </p>
                                   );
@@ -1219,25 +1219,25 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                         if (paragraph.match(/^\d+\./)) {
                           const lines = paragraph.split('\n');
                           return (
-                            <div key={index} className="space-y-3">
+                            <div key={index} className="space-y-5">
                               {lines.map((line, lineIndex) => {
                                 const numberMatch = line.match(/^(\d+)\.\s*\*\*(.*?)\*\*:?\s*(.*)/);
                                 if (numberMatch) {
                                   const [, number, title, content] = numberMatch;
                                   return (
-                                    <div key={lineIndex} className="flex items-start space-x-3">
-                                      <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5">
+                                    <div key={lineIndex} className="flex items-start space-x-4">
+                                      <div className="w-8 h-8 bg-purple-500 text-white rounded-full flex items-center justify-center text-sm font-medium flex-shrink-0 mt-1">
                                         {number}
                                       </div>
-                                      <div>
-                                        <h5 className="font-medium text-purple-800 dark:text-purple-200 mb-1">{title}</h5>
-                                        <p className="text-sm">{content}</p>
+                                      <div className="flex-1">
+                                        <h5 className="font-semibold text-purple-800 dark:text-purple-200 mb-2 text-base">{title}</h5>
+                                        <p className="text-base leading-relaxed">{content}</p>
                                       </div>
                                     </div>
                                   );
                                 } else if (line.trim() && !line.match(/^\d+\./)) {
                                   return (
-                                    <p key={lineIndex} className="ml-9 text-sm">
+                                    <p key={lineIndex} className="ml-12 text-base leading-relaxed">
                                       {line.trim()}
                                     </p>
                                   );
@@ -1249,7 +1249,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                         }
                         // Regular paragraphs
                         return paragraph.trim() ? (
-                          <p key={index} className="text-sm leading-relaxed">
+                          <p key={index} className="text-base leading-relaxed py-2">
                             {paragraph.trim()}
                           </p>
                         ) : null;
