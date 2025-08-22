@@ -1313,3 +1313,48 @@ export const insertUserWeightEntrySchema = createInsertSchema(userWeightEntries)
 
 export type InsertUserWeightEntry = z.infer<typeof insertUserWeightEntrySchema>;
 export type UserWeightEntry = typeof userWeightEntries.$inferSelect;
+
+// Recipe Search History table - for tracking recipe search queries and results
+export const recipeSearchHistory = pgTable("recipe_search_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: "cascade" }),
+  searchQuery: text("search_query").notNull(),
+  
+  // Search filters applied
+  category: text("category"),
+  cuisine: text("cuisine"),
+  difficulty: text("difficulty"),
+  cookingTime: text("cooking_time"),
+  calorieRangeMin: integer("calorie_range_min"),
+  calorieRangeMax: integer("calorie_range_max"),
+  dietaryRestrictions: text("dietary_restrictions").array(),
+  
+  // Search results metadata
+  totalResults: integer("total_results").notNull().default(0),
+  resultSource: text("result_source").notNull(), // 'mealdb', 'ai_generated', 'database'
+  hasResults: boolean("has_results").notNull().default(false),
+  
+  // Recipe results - stored as JSON array of recipe objects
+  recipeResults: jsonb("recipe_results"),
+  
+  // Error handling
+  errorMessage: text("error_message"),
+  
+  // Search timing and performance
+  searchDuration: integer("search_duration"), // in milliseconds
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("recipe_search_history_user_id_idx").on(table.userId),
+  searchQueryIdx: index("recipe_search_history_query_idx").on(table.searchQuery),
+  createdAtIdx: index("recipe_search_history_created_at_idx").on(table.createdAt),
+  resultSourceIdx: index("recipe_search_history_source_idx").on(table.resultSource),
+}));
+
+export const insertRecipeSearchHistorySchema = createInsertSchema(recipeSearchHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertRecipeSearchHistory = z.infer<typeof insertRecipeSearchHistorySchema>;
+export type RecipeSearchHistory = typeof recipeSearchHistory.$inferSelect;

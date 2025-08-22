@@ -143,22 +143,22 @@ export default function Recipes() {
   const applyClientSideFilters = (recipes: Recipe[]): Recipe[] => {
     return recipes.filter(recipe => {
       // Category filter
-      if (selectedCategory && recipe.category !== selectedCategory) {
+      if (selectedCategory && selectedCategory !== "__any__" && recipe.category !== selectedCategory) {
         return false;
       }
       
       // Cuisine filter
-      if (selectedCuisine && recipe.cuisine !== selectedCuisine) {
+      if (selectedCuisine && selectedCuisine !== "__any__" && recipe.cuisine !== selectedCuisine) {
         return false;
       }
       
       // Difficulty filter
-      if (selectedDifficulty && recipe.difficulty !== selectedDifficulty) {
+      if (selectedDifficulty && selectedDifficulty !== "__any__" && recipe.difficulty !== selectedDifficulty) {
         return false;
       }
       
       // Cooking time filter
-      if (selectedCookingTime && recipe.cookingTime) {
+      if (selectedCookingTime && selectedCookingTime !== "__any__" && recipe.cookingTime) {
         const timeMatch = {
           "Under 30 min": (time: string) => {
             const minutes = parseInt(time.match(/\d+/)?.[0] || "0");
@@ -217,10 +217,10 @@ export default function Recipes() {
   };
   
   const clearFilters = () => {
-    setSelectedCategory("");
-    setSelectedCuisine("");
-    setSelectedDifficulty("");
-    setSelectedCookingTime("");
+    setSelectedCategory("__any__");
+    setSelectedCuisine("__any__");
+    setSelectedDifficulty("__any__");
+    setSelectedCookingTime("__any__");
     setCalorieRange([0, 1000]);
     setDietaryRestrictions([]);
   };
@@ -234,10 +234,10 @@ export default function Recipes() {
   };
   
   const activeFiltersCount = [
-    selectedCategory,
-    selectedCuisine,
-    selectedDifficulty,
-    selectedCookingTime,
+    selectedCategory && selectedCategory !== "__any__" ? selectedCategory : null,
+    selectedCuisine && selectedCuisine !== "__any__" ? selectedCuisine : null,
+    selectedDifficulty && selectedDifficulty !== "__any__" ? selectedDifficulty : null,
+    selectedCookingTime && selectedCookingTime !== "__any__" ? selectedCookingTime : null,
     ...(calorieRange[0] > 0 || calorieRange[1] < 1000 ? ["calories"] : []),
     ...dietaryRestrictions
   ].filter(Boolean).length;
@@ -366,7 +366,7 @@ export default function Recipes() {
                           <SelectValue placeholder="Any category" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any category</SelectItem>
+                          <SelectItem value="__any__">Any category</SelectItem>
                           {categories.map(category => (
                             <SelectItem key={category} value={category}>{category}</SelectItem>
                           ))}
@@ -381,7 +381,7 @@ export default function Recipes() {
                           <SelectValue placeholder="Any cuisine" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any cuisine</SelectItem>
+                          <SelectItem value="__any__">Any cuisine</SelectItem>
                           {cuisines.map(cuisine => (
                             <SelectItem key={cuisine} value={cuisine}>{cuisine}</SelectItem>
                           ))}
@@ -399,7 +399,7 @@ export default function Recipes() {
                           <SelectValue placeholder="Any difficulty" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any difficulty</SelectItem>
+                          <SelectItem value="__any__">Any difficulty</SelectItem>
                           {difficulties.map(difficulty => (
                             <SelectItem key={difficulty} value={difficulty}>{difficulty}</SelectItem>
                           ))}
@@ -414,7 +414,7 @@ export default function Recipes() {
                           <SelectValue placeholder="Any duration" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Any duration</SelectItem>
+                          <SelectItem value="__any__">Any duration</SelectItem>
                           {cookingTimes.map(time => (
                             <SelectItem key={time} value={time}>{time}</SelectItem>
                           ))}

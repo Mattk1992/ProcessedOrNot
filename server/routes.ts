@@ -5221,8 +5221,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Recipe search API endpoint
+  // Recipe search API endpoint with automatic search history saving
   app.post("/api/recipes/search", ensureSession, async (req: any, res) => {
+    const searchStartTime = Date.now();
     try {
       const { 
         query, 
@@ -5261,6 +5262,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       );
 
+      const searchDuration = Date.now() - searchStartTime;
+
+      // Automatically save search results to Recipe Search History database
+      try {
+        if (req.session.userId) {
+          const historyEntry = {
+            userId: req.session.userId,
+            searchQuery: query.trim(),
+            category: category && category !== "__any__" ? category : null,
+            cuisine: cuisine && cuisine !== "__any__" ? cuisine : null,
+            difficulty: difficulty && difficulty !== "__any__" ? difficulty : null,
+            cookingTime: cookingTime && cookingTime !== "__any__" ? cookingTime : null,
+            calorieRangeMin: minCalories || null,
+            calorieRangeMax: maxCalories || null,
+            dietaryRestrictions: dietaryRestrictions && dietaryRestrictions.length > 0 ? dietaryRestrictions : null,
+            totalResults: searchResult.recipes.length,
+            resultSource: searchResult.source,
+            hasResults: searchResult.recipes.length > 0,
+            recipeResults: searchResult.recipes.length > 0 ? searchResult.recipes : null,
+            errorMessage: searchResult.error || null,
+            searchDuration: searchDuration
+          };
+
+          await storage.createRecipeSearchHistory(historyEntry);
+          console.log(`Saved recipe search history for user ${req.session.userId}: "${query}" (${searchResult.recipes.length} results)`);
+        }
+      } catch (historyError) {
+        // Don't fail the main request if history saving fails
+        console.error("Failed to save recipe search history:", historyError);
+      }
+
       if (searchResult.error && searchResult.recipes.length === 0) {
         return res.status(404).json({
           message: searchResult.error,
@@ -5279,7 +5311,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
     } catch (error) {
+      const searchDuration = Date.now() - searchStartTime;
       console.error("Recipe search error:", error);
+
+      // Try to save error in search history if user is authenticated
+      try {
+        if (req.session.userId && req.body.query) {
+          const historyEntry = {
+            userId: req.session.userId,
+            searchQuery: req.body.query.trim(),
+            category: req.body.category && req.body.category !== "__any__" ? req.body.category : null,
+            cuisine: req.body.cuisine && req.body.cuisine !== "__any__" ? req.body.cuisine : null,
+            difficulty: req.body.difficulty && req.body.difficulty !== "__any__" ? req.body.difficulty : null,
+            cookingTime: req.body.cookingTime && req.body.cookingTime !== "__any__" ? req.body.cookingTime : null,
+            calorieRangeMin: req.body.minCalories || null,
+            calorieRangeMax: req.body.maxCalories || null,
+            dietaryRestrictions: req.body.dietaryRestrictions && req.body.dietaryRestrictions.length > 0 ? req.body.dietaryRestrictions : null,
+            totalResults: 0,
+            resultSource: "Error",
+            hasResults: false,
+            recipeResults: null,
+            errorMessage: error instanceof Error ? error.message : "Unknown error",
+            searchDuration: searchDuration
+          };
+
+          await storage.createRecipeSearchHistory(historyEntry);
+        }
+      } catch (historyError) {
+        console.error("Failed to save error in recipe search history:", historyError);
+      }
+
       res.status(500).json({ 
         message: "Failed to search recipes. Please try again.",
         recipes: [],

@@ -90,7 +90,10 @@ import {
   type InsertUserMealTimes,
   promptHistory,
   type PromptHistory,
-  type InsertPromptHistory
+  type InsertPromptHistory,
+  recipeSearchHistory,
+  type RecipeSearchHistory,
+  type InsertRecipeSearchHistory
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -397,6 +400,13 @@ export interface IStorage {
   updateWeightEntry(id: number, updates: Partial<InsertUserWeightEntry>): Promise<UserWeightEntry | undefined>;
   deleteWeightEntry(id: number, userId: number): Promise<boolean>;
   updateUserCurrentWeight(userId: number, weight: number): Promise<boolean>;
+
+  // Recipe Search History methods
+  createRecipeSearchHistory(entry: InsertRecipeSearchHistory): Promise<RecipeSearchHistory>;
+  getRecipeSearchHistoryByUser(userId: number, limit?: number): Promise<RecipeSearchHistory[]>;
+  getRecipeSearchHistoryById(id: number): Promise<RecipeSearchHistory | undefined>;
+  deleteRecipeSearchHistory(id: number, userId?: number): Promise<boolean>;
+  getRecentRecipeSearchHistory(userId: number, limit: number): Promise<RecipeSearchHistory[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3447,6 +3457,82 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error updating user current weight:', error);
       return false;
+    }
+  }
+
+  // ==================== Recipe Search History Methods ====================
+
+  async createRecipeSearchHistory(entry: InsertRecipeSearchHistory): Promise<RecipeSearchHistory> {
+    try {
+      const [created] = await db
+        .insert(recipeSearchHistory)
+        .values(entry)
+        .returning();
+      
+      return created;
+    } catch (error) {
+      console.error('Error creating recipe search history:', error);
+      throw error;
+    }
+  }
+
+  async getRecipeSearchHistoryByUser(userId: number, limit = 50): Promise<RecipeSearchHistory[]> {
+    try {
+      return await db
+        .select()
+        .from(recipeSearchHistory)
+        .where(eq(recipeSearchHistory.userId, userId))
+        .orderBy(desc(recipeSearchHistory.createdAt))
+        .limit(limit);
+    } catch (error) {
+      console.error('Error fetching recipe search history:', error);
+      throw error;
+    }
+  }
+
+  async getRecipeSearchHistoryById(id: number): Promise<RecipeSearchHistory | undefined> {
+    try {
+      const [entry] = await db
+        .select()
+        .from(recipeSearchHistory)
+        .where(eq(recipeSearchHistory.id, id))
+        .limit(1);
+      
+      return entry || undefined;
+    } catch (error) {
+      console.error('Error fetching recipe search history by ID:', error);
+      throw error;
+    }
+  }
+
+  async deleteRecipeSearchHistory(id: number, userId?: number): Promise<boolean> {
+    try {
+      const whereConditions = userId
+        ? and(eq(recipeSearchHistory.id, id), eq(recipeSearchHistory.userId, userId))
+        : eq(recipeSearchHistory.id, id);
+
+      const result = await db
+        .delete(recipeSearchHistory)
+        .where(whereConditions);
+      
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error('Error deleting recipe search history:', error);
+      throw error;
+    }
+  }
+
+  async getRecentRecipeSearchHistory(userId: number, limit: number): Promise<RecipeSearchHistory[]> {
+    try {
+      return await db
+        .select()
+        .from(recipeSearchHistory)
+        .where(eq(recipeSearchHistory.userId, userId))
+        .orderBy(desc(recipeSearchHistory.createdAt))
+        .limit(limit);
+    } catch (error) {
+      console.error('Error fetching recent recipe search history:', error);
+      throw error;
     }
   }
 }
