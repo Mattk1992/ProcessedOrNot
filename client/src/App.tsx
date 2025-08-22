@@ -42,6 +42,7 @@ import NutritionCalendar from "@/pages/nutrition-calendar";
 import UserProfile from "@/pages/user-profile";
 import Releases from "@/pages/releases";
 import Recipes from "@/pages/recipes";
+import SavedRecipes from "@/pages/saved-recipes";
 
 import Onboarding from "@/pages/onboarding";
 import LookupHistory from "@/pages/lookup-history";
@@ -164,6 +165,7 @@ function Router() {
         <Route path="/releases" component={Releases} />
         <Route path="/nutrition-calendar" component={NutritionCalendar} />
         <Route path="/recipes" component={Recipes} />
+        <Route path="/saved-recipes" component={SavedRecipes} />
         <Route path="/notifications" component={Notifications} />
         
         {/* Lookup History Page */}
