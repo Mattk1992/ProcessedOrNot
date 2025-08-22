@@ -5140,5 +5140,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve app-ads.txt file for mobile app advertising verification
+  app.get('/app-ads.txt', (req, res) => {
+    res.set('Content-Type', 'text/plain');
+    res.send('google.com, pub-1163701043339821, DIRECT, f08c47fec0942fa0');
+  });
+
   return httpServer;
 }
