@@ -3775,50 +3775,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId, token } = req.params;
 
-      // Basic token validation (in production, use proper JWT or similar)
+      // Basic token validation
       if (!userId || !token) {
         return res.status(400).json({ message: 'Invalid webcal URL' });
       }
 
-      // Get nutrition data for the user (using sample data for now)
-      // In production, fetch from diary_entries table
-      const nutritionEntries = [
-        {
-          date: '2025-01-10',
-          calories: 2150,
-          protein: 120,
-          carbohydrates: 280,
-          fat: 75,
-          meals: [
-            { name: 'Oatmeal with Berries', type: 'breakfast', time: '08:00', calories: 350 },
-            { name: 'Grilled Chicken Salad', type: 'lunch', time: '12:30', calories: 450 },
-            { name: 'Salmon with Quinoa', type: 'dinner', time: '19:00', calories: 650 },
-            { name: 'Greek Yogurt', type: 'snack', time: '15:30', calories: 150 }
-          ]
-        },
-        {
-          date: '2025-01-09',
-          calories: 1980,
-          protein: 110,
-          carbohydrates: 240,
-          fat: 68,
-          meals: [
-            { name: 'Smoothie Bowl', type: 'breakfast', time: '08:15', calories: 320 },
-            { name: 'Turkey Sandwich', type: 'lunch', time: '13:00', calories: 420 },
-            { name: 'Pasta with Vegetables', type: 'dinner', time: '18:30', calories: 580 },
-            { name: 'Apple with Almonds', type: 'snack', time: '16:00', calories: 180 }
-          ]
+      // Validate that the token belongs to this user (decode the token)
+      try {
+        const decoded = Buffer.from(token, 'base64url').toString();
+        const [tokenUserId] = decoded.split('-');
+        if (tokenUserId !== userId) {
+          return res.status(403).json({ message: 'Unauthorized access' });
         }
-      ];
+      } catch (error) {
+        return res.status(400).json({ message: 'Invalid token format' });
+      }
+
+      // Get actual nutrition data for the user from diary entries
+      const diaryEntries = await storage.getDiaryEntriesByUser(parseInt(userId));
+      
+      // Group diary entries by date and aggregate nutrition data
+      const nutritionEntriesByDate = new Map();
+      
+      diaryEntries.forEach(entry => {
+        const date = entry.date;
+        if (!nutritionEntriesByDate.has(date)) {
+          nutritionEntriesByDate.set(date, {
+            date,
+            calories: 0,
+            protein: 0,
+            carbohydrates: 0,
+            fat: 0,
+            meals: []
+          });
+        }
+        
+        const dayData = nutritionEntriesByDate.get(date);
+        dayData.calories += entry.calories || 0;
+        dayData.protein += entry.protein || 0;
+        dayData.carbohydrates += entry.carbohydrates || 0;
+        dayData.fat += entry.fat || 0;
+        
+        // Add meal entry
+        dayData.meals.push({
+          name: entry.productName || 'Unknown Food',
+          type: entry.mealType || 'meal',
+          time: entry.mealTime || '12:00',
+          calories: entry.calories || 0
+        });
+      });
+      
+      const nutritionEntries = Array.from(nutritionEntriesByDate.values());
+
+      // If no diary entries exist, create a helpful message
+      if (nutritionEntries.length === 0) {
+        nutritionEntries.push({
+          date: new Date().toISOString().split('T')[0], // Today's date
+          calories: 0,
+          protein: 0,
+          carbohydrates: 0,
+          fat: 0,
+          meals: [{
+            name: 'No nutrition data available yet',
+            type: 'info',
+            time: '12:00',
+            calories: 0
+          }]
+        });
+      }
 
       const { generateWebcalFeed } = await import('./lib/webcal');
       const icalContent = generateWebcalFeed(nutritionEntries, parseInt(userId));
 
       res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
-      res.setHeader('Content-Disposition', 'attachment; filename="nutrition-calendar.ics"');
+      res.setHeader('Content-Disposition', 'inline; filename="processedornot-nutrition.ics"');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache');
       res.setHeader('Expires', '0');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
       res.send(icalContent);
     } catch (error) {

@@ -40,45 +40,53 @@ export function generateWebcalFeed(entries: NutritionEntry[], userId: number): s
     
     // Create a daily nutrition summary event
     let summary = '🍽️ Daily Nutrition';
-    let description = 'Daily Nutrition Summary\\n\\n';
+    let description = 'Daily Nutrition Summary\n\n';
     
     if (entry.calories) {
-      description += `📊 Calories: ${entry.calories}\\n`;
+      description += `📊 Calories: ${entry.calories}\n`;
     }
     if (entry.protein) {
-      description += `🥩 Protein: ${entry.protein}g\\n`;
+      description += `🥩 Protein: ${entry.protein}g\n`;
     }
     if (entry.carbohydrates) {
-      description += `🍞 Carbs: ${entry.carbohydrates}g\\n`;
+      description += `🍞 Carbs: ${entry.carbohydrates}g\n`;
     }
     if (entry.fat) {
-      description += `🥑 Fat: ${entry.fat}g\\n`;
+      description += `🥑 Fat: ${entry.fat}g\n`;
     }
     
     if (entry.meals.length > 0) {
-      description += '\\nMeals:\\n';
+      description += '\nMeals:\n';
       entry.meals.forEach((meal) => {
         const mealIcon = getMealIcon(meal.type);
         description += `${mealIcon} ${meal.name}`;
         if (meal.calories) {
           description += ` (${meal.calories} cal)`;
         }
-        description += '\\n';
+        description += '\n';
       });
     }
     
-    description += '\\nTracked with ProcessedOrNot Scanner';
+    description += '\nTracked with ProcessedOrNot Scanner';
 
+    // Calculate next day for all-day event end date
+    const nextDay = new Date(entry.date);
+    nextDay.setDate(nextDay.getDate() + 1);
+    const endDate = format(nextDay, 'yyyyMMdd');
+    
     icalContent += '\r\n' + [
       'BEGIN:VEVENT',
       `UID:${eventUid}`,
       `DTSTAMP:${timestamp}`,
+      `CREATED:${timestamp}`,
+      `LAST-MODIFIED:${timestamp}`,
       `DTSTART;VALUE=DATE:${eventDate}`,
-      `DTEND;VALUE=DATE:${eventDate}`,
+      `DTEND;VALUE=DATE:${endDate}`,
       `SUMMARY:${summary}`,
       `DESCRIPTION:${description}`,
       'STATUS:CONFIRMED',
       'TRANSP:TRANSPARENT',
+      'SEQUENCE:0',
       'CATEGORIES:Health,Nutrition',
       'END:VEVENT'
     ].join('\r\n');
@@ -90,22 +98,30 @@ export function generateWebcalFeed(entries: NutritionEntry[], userId: number): s
       const mealTime = meal.time || '12:00'; // Default to noon if no time specified
       const mealDateTime = `${eventDate}T${mealTime.replace(':', '')}00Z`;
       
-      let mealDescription = `${meal.type.charAt(0).toUpperCase() + meal.type.slice(1)} meal\\n\\n`;
-      mealDescription += `📋 ${meal.name}\\n`;
+      let mealDescription = `${meal.type.charAt(0).toUpperCase() + meal.type.slice(1)} meal\n\n`;
+      mealDescription += `📋 ${meal.name}\n`;
       if (meal.calories) {
-        mealDescription += `🔥 ${meal.calories} calories\\n`;
+        mealDescription += `🔥 ${meal.calories} calories\n`;
       }
-      mealDescription += '\\nLogged with ProcessedOrNot Scanner';
+      mealDescription += '\nLogged with ProcessedOrNot Scanner';
 
+      // Calculate end time (1 hour after start)
+      const mealEndTime = new Date(`${entry.date}T${mealTime}:00Z`);
+      mealEndTime.setHours(mealEndTime.getHours() + 1);
+      const mealEndDateTime = format(mealEndTime, "yyyyMMdd'T'HHmmss'Z'");
+      
       icalContent += '\r\n' + [
         'BEGIN:VEVENT',
         `UID:${mealUid}`,
         `DTSTAMP:${timestamp}`,
+        `CREATED:${timestamp}`,
+        `LAST-MODIFIED:${timestamp}`,
         `DTSTART:${mealDateTime}`,
-        `DTEND:${mealDateTime}`,
+        `DTEND:${mealEndDateTime}`,
         `SUMMARY:${mealIcon} ${meal.name}`,
         `DESCRIPTION:${mealDescription}`,
         'STATUS:CONFIRMED',
+        'SEQUENCE:0',
         'CATEGORIES:Health,Nutrition,Meal',
         'END:VEVENT'
       ].join('\r\n');
