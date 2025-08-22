@@ -20,6 +20,12 @@ interface ScheduleFormData {
     dinnerTime?: string;
     snackTime?: string;
   };
+  mealPercentages?: {
+    breakfast?: number;
+    lunch?: number;
+    dinner?: number;
+    snack?: number;
+  };
 }
 
 interface GeneratedSchedule {
@@ -98,29 +104,37 @@ export class AIScheduleGenerator {
   private static createPrompt(formData: ScheduleFormData, userProfile: UserOnboarding): string {
     const userProfileText = this.formatUserProfile(userProfile);
     
-    // Build meal times dynamically based on user preferences
-    const mealTimesText = formData.mealTimes ? 
-      Object.entries(formData.mealTimes)
-        .filter(([_, time]) => time) // Only include meals with set times
-        .map(([mealType, time]) => {
-          const mealName = mealType.replace('Time', '').charAt(0).toUpperCase() + mealType.replace('Time', '').slice(1);
-          return `- ${mealName}: ${time}`;
-        }).join('\n') 
-      : '- Breakfast: 08:00\n- Lunch: 13:00\n- Dinner: 18:00\n- Snack: 20:00';
-
+    // Calculate calorie targets for each meal based on percentages
+    const totalCalories = parseInt(formData.caloriesTarget);
+    const defaultPercentages = { breakfast: 25, lunch: 35, dinner: 30, snack: 10 };
+    
+    // Build meal times and calorie targets dynamically based on user preferences
     const activeMeals = formData.mealTimes ? 
       Object.entries(formData.mealTimes)
         .filter(([_, time]) => time)
-        .map(([mealType, time]) => ({
-          name: mealType.replace('Time', '').charAt(0).toUpperCase() + mealType.replace('Time', '').slice(1),
-          time: time
-        }))
+        .map(([mealType, time]) => {
+          const mealName = mealType.replace('Time', '').charAt(0).toUpperCase() + mealType.replace('Time', '').slice(1);
+          const mealKey = mealType.replace('Time', '') as keyof typeof defaultPercentages;
+          const percentage = formData.mealPercentages?.[mealKey] || defaultPercentages[mealKey] || 25;
+          const targetCalories = Math.round((percentage / 100) * totalCalories);
+          
+          return {
+            name: mealName,
+            time: time as string,
+            percentage: percentage,
+            targetCalories: targetCalories
+          };
+        })
       : [
-        { name: 'Breakfast', time: '08:00' },
-        { name: 'Lunch', time: '13:00' },
-        { name: 'Dinner', time: '18:00' },
-        { name: 'Snack', time: '20:00' }
+        { name: 'Breakfast', time: '08:00', percentage: 25, targetCalories: Math.round(0.25 * totalCalories) },
+        { name: 'Lunch', time: '13:00', percentage: 35, targetCalories: Math.round(0.35 * totalCalories) },
+        { name: 'Dinner', time: '18:00', percentage: 30, targetCalories: Math.round(0.30 * totalCalories) },
+        { name: 'Snack', time: '20:00', percentage: 10, targetCalories: Math.round(0.10 * totalCalories) }
       ];
+
+    const mealTimesText = activeMeals.map(meal => 
+      `- ${meal.name}: ${meal.time} (${meal.percentage}% = ${meal.targetCalories} calories)`
+    ).join('\n');
 
     // Generate meal structure examples for the JSON template
     const mealExamples = activeMeals.map(meal => `        {
@@ -137,7 +151,7 @@ export class AIScheduleGenerator {
               "preparation": "Brief preparation instructions if needed"
             }
           ],
-          "totalCalories": 300,
+          "totalCalories": ${meal.targetCalories},
           "notes": "Any specific preparation or timing notes"
         }`).join(',\n');
     
@@ -156,18 +170,22 @@ SCHEDULE REQUEST:
 - Target Fat: ${formData.fatTarget || 'Not specified'} g
 - Special Notes: ${formData.specialNotes || 'None'}
 
-MEAL TIMES:
+MEAL TIMES & CALORIE TARGETS:
 ${mealTimesText}
+
+IMPORTANT: Each meal must target the exact calorie amount specified above. Adjust portion sizes and food selections to meet these precise targets.
 
 INSTRUCTIONS:
 1. Create a comprehensive daily nutrition schedule with specific food products and recipes for each meal time
 2. Base the number of meals and their timing EXACTLY on the user's meal times provided above - only include meals that have times set
-3. For each day in the ${formData.duration}-day schedule, provide specific food items, recipes, or real products with detailed nutritional information
-4. Include realistic portion sizes, preparation methods, and distribute calories appropriately across all scheduled meals
-5. Consider the user's cooking skills, dietary restrictions, allergies, and food preferences when selecting foods
-6. Ensure meals align with their activity level, weight goals, and health conditions
-7. Provide variety across different days while maintaining nutritional consistency and hitting daily targets
-8. Use real food products, brand names when appropriate, and authentic recipes that people can actually purchase and prepare
+3. For each meal, target the EXACT calorie amount specified above based on the user's daily percentage division
+4. For each day in the ${formData.duration}-day schedule, provide specific food items, recipes, or real products with detailed nutritional information
+5. Include realistic portion sizes and preparation methods to hit the precise calorie targets for each meal
+6. Consider the user's cooking skills, dietary restrictions, allergies, and food preferences when selecting foods
+7. Ensure meals align with their activity level, weight goals, and health conditions
+8. Provide variety across different days while maintaining nutritional consistency and hitting daily targets
+9. Use real food products, brand names when appropriate, and authentic recipes that people can actually purchase and prepare
+10. The total calories across all meals should equal ${formData.caloriesTarget} calories daily
 
 Please respond with a JSON object containing the following structure:
 {

@@ -124,6 +124,12 @@ export default function NutritionCalendar() {
     enabled: isAuthenticated,
   });
 
+  // Fetch user's meal times and percentages
+  const { data: mealData } = useQuery({
+    queryKey: ['/api/nutrition/meal-times'],
+    enabled: isAuthenticated,
+  });
+
   // Update calendar entry mutation
   const updateEntryMutation = useMutation({
     mutationFn: ({ id, data }: { id: number; data: any }) =>
@@ -197,12 +203,29 @@ export default function NutritionCalendar() {
   // AI schedule generation mutation
   const generateScheduleMutation = useMutation({
     mutationFn: async (formData: any) => {
+      // Include user's meal times and percentages in the request
+      const enhancedFormData = {
+        ...formData,
+        mealTimes: mealData && typeof mealData === 'object' ? {
+          breakfastTime: (mealData as any).breakfastTime,
+          lunchTime: (mealData as any).lunchTime,
+          dinnerTime: (mealData as any).dinnerTime,
+          snackTime: (mealData as any).snackTime,
+        } : undefined,
+        mealPercentages: mealData && typeof mealData === 'object' ? {
+          breakfast: (mealData as any).breakfastPercent,
+          lunch: (mealData as any).lunchPercent,
+          dinner: (mealData as any).dinnerPercent,
+          snack: (mealData as any).snackPercent,
+        } : undefined,
+      };
+      
       const response = await fetch('/api/calendar/generate-schedule', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(enhancedFormData),
       });
       
       if (!response.ok) {
