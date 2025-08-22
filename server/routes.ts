@@ -4467,10 +4467,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Authentication required" });
       }
 
-      const { recipe, date, time } = req.body;
+      const { recipe, date, time, servings = 1 } = req.body;
 
       if (!recipe || !date || !time) {
         return res.status(400).json({ message: "Recipe, date, and time are required" });
+      }
+
+      // Validate servings
+      if (servings && (typeof servings !== 'number' || servings < 1 || servings > 20)) {
+        return res.status(400).json({ message: "Servings must be a number between 1 and 20" });
       }
 
       // Validate date format (YYYY-MM-DD)
@@ -4492,7 +4497,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: `Recipe: ${recipe.title}\n\n` +
                     (recipe.description ? `${recipe.description}\n\n` : '') +
                     (recipe.cookingTime ? `⏱️ Cooking Time: ${recipe.cookingTime}\n` : '') +
-                    (recipe.servings ? `👥 Servings: ${recipe.servings}\n` : '') +
+                    `👥 Servings: ${servings}\n` +
                     (recipe.difficulty ? `📊 Difficulty: ${recipe.difficulty}\n` : '') +
                     (recipe.calories ? `🔥 Calories: ${recipe.calories}\n` : '') +
                     (recipe.sourceUrl ? `\n🔗 Recipe Source: ${recipe.sourceUrl}` : ''),
@@ -4510,7 +4515,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: recipe.description,
           image: recipe.image,
           cookingTime: recipe.cookingTime,
-          servings: recipe.servings,
+          servings: servings, // Use custom servings from user input
           difficulty: recipe.difficulty,
           ingredients: recipe.ingredients,
           instructions: recipe.instructions,

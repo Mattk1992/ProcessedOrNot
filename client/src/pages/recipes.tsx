@@ -52,6 +52,7 @@ export default function Recipes() {
   const [selectedCalendarRecipe, setSelectedCalendarRecipe] = useState<Recipe | null>(null);
   const [calendarDate, setCalendarDate] = useState("");
   const [calendarTime, setCalendarTime] = useState("");
+  const [calendarServings, setCalendarServings] = useState<number>(1);
   
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>("");
@@ -297,11 +298,12 @@ export default function Recipes() {
 
   // Add to Calendar mutation
   const addToCalendarMutation = useMutation({
-    mutationFn: async ({ recipe, date, time }: { recipe: Recipe, date: string, time: string }) => {
+    mutationFn: async ({ recipe, date, time, servings }: { recipe: Recipe, date: string, time: string, servings: number }) => {
       const response = await apiRequest('POST', '/api/calendar/add-recipe', {
         recipe,
         date,
-        time
+        time,
+        servings
       });
       return response;
     },
@@ -314,6 +316,7 @@ export default function Recipes() {
       setSelectedCalendarRecipe(null);
       setCalendarDate("");
       setCalendarTime("");
+      setCalendarServings(1);
       // Invalidate calendar cache
       queryClient.invalidateQueries({ queryKey: ['/api/calendar'] });
     },
@@ -345,6 +348,7 @@ export default function Recipes() {
     const now = new Date();
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
     setCalendarTime(currentTime);
+    setCalendarServings(1); // Reset to default
   };
 
   const handleCalendarSubmit = () => {
@@ -360,7 +364,8 @@ export default function Recipes() {
     addToCalendarMutation.mutate({
       recipe: selectedCalendarRecipe,
       date: calendarDate,
-      time: calendarTime
+      time: calendarTime,
+      servings: calendarServings
     });
   };
   
@@ -948,6 +953,22 @@ export default function Recipes() {
                     value={calendarTime}
                     onChange={(e) => setCalendarTime(e.target.value)}
                     className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="calendar-servings" className="text-sm font-medium">
+                    Servings
+                  </Label>
+                  <Input
+                    id="calendar-servings"
+                    type="number"
+                    min="1"
+                    max="20"
+                    value={calendarServings}
+                    onChange={(e) => setCalendarServings(parseInt(e.target.value) || 1)}
+                    className="mt-1"
+                    placeholder="Number of servings"
                   />
                 </div>
               </div>
