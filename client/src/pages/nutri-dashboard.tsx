@@ -42,12 +42,12 @@ interface NutritionGoals {
 }
 
 interface DailyProgress {
-  calories: number;
-  fat: number;
-  carbs: number;
-  proteins: number;
-  salt: number;
-  fiber: number;
+  totalCalories: number;
+  totalFat: number;
+  totalCarbs: number;
+  totalProteins: number;
+  totalSalt: number;
+  totalFiber: number;
   averageProcessingScore: number;
   entriesCount: number;
 }
@@ -169,12 +169,12 @@ export default function NutriDashboard() {
     dailyCalories: userCaloriesGoal, // Always prioritize user's Daily Calories Goal from profile
   } : defaultGoals;
   const progress = dailyProgress ? {
-    calories: dailyProgress.calories || 0,
-    fat: dailyProgress.fat || 0,
-    carbs: dailyProgress.carbs || 0,
-    proteins: dailyProgress.proteins || 0,
-    salt: dailyProgress.salt || 0,
-    fiber: dailyProgress.fiber || 0,
+    calories: dailyProgress.totalCalories || 0,
+    fat: dailyProgress.totalFat || 0,
+    carbs: dailyProgress.totalCarbs || 0,
+    proteins: dailyProgress.totalProteins || 0,
+    salt: dailyProgress.totalSalt || 0,
+    fiber: dailyProgress.totalFiber || 0,
     averageProcessingScore: dailyProgress.averageProcessingScore || 0,
     entriesCount: dailyProgress.entriesCount || 0,
   } : {
