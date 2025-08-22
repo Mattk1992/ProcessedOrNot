@@ -424,7 +424,7 @@ Provide a detailed but accessible explanation that helps consumers understand ho
         },
       ],
       temperature: modelConfig.temperature,
-      max_tokens: modelConfig.maxTokens,
+      max_tokens: 3000, // Increased from default to allow for detailed manufacturing process descriptions
     });
 
     const productionProcess = response.choices[0].message.content || "Unable to analyze production process";
