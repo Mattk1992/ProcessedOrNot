@@ -3800,6 +3800,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get actual nutrition data for the user from diary entries
       const diaryEntries = await storage.getDiaryEntriesByUser(parseInt(userId));
       
+      // Get calendar entries with AI-generated schedules
+      const calendarEntries = await storage.getCalendarEntriesByUser(parseInt(userId));
+      
       // Group diary entries by date and aggregate nutrition data
       const nutritionEntriesByDate = new Map();
       
@@ -3833,6 +3836,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
           time: consumedTime || '12:00',
           calories: entry.calories || 0
         });
+      });
+      
+      // Process calendar entries with AI-generated schedules
+      calendarEntries.forEach(entry => {
+        if (entry.dailySchedule && Array.isArray(entry.dailySchedule)) {
+          entry.dailySchedule.forEach((daySchedule: any) => {
+            const date = daySchedule.date;
+            if (!nutritionEntriesByDate.has(date)) {
+              nutritionEntriesByDate.set(date, {
+                date,
+                calories: 0,
+                protein: 0,
+                carbohydrates: 0,
+                fat: 0,
+                meals: []
+              });
+            }
+            
+            const dayData = nutritionEntriesByDate.get(date);
+            
+            // Add nutrition data from the generated schedule
+            if (daySchedule.dailyTotalCalories) {
+              dayData.calories += daySchedule.dailyTotalCalories;
+            }
+            if (daySchedule.dailyTotalProtein) {
+              dayData.protein += daySchedule.dailyTotalProtein;
+            }
+            if (daySchedule.dailyTotalCarbs) {
+              dayData.carbohydrates += daySchedule.dailyTotalCarbs;
+            }
+            if (daySchedule.dailyTotalFat) {
+              dayData.fat += daySchedule.dailyTotalFat;
+            }
+            
+            // Add meals from the generated schedule
+            if (daySchedule.meals && Array.isArray(daySchedule.meals)) {
+              daySchedule.meals.forEach((meal: any) => {
+                const mealType = meal.name.toLowerCase().includes('breakfast') ? 'breakfast' :
+                               meal.name.toLowerCase().includes('lunch') ? 'lunch' :
+                               meal.name.toLowerCase().includes('dinner') ? 'dinner' :
+                               meal.name.toLowerCase().includes('snack') ? 'snack' : 'meal';
+                               
+                dayData.meals.push({
+                  name: `🤖 ${meal.name}`, // Add AI emoji to distinguish generated meals
+                  type: mealType,
+                  time: meal.time || '12:00',
+                  calories: meal.totalCalories || 0,
+                  isGenerated: true // Flag to identify generated meals
+                });
+                
+                // Add individual food items as sub-meals if available
+                if (meal.foods && Array.isArray(meal.foods)) {
+                  meal.foods.forEach((food: any) => {
+                    dayData.meals.push({
+                      name: `  ↳ ${food.item} (${food.portion})`,
+                      type: mealType,
+                      time: meal.time || '12:00',
+                      calories: food.calories || 0,
+                      isGenerated: true,
+                      isSubItem: true
+                    });
+                  });
+                }
+              });
+            }
+          });
+        }
       });
       
       const nutritionEntries = Array.from(nutritionEntriesByDate.values());
