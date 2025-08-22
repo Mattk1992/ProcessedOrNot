@@ -606,6 +606,85 @@ export const insertRewardingSystemSettingsSchema = createInsertSchema(rewardingS
 export type InsertRewardingSystemSettings = z.infer<typeof insertRewardingSystemSettingsSchema>;
 export type RewardingSystemSettings = typeof rewardingSystemSettings.$inferSelect;
 
+// FoodData Central Branded Foods table - USDA FoodData Central branded food database
+export const foodDataCentralBrandedFoods = pgTable("fdc_branded_foods", {
+  id: serial("id").primaryKey(),
+  fdcId: integer("fdc_id").notNull().unique(), // USDA FoodData Central ID
+  gtinUpc: varchar("gtin_upc", { length: 50 }), // GTIN/UPC barcode
+  brandOwner: text("brand_owner"), // Brand owner/manufacturer
+  brandName: text("brand_name"), // Brand name
+  subbrandName: text("subbrand_name"), // Sub-brand name
+  brandedFoodCategory: text("branded_food_category"), // Food category
+  marketCountry: varchar("market_country", { length: 10 }).default("United States"), // Market country
+  dataType: varchar("data_type", { length: 50 }).default("branded_food"), // Data type from FDC
+  
+  // Product identification
+  description: text("description").notNull(), // Product description/name
+  ingredients: text("ingredients"), // Ingredients list
+  servingSize: real("serving_size"), // Serving size in grams
+  servingSizeUnit: varchar("serving_size_unit", { length: 20 }), // Serving size unit (g, ml, etc.)
+  householdServingFullText: text("household_serving_full_text"), // Household serving description
+  
+  // Package information
+  packageWeight: text("package_weight"), // Package weight as text
+  
+  // Nutrition data (per 100g values)
+  nutrients: jsonb("nutrients"), // Complete nutrient data from FDC
+  
+  // Additional metadata
+  modifiedDate: text("modified_date"), // Last modified date from FDC
+  availableDate: text("available_date"), // Date made available from FDC
+  publicationDate: text("publication_date"), // Publication date from FDC
+  
+  // Processing analysis (for compatibility with existing system)
+  processingScore: integer("processing_score"),
+  processingExplanation: text("processing_explanation"),
+  glycemicIndex: integer("glycemic_index"),
+  glycemicLoad: integer("glycemic_load"),
+  glycemicExplanation: text("glycemic_explanation"),
+  
+  // AI-Generated Insights (for compatibility with existing system)
+  nutriBotInsight: text("nutri_bot_insight"),
+  funFacts: text("fun_facts"),
+  nutritionSpotlight: text("nutrition_spotlight"),
+  ingredientsList: jsonb("ingredients_list"),
+  glycemicImpact: text("glycemic_impact"),
+  nutritionFact: text("nutrition_fact"),
+  processingAnalysis: text("processing_analysis"),
+  ingredientCategories: jsonb("ingredient_categories"),
+  productionProcess: text("production_process"),
+  carbonFootprint: real("carbon_footprint"),
+  carbonFootprintExplanation: text("carbon_footprint_explanation"),
+  
+  // Media fields
+  imageUrl: text("image_url"),
+  additionalImages: text("additional_images").array(),
+  videoUrl: text("video_url"),
+  mediaGallery: jsonb("media_gallery"),
+  
+  // System fields
+  dataSource: text("data_source").default("FoodData Central"),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  fdcIdIdx: index("fdc_branded_fdc_id_idx").on(table.fdcId),
+  gtinUpcIdx: index("fdc_branded_gtin_upc_idx").on(table.gtinUpc),
+  brandOwnerIdx: index("fdc_branded_brand_owner_idx").on(table.brandOwner),
+  categoryIdx: index("fdc_branded_category_idx").on(table.brandedFoodCategory),
+  dataSourceIdx: index("fdc_branded_data_source_idx").on(table.dataSource),
+}));
+
+export const insertFoodDataCentralBrandedFoodSchema = createInsertSchema(foodDataCentralBrandedFoods).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastUpdated: true,
+});
+
+export type InsertFoodDataCentralBrandedFood = z.infer<typeof insertFoodDataCentralBrandedFoodSchema>;
+export type FoodDataCentralBrandedFood = typeof foodDataCentralBrandedFoods.$inferSelect;
+
 // Data Change Requests table - for product data corrections and additions
 export const dataChangeRequests = pgTable("data_change_requests", {
   id: serial("id").primaryKey(),
