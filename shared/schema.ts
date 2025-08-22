@@ -1019,9 +1019,6 @@ export const calendarEntries = pgTable("calendar_entries", {
   // Detailed daily schedule with meals and food items (AI-generated data)
   dailySchedule: jsonb("daily_schedule"), // Stores the detailed meal plans with foods, portions, and nutritional breakdowns
   
-  // Recipe data (for recipe-type calendar entries)
-  recipeData: jsonb("recipe_data"), // Recipe details including ingredients, instructions, servings, etc.
-  
   // Status and tracking
   status: varchar("status", { length: 20 }).default("active").notNull(), // 'active', 'completed', 'paused', 'cancelled'
   progress: real("progress").default(0), // percentage 0-100
