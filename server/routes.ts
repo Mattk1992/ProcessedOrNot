@@ -419,6 +419,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (dailyCaloriesGoal !== undefined) updateData.dailyCaloriesGoal = dailyCaloriesGoal;
       updateData.updatedAt = new Date();
 
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
       const updatedUser = await storage.updateUser(userId, updateData);
       if (!updatedUser) {
         return res.status(404).json({ message: "User not found" });
@@ -448,9 +451,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Update user account type
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
       const updatedUser = await storage.updateUser(userId, { 
-        accountType,
-        updatedAt: new Date()
+        accountType
       });
 
       if (!updatedUser) {

@@ -903,7 +903,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(foodDataCentralBrandedFoods)
       .where(eq(foodDataCentralBrandedFoods.fdcId, fdcId));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async getAllFoodDataCentralBrandedFoods(): Promise<FoodDataCentralBrandedFood[]> {
@@ -1715,7 +1715,7 @@ export class DatabaseStorage implements IStorage {
   async updateProductByBarcode(barcode: string, updates: Partial<InsertProduct>): Promise<Product | undefined> {
     const [updated] = await db
       .update(products)
-      .set({ ...updates, updatedAt: new Date() })
+      .set(updates)
       .where(eq(products.barcode, barcode))
       .returning();
     return updated || undefined;
