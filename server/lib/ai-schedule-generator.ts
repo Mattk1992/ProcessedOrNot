@@ -319,8 +319,8 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.7,
-        max_tokens: 4000
+        temperature: 0.3, // Lower temperature for more consistent JSON
+        max_tokens: 8000 // Increased token limit for full schedule generation
       });
 
       const generationTimeMs = Date.now() - startTime;
@@ -353,7 +353,52 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
           schedule = JSON.parse(cleanedResponse);
           console.log('Successfully parsed cleaned response');
         } catch (secondParseError) {
-          throw new Error(`Failed to parse AI response as JSON: ${parseError}\nCleaned response also failed: ${secondParseError}\nOriginal response length: ${aiResponse.length}`);
+          // If JSON parsing fails, try a more aggressive cleanup
+          console.warn('Attempting aggressive JSON cleanup...');
+          
+          // Try to fix common JSON issues
+          let fixedResponse = cleanedResponse
+            .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+            .replace(/([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:/g, '$1"$2":') // Add quotes to unquoted keys
+            .replace(/:\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*([,}\]])/g, ':"$1"$2') // Add quotes to unquoted string values
+            .replace(/\n/g, ' ') // Remove newlines
+            .replace(/\s+/g, ' '); // Normalize whitespace
+          
+          try {
+            schedule = JSON.parse(fixedResponse);
+            console.log('Successfully parsed with aggressive cleanup');
+          } catch (thirdParseError) {
+            // Last resort: create a minimal fallback schedule
+            console.error('All JSON parsing attempts failed, creating fallback schedule');
+            
+            const startDate = new Date(formData.startDate);
+            const endDate = new Date(startDate);
+            endDate.setDate(startDate.getDate() + parseInt(formData.duration) - 1);
+            
+            schedule = {
+              title: `${formData.goal} - ${formData.duration} Day Plan`,
+              description: `A personalized nutrition schedule generated for your goal: ${formData.goal}`,
+              type: 'schedule',
+              goal: formData.goal,
+              duration: parseInt(formData.duration),
+              startDate: formData.startDate,
+              endDate: endDate.toISOString().split('T')[0],
+              dailyCalories: parseInt(formData.caloriesTarget),
+              dailyProtein: formData.proteinTarget ? parseFloat(formData.proteinTarget) : null,
+              dailyCarbs: formData.carbsTarget ? parseFloat(formData.carbsTarget) : null,
+              dailyFat: formData.fatTarget ? parseFloat(formData.fatTarget) : null,
+              specialNotes: 'This is a simplified schedule due to AI generation issues. Please try generating again or create manually.',
+              recommendations: [
+                'Stay hydrated throughout the day',
+                'Eat balanced meals with protein, carbs, and healthy fats',
+                'Include fruits and vegetables in every meal',
+                'Monitor portion sizes to meet calorie targets'
+              ],
+              dailySchedule: [] // Empty schedule as fallback
+            };
+            
+            console.log('Created fallback schedule due to JSON parsing failures');
+          }
         }
       }
 
@@ -412,30 +457,34 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
       
       // Log error to prompt history
       if (userId && promptHistoryId) {
-        await storage.createPromptHistory({
-          userId,
-          sessionId,
-          feature: 'schedule_generation',
-          aiModel: formData.aiModel || "gpt-4o",
-          userPrompt: `Goal: ${formData.goal}`,
-          systemPrompt: "You are a professional nutritionist and dietitian AI assistant. Always respond with valid JSON in the exact format requested.",
-          fullPrompt: this.createPrompt(formData, userProfile),
-          requestData: {
-            formData,
-            userProfile: {
-              id: userProfile.id,
-              age: userProfile.age,
-              gender: userProfile.gender,
-              activityLevel: userProfile.activityLevel
-            }
-          },
-          generationTimeMs,
-          status: 'error',
-          errorMessage,
-          parseSuccess: false,
-          ipAddress,
-          userAgent
-        });
+        try {
+          await storage.createPromptHistory({
+            userId,
+            sessionId,
+            feature: 'schedule_generation',
+            aiModel: formData.aiModel || "gpt-4o",
+            userPrompt: `Goal: ${formData.goal}`,
+            systemPrompt: "You are a professional nutritionist and dietitian AI assistant. Always respond with valid JSON in the exact format requested.",
+            fullPrompt: this.createPrompt(formData, userProfile),
+            requestData: {
+              formData,
+              userProfile: {
+                id: userProfile.id,
+                age: userProfile.age,
+                gender: userProfile.gender,
+                activityLevel: userProfile.activityLevel
+              }
+            },
+            generationTimeMs,
+            status: 'error',
+            errorMessage,
+            parseSuccess: false,
+            ipAddress,
+            userAgent
+          });
+        } catch (historyError) {
+          console.error('Failed to save error to prompt history:', historyError);
+        }
       }
       
       console.error('AI Schedule Generation Error:', {
@@ -444,7 +493,17 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
         formData,
         userProfile: userProfile.id || 'unknown'
       });
-      throw new Error(`AI schedule generation failed: ${errorMessage}`);
+      
+      // Provide more user-friendly error messages
+      if (errorMessage.includes('JSON')) {
+        throw new Error('AI generated an invalid response format. Please try again with a shorter duration or simpler goals.');
+      } else if (errorMessage.includes('timeout') || errorMessage.includes('network')) {
+        throw new Error('Network timeout occurred. Please check your connection and try again.');
+      } else if (errorMessage.includes('quota') || errorMessage.includes('limit')) {
+        throw new Error('AI service is temporarily unavailable due to high demand. Please try again in a few minutes.');
+      } else {
+        throw new Error('AI schedule generation temporarily unavailable. Please try creating a manual schedule or try again later.');
+      }
     }
   }
 }
