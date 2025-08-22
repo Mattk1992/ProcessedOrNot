@@ -1288,28 +1288,130 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
 
       {/* Product Production Process Card */}
       {visibilitySettings.showProductionProcess && productionProcess?.process && (
-        console.log('🎯 RENDERING Production Process Card!', productionProcess),
         <Card className="glass-card border-2 border-purple-200/50 dark:border-purple-800/50 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardHeader className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-t-lg">
             <CardTitle className="flex items-center space-x-3">
               <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center floating-animation">
-                <Settings className="w-6 h-6 text-white" />
+                <Factory className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold">Product Production Process</h3>
-                <p className="text-sm text-white/80">Manufacturing and sustainability analysis</p>
+                <h3 className="text-xl font-bold">Manufacturing Process</h3>
+                <p className="text-sm text-white/80">Production analysis from farm to table</p>
               </div>
               <Info className="w-5 h-5 text-white/80 ml-auto" />
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6 pb-6">
             <div className="bg-gradient-to-br from-purple-50/50 to-indigo-50/30 dark:from-purple-900/20 dark:to-indigo-900/10 rounded-2xl p-6 border border-purple-200/30 dark:border-purple-700/30">
-              <div className="flex items-start space-x-3">
-                <Info className="w-5 h-5 text-purple-600 dark:text-purple-400 mt-0.5 flex-shrink-0" />
-                <div>
-                  <h5 className="font-medium mb-2 text-purple-800 dark:text-purple-200">Manufacturing Process</h5>
-                  <div className="text-sm text-purple-700 dark:text-purple-300 leading-relaxed whitespace-pre-line max-h-96 overflow-y-auto">
-                    {productionProcess?.process || 'No production process data available'}
+              <div className="flex items-start space-x-4">
+                <Factory className="w-6 h-6 text-purple-600 dark:text-purple-400 mt-1 flex-shrink-0" />
+                <div className="flex-1">
+                  <h5 className="font-semibold mb-4 text-purple-800 dark:text-purple-200 text-lg">How This Product Is Made</h5>
+                  <div className="prose prose-sm max-w-none">
+                    <div className="text-sm text-purple-700 dark:text-purple-300 leading-relaxed space-y-4">
+                      {productionProcess?.process?.split('\n\n').map((paragraph, index) => {
+                        // Handle markdown headers
+                        if (paragraph.startsWith('###')) {
+                          return (
+                            <h4 key={index} className="font-semibold text-base text-purple-800 dark:text-purple-200 mt-6 mb-3 border-b border-purple-200/50 pb-2">
+                              {paragraph.replace('###', '').trim()}
+                            </h4>
+                          );
+                        }
+                        // Handle markdown subheaders
+                        if (paragraph.startsWith('##')) {
+                          return (
+                            <h3 key={index} className="font-bold text-lg text-purple-800 dark:text-purple-200 mt-8 mb-4">
+                              {paragraph.replace('##', '').trim()}
+                            </h3>
+                          );
+                        }
+                        // Handle markdown main headers
+                        if (paragraph.startsWith('#')) {
+                          return (
+                            <h2 key={index} className="font-bold text-xl text-purple-800 dark:text-purple-200 mt-6 mb-4">
+                              {paragraph.replace('#', '').trim()}
+                            </h2>
+                          );
+                        }
+                        // Handle bullet points
+                        if (paragraph.includes('- **') || paragraph.includes('• ')) {
+                          const lines = paragraph.split('\n');
+                          return (
+                            <div key={index} className="space-y-2">
+                              {lines.map((line, lineIndex) => {
+                                if (line.trim().startsWith('- **') || line.trim().startsWith('• ')) {
+                                  const content = line.replace(/^[•-]\s*\*\*(.*?)\*\*:?\s*/, '');
+                                  const title = line.match(/\*\*(.*?)\*\*/)?.[1] || '';
+                                  return (
+                                    <div key={lineIndex} className="flex items-start space-x-2 ml-4">
+                                      <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
+                                      <div>
+                                        <span className="font-medium text-purple-800 dark:text-purple-200">{title}:</span>
+                                        <span className="ml-2">{content}</span>
+                                      </div>
+                                    </div>
+                                  );
+                                } else if (line.trim()) {
+                                  return (
+                                    <p key={lineIndex} className="ml-6 text-sm">
+                                      {line.trim()}
+                                    </p>
+                                  );
+                                }
+                                return null;
+                              })}
+                            </div>
+                          );
+                        }
+                        // Handle numbered lists
+                        if (paragraph.match(/^\d+\./)) {
+                          const lines = paragraph.split('\n');
+                          return (
+                            <div key={index} className="space-y-3">
+                              {lines.map((line, lineIndex) => {
+                                const numberMatch = line.match(/^(\d+)\.\s*\*\*(.*?)\*\*:?\s*(.*)/);
+                                if (numberMatch) {
+                                  const [, number, title, content] = numberMatch;
+                                  return (
+                                    <div key={lineIndex} className="flex items-start space-x-3">
+                                      <div className="w-6 h-6 bg-purple-500 text-white rounded-full flex items-center justify-center text-xs font-medium flex-shrink-0 mt-0.5">
+                                        {number}
+                                      </div>
+                                      <div>
+                                        <h5 className="font-medium text-purple-800 dark:text-purple-200 mb-1">{title}</h5>
+                                        <p className="text-sm">{content}</p>
+                                      </div>
+                                    </div>
+                                  );
+                                } else if (line.trim() && !line.match(/^\d+\./)) {
+                                  return (
+                                    <p key={lineIndex} className="ml-9 text-sm">
+                                      {line.trim()}
+                                    </p>
+                                  );
+                                }
+                                return null;
+                              })}
+                            </div>
+                          );
+                        }
+                        // Regular paragraphs
+                        return paragraph.trim() ? (
+                          <p key={index} className="text-sm leading-relaxed">
+                            {paragraph.trim()}
+                          </p>
+                        ) : null;
+                      }).filter(Boolean)}
+                    </div>
+                  </div>
+                  
+                  {/* Info footer */}
+                  <div className="mt-6 pt-4 border-t border-purple-200/50">
+                    <div className="flex items-center gap-2 text-xs text-purple-600/80 dark:text-purple-400/80">
+                      <Info className="w-3 h-3" />
+                      <span>AI-generated manufacturing analysis based on ingredients and product data</span>
+                    </div>
                   </div>
                 </div>
               </div>
