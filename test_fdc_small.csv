@@ -1,0 +1,4 @@
+fdc_id,brand_owner,brand_name,gtin_upc,ingredients,serving_size,serving_size_unit,branded_food_category,data_source,modified_date,market_country
+2000001,Richardson Oilseed Products,Nature Oil,,Vegetable Oil,15.0,ml,Oils Edible,GDSN,2020-10-02,United States
+2000002,CAMPBELL SOUP COMPANY,Campbell's,,BEEF STOCK LESS THAN 2% MIREPOIX SALT NATURAL FLAVORING YEAST EXTRACT CANE SUGAR,240.0,ml,Herbs/Spices/Extracts,GDSN,2020-09-12,United States
+2000003,Bush Brothers And Company,Bush's,,Prepared Navy Beans Water Brown Sugar Onion Tomato Puree Salt,130.0,g,Vegetables Prepared/Processed,GDSN,2020-09-09,United States

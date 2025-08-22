@@ -822,15 +822,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "CSV file is required" });
       }
 
-      const csvContent = req.file.buffer.toString('utf-8');
+      const csvContent = req.file.buffer.toString('utf-8').replace(/^\uFEFF/, ''); // Remove BOM
       const lines = csvContent.split('\n').filter(line => line.trim());
       
       if (lines.length < 2) {
         return res.status(400).json({ message: "CSV file must contain header and at least one data row" });
       }
 
-      // Parse CSV headers
-      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      // Parse CSV headers - handle the specific FDC format with doubled quotes and semicolons
+      let headerLine = lines[0].replace(/;+$/g, ''); // Remove trailing semicolons
+      if (headerLine.startsWith('"') && headerLine.endsWith('"')) {
+        headerLine = headerLine.slice(1, -1); // Remove outer quotes
+      }
+      
+      // Split on ,"" pattern to handle the doubled quotes
+      const headers = headerLine.split(/,""/).map(h => {
+        return h.replace(/^"*/g, '').replace(/"*$/g, '').trim();
+      }).filter(h => h.length > 0);
+      
+      console.log('Parsed headers:', headers);
       const dataRows = lines.slice(1);
 
       // Parse and validate data
@@ -839,7 +849,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       for (let i = 0; i < dataRows.length; i++) {
         try {
-          const row = dataRows[i].split(',').map(cell => cell.trim().replace(/"/g, ''));
+          // Handle the specific FDC CSV format with doubled quotes and semicolons
+          let rowData = dataRows[i].replace(/;+$/g, ''); // Remove trailing semicolons
+          if (rowData.startsWith('"') && rowData.endsWith('"')) {
+            rowData = rowData.slice(1, -1); // Remove outer quotes
+          }
+          
+          // Split on ,"" pattern and clean up each cell
+          const row = rowData.split(/,""/).map(cell => {
+            return cell.replace(/^"*/g, '').replace(/"*$/g, '').trim();
+          });
+          
+          // Ensure we have the right number of columns
+          while (row.length < headers.length) {
+            row.push('');
+          }
           
           // Create food data object from CSV row
           const foodData: any = {};
@@ -880,7 +904,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                 case 'description':
                 case 'product_name':
                 case 'name':
+                case 'short_description':
                   foodData.description = value;
+                  break;
+                case 'data_source':
+                case 'datasource':
+                  foodData.dataSource = value;
                   break;
                 case 'ingredients':
                 case 'ingredients_text':
@@ -935,8 +964,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             continue;
           }
           if (!foodData.description) {
-            errors.push(`Row ${i + 2}: description is required`);
-            continue;
+            // Try to use brand owner + brand name as description if no description provided
+            if (foodData.brandOwner) {
+              foodData.description = foodData.brandOwner + (foodData.brandName ? ` ${foodData.brandName}` : '') + ' Product';
+            } else {
+              errors.push(`Row ${i + 2}: description is required`);
+              continue;
+            }
           }
 
           // Validate the food data against the schema

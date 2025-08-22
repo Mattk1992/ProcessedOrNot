@@ -21,6 +21,7 @@ import { fetchProductFromOpenNutrition } from "./opennutrition";
 import { fetchProductFromNutritionix } from "./nutritionix";
 import { fetchProductFromSpoonacular } from "./spoonacular";
 import { fetchProductFromAPINinjas } from "./api-ninjas";
+import { fetchProductFromFdcBranded } from "./fetch-fdc-branded";
 import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider } from "./openai";
 import { isBarcode, searchProductByText } from "./text-search";
 
@@ -368,9 +369,81 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('USDA lookup failed:', error);
   }
 
-  // 5. OpenFoodFacts (Quinary)
+  // 5. FoodData Central Branded Foods (Local Database)
   try {
-    console.log('5. Trying OpenFoodFacts (Quinary)...');
+    console.log('5. Trying FoodData Central Branded Foods (Local Database)...');
+    const fdcBrandedProduct = await fetchProductFromFdcBranded(barcode);
+    
+    if (fdcBrandedProduct) {
+      // Check if product data is sufficient
+      if (!isProductDataSufficient(fdcBrandedProduct)) {
+        console.log('FDC Branded product has insufficient data, continuing cascade...');
+      } else {
+        // Analyze ingredients if available
+        if (fdcBrandedProduct.ingredientsText) {
+          try {
+            const analysis = await analyzeIngredients(
+              fdcBrandedProduct.ingredientsText,
+              fdcBrandedProduct.productName || "Unknown Product",
+              'en',
+              userAIProvider,
+              userId
+            );
+            fdcBrandedProduct.processingScore = analysis.score;
+            fdcBrandedProduct.processingExplanation = analysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze FDC Branded ingredients:", error);
+            fdcBrandedProduct.processingExplanation = "Unable to analyze ingredients at this time";
+          }
+
+          // Analyze production process
+          try {
+            const productionProcess = await analyzeProductionProcess(
+              fdcBrandedProduct.ingredientsText,
+              fdcBrandedProduct.productName || "Unknown Product",
+              fdcBrandedProduct.nutriments || {},
+              'en',
+              userAIProvider,
+              userId
+            );
+            fdcBrandedProduct.productionProcess = productionProcess;
+          } catch (error) {
+            console.error("Failed to analyze FDC Branded production process:", error);
+            fdcBrandedProduct.productionProcess = "Unable to analyze production process at this time";
+          }
+        }
+
+        // Analyze glycemic index if we have nutrition data
+        if (fdcBrandedProduct.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              fdcBrandedProduct.ingredientsText || "",
+              fdcBrandedProduct.productName || "Unknown Product",
+              fdcBrandedProduct.nutriments,
+              'en',
+              userAIProvider,
+              userId
+            );
+            fdcBrandedProduct.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            fdcBrandedProduct.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            fdcBrandedProduct.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze FDC Branded glycemic index:", error);
+            fdcBrandedProduct.glycemicExplanation = "Unable to analyze glycemic impact at this time";
+          }
+        }
+
+        console.log('Found sufficient product data in FoodData Central Branded Foods');
+        return { product: fdcBrandedProduct, source: 'FDC Branded Foods' };
+      }
+    }
+  } catch (error) {
+    console.error('FDC Branded Foods lookup failed:', error);
+  }
+
+  // 6. OpenFoodFacts (Quinary)
+  try {
+    console.log('6. Trying OpenFoodFacts (Quinary)...');
     const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
     
     if (openFoodFactsData && openFoodFactsData.status === 1) {
