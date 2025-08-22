@@ -313,17 +313,14 @@ export default function NutriDashboard() {
             </Card>
           </Link>
 
-          {/* Hide Saved Recipes for Regular users */}
-          {user?.accountType !== 'Regular' && (
-            <Link href="/saved-recipes">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardContent className="p-4 text-center">
-                  <ChefHat className="w-8 h-8 text-red-600 mx-auto mb-2" />
-                  <p className="font-medium">Saved Recipes</p>
-                </CardContent>
-              </Card>
-            </Link>
-          )}
+          <Link href="/saved-recipes">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <ChefHat className="w-8 h-8 text-red-600 mx-auto mb-2" />
+                <p className="font-medium">Saved Recipes</p>
+              </CardContent>
+            </Card>
+          </Link>
 
           <Link href="/nutri-dashboard/site-info">
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
