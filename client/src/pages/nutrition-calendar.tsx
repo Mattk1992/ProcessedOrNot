@@ -26,7 +26,7 @@ export default function NutritionCalendar() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [view, setView] = useState<CalendarView>("monthly");
+  const [view, setView] = useState<CalendarView>("daily");
   const [isWebcalDialogOpen, setIsWebcalDialogOpen] = useState(false);
   const [webcalUrls, setWebcalUrls] = useState<{
     webcalUrl: string;
