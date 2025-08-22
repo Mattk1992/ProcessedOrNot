@@ -1,0 +1,6 @@
+fdc_id,description,gtin_upc,brand_owner,brand_name,branded_food_category,ingredients,serving_size,serving_size_unit,market_country
+2000001,"Organic Whole Wheat Bread","123456789012","Organic Bakery Inc","Nature's Best","Bakery","Organic whole wheat flour, water, yeast, salt, organic sugar",28,g,United States
+2000002,"Low Fat Greek Yogurt","234567890123","Dairy Fresh LLC","Greek Delight","Dairy","Cultured pasteurized skim milk, live active cultures",170,g,United States
+2000003,"Dark Chocolate Bar 85%","345678901234","Chocolate Masters","Pure Cacao","Confectionery","Organic cacao beans, organic cacao butter, organic raw cane sugar",28,g,United States
+2000004,"Almond Butter Smooth","456789012345","Nut Company","Almond Valley","Nut and Seed Products","Dry roasted almonds",32,g,United States
+2000005,"Quinoa Pasta","567890123456","Healthy Grains Co","Ancient Grains","Pasta","Organic quinoa flour, water",85,g,United States

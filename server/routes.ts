@@ -15,13 +15,15 @@ import {
   resetPasswordSchema,
   changePasswordSchema,
   insertDiaryEntrySchema,
+  insertFoodDataCentralBrandedFoodSchema,
   type RegisterUser,
   type LoginUser,
   type ForgotPassword,
   type ResetPassword,
   type ChangePassword,
   type InsertSearchHistory,
-  type InsertDiaryEntry
+  type InsertDiaryEntry,
+  type InsertFoodDataCentralBrandedFood
 } from "@shared/schema";
 import { generatePasswordResetToken, sendPasswordResetEmail, sendEmailVerification, sanitizeUser, generateSearchId } from "./lib/auth";
 import session from "express-session";
@@ -108,6 +110,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         cb(null, true);
       } else {
         cb(new Error('Only audio files are allowed'));
+      }
+    },
+  });
+
+  // CSV upload configuration for FoodData Central branded foods
+  const csvUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 100 * 1024 * 1024, // 100MB limit for CSV files
+    },
+    fileFilter: (req, file, cb) => {
+      // Accept CSV files
+      if (file.mimetype === 'text/csv' || 
+          file.mimetype === 'application/csv' ||
+          file.originalname.endsWith('.csv')) {
+        cb(null, true);
+      } else {
+        cb(new Error('Only CSV files are allowed'));
       }
     },
   });
@@ -786,6 +806,183 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Create admin product error:", error);
       res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+
+  // CSV Upload for FoodData Central Branded Foods
+  app.post("/api/admin/fdc-branded-foods/upload-csv", requireAuth, csvUpload.single('csvFile'), async (req: any, res) => {
+    try {
+      // Check if current user is admin
+      const currentUser = await storage.getUserById(req.session.userId!);
+      if (!currentUser || currentUser.accountType !== 'Admin') {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "CSV file is required" });
+      }
+
+      const csvContent = req.file.buffer.toString('utf-8');
+      const lines = csvContent.split('\n').filter(line => line.trim());
+      
+      if (lines.length < 2) {
+        return res.status(400).json({ message: "CSV file must contain header and at least one data row" });
+      }
+
+      // Parse CSV headers
+      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      const dataRows = lines.slice(1);
+
+      // Parse and validate data
+      const foodDataToInsert: InsertFoodDataCentralBrandedFood[] = [];
+      const errors: string[] = [];
+
+      for (let i = 0; i < dataRows.length; i++) {
+        try {
+          const row = dataRows[i].split(',').map(cell => cell.trim().replace(/"/g, ''));
+          
+          // Create food data object from CSV row
+          const foodData: any = {};
+          
+          // Map CSV columns to database fields
+          headers.forEach((header, index) => {
+            const value = row[index];
+            if (value && value !== '') {
+              switch (header.toLowerCase()) {
+                case 'fdc_id':
+                case 'fdcid':
+                  foodData.fdcId = parseInt(value);
+                  break;
+                case 'gtin_upc':
+                case 'gtin/upc':
+                case 'gtin':
+                case 'upc':
+                  foodData.gtinUpc = value;
+                  break;
+                case 'brand_owner':
+                case 'brandowner':
+                  foodData.brandOwner = value;
+                  break;
+                case 'brand_name':
+                case 'brandname':
+                  foodData.brandName = value;
+                  break;
+                case 'subbrand_name':
+                case 'subbrandname':
+                  foodData.subbrandName = value;
+                  break;
+                case 'branded_food_category':
+                case 'brandedfoodcategory':
+                case 'food_category':
+                case 'category':
+                  foodData.brandedFoodCategory = value;
+                  break;
+                case 'description':
+                case 'product_name':
+                case 'name':
+                  foodData.description = value;
+                  break;
+                case 'ingredients':
+                case 'ingredients_text':
+                  foodData.ingredients = value;
+                  break;
+                case 'serving_size':
+                case 'servingsize':
+                  foodData.servingSize = parseFloat(value);
+                  break;
+                case 'serving_size_unit':
+                case 'servingsizeunit':
+                  foodData.servingSizeUnit = value;
+                  break;
+                case 'household_serving_full_text':
+                case 'householdservingfulltext':
+                  foodData.householdServingFullText = value;
+                  break;
+                case 'package_weight':
+                case 'packageweight':
+                  foodData.packageWeight = value;
+                  break;
+                case 'market_country':
+                case 'marketcountry':
+                  foodData.marketCountry = value;
+                  break;
+                case 'modified_date':
+                case 'modifieddate':
+                  foodData.modifiedDate = value;
+                  break;
+                case 'available_date':
+                case 'availabledate':
+                  foodData.availableDate = value;
+                  break;
+                case 'publication_date':
+                case 'publicationdate':
+                  foodData.publicationDate = value;
+                  break;
+                default:
+                  // Handle dynamic nutrient fields
+                  if (header.includes('nutrient') || header.includes('nutrition')) {
+                    if (!foodData.nutrients) foodData.nutrients = {};
+                    foodData.nutrients[header] = isNaN(parseFloat(value)) ? value : parseFloat(value);
+                  }
+                  break;
+              }
+            }
+          });
+
+          // Validate required fields
+          if (!foodData.fdcId) {
+            errors.push(`Row ${i + 2}: fdc_id is required`);
+            continue;
+          }
+          if (!foodData.description) {
+            errors.push(`Row ${i + 2}: description is required`);
+            continue;
+          }
+
+          // Validate the food data against the schema
+          const validatedData = insertFoodDataCentralBrandedFoodSchema.parse(foodData);
+          foodDataToInsert.push(validatedData);
+
+        } catch (error) {
+          errors.push(`Row ${i + 2}: ${error instanceof Error ? error.message : 'Invalid data format'}`);
+        }
+      }
+
+      if (errors.length > 0 && foodDataToInsert.length === 0) {
+        return res.status(400).json({ 
+          message: "CSV parsing failed", 
+          errors: errors.slice(0, 10) // Limit to first 10 errors
+        });
+      }
+
+      // Insert the data in bulk
+      let insertedCount = 0;
+      if (foodDataToInsert.length > 0) {
+        try {
+          const insertedFoods = await storage.bulkInsertFoodDataCentralBrandedFoods(foodDataToInsert);
+          insertedCount = insertedFoods.length;
+        } catch (error) {
+          return res.status(500).json({ 
+            message: "Database insertion failed", 
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+
+      res.json({
+        message: "CSV upload completed",
+        totalRows: dataRows.length,
+        successfulInserts: insertedCount,
+        errors: errors.slice(0, 10), // Return first 10 errors for review
+        hasMoreErrors: errors.length > 10
+      });
+
+    } catch (error) {
+      console.error("CSV upload error:", error);
+      res.status(500).json({ 
+        message: "Upload failed", 
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 

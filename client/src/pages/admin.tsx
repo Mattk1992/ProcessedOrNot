@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, History, Database, Mic, Gift, Brain, Sparkles, DollarSign } from "lucide-react";
+import { Shield, Users, BarChart3, Settings, UserCheck, UserX, Crown, ArrowLeft, History, Database, Mic, Gift, Brain, Sparkles, DollarSign, Upload } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import AdminSettings from "@/components/admin-settings";
 import DebugCascadingDB from "@/components/debug-cascading-db";
@@ -20,6 +20,7 @@ import ProductManagement from "@/components/product-management";
 import AdminRewardingSystem from "@/components/admin-rewarding-system";
 import AdminReleasesManagement from "@/components/admin-releases-management";
 import AdminFinance from "@/components/admin-finance";
+import FdcCsvUpload from "@/components/fdc-csv-upload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface User {
@@ -472,7 +473,7 @@ export default function AdminPanel() {
           {/* Detailed Management Panel */}
           <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-9 p-1 m-4 mb-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-slate-200/50 dark:border-gray-600/50 shadow-inner">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-10 p-1 m-4 mb-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-slate-200/50 dark:border-gray-600/50 shadow-inner">
                 <TabsTrigger 
                   value="overview" 
                   className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-500 data-[state=active]:to-gray-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-slate-500/25 font-medium"
@@ -536,6 +537,14 @@ export default function AdminPanel() {
                   <DollarSign className="w-4 h-4 flex-shrink-0" />
                   <span className="hidden sm:inline text-sm">Finance</span>
                   <span className="sm:hidden text-xs">$</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="fdc-upload" 
+                  className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-500 data-[state=active]:to-teal-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-cyan-500/25 font-medium"
+                >
+                  <Upload className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">FDC Upload</span>
+                  <span className="sm:hidden text-xs">CSV</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="debug-db" 
@@ -972,6 +981,24 @@ export default function AdminPanel() {
                         </div>
                       </div>
                       <AdminReleasesManagement />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* FoodData Central CSV Upload Tab */}
+                <TabsContent value="fdc-upload" className="mt-0 animate-in fade-in-50 duration-200">
+                  <div className="bg-gradient-to-br from-cyan-50/50 to-teal-50/30 dark:from-cyan-900/20 dark:to-teal-900/10 rounded-xl p-1 border border-cyan-200/30 dark:border-cyan-700/30">
+                    <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 backdrop-blur-sm">
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-cyan-500 to-teal-600 text-white">
+                          <Upload className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">FoodData Central CSV Upload</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Upload USDA FoodData Central branded food data</p>
+                        </div>
+                      </div>
+                      <FdcCsvUpload />
                     </div>
                   </div>
                 </TabsContent>

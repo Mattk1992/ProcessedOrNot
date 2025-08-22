@@ -73,6 +73,9 @@ import {
   calendarEntries,
   type CalendarEntry,
   type InsertCalendarEntry,
+  foodDataCentralBrandedFoods,
+  type FoodDataCentralBrandedFood,
+  type InsertFoodDataCentralBrandedFood,
   scheduleGenHistory,
   type ScheduleGenHistory,
   type InsertScheduleGenHistory,
@@ -147,6 +150,16 @@ export interface IStorage {
   searchProducts(query: string, limit?: number): Promise<Product[]>;
   deleteProduct(barcode: string): Promise<boolean>;
   getProductCount(): Promise<number>;
+
+  // FoodData Central Branded Foods methods
+  getFoodDataCentralBrandedFoodByFdcId(fdcId: number): Promise<FoodDataCentralBrandedFood | undefined>;
+  getFoodDataCentralBrandedFoodByGtinUpc(gtinUpc: string): Promise<FoodDataCentralBrandedFood | undefined>;
+  createFoodDataCentralBrandedFood(food: InsertFoodDataCentralBrandedFood): Promise<FoodDataCentralBrandedFood>;
+  updateFoodDataCentralBrandedFood(fdcId: number, updates: Partial<InsertFoodDataCentralBrandedFood>): Promise<FoodDataCentralBrandedFood | undefined>;
+  deleteFoodDataCentralBrandedFood(fdcId: number): Promise<boolean>;
+  getAllFoodDataCentralBrandedFoods(): Promise<FoodDataCentralBrandedFood[]>;
+  searchFoodDataCentralBrandedFoods(query: string): Promise<FoodDataCentralBrandedFood[]>;
+  bulkInsertFoodDataCentralBrandedFoods(foods: InsertFoodDataCentralBrandedFood[]): Promise<FoodDataCentralBrandedFood[]>;
   
   // Search history methods
   createSearchHistory(searchHistory: InsertSearchHistory): Promise<SearchHistory>;
@@ -843,6 +856,93 @@ export class DatabaseStorage implements IStorage {
   async getProductCount(): Promise<number> {
     const result = await db.select({ count: sql`count(*)` }).from(products);
     return Number(result[0]?.count || 0);
+  }
+
+  // FoodData Central Branded Foods methods
+  async getFoodDataCentralBrandedFoodByFdcId(fdcId: number): Promise<FoodDataCentralBrandedFood | undefined> {
+    const [food] = await db.select().from(foodDataCentralBrandedFoods).where(eq(foodDataCentralBrandedFoods.fdcId, fdcId));
+    return food || undefined;
+  }
+
+  async getFoodDataCentralBrandedFoodByGtinUpc(gtinUpc: string): Promise<FoodDataCentralBrandedFood | undefined> {
+    const [food] = await db.select().from(foodDataCentralBrandedFoods).where(eq(foodDataCentralBrandedFoods.gtinUpc, gtinUpc));
+    return food || undefined;
+  }
+
+  async createFoodDataCentralBrandedFood(insertFood: InsertFoodDataCentralBrandedFood): Promise<FoodDataCentralBrandedFood> {
+    const foodWithTimestamp = {
+      ...insertFood,
+      lastUpdated: new Date(),
+      updatedAt: new Date()
+    };
+    
+    const [food] = await db
+      .insert(foodDataCentralBrandedFoods)
+      .values(foodWithTimestamp)
+      .returning();
+    return food;
+  }
+
+  async updateFoodDataCentralBrandedFood(fdcId: number, updates: Partial<InsertFoodDataCentralBrandedFood>): Promise<FoodDataCentralBrandedFood | undefined> {
+    const updateData = {
+      ...updates,
+      lastUpdated: new Date(),
+      updatedAt: new Date()
+    };
+
+    const [food] = await db
+      .update(foodDataCentralBrandedFoods)
+      .set(updateData)
+      .where(eq(foodDataCentralBrandedFoods.fdcId, fdcId))
+      .returning();
+    
+    return food || undefined;
+  }
+
+  async deleteFoodDataCentralBrandedFood(fdcId: number): Promise<boolean> {
+    const result = await db
+      .delete(foodDataCentralBrandedFoods)
+      .where(eq(foodDataCentralBrandedFoods.fdcId, fdcId));
+    return result.rowCount > 0;
+  }
+
+  async getAllFoodDataCentralBrandedFoods(): Promise<FoodDataCentralBrandedFood[]> {
+    return await db
+      .select()
+      .from(foodDataCentralBrandedFoods)
+      .orderBy(foodDataCentralBrandedFoods.id);
+  }
+
+  async searchFoodDataCentralBrandedFoods(query: string): Promise<FoodDataCentralBrandedFood[]> {
+    return await db
+      .select()
+      .from(foodDataCentralBrandedFoods)
+      .where(
+        or(
+          sql`${foodDataCentralBrandedFoods.description} ILIKE ${`%${query}%`}`,
+          sql`${foodDataCentralBrandedFoods.brandOwner} ILIKE ${`%${query}%`}`,
+          sql`${foodDataCentralBrandedFoods.brandName} ILIKE ${`%${query}%`}`,
+          sql`${foodDataCentralBrandedFoods.gtinUpc} = ${query}`
+        )
+      )
+      .limit(50);
+  }
+
+  async bulkInsertFoodDataCentralBrandedFoods(foods: InsertFoodDataCentralBrandedFood[]): Promise<FoodDataCentralBrandedFood[]> {
+    if (foods.length === 0) return [];
+    
+    const foodsWithTimestamp = foods.map(food => ({
+      ...food,
+      lastUpdated: new Date(),
+      updatedAt: new Date()
+    }));
+    
+    const insertedFoods = await db
+      .insert(foodDataCentralBrandedFoods)
+      .values(foodsWithTimestamp)
+      .returning();
+    
+    return insertedFoods;
   }
 
   // Search history methods
