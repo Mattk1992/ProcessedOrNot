@@ -1391,6 +1391,98 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
         </Card>
       </div>
 
+      {/* Product Metadata & Additional Information - Admin Only */}
+      {visibilitySettings.showProductMetadata && user?.accountType === "Admin" && (
+        <div className="slide-up">
+          <Card className="glass-effect border-2 border-gray-200/50 dark:border-gray-800/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+            <CardContent className="pt-8 pb-8">
+              <div className="flex items-center space-x-3 mb-8">
+                <div className="w-10 h-10 bg-gradient-to-br from-gray-500 to-neutral-600 rounded-xl flex items-center justify-center">
+                  <Database className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="text-2xl font-bold text-foreground">Product Metadata & Additional Information</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+                  <h4 className="font-semibold text-lg text-foreground mb-4">Product Identifiers</h4>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Product ID:</span>
+                      <span className="font-mono bg-muted px-2 py-1 rounded">{product?.id || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Barcode:</span>
+                      <span className="font-mono bg-muted px-2 py-1 rounded">{product?.barcode || "N/A"}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Data Source:</span>
+                      <span className="bg-muted px-2 py-1 rounded">{product?.dataSource || product?.lookupSource || "N/A"}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+                  <h4 className="font-semibold text-lg text-foreground mb-4">Timestamps & Updates</h4>
+                  <div className="space-y-3 text-sm">
+                    {product?.lastUpdated && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Last Updated:</span>
+                        <span className="font-mono bg-muted px-2 py-1 rounded">{product.lastUpdated}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Analysis Date:</span>
+                      <span className="font-mono bg-muted px-2 py-1 rounded">{new Date().toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Raw Data Section */}
+              <div className="mt-8 space-y-4">
+                {/* Raw Product Data for Debugging */}
+                <details className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+                  <summary className="cursor-pointer font-semibold text-base mb-3 flex items-center gap-2">
+                    <Database className="w-4 h-4" />
+                    Raw Product Data (for debugging)
+                  </summary>
+                  <div className="mt-4 p-4 bg-muted/50 rounded-xl border text-xs font-mono overflow-auto max-h-32">
+                    <pre>{JSON.stringify(product, null, 2)}</pre>
+                  </div>
+                </details>
+
+                {/* Analysis Data */}
+                {analysis && (
+                  <details className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+                    <summary className="cursor-pointer font-semibold text-base mb-3 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" />
+                      Raw Analysis Data (for debugging)
+                    </summary>
+                    <div className="mt-4 p-4 bg-muted/50 rounded-xl border text-xs font-mono overflow-auto max-h-32">
+                      <pre>{JSON.stringify(analysis, null, 2)}</pre>
+                    </div>
+                  </details>
+                )}
+
+                {/* NutriBot Insight Data */}
+                {nutriBotInsight && (
+                  <details className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
+                    <summary className="cursor-pointer font-semibold text-base mb-3 flex items-center gap-2">
+                      <Bot className="w-4 h-4" />
+                      Raw NutriBot Data (for debugging)
+                    </summary>
+                    <div className="mt-4 p-4 bg-muted/50 rounded-xl border text-xs font-mono overflow-auto max-h-32">
+                      <pre>{JSON.stringify(nutriBotInsight, null, 2)}</pre>
+                    </div>
+                  </details>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Ingredients Card */}
       {product.ingredientsText && (
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
@@ -2080,89 +2172,6 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                 </Card>
               )}
 
-              {/* Product Metadata & Additional Information - Admin Only */}
-              {analysisSettings.productMetadata && user?.accountType === "Admin" && (
-                <Card className="border-gray-200 bg-gradient-to-r from-gray-50 to-neutral-50 dark:from-gray-950/20 dark:to-neutral-950/20">
-                <CardHeader className="pb-4">
-                  <CardTitle className="flex items-center gap-2 text-lg">
-                    <Database className="w-5 h-5 text-gray-600" />
-                    Product Metadata & Additional Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-sm text-muted-foreground">Product Identifiers</h4>
-                      <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Product ID:</span>
-                          <span className="font-mono">{product?.id || "N/A"}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Barcode:</span>
-                          <span className="font-mono">{product?.barcode || "N/A"}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Data Source:</span>
-                          <span>{product?.dataSource || product?.lookupSource || "N/A"}</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      <h4 className="font-semibold text-sm text-muted-foreground">Timestamps & Updates</h4>
-                      <div className="space-y-2 text-sm">
-                        {product?.lastUpdated && (
-                          <div className="flex justify-between">
-                            <span className="text-muted-foreground">Last Updated:</span>
-                            <span className="font-mono">{product.lastUpdated}</span>
-                          </div>
-                        )}
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Analysis Date:</span>
-                          <span className="font-mono">{new Date().toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Raw Product Data for Debugging */}
-                  <Separator className="my-4" />
-                  <details className="bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
-                    <summary className="cursor-pointer font-semibold text-sm mb-2">
-                      Raw Product Data (for debugging)
-                    </summary>
-                    <div className="mt-2 p-3 bg-muted/30 rounded border text-xs font-mono overflow-auto max-h-32">
-                      <pre>{JSON.stringify(product, null, 2)}</pre>
-                    </div>
-                  </details>
-
-                  {/* Analysis Data */}
-                  {analysis && (
-                    <details className="mt-4 bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
-                      <summary className="cursor-pointer font-semibold text-sm mb-2">
-                        Raw Analysis Data (for debugging)
-                      </summary>
-                      <div className="mt-2 p-3 bg-muted/30 rounded border text-xs font-mono overflow-auto max-h-32">
-                        <pre>{JSON.stringify(analysis, null, 2)}</pre>
-                      </div>
-                    </details>
-                  )}
-
-                  {/* NutriBot Insight Data */}
-                  {nutriBotInsight && (
-                    <details className="mt-4 bg-white/50 dark:bg-black/20 rounded-lg p-4 border border-border/20">
-                      <summary className="cursor-pointer font-semibold text-sm mb-2">
-                        Raw NutriBot Data (for debugging)
-                      </summary>
-                      <div className="mt-2 p-3 bg-muted/30 rounded border text-xs font-mono overflow-auto max-h-32">
-                        <pre>{JSON.stringify(nutriBotInsight, null, 2)}</pre>
-                      </div>
-                    </details>
-                  )}
-                </CardContent>
-              </Card>
-              )}
 
               {/* Nutrition Spotlight Section */}
               {product?.nutriments && analysisSettings.nutritionSpotlight && (
