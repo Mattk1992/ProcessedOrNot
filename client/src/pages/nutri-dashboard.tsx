@@ -17,7 +17,8 @@ import {
   User,
   Bell,
   Sparkles,
-  LogOut
+  LogOut,
+  ChefHat
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -299,6 +300,15 @@ export default function NutriDashboard() {
               <CardContent className="p-4 text-center">
                 <Sparkles className="w-8 h-8 text-purple-500 mx-auto mb-2" />
                 <p className="font-medium">What's New</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          <Link href="/recipes">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardContent className="p-4 text-center">
+                <ChefHat className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                <p className="font-medium">Recipes</p>
               </CardContent>
             </Card>
           </Link>

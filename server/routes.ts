@@ -7,6 +7,7 @@ import { smartProductLookup, cascadingProductLookup } from "./lib/product-lookup
 import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, analyzeCarbonFootprint, getUserAIProvider } from "./lib/openai";
 import { getNutriBotResponse, generateProductNutritionInsight, generateFunFacts, generateNutritionSpotlightInsights } from "./lib/nutribot";
 import { AIScheduleGenerator } from "./lib/ai-schedule-generator";
+import { cascadingRecipeSearch } from "./lib/recipe-lookup";
 import { 
   insertProductSchema,
   registerUserSchema,
@@ -5147,6 +5148,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error archiving release:', error);
       res.status(500).json({ message: 'Failed to archive release' });
+    }
+  });
+
+  // Recipe search API endpoint
+  app.post("/api/recipes/search", ensureSession, async (req: any, res) => {
+    try {
+      const { query } = req.body;
+
+      if (!query || typeof query !== 'string' || query.trim().length === 0) {
+        return res.status(400).json({ 
+          message: "Search query is required",
+          recipes: []
+        });
+      }
+
+      console.log(`Recipe search request: "${query}" from user ${req.session.userId}`);
+
+      // Use cascading recipe search system
+      const searchResult = await cascadingRecipeSearch(query.trim(), req.session.userId);
+
+      if (searchResult.error && searchResult.recipes.length === 0) {
+        return res.status(404).json({
+          message: searchResult.error,
+          recipes: [],
+          source: searchResult.source
+        });
+      }
+
+      // Return successful results
+      res.json({
+        recipes: searchResult.recipes,
+        source: searchResult.source,
+        query: query.trim(),
+        total: searchResult.recipes.length
+      });
+
+    } catch (error) {
+      console.error("Recipe search error:", error);
+      res.status(500).json({ 
+        message: "Failed to search recipes. Please try again.",
+        recipes: [],
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
