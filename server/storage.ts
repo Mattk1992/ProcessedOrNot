@@ -96,7 +96,10 @@ import {
   type InsertRecipeSearchHistory,
   savedRecipes,
   type SavedRecipe,
-  type InsertSavedRecipe
+  type InsertSavedRecipe,
+  recipes,
+  type Recipe,
+  type InsertRecipe
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, or, and, isNull, isNotNull } from "drizzle-orm";
@@ -3545,6 +3548,139 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error fetching recent recipe search history:', error);
       throw error;
+    }
+  }
+
+  // ==================== Recipes Database Methods ====================
+
+  async saveRecipeToDatabase(recipeData: InsertRecipe): Promise<Recipe> {
+    try {
+      // Try to find existing recipe first
+      const existingRecipe = await this.getRecipeByIdAndSource(recipeData.recipeId, recipeData.source);
+      
+      if (existingRecipe) {
+        // Update search count and last searched time for existing recipe
+        const [updated] = await db
+          .update(recipes)
+          .set({
+            searchCount: sql`${recipes.searchCount} + 1`,
+            lastSearched: new Date(),
+            updatedAt: new Date()
+          })
+          .where(and(
+            eq(recipes.recipeId, recipeData.recipeId),
+            eq(recipes.source, recipeData.source)
+          ))
+          .returning();
+        
+        return updated;
+      } else {
+        // Insert new recipe
+        const [created] = await db
+          .insert(recipes)
+          .values(recipeData)
+          .returning();
+        
+        return created;
+      }
+    } catch (error) {
+      console.error('Error saving recipe to database:', error);
+      throw error;
+    }
+  }
+
+  async getRecipeByIdAndSource(recipeId: string, source: string): Promise<Recipe | undefined> {
+    try {
+      const [recipe] = await db
+        .select()
+        .from(recipes)
+        .where(and(
+          eq(recipes.recipeId, recipeId),
+          eq(recipes.source, source)
+        ))
+        .limit(1);
+      
+      return recipe || undefined;
+    } catch (error) {
+      console.error('Error fetching recipe by ID and source:', error);
+      throw error;
+    }
+  }
+
+  async getAllRecipes(limit = 100, offset = 0): Promise<Recipe[]> {
+    try {
+      return await db
+        .select()
+        .from(recipes)
+        .orderBy(desc(recipes.lastSearched))
+        .limit(limit)
+        .offset(offset);
+    } catch (error) {
+      console.error('Error fetching all recipes:', error);
+      throw error;
+    }
+  }
+
+  async getRecipesByCategory(category: string): Promise<Recipe[]> {
+    try {
+      return await db
+        .select()
+        .from(recipes)
+        .where(eq(recipes.category, category))
+        .orderBy(desc(recipes.lastSearched));
+    } catch (error) {
+      console.error('Error fetching recipes by category:', error);
+      throw error;
+    }
+  }
+
+  async getRecipesByCuisine(cuisine: string): Promise<Recipe[]> {
+    try {
+      return await db
+        .select()
+        .from(recipes)
+        .where(eq(recipes.cuisine, cuisine))
+        .orderBy(desc(recipes.lastSearched));
+    } catch (error) {
+      console.error('Error fetching recipes by cuisine:', error);
+      throw error;
+    }
+  }
+
+  async searchRecipesInDatabase(query: string, limit = 50): Promise<Recipe[]> {
+    try {
+      return await db
+        .select()
+        .from(recipes)
+        .where(
+          or(
+            sql`${recipes.title} ILIKE ${`%${query}%`}`,
+            sql`${recipes.description} ILIKE ${`%${query}%`}`,
+            sql`array_to_string(${recipes.ingredients}, ' ') ILIKE ${`%${query}%`}`
+          )
+        )
+        .orderBy(desc(recipes.searchCount), desc(recipes.lastSearched))
+        .limit(limit);
+    } catch (error) {
+      console.error('Error searching recipes in database:', error);
+      throw error;
+    }
+  }
+
+  async getRecipeStats(): Promise<{ totalRecipes: number; totalSearches: number; uniqueSources: number }> {
+    try {
+      const [stats] = await db
+        .select({
+          totalRecipes: sql<number>`count(*)`,
+          totalSearches: sql<number>`sum(${recipes.searchCount})`,
+          uniqueSources: sql<number>`count(distinct ${recipes.source})`
+        })
+        .from(recipes);
+      
+      return stats || { totalRecipes: 0, totalSearches: 0, uniqueSources: 0 };
+    } catch (error) {
+      console.error('Error fetching recipe stats:', error);
+      return { totalRecipes: 0, totalSearches: 0, uniqueSources: 0 };
     }
   }
 

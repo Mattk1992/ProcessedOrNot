@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, real, jsonb, timestamp, varchar, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, real, jsonb, timestamp, varchar, boolean, index, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -1399,3 +1399,48 @@ export const insertSavedRecipeSchema = createInsertSchema(savedRecipes).omit({
 
 export type InsertSavedRecipe = z.infer<typeof insertSavedRecipeSchema>;
 export type SavedRecipe = typeof savedRecipes.$inferSelect;
+
+// Recipes Database - stores all recipe search results to prevent re-fetching
+export const recipes = pgTable("recipes", {
+  id: serial("id").primaryKey(),
+  recipeId: text("recipe_id").notNull(), // Original recipe ID from source (MealDB, etc.)
+  title: text("title").notNull(),
+  description: text("description"),
+  image: text("image"),
+  cookingTime: text("cooking_time"),
+  servings: text("servings"),
+  difficulty: text("difficulty"),
+  ingredients: text("ingredients").array(), // Array of ingredients
+  instructions: text("instructions").array(), // Array of cooking steps
+  source: text("source").notNull(), // Source of the recipe (MealDB, AI Generated, etc.)
+  sourceUrl: text("source_url"),
+  category: text("category"),
+  cuisine: text("cuisine"),
+  calories: integer("calories"),
+  protein: real("protein"),
+  carbs: real("carbs"),
+  fat: real("fat"),
+  searchCount: integer("search_count").default(1), // How many times this recipe appeared in searches
+  lastSearched: timestamp("last_searched").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => ({
+  recipeSourceIdx: index("recipes_recipe_source_idx").on(table.recipeId, table.source),
+  titleIdx: index("recipes_title_idx").on(table.title),
+  categoryIdx: index("recipes_category_idx").on(table.category),
+  cuisineIdx: index("recipes_cuisine_idx").on(table.cuisine),
+  sourceIdx: index("recipes_source_idx").on(table.source),
+  // Unique constraint to prevent duplicates based on recipe ID and source
+  uniqueRecipeSource: unique("unique_recipe_source").on(table.recipeId, table.source),
+}));
+
+export const insertRecipeSchema = createInsertSchema(recipes).omit({
+  id: true,
+  searchCount: true,
+  lastSearched: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertRecipe = z.infer<typeof insertRecipeSchema>;
+export type Recipe = typeof recipes.$inferSelect;

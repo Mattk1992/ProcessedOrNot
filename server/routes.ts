@@ -5413,6 +5413,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Automatically save each recipe to the Recipes database to prevent re-fetching
+      try {
+        if (searchResult.recipes && searchResult.recipes.length > 0) {
+          console.log(`Saving ${searchResult.recipes.length} recipes to recipes database...`);
+          
+          for (const recipe of searchResult.recipes) {
+            try {
+              const recipeData = {
+                recipeId: recipe.id,
+                title: recipe.title,
+                description: recipe.description || null,
+                image: recipe.image || null,
+                cookingTime: recipe.cookingTime || null,
+                servings: recipe.servings || null,
+                difficulty: recipe.difficulty || null,
+                ingredients: recipe.ingredients || [],
+                instructions: recipe.instructions || [],
+                source: recipe.source,
+                sourceUrl: recipe.sourceUrl || null,
+                category: recipe.category || null,
+                cuisine: recipe.cuisine || null,
+                calories: recipe.calories || null,
+                protein: recipe.protein || null,
+                carbs: recipe.carbs || null,
+                fat: recipe.fat || null
+              };
+
+              await storage.saveRecipeToDatabase(recipeData);
+            } catch (recipeError) {
+              // Continue processing other recipes if one fails
+              console.error(`Failed to save recipe ${recipe.id} to database:`, recipeError);
+            }
+          }
+          
+          console.log(`Successfully processed ${searchResult.recipes.length} recipes for database saving`);
+        }
+      } catch (batchError) {
+        // Don't fail the main request if recipe database saving fails
+        console.error("Failed to save recipes to database:", batchError);
+      }
+
       // Return successful results
       res.json({
         recipes: searchResult.recipes,
