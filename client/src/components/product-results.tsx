@@ -1217,7 +1217,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                         <div className="grid grid-cols-2 gap-3 text-sm">
                           <div className="flex justify-between">
                             <span>Calories:</span>
-                            <span className="font-mono">{(product.nutriments as any)?.energy_100g || "N/A"}</span>
+                            <span className="font-mono">{(product.nutriments as any)?.energy_100g ? `${Math.round((product.nutriments as any).energy_100g / 4.184)} kcal` : "N/A"}</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Protein:</span>
