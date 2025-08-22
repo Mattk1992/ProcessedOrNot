@@ -594,6 +594,241 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
         </CardContent>
       </Card>
 
+      {/* Product Management Section */}
+      <div className="slide-up">
+        <Card className="glass-effect border-2 border-blue-200/50 dark:border-blue-800/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+          <CardContent className="pt-6 pb-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
+                  <Settings className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">Product Management</h3>
+                  <p className="text-sm text-muted-foreground">Customize settings and enhance product data</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  onClick={handleEditProduct}
+                  variant="outline"
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20 px-4 py-2"
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Add Missing Data
+                </Button>
+                <Button 
+                  onClick={() => setShowAnalysisSettings(true)}
+                  variant="outline"
+                  className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20 px-4 py-2"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Add to Diary Section */}
+      <div className="slide-up">
+        <Card className="glass-effect border-2 border-green-200/50 dark:border-green-800/50 shadow-xl hover:shadow-2xl transition-all duration-300">
+          <CardContent className="pt-6 pb-6">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground">Add to Nutrition Diary</h3>
+                  <p className="text-sm text-muted-foreground">Track this product in your daily food intake</p>
+                </div>
+              </div>
+              <Dialog open={showAddToDiary} onOpenChange={setShowAddToDiary}>
+                <DialogTrigger asChild>
+                  <Button 
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 shadow-lg min-w-[140px]"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add to Diary
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Apple className="w-5 h-5 text-green-600" />
+                      Add to Nutrition Diary
+                    </DialogTitle>
+                    <DialogDescription>
+                      Add {product?.productName || "this product"} to your nutrition diary
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-6">
+                    {/* Product Summary */}
+                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
+                      {product?.imageUrl ? (
+                        <img 
+                          src={product.imageUrl} 
+                          alt={product?.productName || "Product"} 
+                          className="w-12 h-12 object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                          <Database className="w-4 h-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="font-semibold">{product?.productName || "Unknown Product"}</h4>
+                        {product?.brands && <p className="text-sm text-muted-foreground">{String(product.brands)}</p>}
+                      </div>
+                    </div>
+
+                    {/* Nutrition Summary */}
+                    {product?.nutriments && (
+                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg p-4">
+                        <h4 className="font-semibold mb-3 text-sm">Nutrition Facts (per 100g)</h4>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div className="flex justify-between">
+                            <span>Calories:</span>
+                            <span className="font-mono">{(product.nutriments as any)?.energy_100g ? `${Math.round((product.nutriments as any).energy_100g / 4.184)} kcal` : "N/A"}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Protein:</span>
+                            <span className="font-mono">{(product.nutriments as any)?.proteins_100g ? `${(product.nutriments as any).proteins_100g}g` : "N/A"}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Carbs:</span>
+                            <span className="font-mono">{(product.nutriments as any)?.carbohydrates_100g ? `${(product.nutriments as any).carbohydrates_100g}g` : "N/A"}</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Fat:</span>
+                            <span className="font-mono">{(product.nutriments as any)?.fat_100g ? `${(product.nutriments as any).fat_100g}g` : "N/A"}</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Portion Input */}
+                    <div className="space-y-3">
+                      <Label htmlFor="portion-amount" className="text-base font-semibold">
+                        Portion Amount
+                      </Label>
+                      <div className="flex items-center gap-3">
+                        <Input
+                          id="portion-amount"
+                          type="number"
+                          value={portionAmount}
+                          onChange={(e) => setPortionAmount(e.target.value)}
+                          placeholder="100"
+                          min="0"
+                          step="0.1"
+                          className="flex-1"
+                        />
+                        <span className="text-sm font-medium text-muted-foreground px-3 py-2 bg-muted rounded-md">
+                          grams
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Enter the weight or volume you consumed
+                      </p>
+                    </div>
+
+                    {/* Date and Time Input */}
+                    <div className="space-y-3">
+                      <Label htmlFor="consumed-datetime" className="text-base font-semibold">
+                        Date and Time Consumed
+                      </Label>
+                      <Input
+                        id="consumed-datetime"
+                        type="datetime-local"
+                        value={consumedDateTime}
+                        onChange={(e) => setConsumedDateTime(e.target.value)}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Select when you consumed this product
+                      </p>
+                    </div>
+
+                    {/* Calculated Nutrition for Portion */}
+                    {product?.nutriments && portionAmount && !isNaN(parseFloat(portionAmount)) && (
+                      <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4">
+                        <h4 className="font-semibold mb-3 text-sm">Nutrition for {portionAmount}g portion:</h4>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div className="flex justify-between">
+                            <span>Calories:</span>
+                            <span className="font-mono">
+                              {(product.nutriments as any)?.energy_100g 
+                                ? Math.round((Math.round((product.nutriments as any).energy_100g / 4.184) * parseFloat(portionAmount)) / 100)
+                                : "N/A"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Protein:</span>
+                            <span className="font-mono">
+                              {(product.nutriments as any)?.proteins_100g 
+                                ? `${(((product.nutriments as any).proteins_100g * parseFloat(portionAmount)) / 100).toFixed(1)}g`
+                                : "N/A"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Carbs:</span>
+                            <span className="font-mono">
+                              {(product.nutriments as any)?.carbohydrates_100g 
+                                ? `${(((product.nutriments as any).carbohydrates_100g * parseFloat(portionAmount)) / 100).toFixed(1)}g`
+                                : "N/A"}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Fat:</span>
+                            <span className="font-mono">
+                              {(product.nutriments as any)?.fat_100g 
+                                ? `${(((product.nutriments as any).fat_100g * parseFloat(portionAmount)) / 100).toFixed(1)}g`
+                                : "N/A"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Add Button */}
+                    <Button 
+                      onClick={handleAddToDiary}
+                      disabled={isAddingToDiary || !portionAmount || isNaN(parseFloat(portionAmount)) || !consumedDateTime}
+                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+                    >
+                      {isAddingToDiary ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Adding...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add to Diary
+                        </>
+                      )}
+                    </Button>
+
+                    {/* Report Button */}
+                    <Button 
+                      onClick={() => setShowReportModal(true)}
+                      variant="outline"
+                      className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/20"
+                    >
+                      <Flag className="w-4 h-4 mr-2" />
+                      Report Wrong Data
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Processing Score Card */}
       {(product.processingScore !== null || product.processingExplanation) && (
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
@@ -1160,240 +1395,6 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
         />
       </div>
 
-      {/* Add to Diary Button */}
-      <div className="slide-up">
-        <Card className="glass-effect border-2 border-green-200/50 dark:border-green-800/50 shadow-xl hover:shadow-2xl transition-all duration-300">
-          <CardContent className="pt-6 pb-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">Add to Nutrition Diary</h3>
-                  <p className="text-sm text-muted-foreground">Track this product in your daily food intake</p>
-                </div>
-              </div>
-              <Dialog open={showAddToDiary} onOpenChange={setShowAddToDiary}>
-                <DialogTrigger asChild>
-                  <Button 
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 shadow-lg min-w-[140px]"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Add to Diary
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-md">
-                  <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                      <Apple className="w-5 h-5 text-green-600" />
-                      Add to Nutrition Diary
-                    </DialogTitle>
-                    <DialogDescription>
-                      Add {product?.productName || "this product"} to your nutrition diary
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <div className="space-y-6">
-                    {/* Product Summary */}
-                    <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-lg">
-                      {product?.imageUrl ? (
-                        <img 
-                          src={product.imageUrl} 
-                          alt={product?.productName || "Product"} 
-                          className="w-12 h-12 object-cover rounded-lg"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                          <Database className="w-4 h-4 text-muted-foreground" />
-                        </div>
-                      )}
-                      <div>
-                        <h4 className="font-semibold">{product?.productName || "Unknown Product"}</h4>
-                        {product?.brands && <p className="text-sm text-muted-foreground">{String(product.brands)}</p>}
-                      </div>
-                    </div>
-
-                    {/* Nutrition Summary */}
-                    {product?.nutriments && (
-                      <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 rounded-lg p-4">
-                        <h4 className="font-semibold mb-3 text-sm">Nutrition Facts (per 100g)</h4>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          <div className="flex justify-between">
-                            <span>Calories:</span>
-                            <span className="font-mono">{(product.nutriments as any)?.energy_100g ? `${Math.round((product.nutriments as any).energy_100g / 4.184)} kcal` : "N/A"}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Protein:</span>
-                            <span className="font-mono">{(product.nutriments as any)?.proteins_100g ? `${(product.nutriments as any).proteins_100g}g` : "N/A"}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Carbs:</span>
-                            <span className="font-mono">{(product.nutriments as any)?.carbohydrates_100g ? `${(product.nutriments as any).carbohydrates_100g}g` : "N/A"}</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Fat:</span>
-                            <span className="font-mono">{(product.nutriments as any)?.fat_100g ? `${(product.nutriments as any).fat_100g}g` : "N/A"}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Portion Input */}
-                    <div className="space-y-3">
-                      <Label htmlFor="portion-amount" className="text-base font-semibold">
-                        Portion Amount
-                      </Label>
-                      <div className="flex items-center gap-3">
-                        <Input
-                          id="portion-amount"
-                          type="number"
-                          value={portionAmount}
-                          onChange={(e) => setPortionAmount(e.target.value)}
-                          placeholder="100"
-                          min="0"
-                          step="0.1"
-                          className="flex-1"
-                        />
-                        <span className="text-sm font-medium text-muted-foreground px-3 py-2 bg-muted rounded-md">
-                          grams
-                        </span>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Enter the weight or volume you consumed
-                      </p>
-                    </div>
-
-                    {/* Date and Time Input */}
-                    <div className="space-y-3">
-                      <Label htmlFor="consumed-datetime" className="text-base font-semibold">
-                        Date and Time Consumed
-                      </Label>
-                      <Input
-                        id="consumed-datetime"
-                        type="datetime-local"
-                        value={consumedDateTime}
-                        onChange={(e) => setConsumedDateTime(e.target.value)}
-                        className="w-full"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Select when you consumed this product
-                      </p>
-                    </div>
-
-                    {/* Calculated Nutrition for Portion */}
-                    {product?.nutriments && portionAmount && !isNaN(parseFloat(portionAmount)) && (
-                      <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4">
-                        <h4 className="font-semibold mb-3 text-sm">Nutrition for {portionAmount}g portion:</h4>
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          <div className="flex justify-between">
-                            <span>Calories:</span>
-                            <span className="font-mono">
-                              {(product.nutriments as any)?.energy_100g 
-                                ? Math.round((Math.round((product.nutriments as any).energy_100g / 4.184) * parseFloat(portionAmount)) / 100)
-                                : "N/A"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Protein:</span>
-                            <span className="font-mono">
-                              {(product.nutriments as any)?.proteins_100g 
-                                ? `${(((product.nutriments as any).proteins_100g * parseFloat(portionAmount)) / 100).toFixed(1)}g`
-                                : "N/A"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Carbs:</span>
-                            <span className="font-mono">
-                              {(product.nutriments as any)?.carbohydrates_100g 
-                                ? `${(((product.nutriments as any).carbohydrates_100g * parseFloat(portionAmount)) / 100).toFixed(1)}g`
-                                : "N/A"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span>Fat:</span>
-                            <span className="font-mono">
-                              {(product.nutriments as any)?.fat_100g 
-                                ? `${(((product.nutriments as any).fat_100g * parseFloat(portionAmount)) / 100).toFixed(1)}g`
-                                : "N/A"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Add Button */}
-                    <Button 
-                      onClick={handleAddToDiary}
-                      disabled={isAddingToDiary || !portionAmount || isNaN(parseFloat(portionAmount)) || !consumedDateTime}
-                      className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
-                    >
-                      {isAddingToDiary ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                          Adding...
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add to Diary
-                        </>
-                      )}
-                    </Button>
-
-                    {/* Report Button */}
-                    <Button 
-                      onClick={() => setShowReportModal(true)}
-                      variant="outline"
-                      className="w-full border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-950/20"
-                    >
-                      <Flag className="w-4 h-4 mr-2" />
-                      Report Wrong Data
-                    </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Settings & Add Missing Data Buttons */}
-      <div className="slide-up">
-        <Card className="glass-effect border-2 border-blue-200/50 dark:border-blue-800/50 shadow-xl hover:shadow-2xl transition-all duration-300">
-          <CardContent className="pt-6 pb-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-                  <Settings className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground">Product Management</h3>
-                  <p className="text-sm text-muted-foreground">Customize settings and enhance product data</p>
-                </div>
-              </div>
-              <div className="flex gap-3">
-                <Button 
-                  onClick={handleEditProduct}
-                  variant="outline"
-                  className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20 px-4 py-2"
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Add Missing Data
-                </Button>
-                <Button 
-                  onClick={() => setShowAnalysisSettings(true)}
-                  variant="outline"
-                  className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300 dark:border-blue-800 dark:text-blue-400 dark:hover:bg-blue-950/20 px-4 py-2"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
       {/* Product Metadata & Additional Information - Admin Only */}
       {visibilitySettings.showProductMetadata && user?.accountType === "Admin" && (
