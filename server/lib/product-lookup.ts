@@ -153,9 +153,112 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Edamam lookup failed:', error);
   }
 
-  // 2. Agri-food Data (Secondary)
+  // 2. OpenFoodFacts (Secondary)
   try {
-    console.log('2. Trying Agri-food Data (Secondary)...');
+    console.log('2. Trying OpenFoodFacts (Secondary)...');
+    const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
+    
+    if (openFoodFactsData && openFoodFactsData.status === 1) {
+      const product = openFoodFactsData.product;
+      
+      // Create product data structure first
+      // Process nutriments to ensure proper calories mapping
+      let processedNutriments = null;
+      if (product.nutriments) {
+        processedNutriments = { ...product.nutriments };
+        
+        // OpenFoodFacts typically provides energy_100g in kJ, convert to kcal for consistency
+        if (processedNutriments.energy_100g && !processedNutriments.energy_kcal_100g) {
+          processedNutriments.energy_kcal_100g = processedNutriments.energy_100g / 4.184;
+        }
+      }
+      
+      const productData: InsertProduct = {
+        barcode,
+        productName: product.product_name || null,
+        brands: product.brands || null,
+        imageUrl: product.image_url || null,
+        ingredientsText: product.ingredients_text || null,
+        nutriments: processedNutriments,
+        processingScore: 0,
+        processingExplanation: "No ingredients available for analysis",
+        glycemicIndex: null,
+        glycemicLoad: null,
+        glycemicExplanation: "No data available for glycemic analysis",
+        productionProcess: "No production process analysis available",
+        dataSource: 'OpenFoodFacts'
+      };
+
+      // Check if product data is sufficient
+      if (!isProductDataSufficient(productData)) {
+        console.log('OpenFoodFacts product has insufficient data, continuing cascade...');
+      } else {
+        // Analyze ingredients if available
+        if (product.ingredients_text) {
+          try {
+            const analysis = await analyzeIngredients(
+              product.ingredients_text,
+              product.product_name || "Unknown Product",
+              'en',
+              userAIProvider,
+              userId
+            );
+            productData.processingScore = analysis.score;
+            productData.processingExplanation = analysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze ingredients:", error);
+            productData.processingExplanation = "Unable to analyze ingredients at this time";
+          }
+        }
+
+        // Analyze glycemic index if we have nutrition data (ingredients not required)
+        if (product.nutriments) {
+          try {
+            const glycemicAnalysis = await analyzeGlycemicIndex(
+              product.ingredients_text || "",
+              product.product_name || "Unknown Product",
+              product.nutriments,
+              'en',
+              userAIProvider,
+              userId
+            );
+            productData.glycemicIndex = glycemicAnalysis.glycemicIndex;
+            productData.glycemicLoad = glycemicAnalysis.glycemicLoad;
+            productData.glycemicExplanation = glycemicAnalysis.explanation;
+          } catch (error) {
+            console.error("Failed to analyze glycemic index:", error);
+            productData.glycemicExplanation = "Unable to analyze glycemic impact at this time";
+          }
+        }
+
+        // Analyze production process
+        if (product.ingredients_text) {
+          try {
+            productData.productionProcess = await analyzeProductionProcess(
+              product.ingredients_text,
+              product.product_name || "Unknown Product",
+              product.nutriments || {},
+              'en',
+              userAIProvider,
+              userId
+            );
+          } catch (error) {
+            console.error("Failed to analyze production process:", error);
+            productData.productionProcess = "Unable to analyze production process at this time";
+          }
+        }
+
+        console.log('Found sufficient product data in OpenFoodFacts');
+        return { product: productData, source: 'OpenFoodFacts' };
+      }
+    }
+  } catch (error) {
+    console.error('OpenFoodFacts lookup failed:', error);
+  }
+
+  // 3. Agri-food Data (Tertiary)
+  try {
+    console.log('3. Trying Agri-food Data (Tertiary)...');
     const agrifoodProduct = await fetchProductFromAgrifoodData(barcode);
     
     if (agrifoodProduct) {
@@ -225,9 +328,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Agri-food Data lookup failed:', error);
   }
 
-  // 3. Spoonacular (Tertiary)
+  // 4. Spoonacular (Quaternary)
   try {
-    console.log('3. Trying Spoonacular (Tertiary)...');
+    console.log('4. Trying Spoonacular (Quaternary)...');
     const spoonacularProduct = await fetchProductFromSpoonacular(barcode);
     
     if (spoonacularProduct) {
@@ -297,9 +400,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Spoonacular lookup failed:', error);
   }
 
-  // 4. Leda (Quaternary)
+  // 5. Leda (Quinary)
   try {
-    console.log('4. Trying Leda (Quaternary)...');
+    console.log('5. Trying Leda (Quinary)...');
     const ledaProduct = await fetchProductFromLeda(barcode);
     
     if (ledaProduct) {
@@ -369,9 +472,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     console.error('Leda lookup failed:', error);
   }
 
-  // 5. USDA FoodData Central (Quinary)
+  // 6. USDA FoodData Central (Senary)
   try {
-    console.log('5. Trying USDA FoodData Central (Quinary)...');
+    console.log('6. Trying USDA FoodData Central (Senary)...');
     const usdaProduct = await fetchProductFromUSDA(barcode);
     
     if (usdaProduct) {
@@ -439,108 +542,6 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     }
   } catch (error) {
     console.error('USDA lookup failed:', error);
-  }
-
-  // 6. OpenFoodFacts (Senary)
-  try {
-    console.log('6. Trying OpenFoodFacts (Senary)...');
-    const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
-    
-    if (openFoodFactsData && openFoodFactsData.status === 1) {
-      const product = openFoodFactsData.product;
-      
-      // Create product data structure first
-      // Process nutriments to ensure proper calories mapping
-      let processedNutriments = null;
-      if (product.nutriments) {
-        processedNutriments = { ...product.nutriments };
-        
-        // OpenFoodFacts typically provides energy_100g in kJ, convert to kcal for consistency
-        if (processedNutriments.energy_100g && !processedNutriments.energy_kcal_100g) {
-          processedNutriments.energy_kcal_100g = processedNutriments.energy_100g / 4.184;
-        }
-      }
-      
-      const productData: InsertProduct = {
-        barcode,
-        productName: product.product_name || null,
-        brands: product.brands || null,
-        imageUrl: product.image_url || null,
-        ingredientsText: product.ingredients_text || null,
-        nutriments: processedNutriments,
-        processingScore: 0,
-        processingExplanation: "No ingredients available for analysis",
-        glycemicIndex: null,
-        glycemicLoad: null,
-        glycemicExplanation: "No data available for glycemic analysis",
-        productionProcess: "No production process analysis available",
-        dataSource: 'OpenFoodFacts'
-      };
-
-      // Check if product data is sufficient
-      if (!isProductDataSufficient(productData)) {
-        console.log('OpenFoodFacts product has insufficient data, continuing cascade...');
-      } else {
-        // Analyze ingredients if available
-        if (product.ingredients_text) {
-          try {
-            const analysis = await analyzeIngredients(
-              product.ingredients_text,
-              product.product_name || "Unknown Product",
-              'en',
-              userAIProvider
-            );
-            productData.processingScore = analysis.score;
-            productData.processingExplanation = analysis.explanation;
-          } catch (error) {
-            console.error("Failed to analyze ingredients:", error);
-            productData.processingExplanation = "Unable to analyze ingredients at this time";
-          }
-        }
-
-        // Analyze glycemic index if we have nutrition data (ingredients not required)
-        if (product.nutriments) {
-          try {
-            const glycemicAnalysis = await analyzeGlycemicIndex(
-              product.ingredients_text || "",
-              product.product_name || "Unknown Product",
-              product.nutriments,
-              'en',
-              userAIProvider,
-              userId
-            );
-            productData.glycemicIndex = glycemicAnalysis.glycemicIndex;
-            productData.glycemicLoad = glycemicAnalysis.glycemicLoad;
-            productData.glycemicExplanation = glycemicAnalysis.explanation;
-          } catch (error) {
-            console.error("Failed to analyze glycemic index:", error);
-            productData.glycemicExplanation = "Unable to analyze glycemic impact at this time";
-          }
-        }
-
-        // Analyze production process
-        if (product.ingredients_text) {
-          try {
-            productData.productionProcess = await analyzeProductionProcess(
-              product.ingredients_text,
-              product.product_name || "Unknown Product",
-              product.nutriments || {},
-              'en',
-              userAIProvider,
-              userId
-            );
-          } catch (error) {
-            console.error("Failed to analyze production process:", error);
-            productData.productionProcess = "Unable to analyze production process at this time";
-          }
-        }
-
-        console.log('Found sufficient product data in OpenFoodFacts');
-        return { product: productData, source: 'OpenFoodFacts' };
-      }
-    }
-  } catch (error) {
-    console.error('OpenFoodFacts lookup failed:', error);
   }
 
   // 7. FoodDB.ca
