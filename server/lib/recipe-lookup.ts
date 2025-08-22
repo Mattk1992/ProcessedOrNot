@@ -351,15 +351,16 @@ Focus on practical, achievable recipes with clear instructions. Include estimate
       messages: [
         {
           role: 'system',
-          content: 'You are a professional chef and nutritionist. Generate practical, detailed recipes with accurate nutritional estimates. Always return valid JSON.'
+          content: 'You are a professional chef and nutritionist. Generate practical, detailed recipes with accurate nutritional estimates. ALWAYS return a valid JSON array. Start your response with [ and end with ]. Do not include any text before or after the JSON array.'
         },
         {
           role: 'user',
           content: prompt
         }
       ],
-      temperature: 0.7,
-      max_tokens: 2000,
+      response_format: { type: "json_object" },
+      temperature: 0.3,
+      max_tokens: 3000,
     });
 
     const content = completion.choices[0]?.message?.content;
@@ -370,13 +371,37 @@ Focus on practical, achievable recipes with clear instructions. Include estimate
     // Parse the JSON response
     let recipes: Recipe[];
     try {
-      recipes = JSON.parse(content);
-      if (!Array.isArray(recipes)) {
-        throw new Error('AI response is not an array');
+      // Try to parse as direct JSON
+      const parsed = JSON.parse(content);
+      
+      // Handle if response is wrapped in an object with a recipes array
+      if (parsed.recipes && Array.isArray(parsed.recipes)) {
+        recipes = parsed.recipes;
+      } else if (Array.isArray(parsed)) {
+        recipes = parsed;
+      } else {
+        throw new Error('AI response is not a valid recipe array structure');
       }
     } catch (parseError) {
       console.error("Failed to parse AI response:", content);
-      throw new Error('Failed to parse AI recipe response');
+      
+      // Try to extract JSON array from response
+      let cleanedContent = content.trim();
+      const arrayStart = cleanedContent.indexOf('[');
+      const arrayEnd = cleanedContent.lastIndexOf(']');
+      
+      if (arrayStart >= 0 && arrayEnd > arrayStart) {
+        try {
+          cleanedContent = cleanedContent.substring(arrayStart, arrayEnd + 1);
+          recipes = JSON.parse(cleanedContent);
+          console.log('Successfully parsed cleaned AI response');
+        } catch (secondParseError) {
+          console.error("Second parse attempt failed:", secondParseError);
+          throw new Error('Failed to parse AI recipe response after cleanup');
+        }
+      } else {
+        throw new Error('Failed to parse AI recipe response - no valid JSON array found');
+      }
     }
 
     // Validate and clean up recipes
