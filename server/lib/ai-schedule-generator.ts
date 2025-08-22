@@ -289,6 +289,7 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
 
       const generationTimeMs = Date.now() - startTime;
       const aiResponse = response.choices[0].message.content || "";
+      let cleanedResponse: string | undefined; // Declare at proper scope
       
       let schedule: GeneratedSchedule;
       try {
@@ -298,7 +299,7 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
         console.error('Parse error details:', parseError);
         
         // Try to clean up the response and parse again
-        let cleanedResponse = aiResponse.trim();
+        cleanedResponse = aiResponse.trim();
         
         // Remove any text before the first {
         const firstBrace = cleanedResponse.indexOf('{');
@@ -348,7 +349,7 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
             }
           },
           aiResponse,
-          processedResponse: typeof cleanedResponse !== 'undefined' ? cleanedResponse : aiResponse,
+          processedResponse: cleanedResponse || aiResponse,
           parsedData: schedule,
           tokensUsed: response.usage?.total_tokens,
           promptTokens: response.usage?.prompt_tokens,
