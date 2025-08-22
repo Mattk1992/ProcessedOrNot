@@ -932,7 +932,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       )}
 
       {/* Processing Score Card */}
-      {(product.processingScore !== null || product.processingExplanation) && (
+      {visibilitySettings.showProcessingAnalysis && (product.processingScore !== null || product.processingExplanation) && (
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center justify-between mb-8">
