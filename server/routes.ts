@@ -3798,7 +3798,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const nutritionEntriesByDate = new Map();
       
       diaryEntries.forEach(entry => {
-        const date = entry.date;
+        // Extract date from consumedAt timestamp (YYYY-MM-DD format)
+        const date = new Date(entry.consumedAt).toISOString().split('T')[0];
         if (!nutritionEntriesByDate.has(date)) {
           nutritionEntriesByDate.set(date, {
             date,
@@ -3812,15 +3813,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         const dayData = nutritionEntriesByDate.get(date);
         dayData.calories += entry.calories || 0;
-        dayData.protein += entry.protein || 0;
+        dayData.protein += entry.proteins || 0; // Note: it's 'proteins' not 'protein' in schema
         dayData.carbohydrates += entry.carbohydrates || 0;
         dayData.fat += entry.fat || 0;
+        
+        // Extract time from consumedAt timestamp (HH:MM format)
+        const consumedTime = new Date(entry.consumedAt).toTimeString().slice(0, 5);
         
         // Add meal entry
         dayData.meals.push({
           name: entry.productName || 'Unknown Food',
           type: entry.mealType || 'meal',
-          time: entry.mealTime || '12:00',
+          time: consumedTime || '12:00',
           calories: entry.calories || 0
         });
       });
