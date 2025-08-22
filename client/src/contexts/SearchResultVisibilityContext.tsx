@@ -10,6 +10,7 @@ export interface SearchResultVisibilitySettings {
   showProcessingAnalysis: boolean;
   showProductionProcess: boolean;
   showCarbonFootprint: boolean;
+  showProductMetadata: boolean;
 }
 
 // Default settings - all enabled by default
@@ -22,6 +23,7 @@ const defaultSettings: SearchResultVisibilitySettings = {
   showProcessingAnalysis: true,
   showProductionProcess: true,
   showCarbonFootprint: true,
+  showProductMetadata: true,
 };
 
 interface SearchResultVisibilityContextType {

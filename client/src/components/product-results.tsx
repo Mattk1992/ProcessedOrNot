@@ -522,7 +522,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                           return nutrients?.energy_100g ? String(Math.round(nutrients.energy_100g / 4.184)) : "N/A";
                         })()}
                       </div>
-                      <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.energy'))}</div>
+                      <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.energy') || 'Energy')}</div>
                     </div>
                     <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
                       <div className="text-2xl font-bold text-foreground mb-1">
@@ -531,7 +531,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                           return nutrients?.sugars_100g ? `${nutrients.sugars_100g}g` : "N/A";
                         })()}
                       </div>
-                      <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.sugars'))}</div>
+                      <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.sugars') || 'Sugars')}</div>
                     </div>
                     <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-primary/30 transition-colors">
                       <div className="text-2xl font-bold text-foreground mb-1">
@@ -540,7 +540,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                           return nutrients?.fat_100g ? `${nutrients.fat_100g}g` : "N/A";
                         })()}
                       </div>
-                      <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.fat'))}</div>
+                      <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.fat') || 'Fat')}</div>
                     </div>
                     <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-4 text-center border border-border/20 hover:border-accent/30 transition-colors">
                       <div className="text-2xl font-bold text-foreground mb-1">
@@ -549,7 +549,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                           return nutrients?.proteins_100g ? `${nutrients.proteins_100g}g` : "N/A";
                         })()}
                       </div>
-                      <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.protein'))}</div>
+                      <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.protein') || 'Protein')}</div>
                     </div>
                   </div>
 
@@ -1031,7 +1031,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                 </svg>
               </div>
-              <h3 className="text-2xl font-bold text-foreground">{String(t('glycemic.index.title'))}</h3>
+              <h3 className="text-2xl font-bold text-foreground">{String(t('glycemic.index.title') || 'Glycemic Index')}</h3>
             </div>
             
             <div className="space-y-8">
@@ -1041,7 +1041,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                   <div className="text-3xl font-bold text-foreground mb-2">
                     {product.glycemicIndex !== null && product.glycemicIndex !== undefined ? product.glycemicIndex : '?'}
                   </div>
-                  <div className="text-sm text-muted-foreground font-medium">{String(t('glycemic.index.gi'))}</div>
+                  <div className="text-sm text-muted-foreground font-medium">{String(t('glycemic.index.gi') || 'GI')}</div>
                   <div className={`text-xs font-semibold mt-2 px-2 py-1 rounded-full ${
                     product.glycemicIndex !== null && product.glycemicIndex !== undefined ? (
                       product.glycemicIndex <= 55 ? 'bg-emerald-100 text-emerald-800' : 
@@ -1049,8 +1049,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                     ) : 'bg-gray-100 text-gray-800'
                   }`}>
                     {product.glycemicIndex !== null && product.glycemicIndex !== undefined ? (
-                      product.glycemicIndex <= 55 ? String(t('glycemic.index.low')) : 
-                      product.glycemicIndex <= 70 ? String(t('glycemic.index.medium')) : String(t('glycemic.index.high'))
+                      product.glycemicIndex <= 55 ? String(t('glycemic.index.low') || 'Low') : 
+                      product.glycemicIndex <= 70 ? String(t('glycemic.index.medium') || 'Medium') : String(t('glycemic.index.high') || 'High')
                     ) : 'Analyzing...'}
                   </div>
                 </div>
@@ -1059,7 +1059,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                   <div className="text-3xl font-bold text-foreground mb-2">
                     {product.glycemicLoad !== null && product.glycemicLoad !== undefined ? product.glycemicLoad : '?'}
                   </div>
-                  <div className="text-sm text-muted-foreground font-medium">{String(t('glycemic.index.gl'))}</div>
+                  <div className="text-sm text-muted-foreground font-medium">{String(t('glycemic.index.gl') || 'GL')}</div>
                   <div className={`text-xs font-semibold mt-2 px-2 py-1 rounded-full ${
                     product.glycemicLoad !== null && product.glycemicLoad !== undefined ? (
                       product.glycemicLoad <= 10 ? 'bg-emerald-100 text-emerald-800' : 
@@ -1067,8 +1067,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                     ) : 'bg-gray-100 text-gray-800'
                   }`}>
                     {product.glycemicLoad !== null && product.glycemicLoad !== undefined ? (
-                      product.glycemicLoad <= 10 ? String(t('glycemic.index.low')) : 
-                      product.glycemicLoad <= 20 ? String(t('glycemic.index.medium')) : String(t('glycemic.index.high'))
+                      product.glycemicLoad <= 10 ? String(t('glycemic.index.low') || 'Low') : 
+                      product.glycemicLoad <= 20 ? String(t('glycemic.index.medium') || 'Medium') : String(t('glycemic.index.high') || 'High')
                     ) : 'Analyzing...'}
                   </div>
                 </div>
@@ -1076,7 +1076,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
 
               {/* Explanation */}
               <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
-                <h4 className="text-lg font-semibold text-foreground mb-4">{String(t('glycemic.index.explanation'))}</h4>
+                <h4 className="text-lg font-semibold text-foreground mb-4">{String(t('glycemic.index.explanation') || 'Explanation')}</h4>
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {product.glycemicExplanation || 'Glycemic index analysis is being calculated. This shows how the food affects blood sugar levels.'}
                 </p>
@@ -1097,8 +1097,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                 <Bot className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold">{t('nutribot.insights.title')}</h3>
-                <p className="text-sm text-white/80">{t('nutribot.insights.subtitle')}</p>
+                <h3 className="text-xl font-bold">{String(t('nutribot.insights.title') || 'NutriBot Insights')}</h3>
+                <p className="text-sm text-white/80">{String(t('nutribot.insights.subtitle') || 'AI-powered nutrition analysis')}</p>
               </div>
               <Sparkles className="w-5 h-5 text-white/80 ml-auto" />
             </CardTitle>
@@ -1121,8 +1121,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                 <Bot className="w-6 h-6 text-white animate-pulse" />
               </div>
               <div>
-                <h3 className="text-xl font-bold">{t('nutribot.insights.title')}</h3>
-                <p className="text-sm text-white/80">{t('nutribot.insights.analyzing')}</p>
+                <h3 className="text-xl font-bold">{String(t('nutribot.insights.title') || 'NutriBot Insights')}</h3>
+                <p className="text-sm text-white/80">{String(t('nutribot.insights.analyzing') || 'Analyzing product...')}</p>
               </div>
             </CardTitle>
           </CardHeader>
@@ -1130,7 +1130,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
             <div className="bg-gradient-to-br from-card to-muted/30 rounded-2xl p-6 border border-border/20">
               <div className="flex items-center space-x-3">
                 <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-muted-foreground">{t('nutribot.insights.loading')}</p>
+                <p className="text-muted-foreground">{String(t('nutribot.insights.loading') || 'Loading insights...')}</p>
               </div>
             </div>
           </CardContent>
