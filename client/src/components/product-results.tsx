@@ -595,7 +595,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       </Card>
 
       {/* Processing Score Card */}
-      {product.processingScore !== null && (
+      {(product.processingScore !== null || product.processingExplanation) && (
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center justify-between mb-8">
@@ -612,8 +612,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               <div className="flex items-center justify-between mb-4">
                 <span className="text-lg font-semibold text-foreground">{t('processing.level')}</span>
                 <div className="text-right">
-                  <span className={`text-4xl font-bold ${getScoreColor(product.processingScore)}`}>
-                    {product.processingScore}
+                  <span className={`text-4xl font-bold ${getScoreColor(product.processingScore || 0)}`}>
+                    {product.processingScore !== null ? product.processingScore : '?'}
                   </span>
                   <span className="text-2xl text-muted-foreground">/{t('processing.outof')}</span>
                 </div>
@@ -625,39 +625,39 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                 <div 
                   className="absolute top-0 left-0 h-4 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-1000 ease-out shadow-lg"
                   style={{ 
-                    width: `${Math.min((product.processingScore / 10) * 100, 33)}%`,
-                    opacity: product.processingScore <= 3 ? 1 : 0 
+                    width: `${Math.min(((product.processingScore || 0) / 10) * 100, 33)}%`,
+                    opacity: (product.processingScore || 0) <= 3 ? 1 : 0 
                   }}
                 />
                 <div 
                   className="absolute top-0 left-0 h-4 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-full transition-all duration-1000 ease-out shadow-lg"
                   style={{ 
-                    width: `${(product.processingScore / 10) * 100}%`,
-                    opacity: product.processingScore > 3 && product.processingScore <= 6 ? 1 : 0 
+                    width: `${((product.processingScore || 0) / 10) * 100}%`,
+                    opacity: (product.processingScore || 0) > 3 && (product.processingScore || 0) <= 6 ? 1 : 0 
                   }}
                 />
                 <div 
                   className="absolute top-0 left-0 h-4 bg-gradient-to-r from-red-500 to-red-600 rounded-full transition-all duration-1000 ease-out shadow-lg"
                   style={{ 
-                    width: `${(product.processingScore / 10) * 100}%`,
-                    opacity: product.processingScore > 6 ? 1 : 0 
+                    width: `${((product.processingScore || 0) / 10) * 100}%`,
+                    opacity: (product.processingScore || 0) > 6 ? 1 : 0 
                   }}
                 />
                 {/* Score indicator */}
                 <div 
                   className="absolute top-0 w-1 h-4 bg-white rounded-full shadow-md transition-all duration-1000 ease-out"
-                  style={{ left: `${(product.processingScore / 10) * 100}%`, transform: 'translateX(-50%)' }}
+                  style={{ left: `${((product.processingScore || 0) / 10) * 100}%`, transform: 'translateX(-50%)' }}
                 />
               </div>
 
               {/* Enhanced Score Explanation */}
-              <div className={`border-2 rounded-2xl p-6 ${getScoreBorderColor(product.processingScore)} relative overflow-hidden`}>
+              <div className={`border-2 rounded-2xl p-6 ${getScoreBorderColor(product.processingScore || 0)} relative overflow-hidden`}>
                 <div className="flex items-start space-x-4">
                   <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${
-                    product.processingScore <= 3 ? 'bg-emerald-500' : 
-                    product.processingScore <= 6 ? 'bg-yellow-500' : 'bg-red-500'
+                    (product.processingScore || 0) <= 3 ? 'bg-emerald-500' : 
+                    (product.processingScore || 0) <= 6 ? 'bg-yellow-500' : 'bg-red-500'
                   }`}>
-                    {product.processingScore <= 3 ? (
+                    {(product.processingScore || 0) <= 3 ? (
                       <CheckCircle className="w-6 h-6 text-white" />
                     ) : (
                       <AlertTriangle className="w-6 h-6 text-white" />
@@ -665,16 +665,16 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                   </div>
                   <div className="flex-1">
                     <h4 className={`text-xl font-bold mb-2 ${
-                      product.processingScore <= 3 ? 'text-emerald-800' : 
-                      product.processingScore <= 6 ? 'text-yellow-800' : 'text-red-800'
+                      (product.processingScore || 0) <= 3 ? 'text-emerald-800' : 
+                      (product.processingScore || 0) <= 6 ? 'text-yellow-800' : 'text-red-800'
                     }`}>
-                      {getScoreLabel(product.processingScore)}
+                      {getScoreLabel(product.processingScore || 0)}
                     </h4>
                     <p className={`text-base leading-relaxed ${
-                      product.processingScore <= 3 ? 'text-emerald-700' : 
-                      product.processingScore <= 6 ? 'text-yellow-700' : 'text-red-700'
+                      (product.processingScore || 0) <= 3 ? 'text-emerald-700' : 
+                      (product.processingScore || 0) <= 6 ? 'text-yellow-700' : 'text-red-700'
                     }`}>
-                      {analysis?.explanation || product.processingExplanation}
+                      {analysis?.explanation || product.processingExplanation || 'Processing analysis is being calculated. This food product is being evaluated for its level of processing.'}
                     </p>
                   </div>
                 </div>
@@ -685,7 +685,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
       )}
 
       {/* Glycemic Index Card */}
-      {visibilitySettings.showGlycemicImpact && (
+      {visibilitySettings.showGlycemicImpact && (product.glycemicIndex !== null || product.glycemicLoad !== null || product.glycemicExplanation) && (
         <Card className="glass-effect border-2 border-border/20 shadow-xl hover:shadow-2xl transition-all duration-300 slide-up">
           <CardContent className="pt-8 pb-8">
             <div className="flex items-center space-x-3 mb-8">

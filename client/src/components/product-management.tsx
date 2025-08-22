@@ -441,7 +441,7 @@ export default function ProductManagement() {
             Products Database
           </CardTitle>
           <CardDescription>
-            {productsData?.pagination.total || 0} total products
+            {productsData?.pagination?.total || 0} total products
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -522,10 +522,10 @@ export default function ProductManagement() {
           )}
 
           {/* Pagination */}
-          {productsData && productsData.pagination.totalPages > 1 && (
+          {productsData && productsData.pagination?.totalPages > 1 && (
             <div className="flex items-center justify-between pt-4 mt-4 border-t">
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                Page {productsData.pagination.page} of {productsData.pagination.totalPages}
+                Page {productsData.pagination?.page} of {productsData.pagination?.totalPages}
               </div>
               <div className="flex items-center gap-2">
                 <Button
@@ -540,7 +540,7 @@ export default function ProductManagement() {
                   variant="outline"
                   size="sm"
                   onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === productsData.pagination.totalPages}
+                  disabled={currentPage === productsData.pagination?.totalPages}
                 >
                   <ChevronRight className="w-4 h-4" />
                 </Button>
