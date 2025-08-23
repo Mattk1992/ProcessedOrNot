@@ -37,6 +37,7 @@ interface UpdateUserData {
   firstName?: string;
   lastName?: string;
   email?: string;
+  timezone?: string;
   dailyCaloriesGoal?: number;
 }
 
@@ -104,6 +105,7 @@ export default function UserProfile() {
     firstName: "",
     lastName: "",
     email: "",
+    timezone: "",
     dailyCaloriesGoal: 2000
   });
   const [onboardingData, setOnboardingData] = useState<OnboardingData>({});
@@ -123,6 +125,7 @@ export default function UserProfile() {
         firstName: user.firstName || "",
         lastName: user.lastName || "",
         email: user.email || "",
+        timezone: user.timezone || "",
         dailyCaloriesGoal: user.dailyCaloriesGoal || 2000
       });
     }
@@ -271,6 +274,7 @@ export default function UserProfile() {
         firstName: user.firstName || "",
         lastName: user.lastName || "",
         email: user.email || "",
+        timezone: user.timezone || "",
         dailyCaloriesGoal: user.dailyCaloriesGoal || 2000
       });
     }
@@ -451,6 +455,46 @@ export default function UserProfile() {
                   ) : (
                     <p className="py-2 px-3 bg-muted rounded-md">
                       {user.email || "Not set"}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="timezone">Time Zone</Label>
+                  {isEditing ? (
+                    <select
+                      id="timezone"
+                      value={formData.timezone}
+                      onChange={(e) => setFormData({...formData, timezone: e.target.value})}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="">Select time zone</option>
+                      <option value="America/New_York">Eastern Time (ET)</option>
+                      <option value="America/Chicago">Central Time (CT)</option>
+                      <option value="America/Denver">Mountain Time (MT)</option>
+                      <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                      <option value="America/Anchorage">Alaska Time (AKT)</option>
+                      <option value="Pacific/Honolulu">Hawaii Time (HST)</option>
+                      <option value="Europe/London">London (GMT)</option>
+                      <option value="Europe/Paris">Paris (CET)</option>
+                      <option value="Europe/Berlin">Berlin (CET)</option>
+                      <option value="Europe/Rome">Rome (CET)</option>
+                      <option value="Europe/Madrid">Madrid (CET)</option>
+                      <option value="Europe/Amsterdam">Amsterdam (CET)</option>
+                      <option value="Asia/Tokyo">Tokyo (JST)</option>
+                      <option value="Asia/Shanghai">Shanghai (CST)</option>
+                      <option value="Asia/Kolkata">Mumbai (IST)</option>
+                      <option value="Asia/Dubai">Dubai (GST)</option>
+                      <option value="Australia/Sydney">Sydney (AEDT)</option>
+                      <option value="Australia/Melbourne">Melbourne (AEDT)</option>
+                      <option value="Pacific/Auckland">Auckland (NZDT)</option>
+                    </select>
+                  ) : (
+                    <p className="py-2 px-3 bg-muted rounded-md">
+                      {user.timezone ? 
+                        user.timezone.replace('America/', '').replace('Europe/', '').replace('Asia/', '').replace('Australia/', '').replace('Pacific/', '').replace('_', ' ') 
+                        : "Not set"
+                      }
                     </p>
                   )}
                 </div>

@@ -359,6 +359,7 @@ export const users = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   firstName: text("first_name"), // Encrypted
   lastName: text("last_name"), // Encrypted
+  timezone: varchar("timezone", { length: 100 }), // User's timezone
   accountType: varchar("account_type", { length: 20 }).notNull().default("Regular"),
   isEmailVerified: boolean("is_email_verified").default(false),
   emailVerificationToken: text("email_verification_token"), // Encrypted
