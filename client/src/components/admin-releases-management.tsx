@@ -95,15 +95,11 @@ export default function AdminReleasesManagement() {
   // Create release mutation
   const createReleaseMutation = useMutation({
     mutationFn: async (data: ReleaseFormData) => {
-      console.log('🔍 [FRONTEND DEBUG] Creating release with form data:', data);
-      
       const payload = {
         ...data,
-        releaseDate: data.releaseDate ? new Date(data.releaseDate).toISOString() : new Date().toISOString(),
+        releaseDate: data.releaseDate ? new Date(data.releaseDate) : new Date(),
         tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
       };
-
-      console.log('🔍 [FRONTEND DEBUG] Final payload:', payload);
 
       const response = await fetch('/api/admin/releases', {
         method: 'POST',
@@ -111,18 +107,13 @@ export default function AdminReleasesManagement() {
         body: JSON.stringify(payload)
       });
 
-      console.log('🔍 [FRONTEND DEBUG] Response status:', response.status);
-
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        console.log('❌ [FRONTEND DEBUG] Error response:', errorData);
         const errorMessage = errorData?.message || `Failed to create release (${response.status})`;
         throw new Error(errorMessage);
       }
       
-      const result = await response.json();
-      console.log('✅ [FRONTEND DEBUG] Success response:', result);
-      return result;
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/releases'] });
@@ -134,7 +125,6 @@ export default function AdminReleasesManagement() {
       });
     },
     onError: (error) => {
-      console.error('❌ [FRONTEND DEBUG] Create release error:', error);
       toast({
         title: "Error",
         description: error.message,
@@ -148,7 +138,7 @@ export default function AdminReleasesManagement() {
     mutationFn: async ({ id, data }: { id: number; data: ReleaseFormData }) => {
       const payload = {
         ...data,
-        releaseDate: data.releaseDate ? new Date(data.releaseDate).toISOString() : null,
+        releaseDate: data.releaseDate ? new Date(data.releaseDate) : null,
         tags: data.tags ? data.tags.split(',').map(tag => tag.trim()).filter(Boolean) : []
       };
 
