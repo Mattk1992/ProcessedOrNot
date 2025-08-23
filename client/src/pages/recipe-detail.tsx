@@ -56,13 +56,38 @@ export default function RecipeDetail() {
   const { data: recipe, isLoading, error } = useQuery({
     queryKey: ['/api/recipes', id],
     queryFn: async () => {
-      const response = await fetch(`/api/recipes/${id}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch recipe');
+      try {
+        const response = await fetch(`/api/recipes/${id}`, {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('Recipe not found');
+          }
+          throw new Error(`Failed to fetch recipe: ${response.status}`);
+        }
+        
+        const text = await response.text();
+        console.log('Raw response:', text); // Debug log
+        
+        if (!text) {
+          throw new Error('Empty response from server');
+        }
+        
+        const data = JSON.parse(text);
+        console.log('Recipe data received:', data); // Debug log
+        return data as Recipe;
+      } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
       }
-      return response.json() as Promise<Recipe>;
     },
     enabled: !!id,
+    retry: false, // Don't retry on 404
   });
 
   // Save recipe mutation
@@ -195,7 +220,38 @@ export default function RecipeDetail() {
     );
   }
 
-  if (error || !recipe) {
+  if (error) {
+    console.error('Recipe fetch error:', error); // Debug log
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <div className="container mx-auto px-4 py-6 max-w-4xl">
+          <div className="flex items-center gap-4 mb-4">
+            <Button
+              variant="ghost"
+              onClick={() => setLocation('/recipes')}
+              className="flex items-center gap-2"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Back to Recipes
+            </Button>
+          </div>
+          <Card>
+            <CardContent className="p-8 text-center">
+              <h2 className="text-xl font-semibold mb-2">Recipe Not Found</h2>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                The recipe you're looking for doesn't exist or has been removed.
+              </p>
+              <p className="text-sm text-gray-500">
+                Error: {error.message}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  if (!recipe && !isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4 py-6 max-w-4xl">
