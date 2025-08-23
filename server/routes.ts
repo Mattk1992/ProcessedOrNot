@@ -178,12 +178,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin access middleware
   const requireAdmin = async (req: any, res: any, next: any) => {
     try {
-      const user = (req.session as any).user;
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const user = await storage.getUserById(req.session.userId);
       if (!user || user.accountType !== 'Admin') {
         return res.status(403).json({ message: "Admin access required" });
       }
       next();
     } catch (error) {
+      console.error("Admin auth check failed:", error);
       return res.status(500).json({ message: "Authentication check failed" });
     }
   };

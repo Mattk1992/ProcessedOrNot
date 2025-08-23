@@ -80,14 +80,16 @@ export default function ProductDatabaseConfig() {
   const { data: databases, isLoading } = useQuery<ProductDatabase[]>({
     queryKey: ["/api/admin/product-databases"],
     queryFn: async (): Promise<ProductDatabase[]> => {
-      return apiRequest("GET", "/api/admin/product-databases");
+      const response = await apiRequest("GET", "/api/admin/product-databases");
+      return response as ProductDatabase[];
     },
   });
 
   // Update database configuration mutation
   const updateDatabaseMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: number; updates: Partial<ProductDatabase> }): Promise<ProductDatabase> => {
-      return apiRequest("PUT", `/api/admin/product-databases/${id}`, updates);
+      const response = await apiRequest("PUT", `/api/admin/product-databases/${id}`, updates);
+      return response as ProductDatabase;
     },
     onSuccess: () => {
       toast({
@@ -111,7 +113,8 @@ export default function ProductDatabaseConfig() {
   // Reorder databases mutation
   const reorderDatabasesMutation = useMutation({
     mutationFn: async (databases: Array<{ id: number; priority: number }>): Promise<ProductDatabase[]> => {
-      return apiRequest("PUT", "/api/admin/product-databases/reorder", { databases });
+      const response = await apiRequest("PUT", "/api/admin/product-databases/reorder", { databases });
+      return response as ProductDatabase[];
     },
     onSuccess: () => {
       toast({
@@ -132,7 +135,8 @@ export default function ProductDatabaseConfig() {
   // Test single database mutation
   const testDatabaseMutation = useMutation({
     mutationFn: async ({ id, testBarcode }: { id: number; testBarcode: string }): Promise<TestResult> => {
-      return apiRequest("POST", `/api/admin/product-databases/${id}/test`, { testBarcode });
+      const response = await apiRequest("POST", `/api/admin/product-databases/${id}/test`, { testBarcode });
+      return response as TestResult;
     },
     onSuccess: (result: TestResult) => {
       const status = result.success ? "Success" : "Error";
@@ -158,7 +162,8 @@ export default function ProductDatabaseConfig() {
   // Test all databases mutation
   const testAllDatabasesMutation = useMutation({
     mutationFn: async (testBarcode: string): Promise<TestResult[]> => {
-      return apiRequest("POST", "/api/admin/product-databases/test-all", { testBarcode });
+      const response = await apiRequest("POST", "/api/admin/product-databases/test-all", { testBarcode });
+      return response as TestResult[];
     },
     onSuccess: (results: TestResult[]) => {
       const successCount = results.filter(r => r.success).length;
@@ -180,7 +185,8 @@ export default function ProductDatabaseConfig() {
   // Initialize databases mutation
   const initializeDatabasesMutation = useMutation({
     mutationFn: async (): Promise<ProductDatabase[]> => {
-      return apiRequest("POST", "/api/admin/product-databases/initialize");
+      const response = await apiRequest("POST", "/api/admin/product-databases/initialize");
+      return response as ProductDatabase[];
     },
     onSuccess: () => {
       toast({
