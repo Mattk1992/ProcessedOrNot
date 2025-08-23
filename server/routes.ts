@@ -5199,31 +5199,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/admin/releases', requireAuth, async (req: Request, res: Response) => {
     try {
+      console.log('🔍 [DEBUG] Release creation request received');
+      console.log('🔍 [DEBUG] Request body:', JSON.stringify(req.body, null, 2));
+      console.log('🔍 [DEBUG] User ID:', req.session.userId);
+
       const currentUser = await storage.getUser(req.session.userId);
+      console.log('🔍 [DEBUG] Current user:', currentUser ? `${currentUser.username} (${currentUser.accountType})` : 'null');
+      
       if (!currentUser || currentUser.accountType !== 'Admin') {
+        console.log('❌ [DEBUG] Access denied - not admin');
         return res.status(403).json({ message: 'Access denied. Admin access required.' });
       }
 
       // Validate required fields
       const { version, title, description, content } = req.body;
+      console.log('🔍 [DEBUG] Required fields check:', { version, title, description, content: content ? 'present' : 'missing' });
+      
       if (!version || !title || !description || !content) {
+        console.log('❌ [DEBUG] Missing required fields');
         return res.status(400).json({ 
           message: 'Missing required fields: version, title, description, and content are required' 
         });
       }
 
       // Check if version already exists
+      console.log('🔍 [DEBUG] Checking for existing version:', version);
       const existingRelease = await storage.getReleaseByVersion(version);
       if (existingRelease) {
+        console.log('❌ [DEBUG] Version already exists:', existingRelease.id);
         return res.status(400).json({ 
           message: `Release version "${version}" already exists. Please use a different version number.` 
         });
       }
 
+      console.log('🔍 [DEBUG] Creating release with data:', req.body);
       const release = await storage.createRelease(req.body);
+      console.log('✅ [DEBUG] Release created successfully:', release.id);
       res.status(201).json(release);
     } catch (error: any) {
-      console.error('Error creating release:', error);
+      console.error('❌ [DEBUG] Error creating release:', error);
+      console.error('❌ [DEBUG] Error stack:', error.stack);
+      console.error('❌ [DEBUG] Error code:', error.code);
+      console.error('❌ [DEBUG] Error message:', error.message);
       
       // Handle specific database errors
       if (error.message?.includes('duplicate key') || error.code === '23505') {
