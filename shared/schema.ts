@@ -215,6 +215,55 @@ export const insertProductDatabaseSchema = createInsertSchema(productDatabases).
 export type InsertProductDatabase = z.infer<typeof insertProductDatabaseSchema>;
 export type ProductDatabase = typeof productDatabases.$inferSelect;
 
+// Food Database API History table - for tracking API calls during barcode searches
+export const foodDatabaseApiHistory = pgTable("food_database_api_history", {
+  id: serial("id").primaryKey(),
+  searchSessionId: varchar("search_session_id", { length: 255 }).notNull(), // Groups API calls from same barcode search
+  barcode: text("barcode").notNull(),
+  userId: integer("user_id"), // Track which user initiated the search
+  
+  // API call details
+  apiName: text("api_name").notNull(), // e.g., 'OpenFoodFacts', 'Edamam', 'UPC Database'
+  apiEndpoint: text("api_endpoint"), // The actual URL called
+  apiOrder: integer("api_order").notNull(), // Order in the cascade (1, 2, 3, etc.)
+  
+  // Response details
+  success: boolean("success").notNull(), // Whether the API call succeeded
+  dataFound: boolean("data_found").notNull(), // Whether product data was returned
+  responseTimeMs: integer("response_time_ms"), // API response time in milliseconds
+  httpStatusCode: integer("http_status_code"), // HTTP status code
+  errorMessage: text("error_message"), // Error details if call failed
+  
+  // Data quality metrics
+  hasProductName: boolean("has_product_name").default(false),
+  hasBrands: boolean("has_brands").default(false),
+  hasIngredients: boolean("has_ingredients").default(false),
+  hasNutrition: boolean("has_nutrition").default(false),
+  hasImage: boolean("has_image").default(false),
+  dataQualityScore: integer("data_quality_score"), // 0-100 quality score
+  
+  // Additional metadata
+  aiIngredientsGenerated: boolean("ai_ingredients_generated").default(false),
+  finalResultUsed: boolean("final_result_used").default(false), // Whether this API's result was the final choice
+  cascadeStoppedHere: boolean("cascade_stopped_here").default(false), // Whether cascade ended with this API
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => ({
+  searchSessionIdx: index("food_api_history_session_idx").on(table.searchSessionId),
+  barcodeIdx: index("food_api_history_barcode_idx").on(table.barcode),
+  apiNameIdx: index("food_api_history_api_name_idx").on(table.apiName),
+  createdAtIdx: index("food_api_history_created_at_idx").on(table.createdAt),
+  userIdIdx: index("food_api_history_user_id_idx").on(table.userId),
+}));
+
+export const insertFoodDatabaseApiHistorySchema = createInsertSchema(foodDatabaseApiHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertFoodDatabaseApiHistory = z.infer<typeof insertFoodDatabaseApiHistorySchema>;
+export type FoodDatabaseApiHistory = typeof foodDatabaseApiHistory.$inferSelect;
+
 // Device Identifier table - for logging device/browser/app identifiers
 export const deviceIdentifiers = pgTable("device_identifiers", {
   id: serial("id").primaryKey(),

@@ -46,6 +46,9 @@ import {
   deviceIdentifiers,
   type DeviceIdentifier,
   type InsertDeviceIdentifier,
+  foodDatabaseApiHistory,
+  type FoodDatabaseApiHistory,
+  type InsertFoodDatabaseApiHistory,
   cameraSettings,
   type CameraSettings,
   type InsertCameraSettings,
@@ -136,6 +139,17 @@ export interface IStorage {
     verifiedUsers: number;
     totalProducts: number;
     recentRegistrations: number;
+  }>;
+
+  // Food Database API History
+  saveFoodDatabaseApiHistory(apiHistory: InsertFoodDatabaseApiHistory): Promise<FoodDatabaseApiHistory>;
+  getFoodDatabaseApiHistory(searchSessionId: string): Promise<FoodDatabaseApiHistory[]>;
+  getFoodDatabaseApiHistoryByBarcode(barcode: string, limit?: number): Promise<FoodDatabaseApiHistory[]>;
+  getApiPerformanceStats(apiName?: string, days?: number): Promise<{
+    totalCalls: number;
+    successRate: number;
+    averageResponseTime: number;
+    dataFoundRate: number;
   }>;
   
   // Product storage methods
@@ -3784,6 +3798,71 @@ export class DatabaseStorage implements IStorage {
       console.error('Error fetching saved recipe by user and recipe ID:', error);
       throw error;
     }
+  }
+
+  // Food Database API History methods
+  async saveFoodDatabaseApiHistory(apiHistory: InsertFoodDatabaseApiHistory): Promise<FoodDatabaseApiHistory> {
+    const [created] = await db
+      .insert(foodDatabaseApiHistory)
+      .values(apiHistory)
+      .returning();
+    return created;
+  }
+
+  async getFoodDatabaseApiHistory(searchSessionId: string): Promise<FoodDatabaseApiHistory[]> {
+    return await db
+      .select()
+      .from(foodDatabaseApiHistory)
+      .where(eq(foodDatabaseApiHistory.searchSessionId, searchSessionId))
+      .orderBy(foodDatabaseApiHistory.apiOrder);
+  }
+
+  async getFoodDatabaseApiHistoryByBarcode(barcode: string, limit: number = 50): Promise<FoodDatabaseApiHistory[]> {
+    return await db
+      .select()
+      .from(foodDatabaseApiHistory)
+      .where(eq(foodDatabaseApiHistory.barcode, barcode))
+      .orderBy(desc(foodDatabaseApiHistory.createdAt))
+      .limit(limit);
+  }
+
+  async getApiPerformanceStats(apiName?: string, days: number = 30): Promise<{
+    totalCalls: number;
+    successRate: number;
+    averageResponseTime: number;
+    dataFoundRate: number;
+  }> {
+    const pastDate = new Date();
+    pastDate.setDate(pastDate.getDate() - days);
+
+    let query = db
+      .select({
+        totalCalls: sql<number>`count(*)`,
+        successfulCalls: sql<number>`sum(case when ${foodDatabaseApiHistory.success} then 1 else 0 end)`,
+        dataFoundCalls: sql<number>`sum(case when ${foodDatabaseApiHistory.dataFound} then 1 else 0 end)`,
+        totalResponseTime: sql<number>`sum(coalesce(${foodDatabaseApiHistory.responseTimeMs}, 0))`,
+        responseTimes: sql<number>`count(case when ${foodDatabaseApiHistory.responseTimeMs} is not null then 1 end)`,
+      })
+      .from(foodDatabaseApiHistory)
+      .where(sql`${foodDatabaseApiHistory.createdAt} >= ${pastDate}`);
+
+    if (apiName) {
+      query = query.where(eq(foodDatabaseApiHistory.apiName, apiName));
+    }
+
+    const [result] = await query;
+
+    const totalCalls = result.totalCalls || 0;
+    const successRate = totalCalls > 0 ? (result.successfulCalls / totalCalls) * 100 : 0;
+    const dataFoundRate = totalCalls > 0 ? (result.dataFoundCalls / totalCalls) * 100 : 0;
+    const averageResponseTime = result.responseTimes > 0 ? result.totalResponseTime / result.responseTimes : 0;
+
+    return {
+      totalCalls,
+      successRate,
+      averageResponseTime,
+      dataFoundRate,
+    };
   }
 }
 

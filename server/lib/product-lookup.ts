@@ -24,11 +24,101 @@ import { fetchProductFromAPINinjas } from "./api-ninjas";
 import { fetchProductFromLeda } from "./leda";
 import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider, generateMissingIngredients } from "./openai";
 import { isBarcode, searchProductByText } from "./text-search";
+import { storage } from "../storage";
+import { InsertFoodDatabaseApiHistory } from "@shared/schema";
+import { v4 as uuidv4 } from 'uuid';
 
 interface ProductLookupResult {
   product: InsertProduct | null;
   source: string;
   error?: string;
+}
+
+/**
+ * Calculate data quality score for a product (0-100)
+ */
+function calculateDataQualityScore(product: InsertProduct | null): number {
+  if (!product) return 0;
+  
+  let score = 0;
+  
+  // Product name (20 points)
+  if (product.productName && product.productName.trim().length > 0) {
+    score += 20;
+  }
+  
+  // Brands (15 points)
+  if (product.brands && product.brands.trim().length > 0) {
+    score += 15;
+  }
+  
+  // Ingredients (25 points)
+  if (product.ingredientsText && product.ingredientsText.trim().length > 5) {
+    score += 25;
+  }
+  
+  // Nutrition data (25 points)
+  if (product.nutriments && Object.keys(product.nutriments).length > 0) {
+    score += 25;
+  }
+  
+  // Image (15 points)
+  if (product.imageUrl && product.imageUrl.trim().length > 0) {
+    score += 15;
+  }
+  
+  return Math.min(score, 100);
+}
+
+/**
+ * Save API call history to database
+ */
+async function saveApiCallHistory(
+  searchSessionId: string,
+  barcode: string,
+  apiName: string,
+  apiOrder: number,
+  startTime: number,
+  success: boolean,
+  product: InsertProduct | null,
+  error?: string,
+  userId?: number,
+  httpStatusCode?: number,
+  aiGenerated: boolean = false
+): Promise<void> {
+  try {
+    const endTime = Date.now();
+    const responseTimeMs = endTime - startTime;
+    const dataQualityScore = calculateDataQualityScore(product);
+    
+    const apiHistory: InsertFoodDatabaseApiHistory = {
+      searchSessionId,
+      barcode,
+      userId: userId || null,
+      apiName,
+      apiEndpoint: null, // Could be populated with actual API endpoint if needed
+      apiOrder,
+      success,
+      dataFound: !!product,
+      responseTimeMs,
+      httpStatusCode: httpStatusCode || null,
+      errorMessage: error || null,
+      hasProductName: !!(product?.productName),
+      hasBrands: !!(product?.brands),
+      hasIngredients: !!(product?.ingredientsText),
+      hasNutrition: !!(product?.nutriments && Object.keys(product.nutriments).length > 0),
+      hasImage: !!(product?.imageUrl),
+      dataQualityScore,
+      aiIngredientsGenerated: aiGenerated,
+      finalResultUsed: false, // Will be updated later
+      cascadeStoppedHere: false, // Will be updated later
+    };
+    
+    await storage.saveFoodDatabaseApiHistory(apiHistory);
+    console.log(`API history saved: ${apiName} - Success: ${success}, Data Found: ${!!product}, Quality Score: ${dataQualityScore}`);
+  } catch (error) {
+    console.error('Failed to save API history:', error);
+  }
 }
 
 /**
@@ -116,6 +206,10 @@ export async function smartProductLookup(input: string, filters?: { includeBrand
 export async function cascadingProductLookup(barcode: string, userId?: number): Promise<ProductLookupResult> {
   console.log(`Starting cascading lookup for barcode: ${barcode}`);
 
+  // Generate unique search session ID for tracking
+  const searchSessionId = uuidv4();
+  console.log(`Search session ID: ${searchSessionId}`);
+
   // Track product names found during cascade for potential text search fallback
   const foundProductNames: string[] = [];
 
@@ -123,9 +217,14 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
   const userAIProvider = await getUserAIProvider(userId);
 
   // 1. Edamam Food Database (Primary)
+  let apiOrder = 1;
   try {
     console.log('1. Trying Edamam Food Database (Primary)...');
+    const startTime = Date.now();
     const edamamProduct = await fetchProductFromEdamam(barcode);
+    
+    // Save API call history
+    await saveApiCallHistory(searchSessionId, barcode, 'Edamam', apiOrder, startTime, true, edamamProduct, undefined, userId);
     
     if (edamamProduct) {
       // Track product name if found
@@ -198,11 +297,15 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     }
   } catch (error) {
     console.error('Edamam lookup failed:', error);
+    // Save failed API call history
+    await saveApiCallHistory(searchSessionId, barcode, 'Edamam', apiOrder, Date.now(), false, null, error.message, userId);
   }
 
   // 2. OpenFoodFacts (Secondary)
+  apiOrder++;
   try {
     console.log('2. Trying OpenFoodFacts (Secondary)...');
+    const startTime = Date.now();
     const openFoodFactsData = await fetchProductFromOpenFoodFacts(barcode);
     
     if (openFoodFactsData && openFoodFactsData.status === 1) {
@@ -242,6 +345,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         console.log(`Collected product name from OpenFoodFacts: ${productData.productName}`);
       }
 
+      // Save API call history
+      await saveApiCallHistory(searchSessionId, barcode, 'OpenFoodFacts', apiOrder, startTime, true, productData, undefined, userId);
+
       // Debug: Log complete product data quality 
       console.log('OpenFoodFacts Data Quality Check:');
       console.log(`- Product Name: ${productData.productName || 'MISSING'}`);
@@ -256,8 +362,13 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         
         // Try AI ingredient generation if we have product name but no ingredients
         const aiGenerated = await attemptAIIngredientGeneration(productData, userAIProvider, userId);
-        if (aiGenerated && isProductDataSufficient(productData)) {
-          console.log('Product data is now sufficient after AI ingredient generation');
+        if (aiGenerated) {
+          // Update API history to show AI ingredients were generated
+          await saveApiCallHistory(searchSessionId, barcode, 'OpenFoodFacts-AI', apiOrder + 0.1, Date.now(), true, productData, undefined, userId, undefined, true);
+          
+          if (isProductDataSufficient(productData)) {
+            console.log('Product data is now sufficient after AI ingredient generation');
+          }
         }
       } else {
         // Debug: Log what ingredients we have
@@ -324,9 +435,14 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         console.log('Found sufficient product data in OpenFoodFacts');
         return { product: productData, source: 'OpenFoodFacts' };
       }
+    } else {
+      // No product found 
+      await saveApiCallHistory(searchSessionId, barcode, 'OpenFoodFacts', apiOrder, startTime, true, null, 'No product found', userId);
     }
   } catch (error) {
     console.error('OpenFoodFacts lookup failed:', error);
+    // Save failed API call history
+    await saveApiCallHistory(searchSessionId, barcode, 'OpenFoodFacts', apiOrder, Date.now(), false, null, error.message, userId);
   }
 
   // 3. Agri-food Data (Tertiary)
