@@ -366,6 +366,15 @@ export default function NutriDiary() {
     setSaveTimeout(timeoutId);
   };
 
+  // Cleanup timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeout) {
+        clearTimeout(saveTimeout);
+      }
+    };
+  }, [saveTimeout]);
+
   // Handle meal percentage changes
   const handleMealPercentageChange = (mealType: string, newPercent: number) => {
     const newPercentages = { ...mealPercentages, [mealType]: newPercent };
@@ -459,12 +468,16 @@ export default function NutriDiary() {
     setIsLookingUpProduct(true);
     setProductLookupError("");
     
+    // Create AbortController for cleanup
+    const controller = new AbortController();
+    
     try {
       // Use the cascading database fallback system
       const response = await fetch(`/api/products/search`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: input })
+        body: JSON.stringify({ query: input }),
+        signal: controller.signal
       });
       
       if (!response.ok) {

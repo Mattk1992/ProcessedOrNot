@@ -304,40 +304,64 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
 
   // Trigger both popups when product is found
   useEffect(() => {
-    if (product && !isLoadingProduct && !productError) {
+    let isMounted = true;
+    
+    if (product && !isLoadingProduct && !productError && isMounted) {
       setShowNutritionPopup(true);
       onProductFound?.(product);
       
       // Auto-save basic product insights to products database
-      productInsightsManager.saveAllProductInsights(product.barcode, product);
+      productInsightsManager.saveAllProductInsights(product.barcode, product).catch(console.error);
       
       // Auto-save basic product insights to search history database
-      searchHistoryInsightsManager.saveAllInsights(product.barcode, product);
+      searchHistoryInsightsManager.saveAllInsights(product.barcode, product).catch(console.error);
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [product, isLoadingProduct, productError, onProductFound]);
 
   // Auto-save analysis (processing analysis & ingredient categories) when loaded
   useEffect(() => {
-    if (analysis && !isLoadingAnalysis && product?.barcode) {
-      productInsightsManager.saveProcessingAnalysis(product.barcode, analysis);
-      searchHistoryInsightsManager.saveProcessingAnalysis(product.barcode, analysis);
+    let isMounted = true;
+    
+    if (analysis && !isLoadingAnalysis && product?.barcode && isMounted) {
+      productInsightsManager.saveProcessingAnalysis(product.barcode, analysis).catch(console.error);
+      searchHistoryInsightsManager.saveProcessingAnalysis(product.barcode, analysis).catch(console.error);
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [analysis, isLoadingAnalysis, product?.barcode]);
 
   // Auto-save NutriBot insight when loaded
   useEffect(() => {
-    if (nutriBotInsight?.insight && !isLoadingInsight && product?.barcode) {
-      productInsightsManager.saveNutriBotInsight(product.barcode, nutriBotInsight.insight);
-      searchHistoryInsightsManager.saveNutriBotInsight(product.barcode, nutriBotInsight.insight);
+    let isMounted = true;
+    
+    if (nutriBotInsight?.insight && !isLoadingInsight && product?.barcode && isMounted) {
+      productInsightsManager.saveNutriBotInsight(product.barcode, nutriBotInsight.insight).catch(console.error);
+      searchHistoryInsightsManager.saveNutriBotInsight(product.barcode, nutriBotInsight.insight).catch(console.error);
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [nutriBotInsight?.insight, isLoadingInsight, product?.barcode]);
 
   // Auto-save production process when loaded
   useEffect(() => {
-    if (productionProcess?.process && !isLoadingProductionProcess && product?.barcode) {
-      productInsightsManager.saveProductionProcess(product.barcode, productionProcess.process);
-      searchHistoryInsightsManager.saveProductionProcess(product.barcode, productionProcess.process);
+    let isMounted = true;
+    
+    if (productionProcess?.process && !isLoadingProductionProcess && product?.barcode && isMounted) {
+      productInsightsManager.saveProductionProcess(product.barcode, productionProcess.process).catch(console.error);
+      searchHistoryInsightsManager.saveProductionProcess(product.barcode, productionProcess.process).catch(console.error);
     }
+    
+    return () => {
+      isMounted = false;
+    };
   }, [productionProcess?.process, isLoadingProductionProcess, product?.barcode]);
 
   if (isLoadingProduct) {

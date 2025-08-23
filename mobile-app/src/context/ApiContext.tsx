@@ -2,7 +2,10 @@ import React, { createContext, useContext, useState } from 'react';
 import axios from 'axios';
 
 // Use your existing backend API endpoint - connects to the same backend as the web app
-const API_BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : 'https://your-replit-domain.replit.app';
+// Get the production URL from environment or use default development URL
+const API_BASE_URL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:5000' 
+  : process.env.REPLIT_APP_URL || 'https://processedornot-scanner.replit.app';
 
 interface ApiContextType {
   searchProduct: (query: string) => Promise<any>;
@@ -22,7 +25,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setError(null);
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/search`, {
+      const response = await axios.post(`${API_BASE_URL}/api/products/search`, {
         query,
       });
       return response.data;
@@ -39,7 +42,7 @@ export const ApiProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setError(null);
     
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/search`, {
+      const response = await axios.post(`${API_BASE_URL}/api/products/search`, {
         query: barcode,
       });
       return response.data;

@@ -50,12 +50,17 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
     },
   });
 
-  await transporter.sendMail({
-    from: process.env.FROM_EMAIL || 'noreply@processedornot.com',
-    to,
-    subject,
-    html,
-  });
+  try {
+    await transporter.sendMail({
+      from: process.env.FROM_EMAIL || 'noreply@processedornot.com',
+      to,
+      subject,
+      html,
+    });
+  } catch (error) {
+    console.error('Failed to send email:', error);
+    throw new Error('Email sending failed');
+  }
 }
 
 export async function sendPasswordResetEmail(email: string, token: string): Promise<void> {

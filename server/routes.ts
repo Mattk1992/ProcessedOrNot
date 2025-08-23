@@ -836,14 +836,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const csvContent = req.file.buffer.toString('utf-8');
-      const lines = csvContent.split('\n').filter(line => line.trim());
+      const lines = csvContent.split('\n').filter((line: string) => line.trim());
 
       if (lines.length < 2) {
         return res.status(400).json({ message: "CSV file must contain header and at least one data row" });
       }
 
       // Parse CSV headers
-      const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+      const headers = lines[0].split(',').map((h: string) => h.trim().replace(/"/g, ''));
       const dataRows = lines.slice(1);
 
       // Parse and validate data
@@ -852,13 +852,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       for (let i = 0; i < dataRows.length; i++) {
         try {
-          const row = dataRows[i].split(',').map(cell => cell.trim().replace(/"/g, ''));
+          const row = dataRows[i].split(',').map((cell: string) => cell.trim().replace(/"/g, ''));
 
           // Create food data object from CSV row
           const foodData: any = {};
 
           // Map CSV columns to database fields
-          headers.forEach((header, index) => {
+          headers.forEach((header: string, index: number) => {
             const value = row[index];
             if (value && value !== '') {
               switch (header.toLowerCase()) {
@@ -1382,7 +1382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           // Check if the user's message indicates they need nutrition history context
           const needsNutritionHistory = isNutritionHistoryRelevant(message);
 
-          const dataPromises = [
+          const dataPromises: Promise<any>[] = [
             storage.getUserGoals(userId),
             storage.getUserProfile(userId),
             storage.getUserOnboarding(userId)
@@ -1393,38 +1393,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
             dataPromises.push(storage.getDiaryEntries(userId, undefined, 15));
           }
 
-          const [userGoals, userProfile, userOnboarding, nutritionDiary] = await Promise.all(dataPromises);
+          const results = await Promise.all(dataPromises);
+          const [userGoals, userProfile, userOnboarding] = results;
+          const nutritionDiary = needsNutritionHistory ? results[3] : undefined;
 
           // Build extra info string from user data (excluding name, username, email, password)
           const infoItems = [];
 
           // Add nutrition diary history if relevant and available
-          if (needsNutritionHistory && nutritionDiary && nutritionDiary.length > 0) {
+          if (needsNutritionHistory && nutritionDiary && Array.isArray(nutritionDiary) && nutritionDiary.length > 0) {
             const recentEntries = nutritionDiary.slice(0, 10); // Last 10 entries for context
-            const diaryInfo = recentEntries.map(entry => {
+            const diaryInfo = recentEntries.map((entry: any) => {
               const serving = entry.servingSize || 1;
               return `${entry.date}: ${entry.productName} (${serving} serving${serving !== 1 ? 's' : ''}) - ${Math.round((entry.calories || 0) * serving)}cal, ${Math.round((entry.fat || 0) * serving)}g fat, ${Math.round((entry.carbohydrates || 0) * serving)}g carbs, ${Math.round((entry.proteins || 0) * serving)}g protein${entry.processingScore ? `, processing: ${entry.processingScore}/10` : ''}`;
             }).join('\n');
             infoItems.push(`RECENT NUTRITION DIARY:\n${diaryInfo}`);
           }
 
-          if (userGoals) {
-            infoItems.push(`Health Goals: Daily calories ${userGoals.dailyCalories}, fat ${userGoals.dailyFat}g, carbs ${userGoals.dailyCarbs}g, proteins ${userGoals.dailyProteins}g, salt ${userGoals.dailySalt}g, fiber ${userGoals.dailyFiber}g`);
-            infoItems.push(`Activity Level: ${userGoals.activityLevel}`);
-            infoItems.push(`Weight Goal: ${userGoals.weightGoal}`);
-            if (userGoals.dietaryRestrictions?.length) {
-              infoItems.push(`Dietary Restrictions: ${userGoals.dietaryRestrictions.join(', ')}`);
+          if (userGoals && 'dailyCalories' in userGoals) {
+            infoItems.push(`Health Goals: Daily calories ${(userGoals as any).dailyCalories}, fat ${(userGoals as any).dailyFat}g, carbs ${(userGoals as any).dailyCarbs}g, proteins ${(userGoals as any).dailyProteins}g, salt ${(userGoals as any).dailySalt}g, fiber ${(userGoals as any).dailyFiber}g`);
+            infoItems.push(`Activity Level: ${(userGoals as any).activityLevel}`);
+            infoItems.push(`Weight Goal: ${(userGoals as any).weightGoal}`);
+            if ((userGoals as any).dietaryRestrictions?.length) {
+              infoItems.push(`Dietary Restrictions: ${(userGoals as any).dietaryRestrictions.join(', ')}`);
             }
-            if (userGoals.healthConditions?.length) {
-              infoItems.push(`Health Conditions: ${userGoals.healthConditions.join(', ')}`);
+            if ((userGoals as any).healthConditions?.length) {
+              infoItems.push(`Health Conditions: ${(userGoals as any).healthConditions.join(', ')}`);
             }
           }
 
-          if (userProfile) {
-            if (userProfile.gender) infoItems.push(`Gender: ${userProfile.gender}`);
-            if (userProfile.height) infoItems.push(`Height: ${userProfile.height}cm`);
-            if (userProfile.weight) infoItems.push(`Weight: ${userProfile.weight}kg`);
-            if (userProfile.units) infoItems.push(`Preferred Units: ${userProfile.units}`);
+          if (userProfile && 'gender' in userProfile) {
+            if ((userProfile as any).gender) infoItems.push(`Gender: ${(userProfile as any).gender}`);
+            if ((userProfile as any).height) infoItems.push(`Height: ${(userProfile as any).height}cm`);
+            if ((userProfile as any).weight) infoItems.push(`Weight: ${(userProfile as any).weight}kg`);
+            if ((userProfile as any).units) infoItems.push(`Preferred Units: ${(userProfile as any).units}`);
           }
 
           if (userOnboarding) {
@@ -1462,6 +1464,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      const userId = req.session?.userId;
       const response = await getNutriBotResponse(message.trim(), history || [], language || 'en', extraInfo, userId);
       res.json({ response });
 

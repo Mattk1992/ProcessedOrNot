@@ -15,21 +15,33 @@ export const initGA = () => {
     return;
   }
 
-  // Add Google Analytics script to the head
-  const script1 = document.createElement('script');
-  script1.async = true;
-  script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-  document.head.appendChild(script1);
+  // Check if scripts are already loaded to prevent duplicates
+  const existingScript = document.querySelector(`script[src*="googletagmanager.com/gtag/js?id=${measurementId}"]`);
+  if (existingScript) {
+    console.log('Google Analytics already initialized');
+    return;
+  }
 
-  // Initialize gtag
-  const script2 = document.createElement('script');
-  script2.textContent = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${measurementId}');
-  `;
-  document.head.appendChild(script2);
+  try {
+    // Add Google Analytics script to the head
+    const script1 = document.createElement('script');
+    script1.async = true;
+    script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+    script1.onerror = () => console.error('Failed to load Google Analytics script');
+    document.head.appendChild(script1);
+
+    // Initialize gtag
+    const script2 = document.createElement('script');
+    script2.textContent = `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${measurementId}');
+    `;
+    document.head.appendChild(script2);
+  } catch (error) {
+    console.error('Failed to initialize Google Analytics:', error);
+  }
 };
 
 // Track page views - useful for single-page applications

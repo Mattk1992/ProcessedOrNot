@@ -1802,16 +1802,9 @@ export class DatabaseStorage implements IStorage {
     return profile || undefined;
   }
 
-  async createWeightEntry(entry: InsertWeightEntry): Promise<WeightEntry> {
-    const [created] = await db.insert(weightEntries).values(entry).returning();
-    return created;
-  }
+  // Removed duplicate createWeightEntry method
 
-  async getWeightEntriesByUser(userId: number): Promise<WeightEntry[]> {
-    return await db.select().from(weightEntries)
-      .where(eq(weightEntries.userId, userId))
-      .orderBy(desc(weightEntries.recordedAt));
-  }
+  // Removed duplicate getWeightEntriesByUser method
 
   async getRecentWeightEntries(userId: number, limit: number): Promise<WeightEntry[]> {
     return await db.select().from(weightEntries)
@@ -2840,7 +2833,7 @@ export class DatabaseStorage implements IStorage {
   async createUserOnboarding(onboarding: InsertUserOnboarding): Promise<UserOnboarding> {
     const [created] = await db
       .insert(userOnboarding)
-      .values(onboarding)
+      .values({...onboarding, userId: onboarding.userId!})
       .returning();
     
     return created;
@@ -3327,7 +3320,7 @@ export class DatabaseStorage implements IStorage {
   async deleteRelease(id: number): Promise<boolean> {
     const result = await db.delete(releases)
       .where(eq(releases.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount ?? 0) > 0;
   }
 
   async publishRelease(id: number, publishedBy: number): Promise<Release | undefined> {
@@ -3402,7 +3395,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Weight Entry methods
-  async createWeightEntry(entry: InsertUserWeightEntry): Promise<UserWeightEntry> {
+  createWeightEntry(entry: InsertWeightEntry): Promise<WeightEntry>;
+  getWeightEntriesByUser(userId: number): Promise<WeightEntry[]>;
+
+  // Weight Entry methods implementation
+  async createUserWeightEntry(entry: InsertUserWeightEntry): Promise<UserWeightEntry> {
     const entryWithUserId = {
       ...entry,
       userId: entry.userId!
@@ -3421,7 +3418,7 @@ export class DatabaseStorage implements IStorage {
     return weightEntry;
   }
 
-  async getWeightEntriesByUser(userId: number): Promise<UserWeightEntry[]> {
+  async getUserWeightEntriesByUser(userId: number): Promise<UserWeightEntry[]> {
     return await db
       .select()
       .from(userWeightEntries)
@@ -3847,7 +3844,7 @@ export class DatabaseStorage implements IStorage {
       .where(sql`${foodDatabaseApiHistory.createdAt} >= ${pastDate}`);
 
     if (apiName) {
-      query = query.where(eq(foodDatabaseApiHistory.apiName, apiName));
+      query = query.$dynamic().where(eq(foodDatabaseApiHistory.apiName, apiName));
     }
 
     const [result] = await query;
