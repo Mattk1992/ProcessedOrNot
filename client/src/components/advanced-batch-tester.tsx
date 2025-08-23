@@ -44,16 +44,29 @@ interface DatabaseConfig {
 }
 
 const AVAILABLE_DATABASES: DatabaseConfig[] = [
+  { id: 'edamam', name: 'Edamam Food Database', enabled: true },
   { id: 'openfoodfacts', name: 'OpenFoodFacts', enabled: true },
+  { id: 'agri-food', name: 'Agri-Food Data Portal', enabled: true },
+  { id: 'open-nutrition', name: 'OpenNutrition Database', enabled: true },
   { id: 'fooddb-ca', name: 'FoodDB.ca', enabled: true },
   { id: 'usda-fdc', name: 'USDA Food Data Central', enabled: true },
-  { id: 'nutritionix', name: 'Nutritionix', enabled: false },
-  { id: 'spoonacular', name: 'Spoonacular', enabled: false },
-  { id: 'api-ninjas', name: 'API Ninjas', enabled: true },
+  { id: 'nutritionix', name: 'Nutritionix', enabled: true },
+  { id: 'spoonacular', name: 'Spoonacular', enabled: true },
+  { id: 'api-ninjas', name: 'API Ninjas Nutrition', enabled: true },
   { id: 'upc-database', name: 'UPC Database', enabled: true },
-  { id: 'australia-food', name: 'Australian Food Database', enabled: false },
-  { id: 'health-canada', name: 'Health Canada', enabled: false },
-  { id: 'efsa', name: 'EFSA Database', enabled: false }
+  { id: 'australia-food', name: 'Australian Food Composition Database', enabled: true },
+  { id: 'health-canada', name: 'Health Canada Food Database', enabled: true },
+  { id: 'efsa', name: 'European Food Safety Authority (EFSA)', enabled: true },
+  { id: 'uk-food', name: 'UK Food Composition Database', enabled: true },
+  { id: 'french-food', name: 'French Food Composition Database', enabled: true },
+  { id: 'german-food', name: 'German Federal Food Code', enabled: true },
+  { id: 'italian-food', name: 'Italian Food Composition Database', enabled: true },
+  { id: 'nordic-food', name: 'Nordic Food Composition Database', enabled: true },
+  { id: 'japanese-food', name: 'Japanese Standard Tables of Food Composition', enabled: true },
+  { id: 'korean-food', name: 'Korean Food Composition Database', enabled: true },
+  { id: 'chinese-food', name: 'Chinese Food Composition Database', enabled: true },
+  { id: 'india-food', name: 'Indian Food Composition Database', enabled: true },
+  { id: 'brazil-food', name: 'Brazilian Food Composition Database', enabled: true }
 ];
 
 export function AdvancedBatchTester() {
