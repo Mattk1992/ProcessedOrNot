@@ -3903,7 +3903,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       preparation: food.preparation,
                       isGenerated: true,
                       isSubItem: true,
-                      foodData: food // Store complete food data
+                      foodData: food, // Store complete food data
+                      // Map enhanced recipe data from AI generator to expected webcal fields
+                      recipeUrl: food.recipeUrl,
+                      recipeInstructions: food.recipeInstructions,
+                      recipeSource: food.recipeSource,
+                      recipeId: food.recipeId
                     });
                   });
                 }
