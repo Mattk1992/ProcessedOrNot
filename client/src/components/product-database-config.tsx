@@ -319,6 +319,12 @@ export default function ProductDatabaseConfig() {
         </div>
       </div>
 
+      <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+        <p className="text-sm text-blue-800 dark:text-blue-300">
+          <strong>Total Databases:</strong> {databases ? databases.length : 0} configured
+        </p>
+      </div>
+
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -327,7 +333,7 @@ export default function ProductDatabaseConfig() {
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-[600px] overflow-y-auto">
             {databases && Array.isArray(databases) ? databases.map((database: ProductDatabase) => (
               <Card key={database.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
@@ -413,11 +419,11 @@ export default function ProductDatabaseConfig() {
             <CardHeader>
               <CardTitle>Database Configurations</CardTitle>
               <CardDescription>
-                Detailed view of all database configurations with sensitive information
+                Detailed view of all database configurations with sensitive information ({databases ? databases.length : 0} total)
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-4 max-h-[500px] overflow-y-auto">
                 {databases && Array.isArray(databases) ? databases.map((database: ProductDatabase) => (
                   <div key={database.id} className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-center justify-between">
