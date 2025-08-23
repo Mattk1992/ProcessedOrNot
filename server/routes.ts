@@ -3932,8 +3932,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Get user's timezone from database
+      const user = await storage.getUserById(parseInt(userId));
+      const userTimezone = user?.timezone || 'UTC';
+
       const { generateWebcalFeed } = await import('./lib/webcal');
-      const icalContent = generateWebcalFeed(nutritionEntries, parseInt(userId));
+      const icalContent = generateWebcalFeed(nutritionEntries, parseInt(userId), userTimezone);
 
       res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
       res.setHeader('Content-Disposition', 'inline; filename="processedornot-nutrition.ics"');
