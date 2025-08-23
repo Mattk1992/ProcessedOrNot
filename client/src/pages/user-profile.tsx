@@ -260,12 +260,7 @@ export default function UserProfile() {
     e.preventDefault();
     // Save onboarding data
     updateOnboardingMutation.mutate(onboardingData);
-    // Also save profile data (including dailyCaloriesGoal) if it has changed
-    if (formData.dailyCaloriesGoal !== user?.dailyCaloriesGoal) {
-      updateProfileMutation.mutate({
-        dailyCaloriesGoal: formData.dailyCaloriesGoal
-      });
-    }
+    // Note: Profile data (dailyCaloriesGoal) is now saved separately via the profile form
   };
 
   const handleCancel = () => {
@@ -345,21 +340,21 @@ export default function UserProfile() {
             Manage your account information, health profile, and preferences
           </p>
           
-          {/* Auto-save Status */}
+          {/* Auto-save Status - Only for onboarding data */}
           <div className="mt-4 flex justify-center">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               {isSaving ? (
                 <>
                   <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
-                  <span>Saving...</span>
+                  <span>Saving health profile...</span>
                 </>
               ) : lastSaved ? (
                 <>
                   <Save className="w-3 h-3 text-green-600" />
-                  <span>Saved {lastSaved.toLocaleTimeString()}</span>
+                  <span>Health profile saved {lastSaved.toLocaleTimeString()}</span>
                 </>
               ) : (
-                <span>Changes save automatically</span>
+                <span>Health profile changes save automatically</span>
               )}
             </div>
           </div>
