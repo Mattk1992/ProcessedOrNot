@@ -66,16 +66,29 @@ router.post('/batch-test', async (req, res) => {
 // Helper function to get readable database names
 function getDatabaseName(databaseId: string): string {
   const names: { [key: string]: string } = {
+    'edamam': 'Edamam Food Database',
     'openfoodfacts': 'OpenFoodFacts',
-    'fooddb-ca': 'FoodDB.ca',
-    'usda-fdc': 'USDA Food Data Central',
-    'nutritionix': 'Nutritionix',
+    'agrifood_data': 'Agri-Food Data Portal',
     'spoonacular': 'Spoonacular',
-    'api-ninjas': 'API Ninjas',
-    'upc-database': 'UPC Database',
-    'australia-food': 'Australian Food Database',
-    'health-canada': 'Health Canada',
-    'efsa': 'EFSA Database'
+    'usda_fdc': 'USDA Food Data Central',
+    'fooddb_ca': 'FoodDB.ca',
+    'upc_database': 'UPC Database',
+    'efsa': 'EFSA Database',
+    'health_canada': 'Health Canada',
+    'australia_food': 'Australian Food Database',
+    'barcode_spider': 'Barcode Spider',
+    'ean_search': 'EAN Search',
+    'product_api': 'Product API',
+    'rivm': 'RIVM Database',
+    'nevo': 'NEVO Database',
+    'voedingscentrum': 'Voedingscentrum',
+    'fooddata_central': 'FoodData Central Alternative',
+    'kenniscentrum': 'Kenniscentrum Database',
+    'usda_fdc_alt': 'USDA FDC Alternative',
+    'open_nutrition': 'OpenNutrition',
+    'nutritionix': 'Nutritionix',
+    'api_ninjas': 'API Ninjas',
+    'leda': 'LEDA Database'
   };
   
   return names[databaseId] || databaseId;

@@ -141,6 +141,7 @@ function Router() {
         <Route path="/site-info" component={SiteInfo} />
         <Route path="/apps" component={Apps} />
         <Route path="/admin" component={Admin} />
+        <Route path="/nutri-dashboard/admin" component={Admin} />
         <Route path="/admin-search-history" component={AdminSearchHistory} />
         <Route path="/admin-product-database" component={AdminProductDatabase} />
         <Route path="/admin-camera-config" component={AdminCameraConfig} />
