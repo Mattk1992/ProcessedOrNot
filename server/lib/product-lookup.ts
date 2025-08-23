@@ -236,7 +236,21 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
       // Check if product data is sufficient
       if (!isProductDataSufficient(edamamProduct)) {
         console.log('Edamam product has insufficient data, continuing cascade...');
-      } else {
+        
+        // Try AI ingredient generation if we have product name but no ingredients
+        const aiGenerated = await attemptAIIngredientGeneration(edamamProduct, userAIProvider, userId);
+        if (aiGenerated) {
+          // Update API history to show AI ingredients were generated
+          await saveApiCallHistory(searchSessionId, barcode, 'Edamam-AI', apiOrder + 0.1, Date.now(), true, edamamProduct, undefined, userId, undefined, true);
+          
+          if (isProductDataSufficient(edamamProduct)) {
+            console.log('Edamam product data is now sufficient after AI ingredient generation');
+          }
+        }
+      }
+      
+      // Process if data is sufficient (including after AI generation)
+      if (isProductDataSufficient(edamamProduct)) {
         // Analyze ingredients if available
         if (edamamProduct.ingredientsText) {
           try {
@@ -298,7 +312,7 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
   } catch (error) {
     console.error('Edamam lookup failed:', error);
     // Save failed API call history
-    await saveApiCallHistory(searchSessionId, barcode, 'Edamam', apiOrder, Date.now(), false, null, error.message, userId);
+    await saveApiCallHistory(searchSessionId, barcode, 'Edamam', apiOrder, Date.now(), false, null, (error as Error).message, userId);
   }
 
   // 2. OpenFoodFacts (Secondary)
@@ -442,7 +456,7 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
   } catch (error) {
     console.error('OpenFoodFacts lookup failed:', error);
     // Save failed API call history
-    await saveApiCallHistory(searchSessionId, barcode, 'OpenFoodFacts', apiOrder, Date.now(), false, null, error.message, userId);
+    await saveApiCallHistory(searchSessionId, barcode, 'OpenFoodFacts', apiOrder, Date.now(), false, null, (error as Error).message, userId);
   }
 
   // 3. Agri-food Data (Tertiary)
@@ -460,7 +474,16 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
       // Check if product data is sufficient
       if (!isProductDataSufficient(agrifoodProduct)) {
         console.log('Agri-food Data product has insufficient data, continuing cascade...');
-      } else {
+        
+        // Try AI ingredient generation if we have product name but no ingredients
+        const aiGenerated = await attemptAIIngredientGeneration(agrifoodProduct, userAIProvider, userId);
+        if (aiGenerated) {
+          console.log('Enhanced Agri-food Data product with AI-generated ingredients');
+        }
+      }
+      
+      // Process if data is sufficient (including after AI generation)
+      if (isProductDataSufficient(agrifoodProduct)) {
         // Analyze ingredients if available
         if (agrifoodProduct.ingredientsText) {
           try {
@@ -532,7 +555,16 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
       // Check if product data is sufficient
       if (!isProductDataSufficient(spoonacularProduct)) {
         console.log('Spoonacular product has insufficient data, continuing cascade...');
-      } else {
+        
+        // Try AI ingredient generation if we have product name but no ingredients
+        const aiGenerated = await attemptAIIngredientGeneration(spoonacularProduct, userAIProvider, userId);
+        if (aiGenerated) {
+          console.log('Enhanced Spoonacular product with AI-generated ingredients');
+        }
+      }
+      
+      // Process if data is sufficient (including after AI generation)
+      if (isProductDataSufficient(spoonacularProduct)) {
         // Analyze ingredients if available
         if (spoonacularProduct.ingredientsText) {
           try {
@@ -961,6 +993,14 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     const nutritionixProduct = await fetchProductFromNutritionix(barcode);
     
     if (nutritionixProduct) {
+      // Try AI ingredient generation if we have product name but no ingredients
+      if (!nutritionixProduct.ingredientsText) {
+        const aiGenerated = await attemptAIIngredientGeneration(nutritionixProduct, userAIProvider, userId);
+        if (aiGenerated) {
+          console.log('Enhanced Nutritionix product with AI-generated ingredients');
+        }
+      }
+      
       // Analyze ingredients if available
       if (nutritionixProduct.ingredientsText) {
         try {
@@ -1030,6 +1070,14 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     const apiNinjasProduct = await fetchProductFromAPINinjas(barcode);
     
     if (apiNinjasProduct) {
+      // Try AI ingredient generation if we have product name but no ingredients
+      if (!apiNinjasProduct.ingredientsText) {
+        const aiGenerated = await attemptAIIngredientGeneration(apiNinjasProduct, userAIProvider, userId);
+        if (aiGenerated) {
+          console.log('Enhanced API Ninjas product with AI-generated ingredients');
+        }
+      }
+      
       // Analyze ingredients if available
       if (apiNinjasProduct.ingredientsText) {
         try {
@@ -1099,6 +1147,14 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     const foodDataCentralProduct = await fetchProductFromFoodDataCentral(barcode);
     
     if (foodDataCentralProduct) {
+      // Try AI ingredient generation if we have product name but no ingredients
+      if (!foodDataCentralProduct.ingredientsText) {
+        const aiGenerated = await attemptAIIngredientGeneration(foodDataCentralProduct, userAIProvider, userId);
+        if (aiGenerated) {
+          console.log('Enhanced FoodData Central product with AI-generated ingredients');
+        }
+      }
+      
       // Analyze ingredients if available
       if (foodDataCentralProduct.ingredientsText) {
         try {
@@ -1127,6 +1183,14 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     const efsaProduct = await fetchProductFromEFSA(barcode);
     
     if (efsaProduct) {
+      // Try AI ingredient generation if we have product name but no ingredients
+      if (!efsaProduct.ingredientsText) {
+        const aiGenerated = await attemptAIIngredientGeneration(efsaProduct, userAIProvider, userId);
+        if (aiGenerated) {
+          console.log('Enhanced EFSA product with AI-generated ingredients');
+        }
+      }
+      
       // Analyze ingredients if available
       if (efsaProduct.ingredientsText) {
         try {
@@ -1155,6 +1219,14 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
     const healthCanadaProduct = await fetchProductFromHealthCanada(barcode);
     
     if (healthCanadaProduct) {
+      // Try AI ingredient generation if we have product name but no ingredients
+      if (!healthCanadaProduct.ingredientsText) {
+        const aiGenerated = await attemptAIIngredientGeneration(healthCanadaProduct, userAIProvider, userId);
+        if (aiGenerated) {
+          console.log('Enhanced Health Canada product with AI-generated ingredients');
+        }
+      }
+      
       // Analyze ingredients if available
       if (healthCanadaProduct.ingredientsText) {
         try {
