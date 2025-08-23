@@ -5712,7 +5712,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get saved recipes API endpoint
   app.get("/api/recipes/saved", requireAuth, async (req: any, res) => {
     try {
+      console.log(`Fetching saved recipes for user ${req.session.userId}`);
       const savedRecipes = await storage.getSavedRecipesByUser(req.session.userId);
+      console.log(`Found ${savedRecipes.length} saved recipes for user ${req.session.userId}`);
       
       res.json({
         success: true,
