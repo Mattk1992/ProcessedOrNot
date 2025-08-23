@@ -999,6 +999,32 @@ export default function NutritionCalendar() {
                       <li>• Automatic updates when you log new meals</li>
                     </ul>
                   </div>
+
+                  {/* Timezone Settings */}
+                  <div className="bg-orange-50 dark:bg-orange-950/20 p-4 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label className="text-sm font-semibold text-orange-700 dark:text-orange-400 mb-1 block">
+                          Time Zone Settings
+                        </Label>
+                        <p className="text-xs text-orange-600 dark:text-orange-300">
+                          Calendar events are synced based on your timezone. Update your timezone settings for accurate meal times.
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIsWebcalDialogOpen(false);
+                          window.location.href = '/user-profile';
+                        }}
+                        className="ml-3 border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-950/40"
+                      >
+                        <Clock className="w-4 h-4 mr-2" />
+                        Set Timezone
+                      </Button>
+                    </div>
+                  </div>
                 </>
               ) : (
                 <div className="text-center py-8">
