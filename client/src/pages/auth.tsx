@@ -75,7 +75,9 @@ export default function Auth() {
       
       // Small delay to allow auth state to update before redirect
       setTimeout(() => {
-        window.location.href = "/";
+        // Redirect to Dashboard if onboarding is completed, otherwise home page
+        const redirectUrl = data.user?.onboardingCompleted ? "/nutri-dashboard" : "/";
+        window.location.href = redirectUrl;
       }, 200);
     },
     onError: (error: any) => {
