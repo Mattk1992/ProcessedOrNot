@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { UserOnboarding } from "@shared/schema";
 import { storage } from '../storage';
+import { cascadingRecipeSearch } from './recipe-lookup';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -56,6 +57,10 @@ interface GeneratedSchedule {
         carbs: number;
         fat: number;
         preparation?: string;
+        recipeId?: string;
+        recipeUrl?: string;
+        recipeInstructions?: string[];
+        recipeSource?: string;
       }>;
       totalCalories: number;
       notes?: string;
@@ -410,6 +415,10 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
         schedule.endDate = endDate.toISOString().split('T')[0];
       }
 
+      // Enhance schedule with real recipes from the cascading lookup system
+      console.log('Enhancing schedule with real recipes...');
+      const enhancedSchedule = await this.enhanceScheduleWithRecipes(schedule, userId);
+      
       // Update prompt history with successful result
       if (userId && promptHistoryId) {
         await storage.createPromptHistory({
@@ -445,7 +454,7 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
       }
 
       return {
-        schedule,
+        schedule: enhancedSchedule,
         prompt,
         aiResponse,
         tokensUsed: response.usage?.total_tokens,
@@ -504,6 +513,82 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
       } else {
         throw new Error('AI schedule generation temporarily unavailable. Please try creating a manual schedule or try again later.');
       }
+    }
+  }
+
+  /**
+   * Enhance the generated schedule with real recipes from the cascading lookup system
+   */
+  private static async enhanceScheduleWithRecipes(schedule: GeneratedSchedule, userId?: number): Promise<GeneratedSchedule> {
+    try {
+      if (!schedule.dailySchedule || schedule.dailySchedule.length === 0) {
+        console.log('No daily schedule to enhance');
+        return schedule;
+      }
+
+      // Process each day's meals
+      for (const day of schedule.dailySchedule) {
+        if (!day.meals || day.meals.length === 0) continue;
+
+        for (const meal of day.meals) {
+          if (!meal.foods || meal.foods.length === 0) continue;
+
+          // Process each food item in the meal
+          for (const food of meal.foods) {
+            try {
+              // Look for recipe matches using the cascading search
+              console.log(`Looking up recipe for: ${food.item}`);
+              const recipeResult = await cascadingRecipeSearch(food.item, userId);
+              
+              if (recipeResult.recipes.length > 0) {
+                const recipe = recipeResult.recipes[0]; // Use the first/best match
+                
+                // Enhance the food item with recipe data
+                food.recipeId = recipe.id;
+                food.recipeUrl = recipe.sourceUrl;
+                food.recipeInstructions = recipe.instructions;
+                food.recipeSource = recipe.source;
+                
+                // Update nutritional info if available from recipe
+                if (recipe.calories && recipe.calories > 0) {
+                  food.calories = recipe.calories;
+                }
+                if (recipe.protein && recipe.protein > 0) {
+                  food.protein = recipe.protein;
+                }
+                if (recipe.carbs && recipe.carbs > 0) {
+                  food.carbs = recipe.carbs;
+                }
+                if (recipe.fat && recipe.fat > 0) {
+                  food.fat = recipe.fat;
+                }
+                
+                // Add recipe preparation instructions
+                if (recipe.instructions && recipe.instructions.length > 0) {
+                  food.preparation = recipe.instructions.slice(0, 2).join(' '); // First 2 instructions as summary
+                }
+                
+                console.log(`Enhanced ${food.item} with recipe data from ${recipe.source}`);
+              } else {
+                console.log(`No recipe found for: ${food.item}`);
+              }
+            } catch (error) {
+              console.error(`Error looking up recipe for ${food.item}:`, error);
+              // Continue with other foods even if one fails
+            }
+
+            // Small delay to avoid overwhelming the API
+            await new Promise(resolve => setTimeout(resolve, 100));
+          }
+        }
+      }
+
+      console.log('Successfully enhanced schedule with recipe data');
+      return schedule;
+    } catch (error) {
+      console.error('Error enhancing schedule with recipes:', error);
+      // Return original schedule if enhancement fails
+      return schedule;
     }
   }
 }

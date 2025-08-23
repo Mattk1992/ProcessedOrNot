@@ -100,6 +100,15 @@ export function generateWebcalFeed(entries: NutritionEntry[], userId: number, us
             if (subItem.preparation) {
               description += ` - ${subItem.preparation}`;
             }
+            
+            // Add recipe data in summary format
+            if (subItem.recipeUrl) {
+              description += `\n    🔗 Recipe: ${subItem.recipeUrl}`;
+            }
+            if (subItem.recipeSource) {
+              description += ` (${subItem.recipeSource})`;
+            }
+            
             description += '\n';
           });
           
@@ -208,6 +217,23 @@ export function generateWebcalFeed(entries: NutritionEntry[], userId: number, us
             }
             if (subItem.preparation) {
               mealDescription += `👨‍🍳 Preparation: ${subItem.preparation}\n`;
+            }
+            
+            // Add recipe information if available
+            if (subItem.recipeUrl) {
+              mealDescription += `🔗 Recipe Link: ${subItem.recipeUrl}\n`;
+            }
+            if (subItem.recipeInstructions && subItem.recipeInstructions.length > 0) {
+              mealDescription += `📋 Recipe Instructions:\n`;
+              subItem.recipeInstructions.slice(0, 5).forEach((instruction, idx) => {
+                mealDescription += `  ${idx + 1}. ${instruction}\n`;
+              });
+              if (subItem.recipeInstructions.length > 5) {
+                mealDescription += `  ... and ${subItem.recipeInstructions.length - 5} more steps\n`;
+              }
+            }
+            if (subItem.recipeSource) {
+              mealDescription += `📚 Recipe Source: ${subItem.recipeSource}\n`;
             }
           });
         }
