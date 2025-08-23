@@ -293,9 +293,9 @@ export interface IStorage {
   getUserProfile(userId: number): Promise<UserProfile | undefined>;
 
   // Weight entries
-  createWeightEntry(entry: InsertWeightEntry): Promise<WeightEntry>;
-  getWeightEntriesByUser(userId: number): Promise<WeightEntry[]>;
-  getRecentWeightEntries(userId: number, limit: number): Promise<WeightEntry[]>;
+  createWeightEntry(entry: InsertUserWeightEntry): Promise<UserWeightEntry>;
+  getWeightEntriesByUser(userId: number): Promise<UserWeightEntry[]>;
+  getRecentWeightEntries(userId: number, limit: number): Promise<UserWeightEntry[]>;
 
   // Nutrition analytics
   getDailyNutritionProgress(userId: number, date: string): Promise<{
@@ -414,8 +414,6 @@ export interface IStorage {
   }>;
 
   // User Weight Entry methods
-  createWeightEntry(entry: InsertUserWeightEntry): Promise<UserWeightEntry>;
-  getWeightEntriesByUser(userId: number): Promise<UserWeightEntry[]>;
   getLatestWeightEntry(userId: number): Promise<UserWeightEntry | undefined>;
   updateWeightEntry(id: number, updates: Partial<InsertUserWeightEntry>): Promise<UserWeightEntry | undefined>;
   deleteWeightEntry(id: number, userId: number): Promise<boolean>;
@@ -1806,12 +1804,6 @@ export class DatabaseStorage implements IStorage {
 
   // Removed duplicate getWeightEntriesByUser method
 
-  async getRecentWeightEntries(userId: number, limit: number): Promise<WeightEntry[]> {
-    return await db.select().from(weightEntries)
-      .where(eq(weightEntries.userId, userId))
-      .orderBy(desc(weightEntries.recordedAt))
-      .limit(limit);
-  }
 
   async getDailyNutritionProgress(userId: number, date: string): Promise<{
     calories: number;
@@ -3394,12 +3386,8 @@ export class DatabaseStorage implements IStorage {
     return updated || undefined;
   }
 
-  // Weight Entry methods
-  createWeightEntry(entry: InsertWeightEntry): Promise<WeightEntry>;
-  getWeightEntriesByUser(userId: number): Promise<WeightEntry[]>;
-
   // Weight Entry methods implementation
-  async createUserWeightEntry(entry: InsertUserWeightEntry): Promise<UserWeightEntry> {
+  async createWeightEntry(entry: InsertUserWeightEntry): Promise<UserWeightEntry> {
     const entryWithUserId = {
       ...entry,
       userId: entry.userId!
@@ -3418,12 +3406,21 @@ export class DatabaseStorage implements IStorage {
     return weightEntry;
   }
 
-  async getUserWeightEntriesByUser(userId: number): Promise<UserWeightEntry[]> {
+  async getWeightEntriesByUser(userId: number): Promise<UserWeightEntry[]> {
     return await db
       .select()
       .from(userWeightEntries)
       .where(eq(userWeightEntries.userId, userId))
       .orderBy(desc(userWeightEntries.recordedAt));
+  }
+
+  async getRecentWeightEntries(userId: number, limit: number): Promise<UserWeightEntry[]> {
+    return await db
+      .select()
+      .from(userWeightEntries)
+      .where(eq(userWeightEntries.userId, userId))
+      .orderBy(desc(userWeightEntries.recordedAt))
+      .limit(limit);
   }
 
   async getLatestWeightEntry(userId: number): Promise<UserWeightEntry | undefined> {
