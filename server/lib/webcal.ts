@@ -22,6 +22,10 @@ interface NutritionEntry {
     mealData?: any; // Complete meal data from AI generator
     foodData?: any; // Complete food data from AI generator
     notes?: string;
+    recipeId?: string;
+    recipeUrl?: string;
+    recipeInstructions?: string[];
+    recipeSource?: string;
   }>;
 }
 

@@ -429,7 +429,7 @@ Focus on practical, achievable recipes with clear instructions. Include estimate
         // Last resort: create a fallback recipe
         recipes = [{
           id: `fallback_${Date.now()}`,
-          title: `Recipe for ${searchParams.query || 'Unknown'}`,
+          title: `Recipe for ${query || 'Unknown'}`,
           description: "AI generation failed, but we found this suggestion for you.",
           image: undefined,
           cookingTime: "30 minutes",

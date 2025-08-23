@@ -389,9 +389,9 @@ Make sure the response is valid JSON and all recommendations are safe, evidence-
               startDate: formData.startDate,
               endDate: endDate.toISOString().split('T')[0],
               dailyCalories: parseInt(formData.caloriesTarget),
-              dailyProtein: formData.proteinTarget ? parseFloat(formData.proteinTarget) : null,
-              dailyCarbs: formData.carbsTarget ? parseFloat(formData.carbsTarget) : null,
-              dailyFat: formData.fatTarget ? parseFloat(formData.fatTarget) : null,
+              dailyProtein: formData.proteinTarget ? parseFloat(formData.proteinTarget) : undefined,
+              dailyCarbs: formData.carbsTarget ? parseFloat(formData.carbsTarget) : undefined,
+              dailyFat: formData.fatTarget ? parseFloat(formData.fatTarget) : undefined,
               specialNotes: 'This is a simplified schedule due to AI generation issues. Please try generating again or create manually.',
               recommendations: [
                 'Stay hydrated throughout the day',
