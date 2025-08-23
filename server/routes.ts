@@ -5379,6 +5379,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get individual recipe by ID endpoint
+  app.get('/api/recipes/:id', ensureSession, async (req: any, res) => {
+    try {
+      const recipeId = req.params.id;
+      
+      // Try to find the recipe in saved recipes first
+      const savedRecipe = await storage.getSavedRecipeByUserAndRecipeId(req.session.userId, recipeId);
+      if (savedRecipe) {
+        return res.json(savedRecipe.recipeData);
+      }
+      
+      // If not found in saved recipes, try to fetch from external APIs
+      // This is a simplified approach - in a real implementation, you might want to cache recipes
+      const response = await fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${recipeId}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.meals && data.meals.length > 0) {
+          const meal = data.meals[0];
+          
+          // Transform TheMealDB format to our recipe format
+          const recipe = {
+            id: meal.idMeal,
+            title: meal.strMeal,
+            description: meal.strInstructions?.substring(0, 200) + '...',
+            image: meal.strMealThumb,
+            cookingTime: "30-45 minutes", // TheMealDB doesn't provide this
+            servings: "4 servings", // TheMealDB doesn't provide this
+            difficulty: "Medium", // TheMealDB doesn't provide this
+            ingredients: [],
+            instructions: meal.strInstructions ? [meal.strInstructions] : [],
+            source: "The Meal DB",
+            sourceUrl: meal.strSource || meal.strYoutube,
+            category: meal.strCategory,
+            cuisine: meal.strArea,
+            calories: null,
+            protein: null,
+            carbs: null,
+            fat: null,
+          };
+          
+          // Extract ingredients from TheMealDB format
+          for (let i = 1; i <= 20; i++) {
+            const ingredient = meal[`strIngredient${i}`];
+            const measure = meal[`strMeasure${i}`];
+            if (ingredient && ingredient.trim()) {
+              recipe.ingredients.push(`${measure?.trim() || ''} ${ingredient.trim()}`.trim());
+            }
+          }
+          
+          return res.json(recipe);
+        }
+      }
+      
+      // If recipe not found anywhere
+      res.status(404).json({ message: 'Recipe not found' });
+    } catch (error) {
+      console.error('Error fetching recipe:', error);
+      res.status(500).json({ message: 'Failed to fetch recipe' });
+    }
+  });
+
   // Recipe search API endpoint with automatic search history saving
   app.post("/api/recipes/search", ensureSession, async (req: any, res) => {
     const searchStartTime = Date.now();

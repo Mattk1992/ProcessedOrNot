@@ -13,7 +13,8 @@ import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Search, Clock, Users, ChefHat, ExternalLink, ArrowLeft, Loader2, Filter, X, Heart, HeartHandshake, Calendar, CalendarPlus } from "lucide-react";
+import { Search, Clock, Users, ChefHat, ExternalLink, ArrowLeft, Loader2, Filter, X, Heart, HeartHandshake, Calendar, CalendarPlus, Eye } from "lucide-react";
+import RecipeShare from "@/components/recipe-share";
 import { format } from "date-fns";
 
 interface Recipe {
@@ -783,11 +784,15 @@ export default function Recipes() {
               {searchResults.map((recipe) => (
                 <Card
                   key={recipe.id}
-                  className="cursor-pointer hover:shadow-lg transition-shadow relative"
-                  onClick={() => setSelectedRecipe(recipe)}
+                  className="hover:shadow-lg transition-shadow relative"
                 >
                   {/* Action Buttons */}
                   <div className="absolute top-2 right-2 z-10 flex gap-1">
+                    {/* Share Button */}
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <RecipeShare recipe={recipe} />
+                    </div>
+                    
                     {/* Add to Calendar Button */}
                     <Button
                       size="sm"
@@ -847,7 +852,7 @@ export default function Recipes() {
                       </p>
                     )}
 
-                    <div className="flex items-center justify-between text-sm text-gray-500">
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-3">
                       <div className="flex items-center gap-3">
                         {recipe.cookingTime && (
                           <span className="flex items-center gap-1">
@@ -866,6 +871,16 @@ export default function Recipes() {
                         <span className="font-medium">{recipe.calories} cal</span>
                       )}
                     </div>
+                    
+                    {/* View Recipe Button */}
+                    <Button
+                      onClick={() => setLocation(`/recipes/${recipe.id}`)}
+                      className="w-full"
+                      variant="outline"
+                    >
+                      <Eye className="w-4 h-4 mr-2" />
+                      View Recipe
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
