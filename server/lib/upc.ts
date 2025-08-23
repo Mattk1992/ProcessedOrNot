@@ -35,10 +35,10 @@ export async function fetchProductFromUPCDatabase(barcode: string): Promise<Inse
       productName: item.title || item.brand || 'Unknown Product',
       brands: item.brand || '',
       imageUrl: item.images?.[0] || '',
-      ingredientsText: '', // UPC Database doesn't provide ingredients
+      ingredientsText: item.description || '', // Use description as ingredients fallback
       nutriments: {}, // UPC Database doesn't provide nutritional data
       processingScore: 0,
-      processingExplanation: 'No ingredients available for processing analysis',
+      processingExplanation: item.description ? 'Analysis based on available product description' : 'No ingredients available for processing analysis',
       dataSource: 'UPC Database'
     };
 

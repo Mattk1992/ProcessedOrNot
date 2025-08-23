@@ -43,20 +43,23 @@ function isProductDataSufficient(product: InsertProduct): boolean {
   }
 
   // Must have at least one of these data points to be considered sufficient:
-  // 1. Ingredients text (for processing analysis)
+  // 1. Ingredients text (for processing analysis) - reduced from 10 to 5 characters
   // 2. Nutriments data (for nutrition analysis) 
   // 3. Both product name and brands (for identification)
-  const hasIngredients = product.ingredientsText && product.ingredientsText.trim().length > 10;
+  // 4. Just product name (for basic identification)
+  const hasIngredients = product.ingredientsText && product.ingredientsText.trim().length > 5;
   const hasNutriments = product.nutriments && Object.keys(product.nutriments).length > 0;
   const hasBasicInfo = Boolean(product.productName && product.brands && typeof product.brands === 'string' && product.brands.trim().length > 0);
+  const hasProductName = Boolean(product.productName && product.productName.trim().length > 0);
   
-  const sufficientDataFound = hasIngredients || hasNutriments || hasBasicInfo;
+  const sufficientDataFound = hasIngredients || hasNutriments || hasBasicInfo || hasProductName;
   
   if (!sufficientDataFound) {
-    console.log('Product rejected: Insufficient data - missing ingredients, nutrients, and basic info');
-    console.log(`- Has ingredients (>10 chars): ${hasIngredients}`);
+    console.log('Product rejected: Insufficient data - missing ingredients, nutrients, basic info, and product name');
+    console.log(`- Has ingredients (>5 chars): ${hasIngredients}`);
     console.log(`- Has nutriments: ${hasNutriments}`);
     console.log(`- Has basic info (name + brands): ${hasBasicInfo}`);
+    console.log(`- Has product name: ${hasProductName}`);
   }
 
   return sufficientDataFound;
@@ -190,7 +193,7 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         ingredientsText: product.ingredients_text || null,
         nutriments: processedNutriments,
         processingScore: 0,
-        processingExplanation: "No ingredients available for analysis",
+        processingExplanation: product.ingredients_text ? "Analysis pending" : "No ingredients available for analysis",
         glycemicIndex: null,
         glycemicLoad: null,
         glycemicExplanation: "No data available for glycemic analysis",
@@ -204,10 +207,24 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         console.log(`Collected product name from OpenFoodFacts: ${productData.productName}`);
       }
 
+      // Debug: Log complete product data quality 
+      console.log('OpenFoodFacts Data Quality Check:');
+      console.log(`- Product Name: ${productData.productName || 'MISSING'}`);
+      console.log(`- Brands: ${productData.brands || 'MISSING'}`);
+      console.log(`- Ingredients: ${productData.ingredientsText ? `${productData.ingredientsText.length} chars` : 'MISSING'}`);
+      console.log(`- Nutrients: ${productData.nutriments && Object.keys(productData.nutriments).length > 0 ? Object.keys(productData.nutriments).length + ' nutrients' : 'MISSING'}`);
+      console.log(`- Image: ${productData.imageUrl ? 'YES' : 'MISSING'}`);
+
       // Check if product data is sufficient
       if (!isProductDataSufficient(productData)) {
         console.log('OpenFoodFacts product has insufficient data, continuing cascade...');
       } else {
+        // Debug: Log what ingredients we have
+        console.log(`OpenFoodFacts ingredients found: ${product.ingredients_text ? 'YES' : 'NO'}`);
+        if (product.ingredients_text) {
+          console.log(`Ingredients length: ${product.ingredients_text.length} characters`);
+        }
+        
         // Analyze ingredients if available
         if (product.ingredients_text) {
           try {
