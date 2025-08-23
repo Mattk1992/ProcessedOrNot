@@ -5259,7 +5259,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const id = parseInt(req.params.id);
-      const updated = await storage.updateRelease(id, req.body);
+      
+      // Convert all date fields from strings back to Date objects for database
+      const updateData = {
+        ...req.body,
+        releaseDate: req.body.releaseDate ? new Date(req.body.releaseDate) : undefined,
+        publishedAt: req.body.publishedAt ? new Date(req.body.publishedAt) : undefined,
+        notificationSentAt: req.body.notificationSentAt ? new Date(req.body.notificationSentAt) : undefined
+      };
+      
+      const updated = await storage.updateRelease(id, updateData);
 
       if (!updated) {
         return res.status(404).json({ message: 'Release not found' });
