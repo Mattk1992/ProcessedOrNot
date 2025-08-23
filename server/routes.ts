@@ -5261,12 +5261,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       
       // Convert all date fields from strings back to Date objects for database
-      const updateData = {
-        ...req.body,
-        releaseDate: req.body.releaseDate ? new Date(req.body.releaseDate) : undefined,
-        publishedAt: req.body.publishedAt ? new Date(req.body.publishedAt) : undefined,
-        notificationSentAt: req.body.notificationSentAt ? new Date(req.body.notificationSentAt) : undefined
-      };
+      const updateData = { ...req.body };
+      
+      // Handle all possible timestamp fields with proper conversion
+      if (updateData.releaseDate) {
+        updateData.releaseDate = new Date(updateData.releaseDate);
+      }
+      if (updateData.publishedAt) {
+        updateData.publishedAt = new Date(updateData.publishedAt);
+      }
+      if (updateData.notificationSentAt) {
+        updateData.notificationSentAt = new Date(updateData.notificationSentAt);
+      }
+      
+      // Remove undefined timestamp fields to avoid database issues
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined && ['releaseDate', 'publishedAt', 'notificationSentAt', 'createdAt', 'updatedAt'].includes(key)) {
+          delete updateData[key];
+        }
+      });
       
       const updated = await storage.updateRelease(id, updateData);
 
