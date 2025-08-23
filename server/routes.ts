@@ -392,7 +392,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Update user profile endpoint
   app.put("/api/auth/profile", requireAuth, async (req, res) => {
     try {
-      const { firstName, lastName, email, dailyCaloriesGoal } = req.body;
+      const { firstName, lastName, email, timezone, dailyCaloriesGoal } = req.body;
       const userId = req.session.userId;
 
       // Basic validation
@@ -417,6 +417,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (firstName !== undefined) updateData.firstName = firstName;
       if (lastName !== undefined) updateData.lastName = lastName;
       if (email !== undefined) updateData.email = email;
+      if (timezone !== undefined) updateData.timezone = timezone;
       if (dailyCaloriesGoal !== undefined) updateData.dailyCaloriesGoal = dailyCaloriesGoal;
       updateData.updatedAt = new Date();
 
