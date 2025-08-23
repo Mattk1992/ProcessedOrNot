@@ -59,6 +59,15 @@ export default function SavedRecipes() {
     enabled: isAuthenticated && user?.accountType !== 'Regular',
   });
   
+  console.log('Saved Recipes Query Debug:', {
+    isAuthenticated,
+    userAccountType: user?.accountType,
+    queryEnabled: isAuthenticated && user?.accountType !== 'Regular',
+    isLoading,
+    error,
+    data: savedRecipesData
+  });
+  
   const savedRecipes = savedRecipesData?.savedRecipes || [];
 
   // Delete saved recipe mutation
