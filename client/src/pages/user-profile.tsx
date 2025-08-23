@@ -251,8 +251,7 @@ export default function UserProfile() {
     };
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     updateProfileMutation.mutate(formData);
   };
 
@@ -403,7 +402,7 @@ export default function UserProfile() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="firstName">First Name</Label>
@@ -500,7 +499,8 @@ export default function UserProfile() {
                   {isEditing ? (
                     <>
                       <Button 
-                        type="submit" 
+                        type="button" 
+                        onClick={handleSubmit}
                         disabled={updateProfileMutation.isPending}
                         className="flex items-center gap-2"
                       >
@@ -528,7 +528,7 @@ export default function UserProfile() {
                     </Button>
                   )}
                 </div>
-              </form>
+              </div>
             </CardContent>
           </Card>
 
