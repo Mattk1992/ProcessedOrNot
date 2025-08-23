@@ -22,13 +22,48 @@ import { fetchProductFromNutritionix } from "./nutritionix";
 import { fetchProductFromSpoonacular } from "./spoonacular";
 import { fetchProductFromAPINinjas } from "./api-ninjas";
 import { fetchProductFromLeda } from "./leda";
-import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider } from "./openai";
+import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider, generateMissingIngredients } from "./openai";
 import { isBarcode, searchProductByText } from "./text-search";
 
 interface ProductLookupResult {
   product: InsertProduct | null;
   source: string;
   error?: string;
+}
+
+/**
+ * Helper function to attempt AI ingredient generation for products missing ingredients
+ */
+async function attemptAIIngredientGeneration(
+  product: InsertProduct, 
+  userAIProvider: string, 
+  userId?: number
+): Promise<boolean> {
+  if (!product.productName || product.ingredientsText) {
+    return false; // No product name or already has ingredients
+  }
+
+  console.log('Attempting AI ingredient generation for missing ingredients...');
+  try {
+    const aiIngredients = await generateMissingIngredients(
+      product.productName,
+      product.brands,
+      'en',
+      userAIProvider,
+      userId
+    );
+    
+    if (aiIngredients.ingredients && aiIngredients.ingredients !== "Unable to generate ingredients at this time") {
+      product.ingredientsText = `[AI-Generated] ${aiIngredients.ingredients}`;
+      product.processingExplanation = `AI-generated ingredients (${aiIngredients.confidence} confidence): ${aiIngredients.explanation}`;
+      console.log(`Successfully generated AI ingredients with ${aiIngredients.confidence} confidence`);
+      return true;
+    }
+  } catch (error) {
+    console.error("Failed to generate AI ingredients:", error);
+  }
+  
+  return false;
 }
 
 /**
@@ -218,6 +253,12 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
       // Check if product data is sufficient
       if (!isProductDataSufficient(productData)) {
         console.log('OpenFoodFacts product has insufficient data, continuing cascade...');
+        
+        // Try AI ingredient generation if we have product name but no ingredients
+        const aiGenerated = await attemptAIIngredientGeneration(productData, userAIProvider, userId);
+        if (aiGenerated && isProductDataSufficient(productData)) {
+          console.log('Product data is now sufficient after AI ingredient generation');
+        }
       } else {
         // Debug: Log what ingredients we have
         console.log(`OpenFoodFacts ingredients found: ${product.ingredients_text ? 'YES' : 'NO'}`);
@@ -1045,6 +1086,18 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         console.log(`Collected product name from UPC Database: ${upcProduct.productName}`);
       }
 
+      // Debug: Log UPC Database data quality
+      console.log('UPC Database Data Quality Check:');
+      console.log(`- Product Name: ${upcProduct.productName || 'MISSING'}`);
+      console.log(`- Brands: ${upcProduct.brands || 'MISSING'}`);
+      console.log(`- Ingredients: ${upcProduct.ingredientsText ? `${upcProduct.ingredientsText.length} chars` : 'MISSING'}`);
+
+      // Try AI ingredient generation if missing ingredients
+      const aiGenerated = await attemptAIIngredientGeneration(upcProduct, userAIProvider, userId);
+      if (aiGenerated) {
+        console.log('Enhanced UPC Database product with AI-generated ingredients');
+      }
+
       console.log('Found product in UPC Database');
       return { product: upcProduct, source: 'UPC Database' };
     }
@@ -1064,6 +1117,13 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         
         if (textSearchResult.product) {
           console.log(`Successfully found product via text search using name: ${productName}`);
+          
+          // Try AI ingredient generation if text search product lacks ingredients
+          const aiGenerated = await attemptAIIngredientGeneration(textSearchResult.product, userAIProvider, userId);
+          if (aiGenerated) {
+            console.log('Enhanced text search result with AI-generated ingredients');
+          }
+          
           // Update the barcode to match the original barcode searched
           textSearchResult.product.barcode = barcode;
           return {

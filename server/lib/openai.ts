@@ -690,3 +690,170 @@ Provide your response in JSON format:
     throw new Error("Failed to analyze carbon footprint");
   }
 }
+
+interface AIGeneratedIngredients {
+  ingredients: string;
+  confidence: 'high' | 'medium' | 'low';
+  explanation: string;
+  isGenerated: true;
+}
+
+export async function generateMissingIngredients(
+  productName: string,
+  brands?: string | null,
+  language: string = 'en',
+  provider: string = 'ChatGPT Nano',
+  userId?: number
+): Promise<AIGeneratedIngredients> {
+  const startTime = Date.now();
+  
+  try {
+    const languageInstructions: Record<string, string> = {
+      'en': 'Provide your response in English.',
+      'es': 'Proporciona tu respuesta en español.',
+      'fr': 'Fournissez votre réponse en français.',
+      'de': 'Stellen Sie Ihre Antwort auf Deutsch bereit.',
+      'zh': '请用中文回复。',
+      'ja': '日本語で回答してください。',
+      'nl': 'Geef je antwoord in het Nederlands.'
+    };
+
+    const languageInstruction = languageInstructions[language] || languageInstructions['en'];
+
+    const prompt = `Generate the most likely ingredients list for this food product. ${languageInstruction}
+
+Product Name: ${productName}
+Brand: ${brands || 'Unknown'}
+
+Based on the product name and brand, provide the most probable ingredients that would typically be found in this type of product. Consider:
+
+1. **Common ingredients** for this product category
+2. **Industry standards** for similar products
+3. **Typical formulations** used by food manufacturers
+4. **Regulatory requirements** for ingredient listing (most abundant first)
+5. **Brand-specific patterns** if recognizable
+
+Important guidelines:
+- List ingredients in descending order by typical weight/volume
+- Use standard ingredient terminology (not marketing names)
+- Include likely preservatives, emulsifiers, and additives for this product type
+- Be realistic about commercial food production
+- Consider shelf stability requirements
+- Account for common allergens that might be present
+
+Provide your response in JSON format:
+{
+  "ingredients": "comprehensive comma-separated ingredients list in typical order",
+  "confidence": "high|medium|low",
+  "explanation": "detailed explanation of why these ingredients are likely and your confidence level in the requested language",
+  "isGenerated": true
+}
+
+Confidence levels:
+- High: Very common product type with standard formulations
+- Medium: Recognizable product but some variation in formulations
+- Low: Unique or complex product with uncertain formulation`;
+
+    const systemPrompt = "You are a food technology expert with deep knowledge of commercial food formulations, ingredient functions, and industry practices. Generate realistic, evidence-based ingredient predictions.";
+    const modelConfig = getModelConfig(provider);
+
+    const response = await openai.chat.completions.create({
+      model: modelConfig.model,
+      messages: [
+        {
+          role: "system",
+          content: systemPrompt
+        },
+        {
+          role: "user",
+          content: prompt,
+        },
+      ],
+      response_format: { type: "json_object" },
+      temperature: modelConfig.temperature,
+      max_tokens: modelConfig.maxTokens,
+    });
+
+    const content = response.choices[0].message.content || "{}";
+    const result = JSON.parse(content);
+    const endTime = Date.now();
+    const tokenUsage = extractTokenUsage(response);
+
+    const processedResult: AIGeneratedIngredients = {
+      ingredients: result.ingredients || "Unable to generate ingredients",
+      confidence: result.confidence || 'low',
+      explanation: result.explanation || "AI-generated ingredient prediction based on product name",
+      isGenerated: true,
+    };
+
+    // Save to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'ingredient_generation',
+      aiModel: modelConfig.model,
+      userPrompt: prompt,
+      systemPrompt,
+      fullPrompt: `${systemPrompt}\n\nUser: ${prompt}`,
+      requestData: {
+        productName,
+        brands: brands || 'Unknown',
+        language,
+        provider
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: content,
+      processedResponse: JSON.stringify(processedResult),
+      parsedData: processedResult,
+      ...tokenUsage,
+      generationTimeMs: endTime - startTime,
+      status: 'success',
+      responseLength: content.length,
+      parseSuccess: true
+    });
+
+    return processedResult;
+
+  } catch (error) {
+    console.error("Error generating ingredients:", error);
+    
+    // Save error to prompt history
+    const context: PromptHistoryContext = {
+      userId,
+      sessionId: generateSessionId(),
+      feature: 'ingredient_generation',
+      aiModel: getModelConfig(provider).model,
+      userPrompt: `Generate ingredients for: ${productName}`,
+      systemPrompt: "AI ingredient generation",
+      fullPrompt: `Generate ingredients for: ${productName}`,
+      requestData: {
+        productName,
+        brands: brands || 'Unknown',
+        language,
+        provider
+      }
+    };
+
+    await savePromptHistory(context, {
+      aiResponse: "",
+      processedResponse: "",
+      parsedData: null,
+      promptTokens: 0,
+      completionTokens: 0,
+      generationTimeMs: Date.now() - startTime,
+      status: 'error',
+      responseLength: 0,
+      parseSuccess: false
+    });
+    
+    // Return fallback result
+    return {
+      ingredients: "Unable to generate ingredients at this time",
+      confidence: 'low',
+      explanation: "AI ingredient generation failed",
+      isGenerated: true,
+    };
+  }
+}
