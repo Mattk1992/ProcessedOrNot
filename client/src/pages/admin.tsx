@@ -17,6 +17,7 @@ import AdminSettings from "@/components/admin-settings";
 import DebugCascadingDB from "@/components/debug-cascading-db";
 import SpeechSettings from "@/components/speech-settings";
 import ProductManagement from "@/components/product-management";
+import ProductDatabaseConfig from "@/components/product-database-config";
 import AdminRewardingSystem from "@/components/admin-rewarding-system";
 import AdminReleasesManagement from "@/components/admin-releases-management";
 import AdminFinance from "@/components/admin-finance";
@@ -327,7 +328,7 @@ export default function AdminPanel() {
 
                 <Card 
                   className="group hover:shadow-md transition-all duration-200 cursor-pointer border-2 border-transparent hover:border-amber-200 dark:hover:border-amber-800"
-                  onClick={() => setActiveTab('product-management')}
+                  onClick={() => setActiveTab('product-database-config')}
                 >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-3 mb-3">
@@ -335,11 +336,11 @@ export default function AdminPanel() {
                         <BarChart3 className="w-5 h-5" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Product Database</h3>
-                        <p className="text-xs text-gray-600 dark:text-gray-400">Manage product catalog</p>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">Product Database Config</h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400">Manage external databases</p>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Add, edit, and organize products in the nutrition database.</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Configure external product databases, API keys, and database priorities.</p>
                   </CardContent>
                 </Card>
 
@@ -492,11 +493,19 @@ export default function AdminPanel() {
                 </TabsTrigger>
                 <TabsTrigger 
                   value="product-management" 
-                  className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 font-medium"
+                  className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-blue-500/25 font-medium"
                 >
                   <BarChart3 className="w-4 h-4 flex-shrink-0" />
                   <span className="hidden sm:inline text-sm">Products</span>
                   <span className="sm:hidden text-xs">Prod</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="product-database-config" 
+                  className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-amber-500 data-[state=active]:to-yellow-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-amber-500/25 font-medium"
+                >
+                  <Database className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">DB Config</span>
+                  <span className="sm:hidden text-xs">DB</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="settings" 
@@ -757,6 +766,24 @@ export default function AdminPanel() {
                         </div>
                       </div>
                       <ProductManagement />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Product Database Config Tab */}
+                <TabsContent value="product-database-config" className="mt-0 animate-in fade-in-50 duration-200">
+                  <div className="bg-gradient-to-br from-amber-50/50 to-yellow-50/30 dark:from-amber-900/20 dark:to-yellow-900/10 rounded-xl p-1 border border-amber-200/30 dark:border-amber-700/30">
+                    <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 backdrop-blur-sm">
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-600 text-white">
+                          <Database className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Product Database Configuration</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Configure external product databases, API keys, and database priorities</p>
+                        </div>
+                      </div>
+                      <ProductDatabaseConfig />
                     </div>
                   </div>
                 </TabsContent>
