@@ -7,6 +7,7 @@ interface AuthUser {
   accountType: string;
   firstName?: string;
   lastName?: string;
+  timezone?: string;
   isEmailVerified: boolean;
   createdAt: string;
   lastLoginAt?: string;
