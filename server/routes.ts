@@ -3883,7 +3883,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   type: mealType,
                   time: meal.time || '12:00',
                   calories: meal.totalCalories || 0,
-                  isGenerated: true // Flag to identify generated meals
+                  isGenerated: true, // Flag to identify generated meals
+                  mealData: meal, // Store complete meal data for detailed descriptions
+                  notes: meal.notes // Include meal notes if available
                 });
                 
                 // Add individual food items as sub-meals if available
@@ -3894,8 +3896,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
                       type: mealType,
                       time: meal.time || '12:00',
                       calories: food.calories || 0,
+                      protein: food.protein || 0,
+                      carbs: food.carbs || 0,
+                      fat: food.fat || 0,
+                      portion: food.portion,
+                      preparation: food.preparation,
                       isGenerated: true,
-                      isSubItem: true
+                      isSubItem: true,
+                      foodData: food // Store complete food data
                     });
                   });
                 }

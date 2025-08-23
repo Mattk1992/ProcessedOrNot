@@ -11,8 +11,16 @@ interface NutritionEntry {
     type: string;
     time: string;
     calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+    portion?: string;
+    preparation?: string;
     isGenerated?: boolean;
     isSubItem?: boolean;
+    mealData?: any; // Complete meal data from AI generator
+    foodData?: any; // Complete food data from AI generator
+    notes?: string;
   }>;
 }
 
@@ -76,15 +84,28 @@ export function generateWebcalFeed(entries: NutritionEntry[], userId: number): s
           }
           description += '\n';
           
-          // Add sub-items (food details)
+          // Add sub-items (food details) with comprehensive nutrition info
           const subItems = entry.meals.filter(m => m.isSubItem && m.time === meal.time && m.type === meal.type);
           subItems.forEach((subItem) => {
-            description += `${subItem.name}`;
-            if (subItem.calories) {
-              description += ` (${subItem.calories} cal)`;
+            description += `  ${subItem.name}`;
+            if (subItem.calories || subItem.protein || subItem.carbs || subItem.fat) {
+              const nutritionParts = [];
+              if (subItem.calories) nutritionParts.push(`${subItem.calories} cal`);
+              if (subItem.protein) nutritionParts.push(`${subItem.protein}g protein`);
+              if (subItem.carbs) nutritionParts.push(`${subItem.carbs}g carbs`);
+              if (subItem.fat) nutritionParts.push(`${subItem.fat}g fat`);
+              description += ` (${nutritionParts.join(', ')})`;
+            }
+            if (subItem.preparation) {
+              description += ` - ${subItem.preparation}`;
             }
             description += '\n';
           });
+          
+          // Add meal notes if available
+          if (meal.mealData && meal.mealData.notes) {
+            description += `  💡 Notes: ${meal.mealData.notes}\n`;
+          }
         });
       }
       
@@ -148,18 +169,47 @@ export function generateWebcalFeed(entries: NutritionEntry[], userId: number): s
         mealDescription += `🔥 ${meal.calories} calories\n`;
       }
       
-      // Add food details for generated meals
+      // Add comprehensive food details for generated meals
       if (meal.isGenerated) {
         const subItems = entry.meals.filter(m => m.isSubItem && m.time === meal.time && m.type === meal.type);
         if (subItems.length > 0) {
-          mealDescription += '\n📝 Food Details:\n';
+          mealDescription += '\n📝 Detailed Food Breakdown:\n';
           subItems.forEach((subItem) => {
-            mealDescription += `${subItem.name}`;
-            if (subItem.calories) {
-              mealDescription += ` (${subItem.calories} cal)`;
+            mealDescription += `\n🍽️ ${subItem.name}\n`;
+            if (subItem.portion) {
+              mealDescription += `📏 Portion: ${subItem.portion}\n`;
             }
-            mealDescription += '\n';
+            if (subItem.calories || subItem.protein || subItem.carbs || subItem.fat) {
+              mealDescription += '📊 Nutrition per portion:\n';
+              if (subItem.calories) mealDescription += `  • Calories: ${subItem.calories}\n`;
+              if (subItem.protein) mealDescription += `  • Protein: ${subItem.protein}g\n`;
+              if (subItem.carbs) mealDescription += `  • Carbs: ${subItem.carbs}g\n`;
+              if (subItem.fat) mealDescription += `  • Fat: ${subItem.fat}g\n`;
+            }
+            if (subItem.preparation) {
+              mealDescription += `👨‍🍳 Preparation: ${subItem.preparation}\n`;
+            }
           });
+        }
+        
+        // Add meal-level notes and total nutrition
+        if (meal.mealData) {
+          if (meal.mealData.notes) {
+            mealDescription += `\n💡 Meal Notes: ${meal.mealData.notes}\n`;
+          }
+          
+          // Add meal total nutrition summary
+          mealDescription += '\n📈 Meal Totals:\n';
+          if (meal.calories) mealDescription += `🔥 Total Calories: ${meal.calories}\n`;
+          
+          // Calculate totals from food items for more detailed breakdown
+          const totalProtein = subItems.reduce((sum, item) => sum + (item.protein || 0), 0);
+          const totalCarbs = subItems.reduce((sum, item) => sum + (item.carbs || 0), 0);
+          const totalFat = subItems.reduce((sum, item) => sum + (item.fat || 0), 0);
+          
+          if (totalProtein > 0) mealDescription += `🥩 Total Protein: ${totalProtein}g\n`;
+          if (totalCarbs > 0) mealDescription += `🍞 Total Carbs: ${totalCarbs}g\n`;
+          if (totalFat > 0) mealDescription += `🥑 Total Fat: ${totalFat}g\n`;
         }
       }
       
