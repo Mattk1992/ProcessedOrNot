@@ -360,6 +360,7 @@ export const users = pgTable("users", {
   firstName: text("first_name"), // Encrypted
   lastName: text("last_name"), // Encrypted
   timezone: varchar("timezone", { length: 100 }), // User's timezone
+  language: varchar("language", { length: 10 }), // User's preferred language
   accountType: varchar("account_type", { length: 20 }).notNull().default("Regular"),
   isEmailVerified: boolean("is_email_verified").default(false),
   emailVerificationToken: text("email_verification_token"), // Encrypted
@@ -390,6 +391,8 @@ export const registerUserSchema = z.object({
   confirmPassword: z.string(),
   firstName: z.string().min(1, "First name is required").max(100, "First name must not exceed 100 characters"),
   lastName: z.string().min(1, "Last name is required").max(100, "Last name must not exceed 100 characters"),
+  timezone: z.string().optional(),
+  language: z.string().optional(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
