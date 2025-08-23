@@ -1016,7 +1016,7 @@ export default function NutritionCalendar() {
                         size="sm"
                         onClick={() => {
                           setIsWebcalDialogOpen(false);
-                          window.location.href = '/user-profile';
+                          window.location.href = '/nutri-dashboard/profile';
                         }}
                         className="ml-3 border-orange-300 text-orange-700 hover:bg-orange-100 dark:border-orange-600 dark:text-orange-400 dark:hover:bg-orange-950/40"
                       >
