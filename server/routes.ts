@@ -5204,11 +5204,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: 'Access denied. Admin access required.' });
       }
 
+      // Validate required fields
+      const { version, title, description, content } = req.body;
+      if (!version || !title || !description || !content) {
+        return res.status(400).json({ 
+          message: 'Missing required fields: version, title, description, and content are required' 
+        });
+      }
+
+      // Check if version already exists
+      const existingRelease = await storage.getReleaseByVersion(version);
+      if (existingRelease) {
+        return res.status(400).json({ 
+          message: `Release version "${version}" already exists. Please use a different version number.` 
+        });
+      }
+
       const release = await storage.createRelease(req.body);
       res.status(201).json(release);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating release:', error);
-      res.status(500).json({ message: 'Failed to create release' });
+      
+      // Handle specific database errors
+      if (error.message?.includes('duplicate key') || error.code === '23505') {
+        return res.status(400).json({ 
+          message: 'A release with this version already exists. Please use a different version number.' 
+        });
+      }
+      
+      if (error.message?.includes('not null constraint') || error.code === '23502') {
+        return res.status(400).json({ 
+          message: 'Missing required field. Please ensure all required fields are filled.' 
+        });
+      }
+      
+      res.status(500).json({ 
+        message: 'Failed to create release', 
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined 
+      });
     }
   });
 

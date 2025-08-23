@@ -58,11 +58,11 @@ interface Release {
 }
 
 const releaseSchema = z.object({
-  version: z.string().min(1, "Version is required"),
+  version: z.string().min(1, "Version is required").regex(/^v?\d+\.\d+\.\d+/, "Version must be in format: v1.0.0 or 1.0.0"),
   title: z.string().min(1, "Title is required"),
   description: z.string().min(1, "Description is required"),
   content: z.string().min(1, "Content is required"),
-  type: z.enum(["feature", "bugfix", "security", "improvement"]),
+  type: z.enum(["feature", "bugfix", "security", "breaking"]),
   priority: z.enum(["critical", "high", "normal", "low"]),
   isPublic: z.boolean(),
   isFeatured: z.boolean(),
@@ -108,7 +108,9 @@ export default function AdminReleasesManagement() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create release');
+        const errorData = await response.json().catch(() => null);
+        const errorMessage = errorData?.message || `Failed to create release (${response.status})`;
+        throw new Error(errorMessage);
       }
       return response.json();
     },
