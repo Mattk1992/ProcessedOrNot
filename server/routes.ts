@@ -5411,6 +5411,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get saved recipes API endpoint (must be before parameterized routes)
+  app.get("/api/recipes/saved", requireAuth, async (req: any, res) => {
+    try {
+      console.log(`Fetching saved recipes for user ${req.session.userId}`);
+      const savedRecipes = await storage.getSavedRecipesByUser(req.session.userId);
+      console.log(`Found ${savedRecipes.length} saved recipes for user ${req.session.userId}`);
+      
+      res.json({
+        success: true,
+        savedRecipes: savedRecipes,
+        total: savedRecipes.length
+      });
+
+    } catch (error) {
+      console.error("Get saved recipes error:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch saved recipes. Please try again.",
+        success: false,
+        savedRecipes: [],
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Get individual recipe by ID endpoint
   app.get('/api/recipes/:id', ensureSession, async (req: any, res) => {
     try {
@@ -5709,29 +5733,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get saved recipes API endpoint
-  app.get("/api/recipes/saved", requireAuth, async (req: any, res) => {
-    try {
-      console.log(`Fetching saved recipes for user ${req.session.userId}`);
-      const savedRecipes = await storage.getSavedRecipesByUser(req.session.userId);
-      console.log(`Found ${savedRecipes.length} saved recipes for user ${req.session.userId}`);
-      
-      res.json({
-        success: true,
-        savedRecipes: savedRecipes,
-        total: savedRecipes.length
-      });
-
-    } catch (error) {
-      console.error("Get saved recipes error:", error);
-      res.status(500).json({ 
-        message: "Failed to fetch saved recipes. Please try again.",
-        success: false,
-        savedRecipes: [],
-        error: error instanceof Error ? error.message : "Unknown error"
-      });
-    }
-  });
 
   // Delete saved recipe API endpoint
   app.delete("/api/recipes/saved/:id", requireAuth, async (req: any, res) => {
