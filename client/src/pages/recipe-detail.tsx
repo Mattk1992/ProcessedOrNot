@@ -72,17 +72,14 @@ export default function RecipeDetail() {
         }
         
         const text = await response.text();
-        console.log('Raw response:', text); // Debug log
         
         if (!text) {
           throw new Error('Empty response from server');
         }
         
         const data = JSON.parse(text);
-        console.log('Recipe data received:', data); // Debug log
         return data as Recipe;
       } catch (error) {
-        console.error('Fetch error:', error);
         throw error;
       }
     },
@@ -221,7 +218,6 @@ export default function RecipeDetail() {
   }
 
   if (error) {
-    console.error('Recipe fetch error:', error); // Debug log
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
         <div className="container mx-auto px-4 py-6 max-w-4xl">
