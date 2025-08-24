@@ -233,25 +233,22 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         console.log(`Collected product name from Edamam: ${edamamProduct.productName}`);
       }
 
-      // Check if product data is sufficient
-      if (!isProductDataSufficient(edamamProduct)) {
-        console.log('Edamam product has insufficient data, continuing cascade...');
-        
-        // Try AI ingredient generation if we have product name but no ingredients
+      // Try AI ingredient generation if we have product name but no ingredients
+      if (!edamamProduct.ingredientsText && edamamProduct.productName) {
+        console.log('Edamam product missing ingredients, attempting AI generation...');
         const aiGenerated = await attemptAIIngredientGeneration(edamamProduct, userAIProvider, userId);
         if (aiGenerated) {
           // Update API history to show AI ingredients were generated
           await saveApiCallHistory(searchSessionId, barcode, 'Edamam-AI', apiOrder + 0.1, Date.now(), true, edamamProduct, undefined, userId, undefined, true);
-          
-          if (isProductDataSufficient(edamamProduct)) {
-            console.log('Edamam product data is now sufficient after AI ingredient generation');
-          }
+          console.log('Successfully enhanced Edamam product with AI-generated ingredients');
         }
       }
-      
-      // Process if data is sufficient (including after AI generation)
-      if (isProductDataSufficient(edamamProduct)) {
-        // Analyze ingredients if available
+
+      // Check if product data is sufficient (after potential AI enhancement)
+      if (!isProductDataSufficient(edamamProduct)) {
+        console.log('Edamam product has insufficient data, continuing cascade...');
+      } else {
+        // Analyze ingredients if available (including AI-generated)
         if (edamamProduct.ingredientsText) {
           try {
             const analysis = await analyzeIngredients(
@@ -268,7 +265,7 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
             edamamProduct.processingExplanation = "Unable to analyze ingredients at this time";
           }
 
-          // Analyze production process
+          // Analyze production process (including AI-generated ingredients)
           try {
             const productionProcess = await analyzeProductionProcess(
               edamamProduct.ingredientsText,
@@ -370,33 +367,34 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
       console.log(`- Nutrients: ${productData.nutriments && Object.keys(productData.nutriments).length > 0 ? Object.keys(productData.nutriments).length + ' nutrients' : 'MISSING'}`);
       console.log(`- Image: ${productData.imageUrl ? 'YES' : 'MISSING'}`);
 
-      // Check if product data is sufficient
-      if (!isProductDataSufficient(productData)) {
-        console.log('OpenFoodFacts product has insufficient data, continuing cascade...');
-        
-        // Try AI ingredient generation if we have product name but no ingredients
+      // Try AI ingredient generation if we have product name but no ingredients
+      if (!productData.ingredientsText && productData.productName) {
+        console.log('OpenFoodFacts product missing ingredients, attempting AI generation...');
         const aiGenerated = await attemptAIIngredientGeneration(productData, userAIProvider, userId);
         if (aiGenerated) {
           // Update API history to show AI ingredients were generated
           await saveApiCallHistory(searchSessionId, barcode, 'OpenFoodFacts-AI', apiOrder + 0.1, Date.now(), true, productData, undefined, userId, undefined, true);
-          
-          if (isProductDataSufficient(productData)) {
-            console.log('Product data is now sufficient after AI ingredient generation');
-          }
+          console.log('Successfully enhanced OpenFoodFacts product with AI-generated ingredients');
         }
+      }
+
+      // Check if product data is sufficient (after potential AI enhancement)
+      if (!isProductDataSufficient(productData)) {
+        console.log('OpenFoodFacts product has insufficient data, continuing cascade...');
       } else {
-        // Debug: Log what ingredients we have
-        console.log(`OpenFoodFacts ingredients found: ${product.ingredients_text ? 'YES' : 'NO'}`);
-        if (product.ingredients_text) {
-          console.log(`Ingredients length: ${product.ingredients_text.length} characters`);
+        // Debug: Log what ingredients we have (including AI-generated)
+        console.log(`OpenFoodFacts ingredients found: ${productData.ingredientsText ? 'YES' : 'NO'}`);
+        if (productData.ingredientsText) {
+          console.log(`Ingredients length: ${productData.ingredientsText.length} characters`);
+          console.log(`Ingredients type: ${productData.ingredientsText.startsWith('[AI-Generated]') ? 'AI-Generated' : 'Original'}`);
         }
         
-        // Analyze ingredients if available
-        if (product.ingredients_text) {
+        // Analyze ingredients if available (including AI-generated)
+        if (productData.ingredientsText) {
           try {
             const analysis = await analyzeIngredients(
-              product.ingredients_text,
-              product.product_name || "Unknown Product",
+              productData.ingredientsText,
+              productData.productName || "Unknown Product",
               'en',
               userAIProvider,
               userId
@@ -413,9 +411,9 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
         if (product.nutriments) {
           try {
             const glycemicAnalysis = await analyzeGlycemicIndex(
-              product.ingredients_text || "",
-              product.product_name || "Unknown Product",
-              product.nutriments,
+              productData.ingredientsText || "",
+              productData.productName || "Unknown Product",
+              productData.nutriments,
               'en',
               userAIProvider,
               userId
@@ -429,13 +427,13 @@ export async function cascadingProductLookup(barcode: string, userId?: number): 
           }
         }
 
-        // Analyze production process
-        if (product.ingredients_text) {
+        // Analyze production process (including AI-generated ingredients)
+        if (productData.ingredientsText) {
           try {
             productData.productionProcess = await analyzeProductionProcess(
-              product.ingredients_text,
-              product.product_name || "Unknown Product",
-              product.nutriments || {},
+              productData.ingredientsText,
+              productData.productName || "Unknown Product",
+              productData.nutriments || {},
               'en',
               userAIProvider,
               userId
