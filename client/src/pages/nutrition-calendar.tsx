@@ -516,6 +516,50 @@ export default function NutritionCalendar() {
                       >
                         GPT-3.5 Turbo
                       </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>OpenRouter Models (Free)</DropdownMenuLabel>
+                      <DropdownMenuItem 
+                        onClick={() => setSelectedAiModel('deepseek/deepseek-chat-v3.1:free')}
+                        className={selectedAiModel === 'deepseek/deepseek-chat-v3.1:free' ? 'bg-accent' : ''}
+                      >
+                        DeepSeek Chat v3.1
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSelectedAiModel('openai/gpt-oss-120b:free')}
+                        className={selectedAiModel === 'openai/gpt-oss-120b:free' ? 'bg-accent' : ''}
+                      >
+                        GPT OSS 120B
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSelectedAiModel('openai/gpt-oss-20b:free')}
+                        className={selectedAiModel === 'openai/gpt-oss-20b:free' ? 'bg-accent' : ''}
+                      >
+                        GPT OSS 20B
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSelectedAiModel('qwen/qwen3-coder:free')}
+                        className={selectedAiModel === 'qwen/qwen3-coder:free' ? 'bg-accent' : ''}
+                      >
+                        Qwen3 Coder
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSelectedAiModel('google/gemma-3n-e2b-it:free')}
+                        className={selectedAiModel === 'google/gemma-3n-e2b-it:free' ? 'bg-accent' : ''}
+                      >
+                        Gemma 3N-E2B
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSelectedAiModel('mistralai/mistral-small-3.2-24b-instruct:free')}
+                        className={selectedAiModel === 'mistralai/mistral-small-3.2-24b-instruct:free' ? 'bg-accent' : ''}
+                      >
+                        Mistral Small 3.2 24B
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSelectedAiModel('meta-llama/llama-3.3-8b-instruct:free')}
+                        className={selectedAiModel === 'meta-llama/llama-3.3-8b-instruct:free' ? 'bg-accent' : ''}
+                      >
+                        Llama 3.3 8B Instruct
+                      </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>

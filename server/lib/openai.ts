@@ -32,6 +32,19 @@ const PROVIDER_MODELS = {
     models: ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
     defaultModel: "gemini-2.5-pro", // the newest Gemini model series
     nanoModel: "gemini-2.5-flash"
+  },
+  "OpenRouter": {
+    models: [
+      "deepseek/deepseek-chat-v3.1:free",
+      "openai/gpt-oss-120b:free", 
+      "openai/gpt-oss-20b:free",
+      "qwen/qwen3-coder:free",
+      "google/gemma-3n-e2b-it:free",
+      "mistralai/mistral-small-3.2-24b-instruct:free",
+      "meta-llama/llama-3.3-8b-instruct:free"
+    ],
+    defaultModel: "deepseek/deepseek-chat-v3.1:free", // Default to DeepSeek as it's a powerful free model
+    nanoModel: "openai/gpt-oss-20b:free" // Smaller model for nano requests
   }
 } as const;
 
@@ -257,6 +270,41 @@ export async function makeAIRequest(config: AIConfig, options: AIRequestOptions)
             total_tokens: 0
           }
         };
+
+      case "OpenRouter":
+        const openRouterMessages: any[] = [];
+        if (systemPrompt) {
+          openRouterMessages.push({ role: "system", content: systemPrompt });
+        }
+        openRouterMessages.push({ role: "user", content: userPrompt });
+
+        const openRouterParams: any = {
+          model: config.model,
+          messages: openRouterMessages,
+          temperature: config.temperature,
+          max_tokens: finalMaxTokens,
+        };
+
+        if (responseFormat === "json") {
+          openRouterParams.response_format = { type: "json_object" };
+        }
+
+        const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": process.env.REPLIT_DOMAIN || "https://processedornot.com",
+            "X-Title": "ProcessedOrNot Scanner"
+          },
+          body: JSON.stringify(openRouterParams)
+        });
+
+        if (!openRouterResponse.ok) {
+          throw new Error(`OpenRouter API error: ${openRouterResponse.status} ${openRouterResponse.statusText}`);
+        }
+
+        return await openRouterResponse.json();
 
       default:
         throw new Error(`Unsupported AI provider: ${config.provider}`);
