@@ -24,6 +24,7 @@ import AdminCameraConfig from "@/pages/admin-camera-config";
 import AdminWebsiteManagement from "@/pages/admin-website-management";
 import AdminAIManagement from "@/pages/admin-ai-management";
 import AdminPromptHistory from "@/pages/admin-prompt-history";
+import AdminDataRequests from "@/pages/AdminDataRequests";
 import Blog from "@/pages/blog";
 import BlogNew from "@/pages/blog-new";
 import BlogPost from "@/pages/blog-post";
@@ -148,6 +149,7 @@ function Router() {
         <Route path="/admin-website-management" component={AdminWebsiteManagement} />
         <Route path="/admin-ai-management" component={AdminAIManagement} />
         <Route path="/admin-prompt-history" component={AdminPromptHistory} />
+        <Route path="/admin-data-requests" component={AdminDataRequests} />
         <Route path="/blog" component={Blog} />
         <Route path="/blog/new" component={BlogNew} />
         <Route path="/blog/:id" component={BlogPost} />

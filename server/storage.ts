@@ -276,6 +276,7 @@ export interface IStorage {
   // Data change requests
   createDataChangeRequest(request: InsertDataChangeRequest): Promise<DataChangeRequest>;
   getDataChangeRequestsByUser(userId: number): Promise<DataChangeRequest[]>;
+  getAllDataChangeRequests(): Promise<DataChangeRequest[]>;
   getDataChangeRequestsByStatus(status: string): Promise<DataChangeRequest[]>;
   getDataChangeRequestById(id: number): Promise<DataChangeRequest | undefined>;
   updateDataChangeRequest(id: number, updates: Partial<InsertDataChangeRequest>): Promise<DataChangeRequest | undefined>;
@@ -1692,6 +1693,11 @@ export class DatabaseStorage implements IStorage {
   async getDataChangeRequestsByUser(userId: number): Promise<DataChangeRequest[]> {
     return await db.select().from(dataChangeRequests)
       .where(eq(dataChangeRequests.userId, userId))
+      .orderBy(desc(dataChangeRequests.createdAt));
+  }
+
+  async getAllDataChangeRequests(): Promise<DataChangeRequest[]> {
+    return await db.select().from(dataChangeRequests)
       .orderBy(desc(dataChangeRequests.createdAt));
   }
 
