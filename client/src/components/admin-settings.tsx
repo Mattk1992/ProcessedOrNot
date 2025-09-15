@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSearchResultVisibility } from '@/contexts/SearchResultVisibilityContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Settings, Save, RefreshCw, Camera, Timer, Monitor, Eye, DollarSign, Target, Zap, ExternalLink, Bot, Sparkles, Activity, TrendingUp, BarChart3, List, Package } from 'lucide-react';
 import { GPTTestPanel } from './gpt-test-panel';
 
@@ -299,6 +300,29 @@ export default function AdminSettings() {
                         <span className="text-sm text-gray-600 dark:text-gray-400">
                           {currentValue === 'true' ? 'Enabled' : 'Disabled'}
                         </span>
+                      </div>
+                    ) : setting.settingKey === 'default_ai_provider' ? (
+                      <div className="flex items-center gap-3 flex-1">
+                        <Label htmlFor={setting.settingKey} className="text-sm font-medium">
+                          Default AI Provider:
+                        </Label>
+                        <Select
+                          value={currentValue || 'ChatGPT'}
+                          onValueChange={(value) => {
+                            handleInputChange(setting.settingKey, value);
+                          }}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Select AI Provider" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="ChatGPT">ChatGPT</SelectItem>
+                            <SelectItem value="Claude">Claude</SelectItem>
+                            <SelectItem value="Gemini">Gemini</SelectItem>
+                            <SelectItem value="GPT-4">GPT-4</SelectItem>
+                            <SelectItem value="GPT-3.5">GPT-3.5</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     ) : (
                       <>
