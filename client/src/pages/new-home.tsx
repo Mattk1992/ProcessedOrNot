@@ -89,8 +89,6 @@ export default function HomePage() {
   ];
 
   const stats = [
-    { icon: <Users className="w-6 h-6" />, value: "50K+", label: "Active Users" },
-    { icon: <Search className="w-6 h-6" />, value: "1M+", label: "Products Scanned" },
     { icon: <Globe className="w-6 h-6" />, value: "20+", label: "Food Databases" },
     { icon: <Star className="w-6 h-6" />, value: "4.8/5", label: "User Rating" }
   ];
