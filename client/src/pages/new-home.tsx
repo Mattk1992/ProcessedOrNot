@@ -59,32 +59,32 @@ export default function HomePage() {
     {
       icon: <Scan className="w-8 h-8 text-primary" />,
       title: "Smart Barcode Scanner",
-      description: "Instantly scan any product barcode with our advanced camera technology for immediate food analysis."
+      description: "Lightning-fast barcode recognition technology that works in any lighting condition. Simply point, scan, and discover the truth about your food in seconds."
     },
     {
       icon: <Brain className="w-8 h-8 text-primary" />,
       title: "AI-Powered Analysis",
-      description: "Get detailed processing level analysis powered by GPT-4 technology, understanding ingredient complexity."
+      description: "Advanced GPT-4 technology analyzes ingredient lists, processing methods, and nutritional profiles to give you insights no other app can provide."
     },
     {
       icon: <MessageCircle className="w-8 h-8 text-primary" />,
       title: "NutriBot Assistant",
-      description: "Chat with our intelligent nutrition bot for personalized advice and detailed food information."
+      description: "Your personal nutrition expert available 24/7. Ask questions, get personalized recommendations, and learn about ingredients in natural conversation."
     },
     {
       icon: <Globe className="w-8 h-8 text-primary" />,
       title: "Global Food Database",
-      description: "Access comprehensive nutrition data from 10+ international food databases for accurate information."
+      description: "Comprehensive data from 10+ trusted international sources including USDA, OpenFoodFacts, and regional databases for unmatched coverage."
     },
     {
       icon: <Smartphone className="w-8 h-8 text-primary" />,
-      title: "Mobile & Web Apps",
-      description: "Use our service anywhere with native mobile apps and full-featured web application."
+      title: "Cross-Platform Access",
+      description: "Seamlessly sync your data across web, iOS, and Android. Start scanning on your phone, continue on your computer - your insights follow you everywhere."
     },
     {
       icon: <Shield className="w-8 h-8 text-primary" />,
-      title: "Privacy First",
-      description: "Your data is encrypted and secure. We prioritize your privacy with enterprise-grade security."
+      title: "Privacy & Security",
+      description: "Bank-level encryption protects your data. We never sell your information or track your habits. Your food choices remain completely private."
     }
   ];
 
@@ -128,38 +128,47 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20">
       {/* Hero Section */}
-      <section className="relative py-20 px-4 text-center">
-        <div className="max-w-6xl mx-auto">
-          <Badge variant="secondary" className="mb-6">
-            🚀 Now Available - Web & Mobile Apps
+      <section className="relative py-24 md:py-32 px-4 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-blue-500/5"></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 right-10 w-72 h-72 bg-gradient-to-br from-blue-500/10 to-primary/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        
+        <div className="max-w-7xl mx-auto relative z-10">
+          <Badge variant="secondary" className="mb-8 text-sm font-medium px-4 py-2 bg-primary/10 text-primary border-primary/20">
+            🚀 Trusted by thousands - Web & Mobile Apps available
           </Badge>
           
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-6xl md:text-8xl font-bold mb-8 bg-gradient-to-r from-primary via-blue-600 to-primary bg-clip-text text-transparent leading-tight">
             ProcessedOrNot
           </h1>
           
-          <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-            Discover what's really in your food with AI-powered ingredient analysis. 
-            Scan any product and get instant insights into processing levels and nutritional value.
-          </p>
+          <div className="max-w-4xl mx-auto mb-10">
+            <p className="text-2xl md:text-3xl font-semibold text-foreground mb-4">
+              Know What You're Really Eating
+            </p>
+            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+              Transform your food choices with AI-powered analysis. Scan any product barcode and get instant, 
+              comprehensive insights into processing levels, ingredient quality, and nutritional value.
+            </p>
+          </div>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
             <Link href={isAuthenticated ? "/product-lookup?focus=input&autoFocus=true" : "/product-lookup"}>
-              <Button size="lg" className="text-lg px-8 py-6">
-                <Camera className="w-5 h-5 mr-2" />
+              <Button size="lg" className="text-xl px-10 py-7 bg-gradient-to-r from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
+                <Camera className="w-6 h-6 mr-3" />
                 Start Scanning Now
               </Button>
             </Link>
             {!isAuthenticated && !isLoading && (
               <Link href="/login">
-                <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+                <Button variant="outline" size="lg" className="text-lg px-8 py-7 border-2 hover:bg-primary/5">
                   <User className="w-5 h-5 mr-2" />
                   Login or Register
                 </Button>
               </Link>
             )}
             <Link href="/apps">
-              <Button variant="outline" size="lg" className="text-lg px-8 py-6">
+              <Button variant="outline" size="lg" className="text-lg px-8 py-7 border-2 hover:bg-primary/5">
                 <Smartphone className="w-5 h-5 mr-2" />
                 Download Mobile App
               </Button>
@@ -167,14 +176,18 @@ export default function HomePage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-5xl mx-auto">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="flex justify-center mb-2 text-primary">
-                  {stat.icon}
+              <div key={index} className="relative group">
+                <div className="bg-background/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                    <div className="text-primary">
+                      {stat.icon}
+                    </div>
+                  </div>
+                  <div className="text-2xl md:text-3xl font-bold text-foreground mb-2">{stat.value}</div>
+                  <div className="text-sm font-medium text-muted-foreground">{stat.label}</div>
                 </div>
-                <div className="text-2xl font-bold">{stat.value}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -182,24 +195,29 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Powerful Features for Healthy Living</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to make informed food choices and understand what you're eating
+      <section className="py-24 px-4 bg-gradient-to-b from-muted/50 to-background">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              Powerful Features
+            </h2>
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Advanced technology meets intuitive design to deliver everything you need for smarter food choices
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="h-full hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <div className="mb-4">{feature.icon}</div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+              <Card key={index} className="group h-full border-0 bg-background/80 backdrop-blur-sm shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <CardHeader className="relative z-10 pb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
+                    {feature.icon}
+                  </div>
+                  <CardTitle className="text-2xl font-bold group-hover:text-primary transition-colors duration-300">{feature.title}</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <CardDescription className="text-base leading-relaxed">
+                <CardContent className="relative z-10">
+                  <CardDescription className="text-base leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors duration-300">
                     {feature.description}
                   </CardDescription>
                 </CardContent>
@@ -210,49 +228,56 @@ export default function HomePage() {
       </section>
 
       {/* Benefits Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+      <section className="py-24 px-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl font-bold mb-6">Why Choose ProcessedOrNot?</h2>
-              <p className="text-lg text-muted-foreground mb-8">
-                Take control of your nutrition with our comprehensive food analysis platform. 
-                Make better food choices backed by science and AI technology.
+              <h2 className="text-5xl font-bold mb-8 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                Why Choose ProcessedOrNot?
+              </h2>
+              <p className="text-xl text-muted-foreground mb-10 leading-relaxed">
+                Join thousands of health-conscious individuals who trust our platform to make smarter food decisions. 
+                Powered by cutting-edge AI and backed by comprehensive nutritional science.
               </p>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-start space-x-3">
-                    <CheckCircle className="w-6 h-6 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-base">{benefit}</span>
+                  <div key={index} className="flex items-start space-x-4 group">
+                    <div className="w-8 h-8 bg-green-500/10 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0 group-hover:bg-green-500/20 transition-colors">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                    </div>
+                    <span className="text-lg leading-relaxed group-hover:text-foreground transition-colors">{benefit}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="relative">
-              <Card className="p-8 bg-gradient-to-br from-primary/5 to-blue-500/5 border-primary/20">
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-3xl blur-2xl transform rotate-6"></div>
+              <Card className="relative p-10 bg-gradient-to-br from-primary/5 to-blue-500/5 border-primary/20 backdrop-blur-sm">
                 <div className="text-center">
-                  <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Heart className="w-8 h-8 text-primary" />
+                  <div className="w-20 h-20 bg-gradient-to-br from-primary/20 to-blue-500/20 rounded-2xl flex items-center justify-center mx-auto mb-8 animate-pulse">
+                    <Heart className="w-10 h-10 text-primary" />
                   </div>
-                  <h3 className="text-2xl font-bold mb-4">Health-First Approach</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Our mission is to empower people with the knowledge they need to make healthier food choices. 
-                    Every feature is designed with your wellbeing in mind.
+                  <h3 className="text-3xl font-bold mb-6 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                    Health-First Approach
+                  </h3>
+                  <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
+                    Our mission is to democratize food transparency. Every algorithm, every feature, every decision 
+                    is made with your health and wellbeing as the top priority.
                   </p>
-                  <div className="flex justify-center space-x-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">10+</div>
-                      <div className="text-sm text-muted-foreground">Databases</div>
+                  <div className="grid grid-cols-3 gap-6">
+                    <div className="text-center p-4 bg-background/50 rounded-xl">
+                      <div className="text-3xl font-bold text-primary">10+</div>
+                      <div className="text-sm font-medium text-muted-foreground">Databases</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">7</div>
-                      <div className="text-sm text-muted-foreground">Languages</div>
+                    <div className="text-center p-4 bg-background/50 rounded-xl">
+                      <div className="text-3xl font-bold text-primary">7</div>
+                      <div className="text-sm font-medium text-muted-foreground">Languages</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">24/7</div>
-                      <div className="text-sm text-muted-foreground">Available</div>
+                    <div className="text-center p-4 bg-background/50 rounded-xl">
+                      <div className="text-3xl font-bold text-primary">24/7</div>
+                      <div className="text-sm font-medium text-muted-foreground">Available</div>
                     </div>
                   </div>
                 </div>
@@ -263,76 +288,90 @@ export default function HomePage() {
       </section>
 
       {/* Technology Section */}
-      <section className="py-20 px-4 bg-muted/30">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Powered by Advanced Technology</h2>
-          <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto">
-            We leverage cutting-edge AI and comprehensive food databases to provide you with the most accurate and detailed food analysis available.
+      <section className="py-24 px-4 bg-gradient-to-b from-background to-muted/30">
+        <div className="max-w-7xl mx-auto text-center">
+          <h2 className="text-5xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            Powered by Advanced Technology
+          </h2>
+          <p className="text-xl md:text-2xl text-muted-foreground mb-16 max-w-4xl mx-auto leading-relaxed">
+            Cutting-edge AI meets comprehensive nutritional data to deliver insights that transform how you understand food
           </p>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="p-6">
-              <div className="w-12 h-12 bg-blue-500/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Brain className="w-6 h-6 text-blue-500" />
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+            <Card className="group p-8 bg-background/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500/10 to-blue-600/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Brain className="w-8 h-8 text-blue-500" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 group-hover:text-blue-600 transition-colors">OpenAI GPT-4</h3>
+                <p className="text-muted-foreground text-lg leading-relaxed group-hover:text-foreground transition-colors">
+                  State-of-the-art AI technology analyzes ingredient complexity, processing methods, and nutritional impact with unmatched accuracy
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-3">OpenAI GPT-4</h3>
-              <p className="text-muted-foreground">
-                Advanced AI analysis for ingredient processing levels and nutritional insights
-              </p>
             </Card>
 
-            <Card className="p-6">
-              <div className="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Globe className="w-6 h-6 text-green-500" />
+            <Card className="group p-8 bg-background/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500/10 to-green-600/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Globe className="w-8 h-8 text-green-500" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 group-hover:text-green-600 transition-colors">Global Database Network</h3>
+                <p className="text-muted-foreground text-lg leading-relaxed group-hover:text-foreground transition-colors">
+                  10+ trusted international sources including USDA, OpenFoodFacts, and regional databases for comprehensive coverage
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Global Databases</h3>
-              <p className="text-muted-foreground">
-                10+ international food databases including USDA, OpenFoodFacts, and regional sources
-              </p>
             </Card>
 
-            <Card className="p-6">
-              <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Zap className="w-6 h-6 text-purple-500" />
+            <Card className="group p-8 bg-background/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-3 overflow-hidden relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="relative z-10">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500/10 to-purple-600/20 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                  <Zap className="w-8 h-8 text-purple-500" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4 group-hover:text-purple-600 transition-colors">Lightning-Fast Analysis</h3>
+                <p className="text-muted-foreground text-lg leading-relaxed group-hover:text-foreground transition-colors">
+                  Instant results through intelligent database cascading and real-time processing for immediate insights
+                </p>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Real-time Analysis</h3>
-              <p className="text-muted-foreground">
-                Instant barcode scanning and product analysis with cascading database fallback
-              </p>
             </Card>
           </div>
         </div>
       </section>
 
       {/* Testimonials Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">What Our Users Say</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Join thousands of satisfied users who trust ProcessedOrNot for their nutrition decisions
+      <section className="py-24 px-4 bg-gradient-to-br from-muted/30 to-background">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              Trusted by Thousands
+            </h2>
+            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Real stories from people who've transformed their relationship with food using ProcessedOrNot
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6 h-full">
-                <CardContent className="p-0">
-                  <div className="flex mb-4">
+              <Card key={index} className="group p-8 h-full bg-background/80 backdrop-blur-sm border-0 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <CardContent className="p-0 relative z-10">
+                  <div className="flex mb-6 justify-center">
                     {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                      <Star key={i} className="w-6 h-6 text-yellow-400 fill-current" />
                     ))}
                   </div>
-                  <blockquote className="text-muted-foreground mb-6 italic">
+                  <blockquote className="text-muted-foreground mb-8 text-lg italic leading-relaxed group-hover:text-foreground transition-colors">
                     "{testimonial.quote}"
                   </blockquote>
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
-                      <User className="w-5 h-5 text-primary" />
+                  <div className="flex items-center justify-center">
+                    <div className="w-12 h-12 bg-gradient-to-br from-primary/10 to-blue-500/10 rounded-full flex items-center justify-center mr-4">
+                      <User className="w-6 h-6 text-primary" />
                     </div>
-                    <div>
-                      <div className="font-semibold">{testimonial.name}</div>
-                      <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                    <div className="text-center">
+                      <div className="font-bold text-lg">{testimonial.name}</div>
+                      <div className="text-muted-foreground font-medium">{testimonial.role}</div>
                     </div>
                   </div>
                 </CardContent>
@@ -343,42 +382,53 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 px-4 bg-gradient-to-r from-primary to-blue-600 text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-4xl font-bold mb-6">Ready to Transform Your Food Choices?</h2>
-          <p className="text-xl mb-8 opacity-90">
-            Join thousands of users who are already making healthier food decisions with ProcessedOrNot. 
-            Start your journey to better nutrition today.
+      <section className="relative py-24 md:py-32 px-4 bg-gradient-to-br from-primary via-blue-600 to-primary text-white overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/90 to-blue-600/90"></div>
+        <div className="absolute top-10 left-10 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-10 right-10 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        
+        <div className="max-w-5xl mx-auto text-center relative z-10">
+          <h2 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+            Transform Your Food Journey
+          </h2>
+          <p className="text-xl md:text-2xl mb-12 opacity-95 max-w-3xl mx-auto leading-relaxed">
+            Join thousands of health-conscious individuals making smarter food decisions every day. 
+            Your journey to food transparency starts with a single scan.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link href="/product-lookup">
-              <Button size="lg" variant="secondary" className="text-lg px-8 py-6">
-                <Camera className="w-5 h-5 mr-2" />
-                Try It Free Now
+              <Button size="lg" variant="secondary" className="text-xl px-12 py-8 bg-white text-primary hover:bg-white/90 shadow-2xl hover:shadow-white/20 transition-all duration-300 transform hover:scale-105">
+                <Camera className="w-6 h-6 mr-3" />
+                Start Scanning Free
               </Button>
             </Link>
             <Link href="/auth/register">
-              <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-white text-white hover:bg-white hover:text-primary">
-                <Users className="w-5 h-5 mr-2" />
-                Create Account
+              <Button size="lg" variant="outline" className="text-xl px-12 py-8 border-2 border-white text-white hover:bg-white hover:text-primary transition-all duration-300 transform hover:scale-105">
+                <Users className="w-6 h-6 mr-3" />
+                Create Your Account
               </Button>
             </Link>
+          </div>
+          
+          <div className="mt-12 text-white/80">
+            <p className="text-lg">✨ No credit card required • Instant access • 4+ million products</p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-4 bg-background border-t">
-        <div className="max-w-6xl mx-auto text-center">
-          <div className="flex justify-center space-x-6 mb-6 flex-wrap">
-            <Link href="/about" className="text-muted-foreground hover:text-primary">About</Link>
-            <Link href="/privacy" className="text-muted-foreground hover:text-primary">Privacy</Link>
-            <Link href="/terms" className="text-muted-foreground hover:text-primary">Terms</Link>
-            <Link href="/contact" className="text-muted-foreground hover:text-primary">Contact</Link>
+      <footer className="py-16 px-4 bg-gradient-to-b from-background to-muted/30 border-t border-border/50">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="flex justify-center space-x-8 mb-8 flex-wrap">
+            <Link href="/about" className="text-lg text-muted-foreground hover:text-primary transition-colors font-medium">About</Link>
+            <Link href="/privacy" className="text-lg text-muted-foreground hover:text-primary transition-colors font-medium">Privacy</Link>
+            <Link href="/terms" className="text-lg text-muted-foreground hover:text-primary transition-colors font-medium">Terms</Link>
+            <Link href="/contact" className="text-lg text-muted-foreground hover:text-primary transition-colors font-medium">Contact</Link>
           </div>
-          <p className="text-muted-foreground">
-            © 2025 ProcessedOrNot. Making food transparency accessible to everyone.
+          <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-8"></div>
+          <p className="text-lg text-muted-foreground leading-relaxed">
+            © 2025 ProcessedOrNot. Empowering healthier choices through food transparency.
           </p>
         </div>
       </footer>
