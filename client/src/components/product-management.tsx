@@ -87,7 +87,8 @@ export default function ProductManagement() {
         limit: "10",
         ...(searchQuery && { search: searchQuery })
       });
-      return apiRequest("GET", `/api/admin/products?${params}`);
+      const response = await apiRequest("GET", `/api/admin/products?${params}`);
+      return response as ProductsResponse;
     },
   });
 
@@ -447,7 +448,7 @@ export default function ProductManagement() {
         <CardContent>
           {isLoading ? (
             <div className="text-center py-8">Loading products...</div>
-          ) : productsData?.products.length === 0 ? (
+          ) : !productsData?.products || productsData.products.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               No products found
             </div>
