@@ -31,7 +31,8 @@ interface AdminSetting {
 const AI_PROVIDER_MODELS = {
   'OpenAI': ['GPT-4o', 'GPT-4o Mini', 'GPT-4 Turbo', 'GPT-4', 'GPT-3.5 Turbo', 'GPT-3.5 Turbo Instruct'],
   'Anthropic': ['Claude 3.5 Sonnet', 'Claude 3 Opus', 'Claude 3 Haiku', 'Claude 3 Sonnet'],
-  'Google': ['Gemini 1.5 Pro', 'Gemini 1.5 Flash', 'Gemini Pro', 'Gemini Pro Vision']
+  'Google': ['Gemini 1.5 Pro', 'Gemini 1.5 Flash', 'Gemini Pro', 'Gemini Pro Vision'],
+  'OpenRouter': ['OpenAI GPT-4o', 'Claude 3.5 Sonnet', 'Llama 3.1 405B', 'Llama 3.1 70B', 'Qwen 2.5 72B', 'Mistral Large', 'Gemini 1.5 Pro', 'DeepSeek R1', 'Perplexity Sonar']
 };
 
 // Legacy provider mapping for backward compatibility
@@ -374,6 +375,7 @@ export default function AdminSettings() {
                             <SelectItem value="OpenAI">OpenAI</SelectItem>
                             <SelectItem value="Anthropic">Anthropic</SelectItem>
                             <SelectItem value="Google">Google</SelectItem>
+                            <SelectItem value="OpenRouter">OpenRouter</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
