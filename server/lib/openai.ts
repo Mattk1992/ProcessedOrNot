@@ -29,16 +29,46 @@ function getModelConfig(provider: string = "ChatGPT") {
   }
 }
 
-// Helper function to get user's AI provider setting
+// Helper function to get admin default AI provider setting
+export async function getAdminDefaultAIProvider(): Promise<string> {
+  try {
+    const setting = await storage.getAdminSetting("default_ai_provider");
+    return setting?.settingValue || "ChatGPT"; // Default to ChatGPT if not configured
+  } catch (error) {
+    console.error("Error getting admin default AI provider setting:", error);
+    return "ChatGPT"; // Fallback to default
+  }
+}
+
+// Helper function to get admin default AI model setting
+export async function getAdminDefaultAIModel(): Promise<string> {
+  try {
+    const setting = await storage.getAdminSetting("default_ai_model");
+    return setting?.settingValue || "gpt-4o"; // Default to gpt-4o if not configured
+  } catch (error) {
+    console.error("Error getting admin default AI model setting:", error);
+    return "gpt-4o"; // Fallback to default
+  }
+}
+
+// Helper function to get user's AI provider setting (kept for backward compatibility)
 export async function getUserAIProvider(userId?: number): Promise<string> {
-  if (!userId) return "ChatGPT Nano"; // Default for anonymous users
+  if (!userId) {
+    // For anonymous users, use admin default settings
+    return await getAdminDefaultAIProvider();
+  }
   
   try {
     const setting = await storage.getUserSetting(userId, "ai_provider");
-    return setting?.settingValue || "ChatGPT Nano"; // Default to ChatGPT Nano
+    if (setting?.settingValue) {
+      return setting.settingValue;
+    }
+    // If user has no preference, use admin default
+    return await getAdminDefaultAIProvider();
   } catch (error) {
     console.error("Error getting user AI provider setting:", error);
-    return "ChatGPT Nano"; // Fallback to default
+    // Fallback to admin default
+    return await getAdminDefaultAIProvider();
   }
 }
 
