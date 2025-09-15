@@ -96,6 +96,70 @@ export default function AdminAIManagement() {
       maxTokens: 16385,
       costPer1kTokens: 0.0005,
       isActive: true
+    },
+    // OpenRouter Models (Free)
+    {
+      id: "deepseek/deepseek-chat-v3.1:free",
+      name: "DeepSeek Chat v3.1",
+      provider: "OpenRouter",
+      description: "Advanced reasoning model, completely free",
+      maxTokens: 65536,
+      costPer1kTokens: 0,
+      isActive: true
+    },
+    {
+      id: "openai/gpt-oss-120b:free",
+      name: "GPT OSS 120B",
+      provider: "OpenRouter",
+      description: "Large open-source GPT model, free to use",
+      maxTokens: 32768,
+      costPer1kTokens: 0,
+      isActive: true
+    },
+    {
+      id: "openai/gpt-oss-20b:free",
+      name: "GPT OSS 20B",
+      provider: "OpenRouter",
+      description: "Smaller open-source GPT model, free to use",
+      maxTokens: 16384,
+      costPer1kTokens: 0,
+      isActive: true
+    },
+    {
+      id: "qwen/qwen3-coder:free",
+      name: "Qwen3 Coder",
+      provider: "OpenRouter",
+      description: "Specialized coding model, free to use",
+      maxTokens: 32768,
+      costPer1kTokens: 0,
+      isActive: true
+    },
+    {
+      id: "google/gemma-3n-e2b-it:free",
+      name: "Gemma 3N-E2B",
+      provider: "OpenRouter",
+      description: "Google's efficient instruction-tuned model, free",
+      maxTokens: 8192,
+      costPer1kTokens: 0,
+      isActive: true
+    },
+    {
+      id: "mistralai/mistral-small-3.2-24b-instruct:free",
+      name: "Mistral Small 3.2 24B",
+      provider: "OpenRouter",
+      description: "Mistral's instruction-tuned model, free to use",
+      maxTokens: 32768,
+      costPer1kTokens: 0,
+      isActive: true
+    },
+    {
+      id: "meta-llama/llama-3.3-8b-instruct:free",
+      name: "Llama 3.3 8B Instruct",
+      provider: "OpenRouter",
+      description: "Meta's latest Llama model, free to use",
+      maxTokens: 131072,
+      costPer1kTokens: 0,
+      isActive: true
     }
   ];
 
