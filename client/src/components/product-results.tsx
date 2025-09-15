@@ -30,6 +30,13 @@ interface ProductResultsProps {
   onProductFound?: (product: Product) => void;
 }
 
+// Helper function to safely convert unknown values to strings for rendering
+const toText = (v: unknown, fallback = 'N/A'): string => {
+  if (typeof v === 'string') return v;
+  if (v != null) return String(v);
+  return fallback;
+};
+
 export default function ProductResults({ barcode, filters, onProductFound }: ProductResultsProps) {
   const [showManualForm, setShowManualForm] = useState(false);
   const [showNutritionPopup, setShowNutritionPopup] = useState(false);
@@ -543,7 +550,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                       <div className="text-2xl font-bold text-foreground mb-1">
                         {(() => {
                           const nutrients = product.nutriments as Record<string, any>;
-                          return nutrients?.energy_100g ? String(Math.round(nutrients.energy_100g / 4.184)) : "N/A";
+                          return nutrients?.energy_100g ? toText(Math.round(nutrients.energy_100g / 4.184)) : "N/A";
                         })()}
                       </div>
                       <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.energy') || 'Energy')}</div>
@@ -552,7 +559,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                       <div className="text-2xl font-bold text-foreground mb-1">
                         {(() => {
                           const nutrients = product.nutriments as any;
-                          return nutrients?.sugars_100g ? `${nutrients.sugars_100g}g` : "N/A";
+                          return nutrients?.sugars_100g ? toText(`${nutrients.sugars_100g}g`) : "N/A";
                         })()}
                       </div>
                       <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.sugars') || 'Sugars')}</div>
@@ -561,7 +568,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                       <div className="text-2xl font-bold text-foreground mb-1">
                         {(() => {
                           const nutrients = product.nutriments as any;
-                          return nutrients?.fat_100g ? `${nutrients.fat_100g}g` : "N/A";
+                          return nutrients?.fat_100g ? toText(`${nutrients.fat_100g}g`) : "N/A";
                         })()}
                       </div>
                       <div className="text-xs text-muted-foreground font-medium">{String(t('nutrition.quick.fat') || 'Fat')}</div>
@@ -699,7 +706,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                       )}
                       <div>
                         <h4 className="font-semibold">{product?.productName || "Unknown Product"}</h4>
-                        {product?.brands && <p className="text-sm text-muted-foreground">{String(product.brands)}</p>}
+                        {product?.brands && <p className="text-sm text-muted-foreground">{toText(product.brands)}</p>}
                       </div>
                     </div>
 
@@ -1073,8 +1080,8 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                     ) : 'bg-gray-100 text-gray-800'
                   }`}>
                     {product.glycemicIndex !== null && product.glycemicIndex !== undefined ? (
-                      product.glycemicIndex <= 55 ? String(t('glycemic.index.low') || 'Low') : 
-                      product.glycemicIndex <= 70 ? String(t('glycemic.index.medium') || 'Medium') : String(t('glycemic.index.high') || 'High')
+                      product.glycemicIndex <= 55 ? t('glycemic.index.low') || 'Low' : 
+                      product.glycemicIndex <= 70 ? t('glycemic.index.medium') || 'Medium' : t('glycemic.index.high') || 'High'
                     ) : 'Analyzing...'}
                   </div>
                 </div>
@@ -1184,7 +1191,7 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
                   <h5 className="font-semibold mb-4 text-purple-800 dark:text-purple-200 text-lg">How This Product Is Made</h5>
                   <div className="w-full max-w-none">
                     <div className="text-base text-purple-700 dark:text-purple-300 leading-relaxed space-y-6 min-h-0">
-                      {productionProcess?.process?.split('\n\n').map((paragraph, index) => {
+                      {toText(productionProcess?.process, '').split('\n\n').map((paragraph, index) => {
                         // Handle markdown headers
                         if (paragraph.startsWith('###')) {
                           return (
@@ -1711,6 +1718,283 @@ export default function ProductResults({ barcode, filters, onProductFound }: Pro
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Product Modal */}
+      <Dialog open={showEditProductModal} onOpenChange={setShowEditProductModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Edit className="w-5 h-5 text-blue-600" />
+              Add Missing Product Data
+            </DialogTitle>
+            <DialogDescription>
+              Help improve our database by adding or correcting product information for {product?.productName || "this product"}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {editedProduct && (
+            <div className="space-y-6">
+              {/* Basic Product Information */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg">Basic Information</h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="productName">Product Name</Label>
+                    <Input
+                      id="productName"
+                      value={editedProduct.productName}
+                      onChange={(e) => setEditedProduct({ ...editedProduct, productName: e.target.value })}
+                      placeholder="Enter product name"
+                      data-testid="input-product-name"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="brands">Brand(s)</Label>
+                    <Input
+                      id="brands"
+                      value={editedProduct.brands}
+                      onChange={(e) => setEditedProduct({ ...editedProduct, brands: e.target.value })}
+                      placeholder="Enter brand name(s)"
+                      data-testid="input-brands"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="imageUrl">Product Image URL</Label>
+                  <Input
+                    id="imageUrl"
+                    value={editedProduct.imageUrl}
+                    onChange={(e) => setEditedProduct({ ...editedProduct, imageUrl: e.target.value })}
+                    placeholder="Enter image URL"
+                    data-testid="input-image-url"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="ingredients">Ingredients List</Label>
+                  <textarea
+                    id="ingredients"
+                    className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    value={editedProduct.ingredientsText}
+                    onChange={(e) => setEditedProduct({ ...editedProduct, ingredientsText: e.target.value })}
+                    placeholder="Enter ingredients list (separated by commas)"
+                    data-testid="textarea-ingredients"
+                  />
+                </div>
+              </div>
+
+              {/* Nutrition Information */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-lg">Nutrition Facts (per 100g/ml)</h4>
+                
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="energy">Energy (kJ)</Label>
+                    <Input
+                      id="energy"
+                      type="number"
+                      value={editedProduct.nutriments?.energy_100g || ''}
+                      onChange={(e) => setEditedProduct({ 
+                        ...editedProduct, 
+                        nutriments: { 
+                          ...editedProduct.nutriments, 
+                          energy_100g: parseFloat(e.target.value) || 0 
+                        }
+                      })}
+                      placeholder="0"
+                      data-testid="input-energy"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="fat">Fat (g)</Label>
+                    <Input
+                      id="fat"
+                      type="number"
+                      step="0.1"
+                      value={editedProduct.nutriments?.fat_100g || ''}
+                      onChange={(e) => setEditedProduct({ 
+                        ...editedProduct, 
+                        nutriments: { 
+                          ...editedProduct.nutriments, 
+                          fat_100g: parseFloat(e.target.value) || 0 
+                        }
+                      })}
+                      placeholder="0"
+                      data-testid="input-fat"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="saturatedFat">Saturated Fat (g)</Label>
+                    <Input
+                      id="saturatedFat"
+                      type="number"
+                      step="0.1"
+                      value={editedProduct.nutriments?.saturated_fat_100g || ''}
+                      onChange={(e) => setEditedProduct({ 
+                        ...editedProduct, 
+                        nutriments: { 
+                          ...editedProduct.nutriments, 
+                          saturated_fat_100g: parseFloat(e.target.value) || 0 
+                        }
+                      })}
+                      placeholder="0"
+                      data-testid="input-saturated-fat"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="carbohydrates">Carbohydrates (g)</Label>
+                    <Input
+                      id="carbohydrates"
+                      type="number"
+                      step="0.1"
+                      value={editedProduct.nutriments?.carbohydrates_100g || ''}
+                      onChange={(e) => setEditedProduct({ 
+                        ...editedProduct, 
+                        nutriments: { 
+                          ...editedProduct.nutriments, 
+                          carbohydrates_100g: parseFloat(e.target.value) || 0 
+                        }
+                      })}
+                      placeholder="0"
+                      data-testid="input-carbohydrates"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="sugars">Sugars (g)</Label>
+                    <Input
+                      id="sugars"
+                      type="number"
+                      step="0.1"
+                      value={editedProduct.nutriments?.sugars_100g || ''}
+                      onChange={(e) => setEditedProduct({ 
+                        ...editedProduct, 
+                        nutriments: { 
+                          ...editedProduct.nutriments, 
+                          sugars_100g: parseFloat(e.target.value) || 0 
+                        }
+                      })}
+                      placeholder="0"
+                      data-testid="input-sugars"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="proteins">Protein (g)</Label>
+                    <Input
+                      id="proteins"
+                      type="number"
+                      step="0.1"
+                      value={editedProduct.nutriments?.proteins_100g || ''}
+                      onChange={(e) => setEditedProduct({ 
+                        ...editedProduct, 
+                        nutriments: { 
+                          ...editedProduct.nutriments, 
+                          proteins_100g: parseFloat(e.target.value) || 0 
+                        }
+                      })}
+                      placeholder="0"
+                      data-testid="input-proteins"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="salt">Salt (g)</Label>
+                    <Input
+                      id="salt"
+                      type="number"
+                      step="0.01"
+                      value={editedProduct.nutriments?.salt_100g || ''}
+                      onChange={(e) => setEditedProduct({ 
+                        ...editedProduct, 
+                        nutriments: { 
+                          ...editedProduct.nutriments, 
+                          salt_100g: parseFloat(e.target.value) || 0 
+                        }
+                      })}
+                      placeholder="0"
+                      data-testid="input-salt"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="fiber">Fiber (g)</Label>
+                    <Input
+                      id="fiber"
+                      type="number"
+                      step="0.1"
+                      value={editedProduct.nutriments?.fiber_100g || ''}
+                      onChange={(e) => setEditedProduct({ 
+                        ...editedProduct, 
+                        nutriments: { 
+                          ...editedProduct.nutriments, 
+                          fiber_100g: parseFloat(e.target.value) || 0 
+                        }
+                      })}
+                      placeholder="0"
+                      data-testid="input-fiber"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Information Notice */}
+              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-blue-800 dark:text-blue-200">
+                    <p className="font-medium mb-1">How your contribution helps:</p>
+                    <ul className="list-disc list-inside space-y-1 text-blue-700 dark:text-blue-300">
+                      <li>Improves accuracy for other users</li>
+                      <li>Gets reviewed by our team before being published</li>
+                      <li>Helps build a better nutrition database</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-end pt-4 border-t">
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowEditProductModal(false);
+                    setEditedProduct(null);
+                  }}
+                  disabled={isSubmittingEdit}
+                  data-testid="button-cancel-edit"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSubmitEditRequest}
+                  disabled={isSubmittingEdit}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  data-testid="button-submit-edit"
+                >
+                  {isSubmittingEdit ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Submit Data
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
