@@ -35,15 +35,15 @@ const PROVIDER_MODELS = {
   },
   "OpenRouter": {
     models: [
-      "deepseek/deepseek-chat-v3.1:free",
-      "openai/gpt-oss-120b:free", 
+      "deepseek/deepseek-r1:free",
+      "deepseek/deepseek-chat-v3-0324:free", 
       "openai/gpt-oss-20b:free",
-      "qwen/qwen3-coder:free",
-      "google/gemma-3n-e2b-it:free",
-      "mistralai/mistral-small-3.2-24b-instruct:free",
-      "meta-llama/llama-3.3-8b-instruct:free"
+      "qwen/qwen-2.5-coder-32b-instruct:free",
+      "google/gemma-2b-it:free",
+      "mistralai/mistral-small-3.1:free",
+      "meta-llama/llama-3.1-8b-instruct:free"
     ],
-    defaultModel: "deepseek/deepseek-chat-v3.1:free", // Default to DeepSeek as it's a powerful free model
+    defaultModel: "deepseek/deepseek-r1:free", // Default to DeepSeek R1 as it's the latest powerful free model
     nanoModel: "openai/gpt-oss-20b:free" // Smaller model for nano requests
   }
 } as const;

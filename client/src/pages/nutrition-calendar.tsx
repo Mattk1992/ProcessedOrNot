@@ -519,16 +519,16 @@ export default function NutritionCalendar() {
                       <DropdownMenuSeparator />
                       <DropdownMenuLabel>OpenRouter Models (Free)</DropdownMenuLabel>
                       <DropdownMenuItem 
-                        onClick={() => setSelectedAiModel('deepseek/deepseek-chat-v3.1:free')}
-                        className={selectedAiModel === 'deepseek/deepseek-chat-v3.1:free' ? 'bg-accent' : ''}
+                        onClick={() => setSelectedAiModel('deepseek/deepseek-r1:free')}
+                        className={selectedAiModel === 'deepseek/deepseek-r1:free' ? 'bg-accent' : ''}
                       >
-                        DeepSeek Chat v3.1
+                        DeepSeek R1
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => setSelectedAiModel('openai/gpt-oss-120b:free')}
-                        className={selectedAiModel === 'openai/gpt-oss-120b:free' ? 'bg-accent' : ''}
+                        onClick={() => setSelectedAiModel('deepseek/deepseek-chat-v3-0324:free')}
+                        className={selectedAiModel === 'deepseek/deepseek-chat-v3-0324:free' ? 'bg-accent' : ''}
                       >
-                        GPT OSS 120B
+                        DeepSeek Chat v3
                       </DropdownMenuItem>
                       <DropdownMenuItem 
                         onClick={() => setSelectedAiModel('openai/gpt-oss-20b:free')}
@@ -537,28 +537,28 @@ export default function NutritionCalendar() {
                         GPT OSS 20B
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => setSelectedAiModel('qwen/qwen3-coder:free')}
-                        className={selectedAiModel === 'qwen/qwen3-coder:free' ? 'bg-accent' : ''}
+                        onClick={() => setSelectedAiModel('qwen/qwen-2.5-coder-32b-instruct:free')}
+                        className={selectedAiModel === 'qwen/qwen-2.5-coder-32b-instruct:free' ? 'bg-accent' : ''}
                       >
-                        Qwen3 Coder
+                        Qwen 2.5 Coder
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => setSelectedAiModel('google/gemma-3n-e2b-it:free')}
-                        className={selectedAiModel === 'google/gemma-3n-e2b-it:free' ? 'bg-accent' : ''}
+                        onClick={() => setSelectedAiModel('google/gemma-2b-it:free')}
+                        className={selectedAiModel === 'google/gemma-2b-it:free' ? 'bg-accent' : ''}
                       >
-                        Gemma 3N-E2B
+                        Gemma 2B
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => setSelectedAiModel('mistralai/mistral-small-3.2-24b-instruct:free')}
-                        className={selectedAiModel === 'mistralai/mistral-small-3.2-24b-instruct:free' ? 'bg-accent' : ''}
+                        onClick={() => setSelectedAiModel('mistralai/mistral-small-3.1:free')}
+                        className={selectedAiModel === 'mistralai/mistral-small-3.1:free' ? 'bg-accent' : ''}
                       >
-                        Mistral Small 3.2 24B
+                        Mistral Small 3.1
                       </DropdownMenuItem>
                       <DropdownMenuItem 
-                        onClick={() => setSelectedAiModel('meta-llama/llama-3.3-8b-instruct:free')}
-                        className={selectedAiModel === 'meta-llama/llama-3.3-8b-instruct:free' ? 'bg-accent' : ''}
+                        onClick={() => setSelectedAiModel('meta-llama/llama-3.1-8b-instruct:free')}
+                        className={selectedAiModel === 'meta-llama/llama-3.1-8b-instruct:free' ? 'bg-accent' : ''}
                       >
-                        Llama 3.3 8B Instruct
+                        Llama 3.1 8B Instruct
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

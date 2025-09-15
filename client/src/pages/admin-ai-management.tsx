@@ -99,19 +99,19 @@ export default function AdminAIManagement() {
     },
     // OpenRouter Models (Free)
     {
-      id: "deepseek/deepseek-chat-v3.1:free",
-      name: "DeepSeek Chat v3.1",
+      id: "deepseek/deepseek-r1:free",
+      name: "DeepSeek R1",
       provider: "OpenRouter",
-      description: "Advanced reasoning model, completely free",
+      description: "Latest DeepSeek reasoning model, completely free",
       maxTokens: 65536,
       costPer1kTokens: 0,
       isActive: true
     },
     {
-      id: "openai/gpt-oss-120b:free",
-      name: "GPT OSS 120B",
+      id: "deepseek/deepseek-chat-v3-0324:free",
+      name: "DeepSeek Chat v3",
       provider: "OpenRouter",
-      description: "Large open-source GPT model, free to use",
+      description: "Strong coding performance model, free to use",
       maxTokens: 32768,
       costPer1kTokens: 0,
       isActive: true
@@ -120,14 +120,14 @@ export default function AdminAIManagement() {
       id: "openai/gpt-oss-20b:free",
       name: "GPT OSS 20B",
       provider: "OpenRouter",
-      description: "Smaller open-source GPT model, free to use",
+      description: "Open-source GPT model, free to use",
       maxTokens: 16384,
       costPer1kTokens: 0,
       isActive: true
     },
     {
-      id: "qwen/qwen3-coder:free",
-      name: "Qwen3 Coder",
+      id: "qwen/qwen-2.5-coder-32b-instruct:free",
+      name: "Qwen 2.5 Coder",
       provider: "OpenRouter",
       description: "Specialized coding model, free to use",
       maxTokens: 32768,
@@ -135,8 +135,8 @@ export default function AdminAIManagement() {
       isActive: true
     },
     {
-      id: "google/gemma-3n-e2b-it:free",
-      name: "Gemma 3N-E2B",
+      id: "google/gemma-2b-it:free",
+      name: "Gemma 2B",
       provider: "OpenRouter",
       description: "Google's efficient instruction-tuned model, free",
       maxTokens: 8192,
@@ -144,8 +144,8 @@ export default function AdminAIManagement() {
       isActive: true
     },
     {
-      id: "mistralai/mistral-small-3.2-24b-instruct:free",
-      name: "Mistral Small 3.2 24B",
+      id: "mistralai/mistral-small-3.1:free",
+      name: "Mistral Small 3.1",
       provider: "OpenRouter",
       description: "Mistral's instruction-tuned model, free to use",
       maxTokens: 32768,
@@ -153,10 +153,10 @@ export default function AdminAIManagement() {
       isActive: true
     },
     {
-      id: "meta-llama/llama-3.3-8b-instruct:free",
-      name: "Llama 3.3 8B Instruct",
+      id: "meta-llama/llama-3.1-8b-instruct:free",
+      name: "Llama 3.1 8B Instruct",
       provider: "OpenRouter",
-      description: "Meta's latest Llama model, free to use",
+      description: "Meta's Llama model, free to use",
       maxTokens: 131072,
       costPer1kTokens: 0,
       isActive: true
