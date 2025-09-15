@@ -87,8 +87,13 @@ export default function ProductManagement() {
         limit: "10",
         ...(searchQuery && { search: searchQuery })
       });
-      const response = await apiRequest("GET", `/api/admin/products?${params}`);
-      return response as ProductsResponse;
+      const response = await fetch(`/api/admin/products?${params}`, {
+        credentials: 'include'
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch products');
+      }
+      return response.json() as Promise<ProductsResponse>;
     },
   });
 
