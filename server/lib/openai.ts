@@ -289,6 +289,13 @@ export async function makeAIRequest(config: AIConfig, options: AIRequestOptions)
           openRouterParams.response_format = { type: "json_object" };
         }
 
+        console.log(`Making OpenRouter request with model: ${config.model}`, {
+          model: config.model,
+          provider: config.provider,
+          temperature: config.temperature,
+          max_tokens: finalMaxTokens
+        });
+
         const openRouterResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -301,7 +308,15 @@ export async function makeAIRequest(config: AIConfig, options: AIRequestOptions)
         });
 
         if (!openRouterResponse.ok) {
-          throw new Error(`OpenRouter API error: ${openRouterResponse.status} ${openRouterResponse.statusText}`);
+          const errorBody = await openRouterResponse.text();
+          console.error(`OpenRouter API error details:`, {
+            status: openRouterResponse.status,
+            statusText: openRouterResponse.statusText,
+            body: errorBody,
+            model: config.model,
+            headers: openRouterResponse.headers.get('content-type')
+          });
+          throw new Error(`OpenRouter API error: ${openRouterResponse.status} ${openRouterResponse.statusText} - ${errorBody}`);
         }
 
         return await openRouterResponse.json();
