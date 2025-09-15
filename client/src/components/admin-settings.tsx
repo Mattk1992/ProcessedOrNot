@@ -27,6 +27,22 @@ interface AdminSetting {
   updatedAt: string;
 }
 
+// AI Provider to Models mapping
+const AI_PROVIDER_MODELS = {
+  'OpenAI': ['GPT-4o', 'GPT-4o Mini', 'GPT-4 Turbo', 'GPT-4', 'GPT-3.5 Turbo', 'GPT-3.5 Turbo Instruct'],
+  'Anthropic': ['Claude 3.5 Sonnet', 'Claude 3 Opus', 'Claude 3 Haiku', 'Claude 3 Sonnet'],
+  'Google': ['Gemini 1.5 Pro', 'Gemini 1.5 Flash', 'Gemini Pro', 'Gemini Pro Vision']
+};
+
+// Legacy provider mapping for backward compatibility
+const LEGACY_PROVIDER_MAP: Record<string, string> = {
+  'ChatGPT': 'OpenAI',
+  'Claude': 'Anthropic', 
+  'Gemini': 'Google',
+  'GPT-4': 'OpenAI',
+  'GPT-3.5': 'OpenAI'
+};
+
 export default function AdminSettings() {
   const { t } = useLanguage();
   const { toast } = useToast();
@@ -34,6 +50,32 @@ export default function AdminSettings() {
   const [editingSettings, setEditingSettings] = useState<Record<string, string>>({});
   const [autoSaveTimeouts, setAutoSaveTimeouts] = useState<Record<string, NodeJS.Timeout>>({});
   const { settings: visibilitySettings, updateSetting: updateVisibilitySetting } = useSearchResultVisibility();
+
+  // Helper functions for AI model selection
+  const normalizeProvider = (provider: string): string => {
+    return LEGACY_PROVIDER_MAP[provider] || provider;
+  };
+
+  const getSanitizedProviderValue = () => {
+    const providerSetting = Array.isArray(settings) ? settings.find((s: AdminSetting) => s.settingKey === 'default_ai_provider') : null;
+    const rawValue = editingSettings['default_ai_provider'] || providerSetting?.settingValue || 'OpenAI';
+    return normalizeProvider(rawValue);
+  };
+
+  const getProviderValue = () => {
+    return getSanitizedProviderValue();
+  };
+
+  const getModelsForProvider = (provider: string) => {
+    const normalizedProvider = normalizeProvider(provider);
+    return AI_PROVIDER_MODELS[normalizedProvider as keyof typeof AI_PROVIDER_MODELS] || AI_PROVIDER_MODELS['OpenAI'];
+  };
+
+  const getDefaultModelForProvider = (provider: string) => {
+    const models = getModelsForProvider(provider);
+    return models[0];
+  };
+
 
   // Fetch all admin settings
   const { data: settings, isLoading } = useQuery({
@@ -151,6 +193,41 @@ export default function AdminSettings() {
       updateSettingMutation.mutate({ key, value });
     }
   };
+
+  // Sync model with provider (using useCallback for stable reference)
+  const syncModelWithProvider = useCallback((newProvider: string) => {
+    const normalizedProvider = normalizeProvider(newProvider);
+    const defaultModel = getDefaultModelForProvider(normalizedProvider);
+    // Persist model immediately to avoid inconsistent state
+    updateSettingMutation.mutate({ key: 'default_ai_model', value: defaultModel });
+  }, [updateSettingMutation]);
+
+  // Coercion logic to fix inconsistent provider/model combinations
+  useEffect(() => {
+    if (!Array.isArray(settings)) return;
+    
+    const providerSetting = settings.find((s: AdminSetting) => s.settingKey === 'default_ai_provider');
+    const modelSetting = settings.find((s: AdminSetting) => s.settingKey === 'default_ai_model');
+    
+    if (providerSetting) {
+      const rawProvider = providerSetting.settingValue;
+      const normalizedProvider = normalizeProvider(rawProvider);
+      const currentModel = modelSetting?.settingValue;
+      
+      // If provider needs normalization or model doesn't belong to provider
+      const needsProviderNormalization = rawProvider !== normalizedProvider;
+      const needsModelSync = currentModel && !getModelsForProvider(normalizedProvider).includes(currentModel);
+      
+      if (needsProviderNormalization) {
+        updateSettingMutation.mutate({ key: 'default_ai_provider', value: normalizedProvider });
+      }
+      
+      if (needsProviderNormalization || needsModelSync) {
+        const defaultModel = getDefaultModelForProvider(normalizedProvider);
+        updateSettingMutation.mutate({ key: 'default_ai_model', value: defaultModel });
+      }
+    }
+  }, [settings, updateSettingMutation]);
 
   const handleCancelEdit = (key: string) => {
     setEditingSettings(prev => {
@@ -307,20 +384,40 @@ export default function AdminSettings() {
                           Default AI Provider:
                         </Label>
                         <Select
-                          value={currentValue || 'ChatGPT'}
+                          value={getSanitizedProviderValue()}
                           onValueChange={(value) => {
                             handleInputChange(setting.settingKey, value);
+                            syncModelWithProvider(value);
                           }}
                         >
                           <SelectTrigger className="flex-1">
                             <SelectValue placeholder="Select AI Provider" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="ChatGPT">ChatGPT</SelectItem>
-                            <SelectItem value="Claude">Claude</SelectItem>
-                            <SelectItem value="Gemini">Gemini</SelectItem>
-                            <SelectItem value="GPT-4">GPT-4</SelectItem>
-                            <SelectItem value="GPT-3.5">GPT-3.5</SelectItem>
+                            <SelectItem value="OpenAI">OpenAI</SelectItem>
+                            <SelectItem value="Anthropic">Anthropic</SelectItem>
+                            <SelectItem value="Google">Google</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ) : setting.settingKey === 'default_ai_model' ? (
+                      <div className="flex items-center gap-3 flex-1">
+                        <Label htmlFor={setting.settingKey} className="text-sm font-medium">
+                          Choose AI Model:
+                        </Label>
+                        <Select
+                          value={currentValue || getDefaultModelForProvider(getProviderValue())}
+                          onValueChange={(value) => {
+                            handleInputChange(setting.settingKey, value);
+                          }}
+                        >
+                          <SelectTrigger className="flex-1">
+                            <SelectValue placeholder="Select AI Model" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {getModelsForProvider(getProviderValue()).map((model) => (
+                              <SelectItem key={model} value={model}>{model}</SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
