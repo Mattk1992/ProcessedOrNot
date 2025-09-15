@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { InsertProduct } from "@shared/schema";
-import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider } from "./openai";
+import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider, getAdminDefaultAIProvider, getAdminDefaultAIModel } from "./openai";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -35,6 +35,9 @@ export async function searchProductByText(productName: string, filters?: SearchF
   try {
     console.log(`Starting text search for product: ${productName}`, filters ? `with filters: ${JSON.stringify(filters)}` : '');
 
+    // Get admin default AI model for cost-effective analysis
+    const adminAIModel = await getAdminDefaultAIModel();
+
     // First, use OpenAI to analyze the search term and suggest search keywords
     const keywordPrompt = `The user is searching for a food product: "${productName}"
 
@@ -53,7 +56,7 @@ For example:
 - "Chocolate" → ["chocolate", "cocoa", "dark chocolate", "milk chocolate", "chocolate bar"]`;
 
     const keywordResponse = await openai.chat.completions.create({
-      model: "gpt-4o-mini", // Using ChatGPT Nano model for cost-effective keyword optimization
+      model: adminAIModel, // Using admin-configured AI model for keyword optimization
       messages: [
         { role: "system", content: "You are a food search optimization specialist. Help users find the best search terms for food databases." },
         { role: "user", content: keywordPrompt }
@@ -96,7 +99,7 @@ Provide realistic nutritional values based on typical products of this type. Thi
     
     try {
       const productResponse = await openai.chat.completions.create({
-        model: "gpt-4o-mini", // Using ChatGPT Nano model for cost-effective nutritional analysis
+        model: adminAIModel, // Using admin-configured AI model for nutritional analysis
         messages: [
           { role: "system", content: "You are a nutrition expert. Provide realistic nutritional information for typical food products based on established nutritional databases." },
           { role: "user", content: productAnalysisPrompt }
