@@ -5,6 +5,10 @@ import { storage } from "./storage";
 import { transcribeAudio, isVoiceTranscriptionAvailable } from "./lib/voice-transcription";
 import { smartProductLookup, cascadingProductLookup } from "./lib/product-lookup";
 import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, analyzeCarbonFootprint, getUserAIProvider } from "./lib/openai";
+// AI provider-specific imports for testing
+import OpenAI from 'openai';
+import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenAI } from '@google/genai';
 import { getNutriBotResponse, generateProductNutritionInsight, generateFunFacts, generateNutritionSpotlightInsights } from "./lib/nutribot";
 import { AIScheduleGenerator } from "./lib/ai-schedule-generator";
 import { cascadingRecipeSearch } from "./lib/recipe-lookup";
@@ -3781,6 +3785,221 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         message: `Connection test failed: ${error.message || 'Unknown error'}`,
         status: 'error'
+      });
+    }
+  });
+
+  // Test AI Configuration
+  app.post("/api/admin/test-ai-config", requireAuth, requireAdmin, async (req: any, res) => {
+    try {
+      // Get current AI settings
+      const aiProvider = await storage.getAdminSetting('default_ai_provider');
+      const aiModel = await storage.getAdminSetting('default_ai_model');
+      
+      if (!aiProvider?.settingValue) {
+        return res.status(400).json({ message: "AI provider is not configured" });
+      }
+
+      if (!aiModel?.settingValue) {
+        return res.status(400).json({ message: "AI model is not configured" });
+      }
+
+      const provider = aiProvider.settingValue;
+      const model = aiModel.settingValue;
+
+      // Helper function to test provider-specific API connections
+      const testProviderConnection = async () => {
+        console.log(`Testing AI provider: ${provider} with model: ${model}`);
+        
+        switch (provider) {
+          case 'OpenAI':
+            // Validate API key
+            if (!process.env.OPENAI_API_KEY) {
+              throw new Error('OpenAI API key is not configured. Please set the OPENAI_API_KEY environment variable.');
+            }
+            
+            // Test direct OpenAI connection with the configured model
+            console.log('Testing OpenAI connection...');
+            
+            // Map admin model selection to OpenAI model name (order from most specific to least specific)
+            const openaiModel = model.includes('GPT-4o Mini') ? 'gpt-4o-mini' :
+                               model.includes('GPT-4 Turbo') ? 'gpt-4-turbo' :
+                               model.includes('GPT-3.5 Turbo') ? 'gpt-3.5-turbo' :
+                               model.includes('GPT-4o') ? 'gpt-4o' :
+                               model.includes('GPT-4') ? 'gpt-4' :
+                               'gpt-4o'; // default to GPT-4o
+            
+            // Create OpenAI client instance for testing
+            const openaiClient = new OpenAI({ 
+              apiKey: process.env.OPENAI_API_KEY 
+            });
+            
+            const openaiResponse = await openaiClient.chat.completions.create({
+              model: openaiModel,
+              max_tokens: 50,
+              temperature: 0.3,
+              messages: [{
+                role: 'user',
+                content: 'Respond with exactly: "OpenAI test successful"'
+              }]
+            });
+            
+            const openaiResponseText = openaiResponse.choices[0]?.message?.content || '';
+            if (!openaiResponseText.includes('successful')) {
+              throw new Error('OpenAI test failed: Unexpected response format');
+            }
+            
+            return {
+              success: true,
+              details: `OpenAI ${openaiModel} responded correctly`,
+              testData: { response: openaiResponseText, model: openaiModel, actualModel: openaiModel }
+            };
+
+          case 'Anthropic':
+            // Validate API key
+            if (!process.env.ANTHROPIC_API_KEY) {
+              throw new Error('Anthropic API key is not configured. Please set the ANTHROPIC_API_KEY environment variable.');
+            }
+            
+            // Test direct Anthropic connection
+            console.log('Testing Anthropic connection...');
+            const anthropic = new Anthropic({
+              apiKey: process.env.ANTHROPIC_API_KEY
+            });
+            
+            // Map admin model selection to Anthropic model name
+            const anthropicModel = model.includes('Claude 3.5 Sonnet') ? 'claude-3-5-sonnet-20241022' :
+                                 model.includes('Claude 3 Opus') ? 'claude-3-opus-20240229' :
+                                 model.includes('Claude 3 Haiku') ? 'claude-3-haiku-20240307' :
+                                 model.includes('Claude 3 Sonnet') ? 'claude-3-sonnet-20240229' :
+                                 'claude-3-5-sonnet-20241022'; // default
+            
+            const anthropicResponse = await anthropic.messages.create({
+              model: anthropicModel,
+              max_tokens: 100,
+              messages: [{
+                role: 'user',
+                content: 'Respond with exactly: "Anthropic test successful"'
+              }]
+            });
+            
+            const anthropicResponseText = anthropicResponse.content[0]?.text || '';
+            if (!anthropicResponseText.includes('successful')) {
+              throw new Error('Anthropic test failed: Unexpected response format');
+            }
+            
+            return {
+              success: true,
+              details: `Anthropic ${anthropicModel} responded correctly`,
+              testData: { response: anthropicResponseText, model: anthropicModel, actualModel: anthropicModel }
+            };
+
+          case 'Google':
+            // Validate API key
+            if (!process.env.GEMINI_API_KEY) {
+              throw new Error('Google AI (Gemini) API key is not configured. Please set the GEMINI_API_KEY environment variable.');
+            }
+            
+            // Test direct Google AI connection
+            console.log('Testing Google AI (Gemini) connection...');
+            const googleAI = new GoogleGenAI({
+              apiKey: process.env.GEMINI_API_KEY
+            });
+            
+            // Map admin model selection to Google model name
+            const geminiModel = model.includes('Gemini 1.5 Pro') ? 'gemini-1.5-pro' :
+                               model.includes('Gemini 1.5 Flash') ? 'gemini-1.5-flash' :
+                               model.includes('Gemini Pro Vision') ? 'gemini-pro-vision' :
+                               model.includes('Gemini Pro') ? 'gemini-pro' :
+                               'gemini-1.5-flash'; // default
+            
+            const googleResponse = await googleAI.models.generateContent({
+              model: geminiModel,
+              contents: 'Respond with exactly: "Google AI test successful"'
+            });
+            
+            const googleText = googleResponse.text || '';
+            if (!googleText.includes('successful')) {
+              throw new Error('Google AI test failed: Unexpected response format');
+            }
+            
+            return {
+              success: true,
+              details: `Google AI ${geminiModel} responded correctly`,
+              testData: { response: googleText, model: geminiModel, actualModel: geminiModel }
+            };
+
+          case 'OpenRouter':
+            // OpenRouter uses OpenAI-compatible API but with different endpoint
+            if (!process.env.OPENROUTER_API_KEY) {
+              throw new Error('OpenRouter API key is not configured. Please set the OPENROUTER_API_KEY environment variable.');
+            }
+            
+            // Test OpenRouter by using ingredient analysis with OpenAI provider type
+            console.log('Testing OpenRouter with ingredients analysis...');
+            const openrouterResult = await analyzeIngredients(
+              "water, sugar, artificial flavor", 
+              "Test Product", 
+              'en', 
+              'ChatGPT' // Use standard ChatGPT provider for OpenRouter
+            );
+            
+            if (!openrouterResult?.score && openrouterResult?.score !== 0) {
+              throw new Error('OpenRouter test failed: No valid response received');
+            }
+            
+            return {
+              success: true,
+              details: `OpenRouter responded with processing score: ${openrouterResult.score}`,
+              testData: { ...openrouterResult, model: 'openrouter-auto', actualModel: 'openrouter-auto' }
+            };
+
+          default:
+            throw new Error(`Unsupported AI provider: ${provider}. Supported providers are: OpenAI, Anthropic, Google, OpenRouter`);
+        }
+      };
+
+      // Execute the test
+      const testResult = await testProviderConnection();
+      
+      if (testResult.success) {
+        res.json({ 
+          message: `✅ AI configuration test successful! ${provider} with model ${model} is working correctly. ${testResult.details}`,
+          status: 'healthy',
+          provider,
+          model,
+          testDetails: testResult.testData
+        });
+      } else {
+        res.status(500).json({ 
+          message: `❌ AI configuration test failed. ${provider} with model ${model} did not respond correctly.`,
+          status: 'error',
+          provider,
+          model
+        });
+      }
+
+    } catch (error: any) {
+      console.error("Error testing AI configuration:", error);
+      
+      // Provide specific error messages based on error type
+      let errorMessage = `❌ AI configuration test failed: ${error.message || 'Unknown error'}`;
+      
+      if (error.message?.includes('API key')) {
+        errorMessage = `🔑 ${error.message}`;
+      } else if (error.message?.includes('rate limit') || error.message?.includes('quota')) {
+        errorMessage = `⏱️ Rate limit or quota exceeded: ${error.message}`;
+      } else if (error.message?.includes('authentication') || error.message?.includes('unauthorized')) {
+        errorMessage = `🔐 Authentication failed: Check your API key configuration`;
+      } else if (error.message?.includes('network') || error.message?.includes('timeout')) {
+        errorMessage = `🌐 Network error: ${error.message}`;
+      }
+      
+      res.status(500).json({ 
+        message: errorMessage,
+        status: 'error',
+        provider: req.body?.provider || 'unknown',
+        model: req.body?.model || 'unknown'
       });
     }
   });

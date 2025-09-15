@@ -20,7 +20,7 @@ localPort = 8081
 externalPort = 8081
 
 [[ports]]
-localPort = 35153
+localPort = 33241
 externalPort = 3000
 
 [workflows]
@@ -48,4 +48,4 @@ waitForPort = 5000
 defaultBucketID = "replit-objstore-11d37491-e42b-4bce-b1fc-8b4fe67cd984"
 
 [agent]
-integrations = ["javascript_openai==1.0.0", "javascript_google_analytics==1.0.0", "javascript_sendgrid==1.0.0"]
+integrations = ["javascript_openai:1.0.0", "javascript_google_analytics:1.0.0", "javascript_sendgrid:1.0.0", "javascript_anthropic:1.0.0", "javascript_gemini:1.0.0"]

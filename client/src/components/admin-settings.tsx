@@ -204,6 +204,27 @@ export default function AdminSettings() {
     console.log('syncModelWithProvider called (disabled):', newProvider);
   }, []);
 
+  // Test AI Configuration mutation
+  const testAiConfigMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest("POST", "/api/admin/test-ai-config");
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "AI Configuration Test Successful",
+        description: `✅ ${data.message || 'AI provider and model are working correctly'}`,
+        variant: "default",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "AI Configuration Test Failed",
+        description: `❌ ${error.message || 'Failed to test AI configuration. Please check your settings.'}`,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Coercion logic disabled to prevent infinite loops
   // TODO: Add proper initialization logic without useEffect loops
 
@@ -438,6 +459,55 @@ export default function AdminSettings() {
           </CardContent>
         </Card>
       ))}
+
+      {/* Test AI Configuration */}
+      <Card className="border border-green-200 dark:border-green-800 bg-green-50/50 dark:bg-green-900/10">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Zap className="h-5 w-5 text-green-500" />
+            Test AI Configuration
+          </CardTitle>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Test your current AI provider and model configuration to ensure everything is working correctly
+          </p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900/20">
+                <Zap className="h-5 w-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900 dark:text-white">
+                  AI Configuration Test
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Verify that your AI provider and model are properly configured and responsive
+                </p>
+              </div>
+            </div>
+            <Button 
+              onClick={() => testAiConfigMutation.mutate()}
+              disabled={testAiConfigMutation.isPending}
+              variant="outline"
+              className="flex items-center gap-2"
+              data-testid="button-test-ai-config"
+            >
+              {testAiConfigMutation.isPending ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  Testing...
+                </>
+              ) : (
+                <>
+                  <Zap className="h-4 w-4" />
+                  Test Configuration
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Ad Configuration */}
       <Card className="border border-yellow-200 dark:border-yellow-800 bg-yellow-50/50 dark:bg-yellow-900/10">
