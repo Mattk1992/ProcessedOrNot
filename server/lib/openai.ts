@@ -1,31 +1,269 @@
 import OpenAI from "openai";
+import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { ProcessingAnalysis, GlycemicAnalysis } from "@shared/schema";
 import { storage } from "../storage";
 import { savePromptHistory, extractTokenUsage, generateSessionId, type PromptHistoryContext } from "./prompt-history";
 
-// the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-// ChatGPT Nano uses "gpt-4o-mini" for ultra-fast responses
-
+// AI Provider SDKs initialization
 const openai = new OpenAI({ 
   apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key"
 });
 
-// Model configuration based on AI provider
-function getModelConfig(provider: string = "ChatGPT") {
-  switch (provider) {
-    case "ChatGPT Nano":
-      return {
-        model: "gpt-4o-mini",
-        temperature: 0.3,
-        maxTokens: 500
-      };
-    case "ChatGPT":
-    default:
-      return {
-        model: "gpt-4o",
-        temperature: 0.3,
-        maxTokens: 1000
-      };
+const anthropic = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
+});
+
+const googleAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+
+// Provider-Model Compatibility Matrix
+const PROVIDER_MODELS = {
+  "OpenAI": {
+    models: ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+    defaultModel: "gpt-4o", // the current best OpenAI model
+    nanoModel: "gpt-4o-mini"
+  },
+  "Anthropic": {
+    models: ["claude-sonnet-4-20250514", "claude-3-7-sonnet-20250219", "claude-3-5-sonnet-20241022", "claude-3-sonnet-20240229"],
+    defaultModel: "claude-sonnet-4-20250514", // the newest Anthropic model
+    nanoModel: "claude-3-5-sonnet-20241022"
+  },
+  "Gemini": {
+    models: ["gemini-2.5-pro", "gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
+    defaultModel: "gemini-2.5-pro", // the newest Gemini model series
+    nanoModel: "gemini-2.5-flash"
+  }
+} as const;
+
+type AIProvider = keyof typeof PROVIDER_MODELS;
+type AIModel = string;
+
+interface AIConfig {
+  provider: AIProvider;
+  model: AIModel;
+  temperature: number;
+  maxTokens: number;
+  isValid: boolean;
+  error?: string;
+}
+
+// Legacy function for backward compatibility
+async function getModelConfig(provider: string = "ChatGPT") {
+  const config = await getAIConfig(provider);
+  return {
+    model: config.model,
+    temperature: config.temperature,
+    maxTokens: config.maxTokens
+  };
+}
+
+// Unified AI Request Function
+interface AIRequestOptions {
+  systemPrompt?: string;
+  userPrompt: string;
+  responseFormat?: "json" | "text";
+  maxTokens?: number;
+}
+
+// Validate provider-model compatibility
+function validateProviderModelCompatibility(provider: AIProvider, model: string): boolean {
+  const providerConfig = PROVIDER_MODELS[provider];
+  if (!providerConfig) {
+    return false;
+  }
+  return providerConfig.models.includes(model);
+}
+
+export async function getAIConfig(requestedProvider?: string, requestedModel?: string): Promise<AIConfig> {
+  try {
+    // Normalize provider names upfront
+    let normalizedProvider = requestedProvider;
+    if (requestedProvider === "ChatGPT" || requestedProvider === "ChatGPT Nano") {
+      normalizedProvider = "OpenAI";
+    }
+    
+    // Get admin settings for provider and model
+    const adminProvider = await getAdminDefaultAIProvider();
+    const adminModel = await getAdminDefaultAIModel();
+    
+    // Normalize admin provider as well
+    let normalizedAdminProvider = adminProvider;
+    if (adminProvider === "ChatGPT" || adminProvider === "ChatGPT Nano") {
+      normalizedAdminProvider = "OpenAI";
+    }
+    
+    // Determine final provider and model
+    let finalProvider: string;
+    let finalModel: string;
+    
+    // Priority: requested > admin > default
+    if (normalizedProvider && normalizedProvider !== "ChatGPT" && normalizedProvider !== "ChatGPT Nano") {
+      finalProvider = normalizedProvider;
+    } else {
+      finalProvider = normalizedAdminProvider;
+    }
+    
+    // Handle special ChatGPT variants with proper nano model enforcement
+    let maxTokens = 1000;
+    if (requestedProvider === "ChatGPT Nano") {
+      maxTokens = 500;
+      // For nano requests, prioritize nano model over admin model
+      const providerConfig = PROVIDER_MODELS[finalProvider as AIProvider];
+      if (requestedModel && providerConfig?.models.includes(requestedModel)) {
+        finalModel = requestedModel; // Use explicitly requested model if valid
+      } else {
+        finalModel = providerConfig?.nanoModel || "gpt-4o-mini"; // Force nano model
+      }
+    } else {
+      // Use requested model, admin model, or provider default
+      const providerConfig = PROVIDER_MODELS[finalProvider as AIProvider];
+      finalModel = requestedModel || adminModel || providerConfig?.defaultModel || "gpt-4o";
+    }
+    
+    // Validate provider-model compatibility
+    const isValid = validateProviderModelCompatibility(finalProvider as AIProvider, finalModel);
+    
+    if (!isValid) {
+      console.warn(`Invalid model ${finalModel} for provider ${finalProvider}. Using default.`);
+      const providerConfig = PROVIDER_MODELS[finalProvider as AIProvider];
+      if (providerConfig) {
+        finalModel = requestedProvider === "ChatGPT Nano" ? providerConfig.nanoModel : providerConfig.defaultModel;
+      } else {
+        // Fallback to OpenAI if provider not recognized
+        finalProvider = "OpenAI";
+        finalModel = requestedProvider === "ChatGPT Nano" ? "gpt-4o-mini" : "gpt-4o";
+      }
+    }
+    
+    return {
+      provider: finalProvider as AIProvider,
+      model: finalModel,
+      temperature: 0.3,
+      maxTokens,
+      isValid: true
+    };
+  } catch (error) {
+    console.error("Error getting AI configuration:", error);
+    // Fallback configuration
+    return {
+      provider: "OpenAI",
+      model: requestedProvider === "ChatGPT Nano" ? "gpt-4o-mini" : "gpt-4o",
+      temperature: 0.3,
+      maxTokens: requestedProvider === "ChatGPT Nano" ? 500 : 1000,
+      isValid: false,
+      error: (error as Error).message
+    };
+  }
+}
+
+export async function makeAIRequest(config: AIConfig, options: AIRequestOptions): Promise<any> {
+  const { systemPrompt, userPrompt, responseFormat = "text", maxTokens } = options;
+  const finalMaxTokens = maxTokens || config.maxTokens;
+
+  try {
+    switch (config.provider) {
+      case "OpenAI":
+        const openaiMessages: any[] = [];
+        if (systemPrompt) {
+          openaiMessages.push({ role: "system", content: systemPrompt });
+        }
+        openaiMessages.push({ role: "user", content: userPrompt });
+
+        const openaiParams: any = {
+          model: config.model,
+          messages: openaiMessages,
+          temperature: config.temperature,
+          max_tokens: finalMaxTokens,
+        };
+
+        if (responseFormat === "json") {
+          openaiParams.response_format = { type: "json_object" };
+        }
+
+        return await openai.chat.completions.create(openaiParams);
+
+      case "Anthropic":
+        const anthropicMessages: any[] = [];
+        if (systemPrompt) {
+          // Anthropic handles system prompts differently
+          anthropicMessages.push({ role: "user", content: `${systemPrompt}\n\n${userPrompt}` });
+        } else {
+          anthropicMessages.push({ role: "user", content: userPrompt });
+        }
+
+        const anthropicResponse = await anthropic.messages.create({
+          model: config.model,
+          max_tokens: finalMaxTokens,
+          temperature: config.temperature,
+          messages: anthropicMessages,
+        });
+
+        // Convert Anthropic response format to match OpenAI format for compatibility
+        return {
+          choices: [
+            {
+              message: {
+                content: anthropicResponse.content[0]?.text || "",
+                role: "assistant"
+              }
+            }
+          ],
+          usage: {
+            prompt_tokens: anthropicResponse.usage?.input_tokens || 0,
+            completion_tokens: anthropicResponse.usage?.output_tokens || 0,
+            total_tokens: (anthropicResponse.usage?.input_tokens || 0) + (anthropicResponse.usage?.output_tokens || 0)
+          }
+        };
+
+      case "Gemini":
+        let geminiPrompt = userPrompt;
+        if (systemPrompt) {
+          geminiPrompt = `${systemPrompt}\n\n${userPrompt}`;
+        }
+
+        const geminiModel = googleAI.getGenerativeModel({ model: config.model });
+        
+        const geminiParams: any = {
+          generationConfig: {
+            temperature: config.temperature,
+            maxOutputTokens: finalMaxTokens
+          }
+        };
+
+        if (responseFormat === "json") {
+          geminiParams.generationConfig.responseMimeType = "application/json";
+        }
+
+        const geminiResponse = await geminiModel.generateContent({
+          contents: [{ role: "user", parts: [{ text: geminiPrompt }] }],
+          ...geminiParams
+        });
+
+        const responseText = geminiResponse.response.text();
+
+        // Convert Gemini response format to match OpenAI format for compatibility
+        return {
+          choices: [
+            {
+              message: {
+                content: responseText || "",
+                role: "assistant"
+              }
+            }
+          ],
+          usage: {
+            prompt_tokens: 0, // Gemini doesn't provide detailed token usage in the free tier
+            completion_tokens: 0,
+            total_tokens: 0
+          }
+        };
+
+      default:
+        throw new Error(`Unsupported AI provider: ${config.provider}`);
+    }
+  } catch (error) {
+    console.error(`AI request failed for provider ${config.provider}:`, error);
+    throw error;
   }
 }
 
@@ -115,23 +353,12 @@ Provide your response in JSON format with this structure:
 }`;
 
     const systemPrompt = "You are a food science expert specializing in analyzing food processing levels. Provide accurate, evidence-based assessments of ingredient processing levels.";
-    const modelConfig = getModelConfig(provider);
+    const aiConfig = await getAIConfig(provider);
 
-    const response = await openai.chat.completions.create({
-      model: modelConfig.model,
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      response_format: { type: "json_object" },
-      temperature: modelConfig.temperature,
-      max_tokens: modelConfig.maxTokens,
+    const response = await makeAIRequest(aiConfig, {
+      systemPrompt,
+      userPrompt: prompt,
+      responseFormat: "json"
     });
 
     const content = response.choices[0].message.content || "{}";
@@ -154,7 +381,7 @@ Provide your response in JSON format with this structure:
       userId,
       sessionId: generateSessionId(),
       feature: 'ingredients_analysis',
-      aiModel: modelConfig.model,
+      aiModel: aiConfig.model,
       userPrompt: prompt,
       systemPrompt,
       fullPrompt: `${systemPrompt}\n\nUser: ${prompt}`,
@@ -183,11 +410,12 @@ Provide your response in JSON format with this structure:
     console.error("Error analyzing ingredients with OpenAI:", error);
     
     // Save error to prompt history
+    const fallbackConfig = await getAIConfig(provider);
     const context: PromptHistoryContext = {
       userId,
       sessionId: generateSessionId(),
       feature: 'ingredients_analysis',
-      aiModel: getModelConfig(provider).model,
+      aiModel: fallbackConfig.model,
       userPrompt: `Analyze ingredients for: ${productName}`,
       requestData: {
         productName,
@@ -281,23 +509,12 @@ Provide your response in JSON format:
 }`;
 
     const systemPrompt = "You are a nutrition expert specializing in glycemic index assessment. Provide accurate, evidence-based estimates of how foods affect blood glucose levels.";
-    const modelConfig = getModelConfig(provider);
+    const aiConfig = await getAIConfig(provider);
 
-    const response = await openai.chat.completions.create({
-      model: modelConfig.model,
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      response_format: { type: "json_object" },
-      temperature: modelConfig.temperature,
-      max_tokens: modelConfig.maxTokens,
+    const response = await makeAIRequest(aiConfig, {
+      systemPrompt,
+      userPrompt: prompt,
+      responseFormat: "json"
     });
 
     const content = response.choices[0].message.content || "{}";
@@ -324,7 +541,7 @@ Provide your response in JSON format:
       userId,
       sessionId: generateSessionId(),
       feature: 'glycemic_analysis',
-      aiModel: modelConfig.model,
+      aiModel: aiConfig.model,
       userPrompt: prompt,
       systemPrompt,
       fullPrompt: `${systemPrompt}\n\nUser: ${prompt}`,
@@ -359,11 +576,12 @@ Provide your response in JSON format:
     console.error("Error analyzing glycemic index with OpenAI:", error);
     
     // Save error to prompt history
+    const fallbackConfig = await getAIConfig(provider);
     const context: PromptHistoryContext = {
       userId,
       sessionId: generateSessionId(),
       feature: 'glycemic_analysis',
-      aiModel: getModelConfig(provider).model,
+      aiModel: fallbackConfig.model,
       userPrompt: `Analyze glycemic index for: ${productName}`,
       requestData: {
         productName,
@@ -439,22 +657,12 @@ Based on the ingredients and nutritional profile, provide a comprehensive descri
 Provide a detailed but accessible explanation that helps consumers understand how their food is made from farm to table. Focus on being educational and informative rather than judgmental about the production methods.`;
 
     const systemPrompt = "You are a food science and manufacturing expert. Provide detailed, accurate explanations of food production processes that are educational and help consumers understand how their food is made.";
-    const modelConfig = getModelConfig(provider);
+    const aiConfig = await getAIConfig(provider);
 
-    const response = await openai.chat.completions.create({
-      model: modelConfig.model,
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      temperature: modelConfig.temperature,
-      max_tokens: 3000, // Increased from default to allow for detailed manufacturing process descriptions
+    const response = await makeAIRequest(aiConfig, {
+      systemPrompt,
+      userPrompt: prompt,
+      maxTokens: 3000 // Increased from default to allow for detailed manufacturing process descriptions
     });
 
     const productionProcess = response.choices[0].message.content || "Unable to analyze production process";
@@ -466,7 +674,7 @@ Provide a detailed but accessible explanation that helps consumers understand ho
       userId,
       sessionId: generateSessionId(),
       feature: 'production_process_analysis',
-      aiModel: modelConfig.model,
+      aiModel: aiConfig.model,
       userPrompt: prompt,
       systemPrompt,
       fullPrompt: `${systemPrompt}\n\nUser: ${prompt}`,
@@ -499,11 +707,12 @@ Provide a detailed but accessible explanation that helps consumers understand ho
     console.error("Error analyzing production process with OpenAI:", error);
     
     // Save error to prompt history
+    const fallbackConfig = await getAIConfig(provider);
     const context: PromptHistoryContext = {
       userId,
       sessionId: generateSessionId(),
       feature: 'production_process_analysis',
-      aiModel: getModelConfig(provider).model,
+      aiModel: fallbackConfig.model,
       userPrompt: `Analyze production process for: ${productName}`,
       requestData: {
         productName,
@@ -614,23 +823,12 @@ Provide your response in JSON format:
 }`;
 
     const systemPrompt = "You are an environmental sustainability expert specializing in food carbon footprint analysis. Provide accurate, evidence-based assessments of environmental impact for food products based on scientific data and lifecycle assessment principles.";
-    const modelConfig = getModelConfig(provider);
+    const aiConfig = await getAIConfig(provider);
 
-    const response = await openai.chat.completions.create({
-      model: modelConfig.model,
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      response_format: { type: "json_object" },
-      temperature: modelConfig.temperature,
-      max_tokens: modelConfig.maxTokens,
+    const response = await makeAIRequest(aiConfig, {
+      systemPrompt,
+      userPrompt: prompt,
+      responseFormat: "json"
     });
 
     const content = response.choices[0]?.message?.content;
@@ -661,7 +859,7 @@ Provide your response in JSON format:
       userId,
       sessionId: generateSessionId(),
       feature: 'carbon_footprint_analysis',
-      aiModel: modelConfig.model,
+      aiModel: aiConfig.model,
       userPrompt: prompt,
       systemPrompt,
       fullPrompt: `${systemPrompt}\n\nUser: ${prompt}`,
@@ -695,11 +893,12 @@ Provide your response in JSON format:
     console.error("Error analyzing carbon footprint with OpenAI:", error);
     
     // Save error to prompt history
+    const fallbackConfig = await getAIConfig(provider);
     const context: PromptHistoryContext = {
       userId,
       sessionId: generateSessionId(),
       feature: 'carbon_footprint_analysis',
-      aiModel: getModelConfig(provider).model,
+      aiModel: fallbackConfig.model,
       userPrompt: `Analyze carbon footprint for: ${productName}`,
       requestData: {
         productName,
@@ -785,7 +984,7 @@ Confidence levels:
 - Low: Unique or complex product with uncertain formulation`;
 
     const systemPrompt = "You are a food technology expert with deep knowledge of commercial food formulations, ingredient functions, and industry practices. Generate realistic, evidence-based ingredient predictions.";
-    const modelConfig = getModelConfig(provider);
+    const modelConfig = await getModelConfig(provider);
 
     const response = await openai.chat.completions.create({
       model: modelConfig.model,
@@ -821,7 +1020,7 @@ Confidence levels:
       userId,
       sessionId: generateSessionId(),
       feature: 'ingredient_generation',
-      aiModel: modelConfig.model,
+      aiModel: aiConfig.model,
       userPrompt: prompt,
       systemPrompt,
       fullPrompt: `${systemPrompt}\n\nUser: ${prompt}`,
@@ -850,11 +1049,12 @@ Confidence levels:
     console.error("Error generating ingredients:", error);
     
     // Save error to prompt history
+    const fallbackConfig = await getAIConfig(provider);
     const context: PromptHistoryContext = {
       userId,
       sessionId: generateSessionId(),
       feature: 'ingredient_generation',
-      aiModel: getModelConfig(provider).model,
+      aiModel: fallbackConfig.model,
       userPrompt: `Generate ingredients for: ${productName}`,
       systemPrompt: "AI ingredient generation",
       fullPrompt: `Generate ingredients for: ${productName}`,

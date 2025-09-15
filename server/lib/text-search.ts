@@ -1,8 +1,14 @@
-import OpenAI from "openai";
 import { InsertProduct } from "@shared/schema";
-import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider, getAdminDefaultAIProvider, getAdminDefaultAIModel } from "./openai";
+import { analyzeIngredients, analyzeGlycemicIndex, analyzeProductionProcess, getUserAIProvider, getAdminDefaultAIProvider } from "./openai";
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Import the unified AI system
+import { getAIConfig, makeAIRequest } from "./openai";
+
+// Helper function to get AI configuration and make requests
+async function makeAIRequestWithConfig(provider: string, options: any) {
+  const aiConfig = await getAIConfig(provider);
+  return await makeAIRequest(aiConfig, options);
+}
 
 interface ProductSearchResult {
   product: InsertProduct | null;
@@ -35,10 +41,10 @@ export async function searchProductByText(productName: string, filters?: SearchF
   try {
     console.log(`Starting text search for product: ${productName}`, filters ? `with filters: ${JSON.stringify(filters)}` : '');
 
-    // Get admin default AI model for cost-effective analysis
-    const adminAIModel = await getAdminDefaultAIModel();
+    // Get admin default AI provider for analysis
+    const adminAIProvider = await getAdminDefaultAIProvider();
 
-    // First, use OpenAI to analyze the search term and suggest search keywords
+    // First, use AI to analyze the search term and suggest search keywords
     const keywordPrompt = `The user is searching for a food product: "${productName}"
 
 Please analyze this search term and provide optimized search keywords for food database searches in JSON format:
@@ -55,15 +61,11 @@ For example:
 - "Gehaktbal" → ["meatball", "gehaktbal", "Dutch meatball", "beef ball", "pork ball"]
 - "Chocolate" → ["chocolate", "cocoa", "dark chocolate", "milk chocolate", "chocolate bar"]`;
 
-    const keywordResponse = await openai.chat.completions.create({
-      model: adminAIModel, // Using admin-configured AI model for keyword optimization
-      messages: [
-        { role: "system", content: "You are a food search optimization specialist. Help users find the best search terms for food databases." },
-        { role: "user", content: keywordPrompt }
-      ],
-      response_format: { type: "json_object" },
-      max_tokens: 200,
-      temperature: 0.3,
+    const keywordResponse = await makeAIRequestWithConfig(adminAIProvider, {
+      systemPrompt: "You are a food search optimization specialist. Help users find the best search terms for food databases.",
+      userPrompt: keywordPrompt,
+      responseFormat: "json",
+      maxTokens: 200
     });
 
     const keywordResult = JSON.parse(keywordResponse.choices[0].message.content || '{"searchTerms": [], "isGeneric": true}');
@@ -98,15 +100,11 @@ Provide realistic nutritional values based on typical products of this type. Thi
     let searchResult: any;
     
     try {
-      const productResponse = await openai.chat.completions.create({
-        model: adminAIModel, // Using admin-configured AI model for nutritional analysis
-        messages: [
-          { role: "system", content: "You are a nutrition expert. Provide realistic nutritional information for typical food products based on established nutritional databases." },
-          { role: "user", content: productAnalysisPrompt }
-        ],
-        response_format: { type: "json_object" },
-        max_tokens: 600,
-        temperature: 0.3,
+      const productResponse = await makeAIRequestWithConfig(adminAIProvider, {
+        systemPrompt: "You are a nutrition expert. Provide realistic nutritional information for typical food products based on established nutritional databases.",
+        userPrompt: productAnalysisPrompt,
+        responseFormat: "json",
+        maxTokens: 600
       });
 
       searchResult = JSON.parse(productResponse.choices[0].message.content || '{}');
@@ -238,15 +236,11 @@ Provide only the ingredients list in this format:
   "found": true/false
 }`;
 
-        const ingredientsResponse = await openai.chat.completions.create({
-          model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-          messages: [
-            { role: "system", content: "You are a product information specialist. Only provide real, accurate ingredients lists." },
-            { role: "user", content: ingredientsPrompt }
-          ],
-          response_format: { type: "json_object" },
-          max_tokens: 500,
-          temperature: 0.2,
+        const ingredientsResponse = await makeAIRequestWithConfig(userAIProvider, {
+          systemPrompt: "You are a product information specialist. Only provide real, accurate ingredients lists.",
+          userPrompt: ingredientsPrompt,
+          responseFormat: "json",
+          maxTokens: 500
         });
 
         const ingredientsResult = JSON.parse(ingredientsResponse.choices[0].message.content || '{"found": false}');
