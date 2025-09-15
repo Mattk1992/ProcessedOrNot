@@ -89,6 +89,8 @@ export default function HomePage() {
   ];
 
   const stats = [
+    { icon: <Search className="w-6 h-6" />, value: "4M+", label: "Food Products" },
+    { icon: <Brain className="w-6 h-6" />, value: "In-depth", label: "Product Analysis" },
     { icon: <Globe className="w-6 h-6" />, value: "10+", label: "Food Databases" },
     { icon: <Star className="w-6 h-6" />, value: "4.8/5", label: "User Rating" }
   ];
