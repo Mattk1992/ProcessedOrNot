@@ -22,6 +22,7 @@ import AdminRewardingSystem from "@/components/admin-rewarding-system";
 import AdminReleasesManagement from "@/components/admin-releases-management";
 import AdminFinance from "@/components/admin-finance";
 import FdcCsvUpload from "@/components/fdc-csv-upload";
+import AdminDataManagement from "@/components/admin-data-management";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface User {
@@ -474,7 +475,7 @@ export default function AdminPanel() {
           {/* Detailed Management Panel */}
           <Card className="bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
             <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-10 p-1 m-4 mb-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-slate-200/50 dark:border-gray-600/50 shadow-inner">
+              <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-11 p-1 m-4 mb-0 bg-gradient-to-r from-slate-100 to-slate-50 dark:from-gray-700 dark:to-gray-800 rounded-xl border border-slate-200/50 dark:border-gray-600/50 shadow-inner">
                 <TabsTrigger 
                   value="overview" 
                   className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-slate-500 data-[state=active]:to-gray-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-slate-500/25 font-medium"
@@ -506,6 +507,14 @@ export default function AdminPanel() {
                   <Database className="w-4 h-4 flex-shrink-0" />
                   <span className="hidden sm:inline text-sm">DB Config</span>
                   <span className="sm:hidden text-xs">DB</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="data-management" 
+                  className="flex items-center justify-center gap-2 py-3 px-2 rounded-lg transition-all duration-300 hover:bg-white/80 dark:hover:bg-gray-700/80 data-[state=active]:bg-gradient-to-r data-[state=active]:from-teal-500 data-[state=active]:to-cyan-600 data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-teal-500/25 font-medium"
+                >
+                  <Database className="w-4 h-4 flex-shrink-0" />
+                  <span className="hidden sm:inline text-sm">Data Mgmt</span>
+                  <span className="sm:hidden text-xs">Data</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="settings" 
@@ -784,6 +793,24 @@ export default function AdminPanel() {
                         </div>
                       </div>
                       <ProductDatabaseConfig />
+                    </div>
+                  </div>
+                </TabsContent>
+
+                {/* Data Management Tab */}
+                <TabsContent value="data-management" className="mt-0 animate-in fade-in-50 duration-200">
+                  <div className="bg-gradient-to-br from-teal-50/50 to-cyan-50/30 dark:from-teal-900/20 dark:to-cyan-900/10 rounded-xl p-1 border border-teal-200/30 dark:border-teal-700/30">
+                    <div className="bg-white/80 dark:bg-gray-800/80 rounded-lg p-4 backdrop-blur-sm">
+                      <div className="mb-4 flex items-center gap-3">
+                        <div className="p-2 rounded-lg bg-gradient-to-r from-teal-500 to-cyan-600 text-white">
+                          <Database className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Data Management</h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">Manage products database and review data change requests</p>
+                        </div>
+                      </div>
+                      <AdminDataManagement />
                     </div>
                   </div>
                 </TabsContent>
