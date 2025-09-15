@@ -30,25 +30,8 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { apiRequest } from "@/lib/queryClient";
-
-interface DataChangeRequest {
-  id: number;
-  userId: number;
-  requestType: string;
-  productBarcode: string;
-  productName: string;
-  currentData: any;
-  proposedChanges: any;
-  description: string;
-  issueType: string;
-  priority: string;
-  status: string;
-  reviewedBy?: number;
-  reviewedAt?: string;
-  reviewComments?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+import { useToast } from "@/hooks/use-toast";
+import { type DataChangeRequest } from "@shared/schema";
 
 export default function AdminDataRequests() {
   const [selectedRequest, setSelectedRequest] = useState<DataChangeRequest | null>(null);
@@ -57,53 +40,60 @@ export default function AdminDataRequests() {
   const [reviewAction, setReviewAction] = useState<"approve" | "reject">("approve");
   
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   // Fetch all data change requests for admin review
-  const { data: requests, isLoading } = useQuery<DataChangeRequest[]>({
+  const { data: requests, isLoading, error } = useQuery<DataChangeRequest[]>({
     queryKey: ['/api/admin/data-change-requests'],
   });
 
   const approveMutation = useMutation({
     mutationFn: async (data: { id: number; reviewComments: string }) => {
-      const response = await fetch(`/api/data-change-requests/${data.id}/approve`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ reviewComments: data.reviewComments }),
+      return await apiRequest("PUT", `/api/data-change-requests/${data.id}/approve`, {
+        reviewComments: data.reviewComments
       });
-      if (!response.ok) {
-        throw new Error('Failed to approve request');
-      }
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/data-change-requests'] });
+      toast({
+        title: "Request approved",
+        description: "The data change request has been approved and applied.",
+      });
       setShowReviewDialog(false);
       setSelectedRequest(null);
       setReviewComments("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to approve request",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
   const rejectMutation = useMutation({
     mutationFn: async (data: { id: number; reviewComments: string }) => {
-      const response = await fetch(`/api/data-change-requests/${data.id}/reject`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ reviewComments: data.reviewComments }),
+      return await apiRequest("PUT", `/api/data-change-requests/${data.id}/reject`, {
+        reviewComments: data.reviewComments
       });
-      if (!response.ok) {
-        throw new Error('Failed to reject request');
-      }
-      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/data-change-requests'] });
+      toast({
+        title: "Request rejected",
+        description: "The data change request has been rejected.",
+      });
       setShowReviewDialog(false);
       setSelectedRequest(null);
       setReviewComments("");
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to reject request",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -201,7 +191,7 @@ export default function AdminDataRequests() {
             <h4 className="font-medium mb-2">Proposed Changes</h4>
             <div className="bg-muted p-3 rounded-lg">
               <pre className="text-xs overflow-x-auto whitespace-pre-wrap">
-                {JSON.stringify(request.proposedChanges, null, 2)}
+                {String(JSON.stringify(request.proposedChanges, null, 2))}
               </pre>
             </div>
           </div>
