@@ -2,14 +2,21 @@ import { Sun, Moon, Globe } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/hooks/useAuth';
+import { useLocation } from 'wouter';
 import LanguageSwitcher from './language-switcher';
 
 export default function MobileFloatingControls() {
   const { theme, toggleTheme } = useTheme();
   const { isAuthenticated } = useAuth();
+  const [location] = useLocation();
 
   // Only show for authenticated users on mobile
   if (!isAuthenticated) {
+    return null;
+  }
+
+  // Hide on product-lookup page
+  if (location === '/product-lookup' || location.startsWith('/product-lookup?')) {
     return null;
   }
 
