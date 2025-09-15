@@ -194,40 +194,17 @@ export default function AdminSettings() {
     }
   };
 
-  // Sync model with provider (using useCallback for stable reference)
+  // Sync model with provider (DISABLED to prevent infinite loop)
   const syncModelWithProvider = useCallback((newProvider: string) => {
-    const normalizedProvider = normalizeProvider(newProvider);
-    const defaultModel = getDefaultModelForProvider(normalizedProvider);
-    // Persist model immediately to avoid inconsistent state
-    updateSettingMutation.mutate({ key: 'default_ai_model', value: defaultModel });
-  }, [updateSettingMutation]);
+    // DISABLED: Causing infinite mutation loop
+    // const normalizedProvider = normalizeProvider(newProvider);
+    // const defaultModel = getDefaultModelForProvider(normalizedProvider);
+    // updateSettingMutation.mutate({ key: 'default_ai_model', value: defaultModel });
+    console.log('syncModelWithProvider called (disabled):', newProvider);
+  }, []);
 
-  // Coercion logic to fix inconsistent provider/model combinations
-  useEffect(() => {
-    if (!Array.isArray(settings)) return;
-    
-    const providerSetting = settings.find((s: AdminSetting) => s.settingKey === 'default_ai_provider');
-    const modelSetting = settings.find((s: AdminSetting) => s.settingKey === 'default_ai_model');
-    
-    if (providerSetting) {
-      const rawProvider = providerSetting.settingValue;
-      const normalizedProvider = normalizeProvider(rawProvider);
-      const currentModel = modelSetting?.settingValue;
-      
-      // If provider needs normalization or model doesn't belong to provider
-      const needsProviderNormalization = rawProvider !== normalizedProvider;
-      const needsModelSync = currentModel && !getModelsForProvider(normalizedProvider).includes(currentModel);
-      
-      if (needsProviderNormalization) {
-        updateSettingMutation.mutate({ key: 'default_ai_provider', value: normalizedProvider });
-      }
-      
-      if (needsProviderNormalization || needsModelSync) {
-        const defaultModel = getDefaultModelForProvider(normalizedProvider);
-        updateSettingMutation.mutate({ key: 'default_ai_model', value: defaultModel });
-      }
-    }
-  }, [settings, updateSettingMutation]);
+  // Coercion logic disabled to prevent infinite loops
+  // TODO: Add proper initialization logic without useEffect loops
 
   const handleCancelEdit = (key: string) => {
     setEditingSettings(prev => {
