@@ -32,7 +32,7 @@ const AI_PROVIDER_MODELS = {
   'OpenAI': ['GPT-4o', 'GPT-4o Mini', 'GPT-4 Turbo', 'GPT-4', 'GPT-3.5 Turbo', 'GPT-3.5 Turbo Instruct'],
   'Anthropic': ['Claude 3.5 Sonnet', 'Claude 3 Opus', 'Claude 3 Haiku', 'Claude 3 Sonnet'],
   'Google': ['Gemini 1.5 Pro', 'Gemini 1.5 Flash', 'Gemini Pro', 'Gemini Pro Vision'],
-  'OpenRouter': ['OpenAI GPT-4o', 'Claude 3.5 Sonnet', 'Llama 3.1 405B', 'Llama 3.1 70B', 'Qwen 2.5 72B', 'Mistral Large', 'Gemini 1.5 Pro', 'DeepSeek R1', 'Perplexity Sonar']
+  'OpenRouter': ['OpenAI GPT-4o', 'Claude 3.5 Sonnet', 'Llama 3.1 405B', 'Llama 3.1 70B', 'Qwen 2.5 72B', 'Mistral Large', 'Gemini 1.5 Pro', 'DeepSeek R1', 'Perplexity Sonar', 'deepseek/deepseek-chat-v3.1:free', 'openai/gpt-oss-120b:free', 'openai/gpt-oss-20b:free', 'qwen/qwen3-coder:free', 'google/gemma-3n-e2b-it:free', 'mistralai/mistral-small-3.2-24b-instruct:free', 'meta-llama/llama-3.3-8b-instruct:free']
 };
 
 // Legacy provider mapping for backward compatibility
