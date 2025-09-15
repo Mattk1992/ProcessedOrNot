@@ -165,7 +165,7 @@ export default function ProductLookup() {
             </div>
 
             {/* Enhanced Features Grid */}
-            <div className="mt-8 sm:mt-12 lg:mt-16 max-w-6xl mx-auto">
+            <div className="mt-8 sm:mt-12 lg:mt-16 max-w-6xl mx-auto hidden md:block">
               <div className="text-center mb-6 sm:mb-8 lg:mb-12">
                 <h3 className="mobile-subheading-scale sm:text-3xl font-bold text-foreground mb-3 sm:mb-4 gradient-text px-4">
                   Powerful Features for Better Nutrition
