@@ -74,7 +74,7 @@ export default function HomePage() {
     {
       icon: <Globe className="w-8 h-8 text-primary" />,
       title: "Global Food Database",
-      description: "Access comprehensive nutrition data from 20+ international food databases for accurate information."
+      description: "Access comprehensive nutrition data from 10+ international food databases for accurate information."
     },
     {
       icon: <Smartphone className="w-8 h-8 text-primary" />,
@@ -89,7 +89,7 @@ export default function HomePage() {
   ];
 
   const stats = [
-    { icon: <Globe className="w-6 h-6" />, value: "20+", label: "Food Databases" },
+    { icon: <Globe className="w-6 h-6" />, value: "10+", label: "Food Databases" },
     { icon: <Star className="w-6 h-6" />, value: "4.8/5", label: "User Rating" }
   ];
 
@@ -241,7 +241,7 @@ export default function HomePage() {
                   </p>
                   <div className="flex justify-center space-x-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-primary">20+</div>
+                      <div className="text-2xl font-bold text-primary">10+</div>
                       <div className="text-sm text-muted-foreground">Databases</div>
                     </div>
                     <div className="text-center">
@@ -285,7 +285,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-xl font-semibold mb-3">Global Databases</h3>
               <p className="text-muted-foreground">
-                20+ international food databases including USDA, OpenFoodFacts, and regional sources
+                10+ international food databases including USDA, OpenFoodFacts, and regional sources
               </p>
             </Card>
 
